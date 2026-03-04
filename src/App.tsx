@@ -23,6 +23,7 @@ import AdminFinance from "./pages/admin/AdminFinance";
 import AdminPlanning from "./pages/admin/AdminPlanning";
 import AdminTasks from "./pages/admin/AdminTasks";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
+import AdminMetaAds from "./pages/admin/AdminMetaAds";
 
 const queryClient = new QueryClient();
 
