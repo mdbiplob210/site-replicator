@@ -14,6 +14,8 @@ import AdminSettings from "./pages/admin/AdminSettings";
 import AdminScreenshots from "./pages/admin/AdminScreenshots";
 import AdminOrders from "./pages/admin/AdminOrders";
 import AdminComingSoon from "./pages/admin/AdminComingSoon";
+import AdminBackup from "./pages/admin/AdminBackup";
+import AdminAutomation from "./pages/admin/AdminAutomation";
 import AdminPlaceholder from "./pages/admin/AdminPlaceholder";
 
 const queryClient = new QueryClient();
