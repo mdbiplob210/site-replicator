@@ -1,7 +1,10 @@
+import { useState } from "react";
 import {
   LayoutDashboard, ShoppingCart, Package, Globe, FileText, Wallet,
   Lightbulb, ListChecks, BarChart3, Megaphone, Zap, Database,
-  Users, HeadphonesIcon, Sparkles, CreditCard, LogOut, ChevronDown, Camera
+  Users, HeadphonesIcon, Sparkles, CreditCard, LogOut, ChevronDown, Camera,
+  Layout, ShoppingBag, Gift, Grid3X3, Heart, Layers, CreditCard as PaymentIcon,
+  File, Settings
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -20,11 +23,23 @@ import {
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
+const websiteSubItems = [
+  { title: "Main Template", url: "/admin/website/main-template", icon: Layout },
+  { title: "Checkout Template", url: "/admin/website/checkout-template", icon: ShoppingBag },
+  { title: "Product Template", url: "/admin/website/product-template", icon: Gift },
+  { title: "Category Template", url: "/admin/website/category-template", icon: Grid3X3 },
+  { title: "Thank You Template", url: "/admin/website/thank-you", icon: Heart },
+  { title: "Landing Pages", url: "/admin/website/landing-pages", icon: Layers },
+  { title: "Payment", url: "/admin/website/payment", icon: PaymentIcon },
+  { title: "Pages", url: "/admin/website/pages", icon: File },
+  { title: "Settings", url: "/admin/website/settings", icon: Settings },
+];
+
 const mainMenuItems = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
   { title: "Orders", url: "/admin/orders", icon: ShoppingCart },
   { title: "Products", url: "/admin/products", icon: Package },
-  { title: "Website", url: "/admin/website", icon: Globe, hasSubmenu: true },
+  { title: "Website", url: "/admin/website", icon: Globe, hasSubmenu: true, subItems: websiteSubItems },
   { title: "Reports", url: "/admin/reports", icon: FileText },
   { title: "Finance", url: "/admin/finance", icon: Wallet },
   { title: "Planning", url: "/admin/planning", icon: Lightbulb },
@@ -48,6 +63,9 @@ export function AdminSidebar() {
   const collapsed = state === "collapsed";
   const location = useLocation();
   const { signOut, user } = useAuth();
+
+  const isWebsiteActive = location.pathname.startsWith("/admin/website");
+  const [websiteOpen, setWebsiteOpen] = useState(isWebsiteActive);
 
   const userName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "User";
   const initials = userName.charAt(0).toUpperCase();
@@ -85,22 +103,64 @@ export function AdminSidebar() {
             <SidebarMenu className="px-2 space-y-0.5">
               {mainMenuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      end={item.url === "/admin"}
-                      className="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] text-sidebar-foreground/70 hover:text-white hover:bg-sidebar-accent/80 transition-all duration-200"
-                      activeClassName="sidebar-active-indicator bg-sidebar-accent text-white font-semibold"
-                    >
-                      <item.icon className="h-[18px] w-[18px] shrink-0 group-hover:text-[hsl(187,85%,53%)] transition-colors" />
-                      {!collapsed && (
-                        <span className="flex-1 truncate">{item.title}</span>
+                  {item.subItems ? (
+                    <>
+                      <SidebarMenuButton asChild>
+                        <button
+                          onClick={() => setWebsiteOpen(!websiteOpen)}
+                          className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] transition-all duration-200 ${
+                            isWebsiteActive
+                              ? "sidebar-active-indicator bg-sidebar-accent text-white font-semibold"
+                              : "text-sidebar-foreground/70 hover:text-white hover:bg-sidebar-accent/80"
+                          }`}
+                        >
+                          <item.icon className="h-[18px] w-[18px] shrink-0 group-hover:text-[hsl(187,85%,53%)] transition-colors" />
+                          {!collapsed && (
+                            <span className="flex-1 truncate text-left">{item.title}</span>
+                          )}
+                          {!collapsed && (
+                            <ChevronDown className={`h-3.5 w-3.5 opacity-40 transition-transform duration-200 ${websiteOpen ? "rotate-180" : ""}`} />
+                          )}
+                        </button>
+                      </SidebarMenuButton>
+                      {/* Submenu */}
+                      {websiteOpen && !collapsed && (
+                        <div className="ml-4 mt-0.5 space-y-0.5 border-l border-sidebar-border/30 pl-3">
+                          {item.subItems.map((sub) => (
+                            <SidebarMenuItem key={sub.title}>
+                              <SidebarMenuButton asChild>
+                                <NavLink
+                                  to={sub.url}
+                                  className="group flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[12px] text-sidebar-foreground/60 hover:text-white hover:bg-sidebar-accent/60 transition-all duration-200"
+                                  activeClassName="text-white font-semibold bg-sidebar-accent/40"
+                                >
+                                  <sub.icon className="h-[15px] w-[15px] shrink-0" />
+                                  <span className="truncate">{sub.title}</span>
+                                </NavLink>
+                              </SidebarMenuButton>
+                            </SidebarMenuItem>
+                          ))}
+                        </div>
                       )}
-                      {!collapsed && item.hasSubmenu && (
-                        <ChevronDown className="h-3.5 w-3.5 opacity-40" />
-                      )}
-                    </NavLink>
-                  </SidebarMenuButton>
+                    </>
+                  ) : (
+                    <SidebarMenuButton asChild>
+                      <NavLink
+                        to={item.url}
+                        end={item.url === "/admin"}
+                        className="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] text-sidebar-foreground/70 hover:text-white hover:bg-sidebar-accent/80 transition-all duration-200"
+                        activeClassName="sidebar-active-indicator bg-sidebar-accent text-white font-semibold"
+                      >
+                        <item.icon className="h-[18px] w-[18px] shrink-0 group-hover:text-[hsl(187,85%,53%)] transition-colors" />
+                        {!collapsed && (
+                          <span className="flex-1 truncate">{item.title}</span>
+                        )}
+                        {!collapsed && item.hasSubmenu && (
+                          <ChevronDown className="h-3.5 w-3.5 opacity-40" />
+                        )}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  )}
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
