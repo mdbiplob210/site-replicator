@@ -73,6 +73,7 @@ export default function AdminWebsiteSettings() {
         </div>
 
         {/* Tab Content */}
+        {activeTab === "templates" && <TemplatesTab />}
         {activeTab === "general" && <GeneralTab />}
         {activeTab === "buttons" && <ButtonsTab />}
         {activeTab === "buy_domain" && <BuyDomainTab />}
