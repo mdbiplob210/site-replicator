@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Shield, Trash2, Users, UserPlus, Lock, Eye, Edit,
   Activity, Clock, AlertCircle, XCircle, Monitor, RefreshCw,
-  Search, ChevronDown
+  Search, ChevronDown, ShoppingCart, CheckCircle2, RotateCcw, Truck, BarChart3
 } from "lucide-react";
 
 interface UserProfile {
@@ -24,11 +24,13 @@ interface UserProfile {
 }
 
 type TabType = "users" | "tracking" | "activity";
+type TrackingSubTab = "live" | "performance";
 
 const AdminUsers = () => {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>("users");
+  const [trackingSubTab, setTrackingSubTab] = useState<TrackingSubTab>("live");
   const { toast } = useToast();
 
   const fetchUsers = async () => {
@@ -351,72 +353,143 @@ const AdminUsers = () => {
 
             {/* Sub tabs */}
             <div className="flex items-center justify-center gap-1">
-              <button className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium bg-card border border-border shadow-sm text-foreground">
+              <button
+                onClick={() => setTrackingSubTab("live")}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                  trackingSubTab === "live"
+                    ? "bg-card border border-border shadow-sm text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
                 <Activity className="h-4 w-4" />
                 Live Status
               </button>
-              <button className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground">
-                <Activity className="h-4 w-4" />
+              <button
+                onClick={() => setTrackingSubTab("performance")}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                  trackingSubTab === "performance"
+                    ? "bg-card border border-border shadow-sm text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <BarChart3 className="h-4 w-4" />
                 Order Performance
               </button>
             </div>
 
             {/* Live Status Table */}
-            <Card className="border-border/40">
-              <CardHeader>
-                <CardTitle className="text-lg font-bold">Live User Status</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>UID</TableHead>
-                      <TableHead>User</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Last Activity</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {users.map((user) => (
-                      <TableRow key={user.id}>
-                        <TableCell className="font-mono text-sm text-muted-foreground">
-                          {user.user_id.substring(0, 4).toUpperCase()}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-8 w-8">
-                              <AvatarFallback className="bg-secondary text-foreground text-xs font-bold">
-                                {(user.full_name || "U").charAt(0).toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="text-sm font-semibold text-foreground">{user.full_name || "Unknown"}</p>
-                              <p className="text-[11px] text-muted-foreground">@{(user.full_name || "user").toLowerCase().replace(/\s/g, "")}</p>
+            {trackingSubTab === "live" && (
+              <Card className="border-border/40">
+                <CardHeader>
+                  <CardTitle className="text-lg font-bold">Live User Status</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>UID</TableHead>
+                        <TableHead>User</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Last Activity</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {users.map((user) => (
+                        <TableRow key={user.id}>
+                          <TableCell className="font-mono text-sm text-muted-foreground">
+                            {user.user_id.substring(0, 4).toUpperCase()}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              <Avatar className="h-8 w-8">
+                                <AvatarFallback className="bg-secondary text-foreground text-xs font-bold">
+                                  {(user.full_name || "U").charAt(0).toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <p className="text-sm font-semibold text-foreground">{user.full_name || "Unknown"}</p>
+                                <p className="text-[11px] text-muted-foreground">@{(user.full_name || "user").toLowerCase().replace(/\s/g, "")}</p>
+                              </div>
                             </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="secondary" className="bg-emerald-50 text-emerald-600 border-emerald-200">
+                              <span className="h-2 w-2 rounded-full bg-emerald-500 mr-1.5" />
+                              Active
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+                          </TableCell>
+                          <TableCell>
+                            <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground">
+                              <Eye className="h-4 w-4" />
+                              View Details
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Order Performance Table */}
+            {trackingSubTab === "performance" && (
+              <Card className="border-border/40">
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <ShoppingCart className="h-5 w-5 text-muted-foreground" />
+                    <CardTitle className="text-lg font-bold">Order-Based Performance</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>UID</TableHead>
+                        <TableHead>User</TableHead>
+                        <TableHead>
+                          <div className="flex items-center gap-1">
+                            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                            Confirmed
                           </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="secondary" className="bg-emerald-50 text-emerald-600 border-emerald-200">
-                            <span className="h-2 w-2 rounded-full bg-emerald-500 mr-1.5" />
-                            Active
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          {new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
-                        </TableCell>
-                        <TableCell>
-                          <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground">
-                            <Eye className="h-4 w-4" />
-                            View Details
-                          </Button>
+                        </TableHead>
+                        <TableHead>
+                          <div className="flex items-center gap-1">
+                            <XCircle className="h-3.5 w-3.5 text-red-500" />
+                            Cancelled
+                          </div>
+                        </TableHead>
+                        <TableHead>
+                          <div className="flex items-center gap-1">
+                            <RotateCcw className="h-3.5 w-3.5 text-amber-500" />
+                            Returned
+                          </div>
+                        </TableHead>
+                        <TableHead>
+                          <div className="flex items-center gap-1">
+                            <Truck className="h-3.5 w-3.5 text-blue-500" />
+                            Delivered
+                          </div>
+                        </TableHead>
+                        <TableHead>Total Actions</TableHead>
+                        <TableHead>Accuracy</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell colSpan={8} className="text-center text-muted-foreground py-10">
+                          No order activity in selected period
                         </TableCell>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            )}
           </>
         )}
 
