@@ -13,6 +13,7 @@ import AdminRoles from "./pages/admin/AdminRoles";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminScreenshots from "./pages/admin/AdminScreenshots";
 import AdminOrders from "./pages/admin/AdminOrders";
+import AdminComingSoon from "./pages/admin/AdminComingSoon";
 import AdminPlaceholder from "./pages/admin/AdminPlaceholder";
 
 const queryClient = new QueryClient();
