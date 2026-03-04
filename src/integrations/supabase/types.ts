@@ -82,6 +82,60 @@ export type Database = {
           },
         ]
       }
+      employee_panels: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          max_orders: number
+          panel_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          max_orders?: number
+          panel_name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          max_orders?: number
+          panel_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      employee_permissions: {
+        Row: {
+          created_at: string
+          granted_by: string | null
+          id: string
+          permission: Database["public"]["Enums"]["employee_permission"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          granted_by?: string | null
+          id?: string
+          permission: Database["public"]["Enums"]["employee_permission"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          granted_by?: string | null
+          id?: string
+          permission?: Database["public"]["Enums"]["employee_permission"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       finance_records: {
         Row: {
           amount: number
@@ -111,6 +165,44 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      order_assignments: {
+        Row: {
+          assigned_at: string
+          assigned_by: string | null
+          assigned_to: string
+          id: string
+          notes: string | null
+          order_id: string
+          status: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by?: string | null
+          assigned_to: string
+          id?: string
+          notes?: string | null
+          order_id: string
+          status?: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string | null
+          assigned_to?: string
+          id?: string
+          notes?: string | null
+          order_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_assignments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       orders: {
         Row: {
@@ -314,6 +406,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      has_permission: {
+        Args: {
+          _permission: Database["public"]["Enums"]["employee_permission"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -324,6 +423,20 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      employee_permission:
+        | "view_orders"
+        | "edit_orders"
+        | "delete_orders"
+        | "change_order_status"
+        | "create_orders"
+        | "view_products"
+        | "edit_products"
+        | "view_finance"
+        | "edit_finance"
+        | "view_analytics"
+        | "view_reports"
+        | "manage_users"
+        | "manage_settings"
       order_status:
         | "processing"
         | "confirmed"
@@ -461,6 +574,21 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
+      employee_permission: [
+        "view_orders",
+        "edit_orders",
+        "delete_orders",
+        "change_order_status",
+        "create_orders",
+        "view_products",
+        "edit_products",
+        "view_finance",
+        "edit_finance",
+        "view_analytics",
+        "view_reports",
+        "manage_users",
+        "manage_settings",
+      ],
       order_status: [
         "processing",
         "confirmed",
