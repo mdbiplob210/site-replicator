@@ -24,6 +24,7 @@ import AdminPlanning from "./pages/admin/AdminPlanning";
 import AdminTasks from "./pages/admin/AdminTasks";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import AdminMetaAds from "./pages/admin/AdminMetaAds";
+import AdminWebsiteSettings from "./pages/admin/AdminWebsiteSettings";
 
 const queryClient = new QueryClient();
 
