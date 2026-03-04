@@ -84,6 +84,97 @@ export default function AdminWebsiteSettings() {
   );
 }
 
+/* ===================== Templates Tab ===================== */
+function TemplatesTab() {
+  const { data: settings } = useSiteSettings();
+  const updateSetting = useUpdateSiteSetting();
+  const activeTemplate = settings?.active_template || "1";
+  const activeCheckout = settings?.active_checkout || "1";
+
+  const templates = [
+    { id: "1", name: "Classic", desc: "ক্লিন হোয়াইট, ক্লাসিক গ্রিড", color: "from-blue-500 to-blue-600" },
+    { id: "2", name: "Dark Mode", desc: "ডার্ক থিম, গোল্ড অ্যাকসেন্ট", color: "from-gray-800 to-gray-900" },
+    { id: "3", name: "Minimal", desc: "আল্ট্রা মিনিমাল, সেরিফ", color: "from-stone-400 to-stone-500" },
+    { id: "4", name: "Colorful", desc: "ভাইব্র‍্যান্ট গ্র‍্যাডিয়েন্ট", color: "from-rose-500 to-violet-500" },
+    { id: "5", name: "Bold", desc: "বোল্ড টাইপো, ব্রুটালিস্ট", color: "from-zinc-800 to-lime-500" },
+  ];
+
+  const checkouts = [
+    { id: "1", name: "Single Page", desc: "সিম্পল সিঙ্গেল পেজ ফর্ম" },
+    { id: "2", name: "Multi-Step", desc: "৩ স্টেপ উইজার্ড (ডার্ক)" },
+    { id: "3", name: "Side by Side", desc: "ফর্ম + সামারি পাশাপাশি" },
+    { id: "4", name: "Colorful Card", desc: "কালারফুল কার্ড স্টাইল" },
+    { id: "5", name: "Bold Brutalist", desc: "বোল্ড ব্রুটালিস্ট" },
+  ];
+
+  return (
+    <div className="space-y-8">
+      <div>
+        <h2 className="text-lg font-bold text-foreground mb-1">Store Template</h2>
+        <p className="text-sm text-muted-foreground mb-4">যে টেমপ্লেটটি সিলেক্ট করবেন, কাস্টমাররা সেটি দেখবে</p>
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+          {templates.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => updateSetting.mutate({ key: "active_template", value: t.id })}
+              className={`relative rounded-2xl overflow-hidden border-2 transition-all text-left ${
+                activeTemplate === t.id ? "border-primary ring-2 ring-primary/20 shadow-lg" : "border-border hover:border-primary/50"
+              }`}
+            >
+              <div className={`h-28 bg-gradient-to-br ${t.color} flex items-end p-3`}>
+                <div className="flex gap-1">
+                  {[1,2,3].map(i => <div key={i} className="w-6 h-8 bg-white/20 rounded" />)}
+                </div>
+              </div>
+              <div className="p-3">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-sm text-foreground">{t.name}</span>
+                  {activeTemplate === t.id && <CheckCircle2 className="h-5 w-5 text-primary" />}
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5">{t.desc}</p>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <h2 className="text-lg font-bold text-foreground mb-1">Checkout Design</h2>
+        <p className="text-sm text-muted-foreground mb-4">চেকআউট পেজের ডিজাইন সিলেক্ট করুন</p>
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+          {checkouts.map((c) => (
+            <button
+              key={c.id}
+              onClick={() => updateSetting.mutate({ key: "active_checkout", value: c.id })}
+              className={`p-4 rounded-2xl border-2 text-left transition-all ${
+                activeCheckout === c.id ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:border-primary/50"
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-bold text-sm text-foreground">{c.name}</span>
+                {activeCheckout === c.id && <CheckCircle2 className="h-5 w-5 text-primary" />}
+              </div>
+              <p className="text-xs text-muted-foreground">{c.desc}</p>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="bg-card rounded-2xl border border-border p-6 flex items-center justify-between">
+        <div>
+          <h3 className="font-bold text-foreground">লাইভ প্রিভিউ</h3>
+          <p className="text-sm text-muted-foreground">সিলেক্ট করা টেমপ্লেট দেখুন</p>
+        </div>
+        <a href="/store" target="_blank" rel="noreferrer">
+          <Button variant="outline" className="gap-2">
+            <Globe className="h-4 w-4" /> Store দেখুন
+          </Button>
+        </a>
+      </div>
+    </div>
+  );
+}
+
 /* ===================== General Tab ===================== */
 function GeneralTab() {
   return (
