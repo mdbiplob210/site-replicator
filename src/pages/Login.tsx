@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,6 +8,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -18,6 +19,14 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, isAdmin, loading: authLoading } = useAuth();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate(isAdmin ? "/admin" : "/", { replace: true });
+    }
+  }, [user, isAdmin, authLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,10 +45,17 @@ const Login = () => {
         if (error) throw error;
         toast({ title: "সফল!", description: "অ্যাকাউন্ট তৈরি হয়েছে। ইমেইল ভেরিফাই করুন।" });
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast({ title: "সফল!", description: "সফলভাবে লগইন হয়েছে।" });
-        navigate("/");
+        // Check if user is admin and redirect accordingly
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", data.user.id)
+          .eq("role", "admin")
+          .maybeSingle();
+        navigate(roleData ? "/admin" : "/", { replace: true });
       }
     } catch (error: any) {
       toast({ title: "ত্রুটি", description: error.message, variant: "destructive" });
