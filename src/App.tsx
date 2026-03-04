@@ -25,6 +25,10 @@ import AdminTasks from "./pages/admin/AdminTasks";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import AdminMetaAds from "./pages/admin/AdminMetaAds";
 import AdminWebsiteSettings from "./pages/admin/AdminWebsiteSettings";
+import StorePage from "./pages/store/StorePage";
+import ProductDetail from "./pages/store/ProductDetail";
+import CheckoutPage from "./pages/store/CheckoutPage";
+import OrderSuccess from "./pages/store/OrderSuccess";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +45,10 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          <Route path="/store" element={<StorePage />} />
+          <Route path="/store/product/:id" element={<ProductDetail />} />
+          <Route path="/store/checkout" element={<CheckoutPage />} />
+          <Route path="/store/order-success" element={<OrderSuccess />} />
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/admin" element={<ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>} />
