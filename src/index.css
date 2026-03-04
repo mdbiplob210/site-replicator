@@ -7,97 +7,99 @@
 
 @layer base {
   :root {
-    --background: 220 14% 97%;
-    --foreground: 224 71% 10%;
+    --background: 216 20% 97%;
+    --foreground: 222 47% 11%;
 
     --card: 0 0% 100%;
-    --card-foreground: 224 71% 10%;
+    --card-foreground: 222 47% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 224 71% 10%;
+    --popover-foreground: 222 47% 11%;
 
-    --primary: 25 95% 53%;
+    --primary: 210 100% 50%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 14% 94%;
-    --secondary-foreground: 224 71% 10%;
+    --secondary: 214 20% 93%;
+    --secondary-foreground: 222 47% 11%;
 
-    --muted: 220 14% 94%;
-    --muted-foreground: 220 9% 46%;
+    --muted: 214 20% 93%;
+    --muted-foreground: 215 16% 47%;
 
-    --accent: 25 95% 95%;
-    --accent-foreground: 25 95% 40%;
+    --accent: 190 90% 94%;
+    --accent-foreground: 199 89% 35%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 25 95% 53%;
+    --border: 214 20% 90%;
+    --input: 214 20% 90%;
+    --ring: 210 100% 50%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 224 71% 10%;
-    --sidebar-primary: 25 95% 53%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 25 95% 96%;
-    --sidebar-accent-foreground: 25 95% 35%;
-    --sidebar-border: 220 13% 93%;
-    --sidebar-ring: 25 95% 53%;
+    --sidebar-background: 222 47% 11%;
+    --sidebar-foreground: 214 20% 80%;
+    --sidebar-primary: 187 85% 53%;
+    --sidebar-primary-foreground: 222 47% 11%;
+    --sidebar-accent: 222 40% 18%;
+    --sidebar-accent-foreground: 187 85% 70%;
+    --sidebar-border: 222 40% 18%;
+    --sidebar-ring: 187 85% 53%;
 
-    --success: 142 71% 45%;
+    --success: 160 84% 39%;
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
-    --info: 217 91% 60%;
+    --info: 199 89% 48%;
     --info-foreground: 0 0% 100%;
+    --cyan: 187 85% 53%;
   }
 
   .dark {
-    --background: 224 71% 4%;
+    --background: 222 47% 6%;
     --foreground: 0 0% 98%;
 
-    --card: 224 71% 7%;
+    --card: 222 47% 9%;
     --card-foreground: 0 0% 98%;
 
-    --popover: 224 71% 7%;
+    --popover: 222 47% 9%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 25 95% 58%;
+    --primary: 210 100% 55%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 14% 14%;
+    --secondary: 222 30% 15%;
     --secondary-foreground: 0 0% 98%;
 
-    --muted: 220 14% 14%;
-    --muted-foreground: 220 9% 60%;
+    --muted: 222 30% 15%;
+    --muted-foreground: 215 16% 57%;
 
-    --accent: 25 60% 18%;
-    --accent-foreground: 25 95% 80%;
+    --accent: 190 50% 15%;
+    --accent-foreground: 187 85% 70%;
 
     --destructive: 0 62% 30%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 220 14% 16%;
-    --input: 220 14% 16%;
-    --ring: 25 95% 58%;
+    --border: 222 30% 18%;
+    --input: 222 30% 18%;
+    --ring: 210 100% 55%;
 
-    --sidebar-background: 224 71% 5%;
-    --sidebar-foreground: 220 14% 90%;
-    --sidebar-primary: 25 95% 58%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 25 60% 15%;
-    --sidebar-accent-foreground: 25 95% 80%;
-    --sidebar-border: 220 14% 14%;
-    --sidebar-ring: 25 95% 58%;
+    --sidebar-background: 222 47% 7%;
+    --sidebar-foreground: 214 20% 75%;
+    --sidebar-primary: 187 85% 53%;
+    --sidebar-primary-foreground: 222 47% 7%;
+    --sidebar-accent: 222 40% 14%;
+    --sidebar-accent-foreground: 187 85% 70%;
+    --sidebar-border: 222 40% 14%;
+    --sidebar-ring: 187 85% 53%;
 
-    --success: 142 71% 45%;
+    --success: 160 84% 39%;
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
-    --info: 217 91% 60%;
+    --info: 199 89% 48%;
     --info-foreground: 0 0% 100%;
+    --cyan: 187 85% 53%;
   }
 }
 
@@ -134,19 +136,20 @@
     @apply transition-all duration-300 ease-out;
   }
   .card-hover:hover {
-    @apply shadow-lg -translate-y-0.5;
+    @apply shadow-xl -translate-y-1;
+    border-color: hsl(var(--primary) / 0.2);
   }
 
   /* Glass morphism */
   .glass {
-    backdrop-filter: blur(12px) saturate(180%);
-    -webkit-backdrop-filter: blur(12px) saturate(180%);
-    background-color: hsl(var(--card) / 0.85);
+    backdrop-filter: blur(16px) saturate(200%);
+    -webkit-backdrop-filter: blur(16px) saturate(200%);
+    background-color: hsl(var(--card) / 0.8);
   }
 
   /* Gradient text */
   .gradient-text {
-    background: linear-gradient(135deg, hsl(25 95% 53%), hsl(340 82% 52%));
+    background: linear-gradient(135deg, hsl(210 100% 50%), hsl(187 85% 53%));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -157,8 +160,17 @@
     animation: pulse-dot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
   @keyframes pulse-dot {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.85); }
+  }
+
+  /* Sidebar gradient background */
+  .sidebar-gradient {
+    background: linear-gradient(180deg, 
+      hsl(222 47% 11%) 0%, 
+      hsl(222 50% 8%) 50%,
+      hsl(225 55% 6%) 100%
+    );
   }
 
   /* Sidebar active indicator */
@@ -171,9 +183,29 @@
     left: 0;
     top: 50%;
     transform: translateY(-50%);
-    height: 60%;
+    height: 65%;
     width: 3px;
-    border-radius: 0 4px 4px 0;
-    background: hsl(var(--primary));
+    border-radius: 0 6px 6px 0;
+    background: linear-gradient(180deg, hsl(187 85% 53%), hsl(210 100% 50%));
+    box-shadow: 0 0 8px hsl(187 85% 53% / 0.4);
+  }
+
+  /* Glow effect */
+  .glow-cyan {
+    box-shadow: 0 0 15px hsl(187 85% 53% / 0.15), 0 0 30px hsl(187 85% 53% / 0.05);
+  }
+
+  /* Animated gradient border */
+  .gradient-border {
+    position: relative;
+  }
+  .gradient-border::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, hsl(187 85% 53% / 0.3), transparent);
   }
 }
