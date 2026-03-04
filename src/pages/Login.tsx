@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
