@@ -24,11 +24,13 @@ interface UserProfile {
 }
 
 type TabType = "users" | "tracking" | "activity";
+type TrackingSubTab = "live" | "performance";
 
 const AdminUsers = () => {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>("users");
+  const [trackingSubTab, setTrackingSubTab] = useState<TrackingSubTab>("live");
   const { toast } = useToast();
 
   const fetchUsers = async () => {
