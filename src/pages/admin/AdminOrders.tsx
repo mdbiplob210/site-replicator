@@ -11,24 +11,28 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Slider } from "@/components/ui/slider";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Plus, Search, Calendar, AlertCircle, ShieldAlert, Truck, Key,
   Settings, Download, Printer, RefreshCw, ChevronDown, Wifi, Ban,
-  Trash2, Copy, X, ShoppingCart
+  Trash2, Copy, X, ShoppingCart, ArrowLeft, Clock, CheckCircle2,
+  GitMerge, PauseCircle, XCircle, Trash, Smartphone, BarChart3,
+  MessageSquare, Filter
 } from "lucide-react";
 
 const statusTabs = [
-  { label: "All Orders", count: 0, color: "bg-primary" },
-  { label: "New Orders", count: 0, color: "bg-green-500" },
-  { label: "Confirmed", count: 0, color: "bg-green-600" },
-  { label: "In Courier", count: 0, color: "bg-purple-500" },
-  { label: "Delivered", count: 0, color: "bg-green-500" },
-  { label: "Partial Delivery", count: 0, color: "bg-orange-400" },
-  { label: "Cancelled", count: 0, color: "bg-red-500" },
-  { label: "Hold", count: 0, color: "bg-yellow-500" },
-  { label: "Ship Later", count: 0, color: "bg-teal-500" },
-  { label: "Incomplete", count: 0, color: "bg-orange-500" },
-  { label: "Return", count: 0, color: "bg-red-400" },
+  { label: "All Orders", count: 0, color: "bg-primary", icon: ShoppingCart },
+  { label: "New Orders", count: 0, color: "bg-green-500", icon: CheckCircle2 },
+  { label: "Confirmed", count: 0, color: "bg-green-600", icon: CheckCircle2 },
+  { label: "In Courier", count: 0, color: "bg-purple-500", icon: Truck },
+  { label: "Delivered", count: 0, color: "bg-green-500", icon: CheckCircle2 },
+  { label: "Partial Delivery", count: 0, color: "bg-orange-400", icon: AlertCircle },
+  { label: "Cancelled", count: 0, color: "bg-red-500", icon: XCircle },
+  { label: "Hold", count: 0, color: "bg-yellow-500", icon: PauseCircle },
+  { label: "Ship Later", count: 0, color: "bg-teal-500", icon: Clock },
+  { label: "Incomplete", count: 0, color: "bg-orange-500", icon: AlertCircle },
+  { label: "Return", count: 0, color: "bg-red-400", icon: ArrowLeft },
 ];
 
 const orderStatusSettings = [
@@ -54,8 +58,249 @@ const courierProviders = [
   { name: "RedX", description: "RedX Logistics" },
 ];
 
+const dateFilterOptions = [
+  "Today", "Yesterday", "Last 7 Days", "Last 14 Days", "Last 30 Days", "Last Year", "Custom Range"
+];
+
+const incompleteFilters = ["Today", "Yesterday", "Last 7 Days", "Monthly", "Yearly", "Custom"];
+const incompleteTabs = [
+  { label: "Processing", icon: Clock },
+  { label: "Confirmed", icon: CheckCircle2 },
+  { label: "Converted", icon: GitMerge },
+  { label: "Hold", icon: PauseCircle },
+  { label: "Cancelled", icon: XCircle },
+  { label: "Deleted", icon: Trash },
+];
+
+type View = "orders" | "incomplete" | "fakeOrder";
+
 const AdminOrders = () => {
   const [activeTab, setActiveTab] = useState("All Orders");
+  const [currentView, setCurrentView] = useState<View>("orders");
+  const [incompleteFilter, setIncompleteFilter] = useState("Today");
+  const [activeIncompleteTab, setActiveIncompleteTab] = useState("Processing");
+  const [deliveryRatio, setDeliveryRatio] = useState([0]);
+
+  if (currentView === "incomplete") {
+    return (
+      <AdminLayout>
+        <div className="space-y-6">
+          <div className="flex items-center gap-3">
+            <button onClick={() => setCurrentView("orders")} className="p-2 rounded-lg hover:bg-secondary/60">
+              <ArrowLeft className="h-5 w-5 text-foreground" />
+            </button>
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-full bg-orange-100">
+                <Clock className="h-5 w-5 text-orange-500" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">Incomplete Orders</h1>
+                <p className="text-sm text-muted-foreground">Abandoned checkouts awaiting recovery</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Time Filters */}
+          <div className="flex items-center gap-1 bg-background rounded-lg border border-border/60 p-1 w-fit">
+            {incompleteFilters.map((f) => (
+              <button
+                key={f}
+                onClick={() => setIncompleteFilter(f)}
+                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+                  incompleteFilter === f
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
+
+          {/* Status Tabs */}
+          <div className="flex items-center gap-6 border-b border-border/40 pb-0">
+            {incompleteTabs.map((tab) => (
+              <button
+                key={tab.label}
+                onClick={() => setActiveIncompleteTab(tab.label)}
+                className={`flex items-center gap-2 pb-3 text-sm font-medium border-b-2 transition-all ${
+                  activeIncompleteTab === tab.label
+                    ? "border-primary text-foreground"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <tab.icon className="h-4 w-4" />
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Empty State */}
+          <Card className="p-16 text-center border-border/40">
+            <ShoppingCart className="h-12 w-12 text-muted-foreground/20 mx-auto mb-4" />
+            <p className="text-lg font-medium text-muted-foreground">No incomplete orders</p>
+            <p className="text-sm text-muted-foreground/70 mt-1">Orders will appear here when customers abandon checkout</p>
+          </Card>
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  if (currentView === "fakeOrder") {
+    return (
+      <AdminLayout>
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <button onClick={() => setCurrentView("orders")} className="p-2 rounded-lg hover:bg-secondary/60">
+                <ArrowLeft className="h-5 w-5 text-foreground" />
+              </button>
+              <div className="p-2 rounded-full bg-red-100">
+                <ShieldAlert className="h-5 w-5 text-red-500" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">Fake Order Detection</h1>
+                <p className="text-sm text-muted-foreground">Prevent fraud and protect your business</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Protection</span>
+              <Switch />
+              <span className="text-sm font-semibold text-muted-foreground">Inactive</span>
+            </div>
+          </div>
+
+          <Tabs defaultValue="settings">
+            <TabsList className="mx-auto w-fit">
+              <TabsTrigger value="settings" className="gap-1.5"><Settings className="h-3.5 w-3.5" /> Settings</TabsTrigger>
+              <TabsTrigger value="ip" className="gap-1.5"><Wifi className="h-3.5 w-3.5" /> IP Address</TabsTrigger>
+              <TabsTrigger value="blocked" className="gap-1.5"><Ban className="h-3.5 w-3.5" /> Blocked Orders</TabsTrigger>
+            </TabsList>
+
+            {/* Settings Tab */}
+            <TabsContent value="settings" className="mt-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Repeat Order Block */}
+                <Card className="p-6 border-border/40">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="p-1.5 rounded-lg bg-red-50">
+                      <Clock className="h-4 w-4 text-red-500" />
+                    </div>
+                    <h3 className="font-bold text-foreground">Repeat Order Block</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4">Block repeat orders from the same phone number and IP within a time window</p>
+                  <div className="space-y-2">
+                    <Label className="font-medium">Block Duration</Label>
+                    <Select defaultValue="off">
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="off">Off</SelectItem>
+                        <SelectItem value="1h">1 Hour</SelectItem>
+                        <SelectItem value="6h">6 Hours</SelectItem>
+                        <SelectItem value="12h">12 Hours</SelectItem>
+                        <SelectItem value="24h">24 Hours</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">If set, customers can't place another order from the same phone/IP within this time</p>
+                  </div>
+                </Card>
+
+                {/* Device Block */}
+                <Card className="p-6 border-border/40">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="p-1.5 rounded-lg bg-purple-50">
+                      <Smartphone className="h-4 w-4 text-purple-500" />
+                    </div>
+                    <h3 className="font-bold text-foreground">Device Block (VPN Protection)</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4">Block repeat orders from the same device even if they change IP using VPN</p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label className="font-medium">Enable Device Fingerprinting</Label>
+                      <p className="text-xs text-muted-foreground mt-0.5">Detects the same browser/device using screen size, language, timezone and other signals</p>
+                    </div>
+                    <Switch />
+                  </div>
+                </Card>
+
+                {/* Delivery Ratio Check */}
+                <Card className="p-6 border-border/40">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="p-1.5 rounded-lg bg-blue-50">
+                      <BarChart3 className="h-4 w-4 text-blue-500" />
+                    </div>
+                    <h3 className="font-bold text-foreground">Delivery Ratio Check</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4">Automatically block orders from customers with low delivery success ratio</p>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label className="font-medium">Minimum Delivery Ratio</Label>
+                      <span className="text-sm font-bold text-primary">{deliveryRatio[0]}%</span>
+                    </div>
+                    <Slider value={deliveryRatio} onValueChange={setDeliveryRatio} max={100} step={1} />
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>0% (Disabled)</span>
+                      <span>50%</span>
+                      <span>100%</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Orders from customers with delivery ratio below this threshold will be blocked automatically</p>
+                  </div>
+                </Card>
+
+                {/* Block Popup Message */}
+                <Card className="p-6 border-border/40">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="p-1.5 rounded-lg bg-orange-50">
+                      <MessageSquare className="h-4 w-4 text-orange-500" />
+                    </div>
+                    <h3 className="font-bold text-foreground">Block Popup Message</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4">This message will be shown to blocked customers with a WhatsApp contact button</p>
+                  <Textarea
+                    placeholder="Enter the message to show to blocked customers..."
+                    rows={4}
+                    className="resize-none"
+                  />
+                </Card>
+              </div>
+            </TabsContent>
+
+            {/* IP Address Tab */}
+            <TabsContent value="ip" className="mt-6">
+              <Card className="p-6 border-border/40">
+                <div className="flex items-center gap-2 mb-1">
+                  <Wifi className="h-4 w-4 text-muted-foreground" />
+                  <h3 className="font-semibold">Suspicious IP Addresses</h3>
+                  <Badge variant="secondary">0 flagged</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground mb-6">IP addresses with 3+ orders. Click to see details.</p>
+                <div className="text-center py-12">
+                  <Wifi className="h-12 w-12 text-muted-foreground/15 mx-auto mb-3" />
+                  <p className="text-sm text-muted-foreground">No suspicious IP addresses detected</p>
+                </div>
+              </Card>
+            </TabsContent>
+
+            {/* Blocked Orders Tab */}
+            <TabsContent value="blocked" className="mt-6">
+              <Card className="p-6 border-border/40">
+                <div className="flex items-center gap-2 mb-1">
+                  <Ban className="h-4 w-4 text-muted-foreground" />
+                  <h3 className="font-semibold">Blocked Orders</h3>
+                  <Badge variant="secondary">0</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground mb-6">Orders that were automatically blocked by the fraud detection system</p>
+                <div className="text-center py-12">
+                  <Ban className="h-12 w-12 text-muted-foreground/15 mx-auto mb-3" />
+                  <p className="text-sm text-muted-foreground">No blocked orders yet</p>
+                </div>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>
@@ -67,13 +312,30 @@ const AdminOrders = () => {
             <p className="text-muted-foreground text-sm">Manage and track all orders across channels</p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            <Button variant="outline" size="sm" className="gap-2">
-              <Calendar className="h-4 w-4" /> Date Filter <ChevronDown className="h-3 w-3" />
-            </Button>
-            <Button variant="outline" size="sm" className="gap-2">
+            {/* Date Filter with Popover */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Calendar className="h-4 w-4" /> Date Filter <ChevronDown className="h-3 w-3" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="start" className="w-48 p-2">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground px-2 py-1.5">Quick Select</p>
+                {dateFilterOptions.map((opt) => (
+                  <button
+                    key={opt}
+                    className="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-secondary/60 transition-colors text-foreground"
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </PopoverContent>
+            </Popover>
+
+            <Button variant="outline" size="sm" className="gap-2" onClick={() => setCurrentView("incomplete")}>
               <AlertCircle className="h-4 w-4" /> Incomplete
             </Button>
-            <Button variant="outline" size="sm" className="gap-2">
+            <Button variant="outline" size="sm" className="gap-2" onClick={() => setCurrentView("fakeOrder")}>
               <ShieldAlert className="h-4 w-4" /> Fake Order
             </Button>
 
@@ -111,6 +373,9 @@ const AdminOrders = () => {
                         </div>
                       ))}
                     </div>
+                  </div>
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                    <p className="text-xs text-amber-800">💡 একসাথে একাধিক কুরিয়ার কানেক্ট রাখুন। যখন দেটা দরকার অন/অফ করুন। ডেলিভারি ট্র্যাক করতে একটির পরিবর্তি শেষ হলে অটোমেটিক পরবর্তী কুরিয়ারের API ব্যবহার হবে।</p>
                   </div>
                 </div>
               </DialogContent>
@@ -287,8 +552,8 @@ const AdminOrders = () => {
           </div>
         </div>
 
-        {/* Status Tabs */}
-        <div className="flex gap-2 overflow-x-auto pb-2">
+        {/* Status Tabs - scrollable horizontal */}
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
           {statusTabs.map((tab) => (
             <button
               key={tab.label}
@@ -299,105 +564,53 @@ const AdminOrders = () => {
                   : "bg-secondary/60 text-muted-foreground hover:bg-secondary"
               }`}
             >
+              <tab.icon className="h-3.5 w-3.5" />
               {tab.label}
               <span className={`text-xs ${activeTab === tab.label ? "text-white/80" : ""}`}>{tab.count}</span>
             </button>
           ))}
         </div>
 
-        {/* Search & Filters */}
-        <div className="flex items-center gap-3 flex-wrap">
+        {/* Search & Filters Bar */}
+        <Card className="p-3 border-border/40 flex items-center gap-3 flex-wrap">
           <div className="relative flex-1 min-w-[250px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Search order, phone, name..." className="pl-10" />
+            <Input placeholder="Search order, phone, name..." className="pl-10 border-0 bg-transparent shadow-none focus-visible:ring-0" />
           </div>
-          <Select>
-            <SelectTrigger className="w-[140px]"><SelectValue placeholder="All Sources" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Sources</SelectItem>
-              <SelectItem value="website">Website</SelectItem>
-              <SelectItem value="facebook">Facebook</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select>
-            <SelectTrigger className="w-[140px]"><SelectValue placeholder="All Payments" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Payments</SelectItem>
-              <SelectItem value="paid">Paid</SelectItem>
-              <SelectItem value="unpaid">Unpaid</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button variant="outline" size="icon"><RefreshCw className="h-4 w-4" /></Button>
-          <Button variant="outline" size="sm" className="gap-1"><Download className="h-4 w-4" /> Export</Button>
-          <Button variant="outline" size="sm" className="gap-1"><Printer className="h-4 w-4" /> Print</Button>
-        </div>
-
-        {/* Empty State */}
-        <Card className="p-12 text-center border-border/40">
-          <ShoppingCart className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-          <p className="text-lg font-medium text-muted-foreground">No orders found</p>
-          <p className="text-sm text-muted-foreground/70 mt-1">Create your first order to get started</p>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" className="gap-1.5 rounded-lg">
+              <Filter className="h-3.5 w-3.5" />
+              <span className="h-2 w-2 rounded-full bg-blue-500" />
+              New Orders
+              <ChevronDown className="h-3 w-3" />
+            </Button>
+            <Select>
+              <SelectTrigger className="w-[130px] h-9"><SelectValue placeholder="All Sources" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Sources</SelectItem>
+                <SelectItem value="website">Website</SelectItem>
+                <SelectItem value="facebook">Facebook</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select>
+              <SelectTrigger className="w-[130px] h-9"><SelectValue placeholder="All Payments" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Payments</SelectItem>
+                <SelectItem value="paid">Paid</SelectItem>
+                <SelectItem value="unpaid">Unpaid</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button variant="outline" size="icon" className="h-9 w-9"><RefreshCw className="h-4 w-4" /></Button>
+            <Button variant="outline" size="sm" className="gap-1.5 h-9"><Download className="h-4 w-4" /> Export</Button>
+            <Button variant="outline" size="sm" className="gap-1.5 h-9"><Printer className="h-4 w-4" /> Print</Button>
+          </div>
         </Card>
 
-        {/* Fake Order Detection - as a separate section */}
-        <Card className="p-6 border-border/40">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-full bg-red-100">
-                <ShieldAlert className="h-5 w-5 text-red-500" />
-              </div>
-              <div>
-                <h2 className="text-lg font-bold text-foreground">Fake Order Detection</h2>
-                <p className="text-sm text-muted-foreground">Prevent fraud and protect your business</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Protection</span>
-              <Switch />
-              <span className="text-sm font-medium text-muted-foreground">Inactive</span>
-            </div>
-          </div>
-          
-          <Tabs defaultValue="ip">
-            <TabsList>
-              <TabsTrigger value="settings" className="gap-1"><Settings className="h-3.5 w-3.5" /> Settings</TabsTrigger>
-              <TabsTrigger value="ip" className="gap-1"><Wifi className="h-3.5 w-3.5" /> IP Address</TabsTrigger>
-              <TabsTrigger value="blocked" className="gap-1"><Ban className="h-3.5 w-3.5" /> Blocked Orders</TabsTrigger>
-            </TabsList>
-            <TabsContent value="ip" className="mt-4">
-              <Card className="p-4 border-border/40">
-                <div className="flex items-center gap-2 mb-1">
-                  <Wifi className="h-4 w-4 text-muted-foreground" />
-                  <h3 className="font-semibold">Suspicious IP Addresses</h3>
-                  <Badge variant="secondary">0 flagged</Badge>
-                </div>
-                <p className="text-sm text-muted-foreground mb-6">IP addresses with 3+ orders. Click to see details.</p>
-                <div className="text-center py-8">
-                  <Wifi className="h-10 w-10 text-muted-foreground/20 mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground">No suspicious IP addresses detected</p>
-                </div>
-              </Card>
-            </TabsContent>
-            <TabsContent value="blocked" className="mt-4">
-              <Card className="p-4 border-border/40">
-                <div className="flex items-center gap-2 mb-1">
-                  <Ban className="h-4 w-4 text-muted-foreground" />
-                  <h3 className="font-semibold">Blocked Orders</h3>
-                  <Badge variant="secondary">0</Badge>
-                </div>
-                <p className="text-sm text-muted-foreground mb-6">Orders that were automatically blocked by the fraud detection system</p>
-                <div className="text-center py-8">
-                  <Ban className="h-10 w-10 text-muted-foreground/20 mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground">No blocked orders yet</p>
-                </div>
-              </Card>
-            </TabsContent>
-            <TabsContent value="settings" className="mt-4">
-              <Card className="p-4 border-border/40">
-                <p className="text-sm text-muted-foreground text-center py-8">Configure fraud detection settings here</p>
-              </Card>
-            </TabsContent>
-          </Tabs>
+        {/* Empty State */}
+        <Card className="p-16 text-center border-border/40">
+          <ShoppingCart className="h-14 w-14 text-muted-foreground/20 mx-auto mb-4" />
+          <p className="text-lg font-semibold text-muted-foreground">No orders found</p>
+          <p className="text-sm text-muted-foreground/70 mt-1">Try adjusting your filters or create a new order</p>
         </Card>
       </div>
     </AdminLayout>
