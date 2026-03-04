@@ -21,6 +21,7 @@ import AdminPlaceholder from "./pages/admin/AdminPlaceholder";
 import AdminReports from "./pages/admin/AdminReports";
 import AdminFinance from "./pages/admin/AdminFinance";
 import AdminPlanning from "./pages/admin/AdminPlanning";
+import AdminTasks from "./pages/admin/AdminTasks";
 
 const queryClient = new QueryClient();
 
@@ -50,7 +51,7 @@ const App = () => (
           <Route path="/admin/reports" element={<ProtectedAdminRoute><AdminReports /></ProtectedAdminRoute>} />
           <Route path="/admin/finance" element={<ProtectedAdminRoute><AdminFinance /></ProtectedAdminRoute>} />
           <Route path="/admin/planning" element={<ProtectedAdminRoute><AdminPlanning /></ProtectedAdminRoute>} />
-          <Route path="/admin/tasks" element={P("Tasks", "Task management")} />
+          <Route path="/admin/tasks" element={<ProtectedAdminRoute><AdminTasks /></ProtectedAdminRoute>} />
           <Route path="/admin/analytics" element={P("Analytics", "Business analytics and insights")} />
           <Route path="/admin/meta-ads" element={P("Meta Ads", "Facebook & Instagram advertising")} />
           <Route path="/admin/automation" element={<ProtectedAdminRoute><AdminAutomation /></ProtectedAdminRoute>} />
