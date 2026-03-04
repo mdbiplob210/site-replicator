@@ -3,11 +3,13 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 import {
   FileText, BarChart3, PlusCircle, History, ShoppingCart,
   Megaphone, Wallet, TrendingUp, Target, DollarSign,
-  RotateCcw, Package, Calendar, Save, FileCheck
+  RotateCcw, Package, Calendar, Save, FileCheck, Loader2
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+import { startOfDay, endOfDay, subDays, startOfWeek, startOfMonth, endOfMonth, subMonths, format } from "date-fns";
 
 type Tab = "auto" | "manual" | "history";
 type Period = "today" | "yesterday" | "weekly" | "monthly" | "custom";
@@ -20,20 +22,77 @@ interface Product {
   additional_cost: number;
 }
 
+function getDateRange(period: Period) {
+  const now = new Date();
+  switch (period) {
+    case "yesterday": {
+      const y = subDays(now, 1);
+      return { from: startOfDay(y).toISOString(), to: endOfDay(y).toISOString(), fromDate: format(y, "yyyy-MM-dd"), toDate: format(y, "yyyy-MM-dd") };
+    }
+    case "weekly":
+      return { from: startOfWeek(now, { weekStartsOn: 6 }).toISOString(), to: endOfDay(now).toISOString(), fromDate: format(startOfWeek(now, { weekStartsOn: 6 }), "yyyy-MM-dd"), toDate: format(now, "yyyy-MM-dd") };
+    case "monthly":
+      return { from: startOfMonth(now).toISOString(), to: endOfDay(now).toISOString(), fromDate: format(startOfMonth(now), "yyyy-MM-dd"), toDate: format(now, "yyyy-MM-dd") };
+    default:
+      return { from: startOfDay(now).toISOString(), to: endOfDay(now).toISOString(), fromDate: format(now, "yyyy-MM-dd"), toDate: format(now, "yyyy-MM-dd") };
+  }
+}
+
 export default function AdminReports() {
   const [tab, setTab] = useState<Tab>("auto");
   const [period, setPeriod] = useState<Period>("today");
 
   // Manual report state
   const [adsSpendUsd, setAdsSpendUsd] = useState("0");
-  const [dollarRate, setDollarRate] = useState("120");
+  const [dollarRate, setDollarRate] = useState("121");
   const [returnPercent, setReturnPercent] = useState("0");
   const [costPerReturn, setCostPerReturn] = useState("0");
   const [products, setProducts] = useState<Product[]>([]);
   const [productQty, setProductQty] = useState<Record<string, number>>({});
-  const [reportDate, setReportDate] = useState(() => {
-    const d = new Date();
-    return `${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}/${d.getFullYear()}`;
+  const [reportDate, setReportDate] = useState(() => format(new Date(), "MM/dd/yyyy"));
+
+  const { from, to, fromDate, toDate } = getDateRange(period);
+
+  // Cross-connect: Orders data for auto reports
+  const { data: orders = [], isLoading: ordersLoading } = useQuery({
+    queryKey: ["reports-orders", period],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("orders")
+        .select("*")
+        .gte("created_at", from)
+        .lte("created_at", to);
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Cross-connect: Ad spends for auto reports
+  const { data: adSpends = [] } = useQuery({
+    queryKey: ["reports-adspends", period],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("ad_spends")
+        .select("*")
+        .gte("spend_date", fromDate)
+        .lte("spend_date", toDate);
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Cross-connect: Finance records
+  const { data: financeRecords = [] } = useQuery({
+    queryKey: ["reports-finance", period],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("finance_records")
+        .select("*")
+        .gte("created_at", from)
+        .lte("created_at", to);
+      if (error) throw error;
+      return data || [];
+    },
   });
 
   useEffect(() => {
@@ -46,6 +105,42 @@ export default function AdminReports() {
       });
   }, []);
 
+  // Auto report calculations from real data
+  const autoReport = useMemo(() => {
+    const totalOrders = orders.length;
+    const confirmedOrders = orders.filter(o => !["cancelled", "returned"].includes(o.status));
+    const cancelledOrders = orders.filter(o => o.status === "cancelled");
+    const deliveredOrders = orders.filter(o => o.status === "delivered");
+    const returnedOrders = orders.filter(o => o.status === "returned");
+
+    const totalRevenue = confirmedOrders.reduce((s, o) => s + Number(o.total_amount), 0);
+    const totalProductCost = confirmedOrders.reduce((s, o) => s + Number(o.product_cost), 0);
+    const totalDelivery = confirmedOrders.reduce((s, o) => s + Number(o.delivery_charge), 0);
+    const totalDiscount = confirmedOrders.reduce((s, o) => s + Number(o.discount), 0);
+    const returnAmount = returnedOrders.reduce((s, o) => s + Number(o.total_amount), 0);
+
+    const adsCostUsd = adSpends.reduce((s, a) => s + Number(a.amount_usd), 0);
+    const adsCostBdt = adSpends.reduce((s, a) => s + Number(a.amount_bdt), 0);
+
+    const moneyIn = financeRecords.filter(f => ["income", "loan_in", "investment_in"].includes(f.type)).reduce((s, f) => s + Number(f.amount), 0);
+    const moneyOut = financeRecords.filter(f => ["expense", "loan_out", "investment_out"].includes(f.type)).reduce((s, f) => s + Number(f.amount), 0);
+
+    const grossProfit = totalRevenue - totalProductCost - adsCostBdt - totalDelivery;
+    const netProfit = grossProfit - returnAmount;
+    const confirmRate = totalOrders > 0 ? ((confirmedOrders.length / totalOrders) * 100).toFixed(1) : "0";
+    const cancelRate = totalOrders > 0 ? ((cancelledOrders.length / totalOrders) * 100).toFixed(1) : "0";
+    const cps = confirmedOrders.length > 0 ? adsCostBdt / confirmedOrders.length : 0;
+    const cpsDollar = confirmedOrders.length > 0 ? adsCostUsd / confirmedOrders.length : 0;
+
+    return {
+      totalOrders, confirmedCount: confirmedOrders.length, cancelledCount: cancelledOrders.length,
+      deliveredCount: deliveredOrders.length, returnedCount: returnedOrders.length,
+      totalRevenue, totalProductCost, totalDelivery, totalDiscount, returnAmount,
+      adsCostUsd, adsCostBdt, moneyIn, moneyOut,
+      grossProfit, netProfit, confirmRate, cancelRate, cps, cpsDollar,
+    };
+  }, [orders, adSpends, financeRecords]);
+
   const adsCostBdt = useMemo(() => {
     const usd = parseFloat(adsSpendUsd) || 0;
     const rate = parseFloat(dollarRate) || 0;
@@ -53,24 +148,19 @@ export default function AdminReports() {
   }, [adsSpendUsd, dollarRate]);
 
   const summary = useMemo(() => {
-    let totalSold = 0;
-    let totalProductCost = 0;
-    let totalSales = 0;
-
+    let totalSold = 0, totalProductCost = 0, totalSales = 0;
     products.forEach((p) => {
       const qty = productQty[p.id] || 0;
       totalSold += qty;
       totalProductCost += qty * (p.purchase_price + p.additional_cost);
       totalSales += qty * p.selling_price;
     });
-
     const grossProfit = totalSales - totalProductCost - adsCostBdt;
     const returnAdj = totalSales * ((parseFloat(returnPercent) || 0) / 100);
     const returnCostAdj = totalSold * (parseFloat(costPerReturn) || 0) * ((parseFloat(returnPercent) || 0) / 100);
     const finalProfit = grossProfit - returnAdj - returnCostAdj;
     const cps = totalSold > 0 ? adsCostBdt / totalSold : 0;
     const cpsDollar = totalSold > 0 ? (parseFloat(adsSpendUsd) || 0) / totalSold : 0;
-
     return { totalSold, totalProductCost, totalSales, adsCostBdt, cps, cpsDollar, grossProfit, finalProfit };
   }, [products, productQty, adsCostBdt, returnPercent, costPerReturn, adsSpendUsd]);
 
@@ -79,6 +169,8 @@ export default function AdminReports() {
     { id: "manual", label: "Manual Report", icon: PlusCircle },
     { id: "history", label: "History", icon: FileCheck },
   ];
+
+  const fmt = (n: number) => `৳${n.toLocaleString()}`;
 
   return (
     <AdminLayout>
@@ -131,14 +223,84 @@ export default function AdminReports() {
 
         {/* Auto Reports Tab */}
         {tab === "auto" && (
-          <div className="bg-card rounded-2xl border border-border p-12 text-center">
-            <div className="flex justify-center mb-4">
-              <div className="h-14 w-14 rounded-xl bg-secondary flex items-center justify-center">
-                <FileText className="h-7 w-7 text-muted-foreground/50" />
-              </div>
-            </div>
-            <p className="text-muted-foreground">No auto-generated reports found for this period.</p>
-            <p className="text-sm text-muted-foreground/70 mt-1">Reports are generated automatically at 11:59 PM when automation is enabled.</p>
+          <div className="space-y-5">
+            {ordersLoading ? (
+              <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+            ) : (
+              <>
+                {/* Summary Cards */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {[
+                    { icon: ShoppingCart, value: autoReport.totalOrders, label: "Total Orders", color: "text-primary" },
+                    { icon: DollarSign, value: fmt(autoReport.totalRevenue), label: "Revenue", color: "text-emerald-600" },
+                    { icon: Megaphone, value: fmt(autoReport.adsCostBdt), label: `Ad Spend ($${autoReport.adsCostUsd.toFixed(2)})`, color: "text-violet-600" },
+                    { icon: TrendingUp, value: fmt(autoReport.netProfit), label: "Net Profit", color: autoReport.netProfit >= 0 ? "text-emerald-600" : "text-destructive" },
+                  ].map((s, i) => (
+                    <div key={i} className="bg-card rounded-2xl border border-border p-4 flex items-center gap-3">
+                      <div className={`h-10 w-10 rounded-xl bg-secondary flex items-center justify-center ${s.color}`}>
+                        <s.icon className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="text-xl font-bold text-foreground">{s.value}</p>
+                        <p className="text-xs text-muted-foreground">{s.label}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* CPS & Rates */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="bg-card rounded-2xl border border-border p-4">
+                    <p className="text-[10px] font-semibold text-muted-foreground uppercase">CPS (৳)</p>
+                    <p className="text-lg font-bold text-foreground mt-1">৳{autoReport.cps.toFixed(0)}</p>
+                  </div>
+                  <div className="bg-card rounded-2xl border border-border p-4">
+                    <p className="text-[10px] font-semibold text-muted-foreground uppercase">CPS ($)</p>
+                    <p className="text-lg font-bold text-foreground mt-1">${autoReport.cpsDollar.toFixed(2)}</p>
+                  </div>
+                  <div className="bg-card rounded-2xl border border-border p-4">
+                    <p className="text-[10px] font-semibold text-muted-foreground uppercase">Confirm Rate</p>
+                    <p className="text-lg font-bold text-emerald-600 mt-1">{autoReport.confirmRate}%</p>
+                  </div>
+                  <div className="bg-card rounded-2xl border border-border p-4">
+                    <p className="text-[10px] font-semibold text-muted-foreground uppercase">Cancel Rate</p>
+                    <p className="text-lg font-bold text-destructive mt-1">{autoReport.cancelRate}%</p>
+                  </div>
+                </div>
+
+                {/* Detailed Breakdown */}
+                <div className="bg-card rounded-2xl border border-border p-5">
+                  <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
+                    <BarChart3 className="h-4 w-4 text-muted-foreground" /> Detailed Breakdown
+                  </h3>
+                  <div className="bg-secondary/30 rounded-xl p-5 space-y-2 font-mono text-sm text-foreground">
+                    <p>📅 Period: {period.charAt(0).toUpperCase() + period.slice(1)}</p>
+                    <br />
+                    <p>📦 Order Status:</p>
+                    <p className="ml-4">Confirmed: {autoReport.confirmedCount} | Cancelled: {autoReport.cancelledCount}</p>
+                    <p className="ml-4">Delivered: {autoReport.deliveredCount} | Returned: {autoReport.returnedCount}</p>
+                    <br />
+                    <p>💰 Financial:</p>
+                    <p className="ml-4">Revenue: {fmt(autoReport.totalRevenue)}</p>
+                    <p className="ml-4">Product Cost: {fmt(autoReport.totalProductCost)}</p>
+                    <p className="ml-4">Delivery Cost: {fmt(autoReport.totalDelivery)}</p>
+                    <p className="ml-4">Discount Given: {fmt(autoReport.totalDiscount)}</p>
+                    <p className="ml-4">Ad Spend: ${autoReport.adsCostUsd.toFixed(2)} ({fmt(autoReport.adsCostBdt)})</p>
+                    <p className="ml-4">Returns: {fmt(autoReport.returnAmount)}</p>
+                    <br />
+                    <p className="ml-4">Gross Profit: {fmt(autoReport.grossProfit)}</p>
+                    <p className="ml-4 font-bold">✅ Net Profit: {fmt(autoReport.netProfit)}</p>
+                    {autoReport.moneyIn > 0 && (
+                      <>
+                        <br />
+                        <p>🏦 Cash Flow:</p>
+                        <p className="ml-4">Money In: {fmt(autoReport.moneyIn)} | Money Out: {fmt(autoReport.moneyOut)}</p>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         )}
 

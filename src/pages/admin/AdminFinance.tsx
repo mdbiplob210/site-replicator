@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useFinanceRecords, useFinanceSummary, useCreateFinanceRecord, useDeleteFinanceRecord } from "@/hooks/useFinance";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 
 type FinanceTab = "income" | "expense" | "banks" | "loans" | "investments" | "history";
@@ -53,6 +55,16 @@ export default function AdminFinance() {
   const createRecord = useCreateFinanceRecord();
   const deleteRecord = useDeleteFinanceRecord();
 
+  // Cross-connect: Stock value from products table
+  const { data: stockValue = 0 } = useQuery({
+    queryKey: ["finance-stock-value"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("products").select("purchase_price, stock_quantity");
+      if (error) throw error;
+      return (data || []).reduce((s, p) => s + Number(p.purchase_price) * Number(p.stock_quantity), 0);
+    },
+  });
+
   const today = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
   const dateRange = `${new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })} – ${new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}`;
 
@@ -87,8 +99,8 @@ export default function AdminFinance() {
   const bottomStats = [
     { icon: Landmark, label: "BANK BALANCE", value: fmt(summary?.bankBalance || 0), iconBg: "bg-primary/10", iconColor: "text-primary" },
     { icon: PiggyBank, label: "TOTAL LOAN", value: fmt(summary?.totalLoan || 0), iconBg: "bg-destructive/10", iconColor: "text-destructive" },
-    { icon: Package, label: "STOCK VALUE", value: "৳0", iconBg: "bg-secondary", iconColor: "text-foreground" },
-    { icon: TrendingUp, label: "TOTAL VALUATION", value: fmt((summary?.bankBalance || 0) + (summary?.totalInvestment || 0)), iconBg: "bg-secondary", iconColor: "text-foreground" },
+    { icon: Package, label: "STOCK VALUE", value: fmt(stockValue), iconBg: "bg-secondary", iconColor: "text-foreground" },
+    { icon: TrendingUp, label: "TOTAL VALUATION", value: fmt((summary?.bankBalance || 0) + (summary?.totalInvestment || 0) + stockValue), iconBg: "bg-secondary", iconColor: "text-foreground" },
   ];
 
   const handleSubmitIncome = () => {
