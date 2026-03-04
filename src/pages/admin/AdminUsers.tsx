@@ -120,7 +120,7 @@ const AdminUsers = () => {
                               >
                                 {role}
                                 <button
-                                  onClick={() => removeRole(user.user_id, role)}
+                                  onClick={() => removeRole(user.user_id, role as "admin" | "moderator" | "user")}
                                   className="ml-1 hover:text-destructive"
                                 >
                                   <Trash2 className="h-3 w-3" />
@@ -136,7 +136,7 @@ const AdminUsers = () => {
                         {new Date(user.created_at).toLocaleDateString("bn-BD")}
                       </TableCell>
                       <TableCell>
-                        <Select onValueChange={(val) => assignRole(user.user_id, val)}>
+                        <Select onValueChange={(val) => assignRole(user.user_id, val as "admin" | "moderator" | "user")}>
                           <SelectTrigger className="w-36">
                             <SelectValue placeholder="রোল দিন" />
                           </SelectTrigger>
