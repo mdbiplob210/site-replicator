@@ -120,13 +120,15 @@ export function useDashboardData(filter: TimeFilter) {
 
   // Finance
   const bankBalance = finance
-    .filter((f) => f.type === "bank_balance")
+    .filter((f) => f.type === "bank")
     .reduce((s, f) => s + Number(f.amount), 0);
-  const loans = finance.filter((f) => f.type === "loan");
-  const loanTotal = loans.reduce((s, f) => s + Number(f.amount), 0);
+  const loans = finance.filter((f) => f.type === "loan_in" || f.type === "loan_out");
+  const loanTotal = finance
+    .filter((f) => f.type === "loan_in").reduce((s, f) => s + Number(f.amount), 0)
+    - finance.filter((f) => f.type === "loan_out").reduce((s, f) => s + Number(f.amount), 0);
   const investmentTotal = finance
-    .filter((f) => f.type === "investment")
-    .reduce((s, f) => s + Number(f.amount), 0);
+    .filter((f) => f.type === "investment_in").reduce((s, f) => s + Number(f.amount), 0)
+    - finance.filter((f) => f.type === "investment_out").reduce((s, f) => s + Number(f.amount), 0);
 
   // Stock value
   const stockValue = products.reduce(
