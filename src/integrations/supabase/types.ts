@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      ad_spends: {
+        Row: {
+          amount_bdt: number
+          amount_usd: number
+          created_at: string
+          id: string
+          platform: string
+          spend_date: string
+        }
+        Insert: {
+          amount_bdt?: number
+          amount_usd?: number
+          created_at?: string
+          id?: string
+          platform?: string
+          spend_date?: string
+        }
+        Update: {
+          amount_bdt?: number
+          amount_usd?: number
+          created_at?: string
+          id?: string
+          platform?: string
+          spend_date?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -54,6 +81,84 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      finance_records: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          label: string
+          notes: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          id?: string
+          label: string
+          notes?: string | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          label?: string
+          notes?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      orders: {
+        Row: {
+          created_at: string
+          customer_address: string | null
+          customer_name: string
+          customer_phone: string | null
+          delivery_charge: number
+          discount: number
+          id: string
+          notes: string | null
+          order_number: string
+          product_cost: number
+          status: Database["public"]["Enums"]["order_status"]
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_address?: string | null
+          customer_name: string
+          customer_phone?: string | null
+          delivery_charge?: number
+          discount?: number
+          id?: string
+          notes?: string | null
+          order_number: string
+          product_cost?: number
+          status?: Database["public"]["Enums"]["order_status"]
+          total_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_address?: string | null
+          customer_name?: string
+          customer_phone?: string | null
+          delivery_charge?: number
+          discount?: number
+          id?: string
+          notes?: string | null
+          order_number?: string
+          product_cost?: number
+          status?: Database["public"]["Enums"]["order_status"]
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       products: {
         Row: {
@@ -219,6 +324,15 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      order_status:
+        | "processing"
+        | "confirmed"
+        | "cancelled"
+        | "on_hold"
+        | "ship_later"
+        | "in_courier"
+        | "delivered"
+        | "returned"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -347,6 +461,16 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
+      order_status: [
+        "processing",
+        "confirmed",
+        "cancelled",
+        "on_hold",
+        "ship_later",
+        "in_courier",
+        "delivered",
+        "returned",
+      ],
     },
   },
 } as const
