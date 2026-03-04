@@ -3,7 +3,7 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 import {
   Settings, Home, Sparkles, Globe, Code, RotateCcw,
   Save, Upload, ImageIcon, Phone, Mail, Link, Facebook,
-  Instagram, Trash2, Clock, Search, Info, CheckCircle2
+  Instagram, Trash2, Clock, Search, Info, CheckCircle2, Layout
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,10 +11,13 @@ import { Switch } from "@/components/ui/switch";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from "@/components/ui/select";
+import { useSiteSettings, useUpdateSiteSetting } from "@/hooks/useSiteSettings";
+import { toast } from "sonner";
 
-type SettingsTab = "general" | "buttons" | "buy_domain" | "tracking" | "data_reset";
+type SettingsTab = "templates" | "general" | "buttons" | "buy_domain" | "tracking" | "data_reset";
 
 const tabs: { id: SettingsTab; label: string; icon: any }[] = [
+  { id: "templates", label: "Templates", icon: Layout },
   { id: "general", label: "General", icon: Home },
   { id: "buttons", label: "Buttons", icon: Sparkles },
   { id: "buy_domain", label: "Buy Domain", icon: Globe },
@@ -23,7 +26,7 @@ const tabs: { id: SettingsTab; label: string; icon: any }[] = [
 ];
 
 export default function AdminWebsiteSettings() {
-  const [activeTab, setActiveTab] = useState<SettingsTab>("general");
+  const [activeTab, setActiveTab] = useState<SettingsTab>("templates");
   const [publishEnabled, setPublishEnabled] = useState(false);
 
   return (
