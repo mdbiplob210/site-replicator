@@ -48,10 +48,10 @@ const AdminUsers = () => {
     fetchUsers();
   }, []);
 
-  const assignRole = async (userId: string, role: string) => {
+  const assignRole = async (userId: string, role: "admin" | "moderator" | "user") => {
     const { error } = await supabase
       .from("user_roles")
-      .upsert({ user_id: userId, role }, { onConflict: "user_id,role" });
+      .upsert({ user_id: userId, role } as any, { onConflict: "user_id,role" });
 
     if (error) {
       toast({ title: "ত্রুটি", description: error.message, variant: "destructive" });
@@ -61,12 +61,12 @@ const AdminUsers = () => {
     }
   };
 
-  const removeRole = async (userId: string, role: string) => {
+  const removeRole = async (userId: string, role: "admin" | "moderator" | "user") => {
     const { error } = await supabase
       .from("user_roles")
       .delete()
       .eq("user_id", userId)
-      .eq("role", role);
+      .eq("role", role as any);
 
     if (error) {
       toast({ title: "ত্রুটি", description: error.message, variant: "destructive" });
