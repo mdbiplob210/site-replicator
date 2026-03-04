@@ -14,7 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   Plus, Search, Calendar, AlertCircle, ShieldAlert, Truck, Key,
   Settings, Download, Printer, RefreshCw, ChevronDown, Wifi, Ban,
-  Trash2, Copy, X
+  Trash2, Copy, X, ShoppingCart
 } from "lucide-react";
 
 const statusTabs = [
