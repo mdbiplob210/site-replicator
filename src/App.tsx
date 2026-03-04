@@ -18,6 +18,7 @@ import AdminBackup from "./pages/admin/AdminBackup";
 import AdminAutomation from "./pages/admin/AdminAutomation";
 import AdminProducts from "./pages/admin/AdminProducts";
 import AdminPlaceholder from "./pages/admin/AdminPlaceholder";
+import AdminReports from "./pages/admin/AdminReports";
 
 const queryClient = new QueryClient();
 
@@ -44,7 +45,7 @@ const App = () => (
           <Route path="/admin/screenshots" element={<ProtectedAdminRoute><AdminScreenshots /></ProtectedAdminRoute>} />
           <Route path="/admin/products" element={<ProtectedAdminRoute><AdminProducts /></ProtectedAdminRoute>} />
           <Route path="/admin/website" element={P("Website", "Manage your website settings")} />
-          <Route path="/admin/reports" element={P("Reports", "View business reports")} />
+          <Route path="/admin/reports" element={<ProtectedAdminRoute><AdminReports /></ProtectedAdminRoute>} />
           <Route path="/admin/finance" element={P("Finance", "Manage finances and accounting")} />
           <Route path="/admin/planning" element={P("Planning", "Business planning tools")} />
           <Route path="/admin/tasks" element={P("Tasks", "Task management")} />
