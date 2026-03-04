@@ -67,7 +67,7 @@ const AdminDashboard = () => {
                 onClick={() => setActiveFilter(filter)}
                 className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                   activeFilter === filter
-                    ? "bg-gradient-to-r from-primary to-[hsl(187,85%,53%)] text-white shadow-md"
+                    ? "bg-primary text-primary-foreground shadow-md"
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary/70"
                 }`}
               >
