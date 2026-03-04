@@ -19,6 +19,7 @@ import AdminAutomation from "./pages/admin/AdminAutomation";
 import AdminProducts from "./pages/admin/AdminProducts";
 import AdminPlaceholder from "./pages/admin/AdminPlaceholder";
 import AdminReports from "./pages/admin/AdminReports";
+import AdminFinance from "./pages/admin/AdminFinance";
 
 const queryClient = new QueryClient();
 
