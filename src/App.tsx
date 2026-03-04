@@ -16,6 +16,7 @@ import AdminOrders from "./pages/admin/AdminOrders";
 import AdminComingSoon from "./pages/admin/AdminComingSoon";
 import AdminBackup from "./pages/admin/AdminBackup";
 import AdminAutomation from "./pages/admin/AdminAutomation";
+import AdminProducts from "./pages/admin/AdminProducts";
 import AdminPlaceholder from "./pages/admin/AdminPlaceholder";
 
 const queryClient = new QueryClient();
@@ -41,7 +42,7 @@ const App = () => (
           <Route path="/admin/roles" element={<ProtectedAdminRoute><AdminRoles /></ProtectedAdminRoute>} />
           <Route path="/admin/settings" element={<ProtectedAdminRoute><AdminSettings /></ProtectedAdminRoute>} />
           <Route path="/admin/screenshots" element={<ProtectedAdminRoute><AdminScreenshots /></ProtectedAdminRoute>} />
-          <Route path="/admin/products" element={P("Products", "Manage your product catalog")} />
+          <Route path="/admin/products" element={<ProtectedAdminRoute><AdminProducts /></ProtectedAdminRoute>} />
           <Route path="/admin/website" element={P("Website", "Manage your website settings")} />
           <Route path="/admin/reports" element={P("Reports", "View business reports")} />
           <Route path="/admin/finance" element={P("Finance", "Manage finances and accounting")} />
