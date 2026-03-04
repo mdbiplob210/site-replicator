@@ -53,23 +53,23 @@ export function AdminSidebar() {
   const initials = userName.charAt(0).toUpperCase();
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-sidebar-border">
+    <Sidebar collapsible="icon" className="border-r-0">
       <SidebarContent className="sidebar-gradient">
         {/* Brand */}
         <div className="px-4 py-5 gradient-border">
           {!collapsed ? (
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-[hsl(280,70%,55%)] text-primary-foreground font-bold text-sm shadow-lg glow-primary">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[hsl(187,85%,53%)] to-[hsl(210,100%,50%)] text-white font-bold text-sm shadow-lg glow-cyan">
                 S
               </div>
               <div>
-                <p className="text-sm font-bold text-foreground tracking-tight">Quick-shopbd</p>
-                <p className="text-[10px] text-muted-foreground font-semibold tracking-[0.2em] uppercase">SOHOZ PRO v1.1</p>
+                <p className="text-sm font-bold text-white tracking-tight">Quick-shopbd</p>
+                <p className="text-[10px] text-sidebar-foreground/50 font-semibold tracking-[0.2em] uppercase">SOHOZ PRO v1.1</p>
               </div>
             </div>
           ) : (
             <div className="flex justify-center">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-[hsl(280,70%,55%)] text-primary-foreground font-bold text-xs shadow-lg glow-primary">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[hsl(187,85%,53%)] to-[hsl(210,100%,50%)] text-white font-bold text-xs shadow-lg glow-cyan">
                 S
               </div>
             </div>
@@ -78,7 +78,7 @@ export function AdminSidebar() {
 
         {/* Menu */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/50 font-bold px-4">
+          <SidebarGroupLabel className="text-[10px] uppercase tracking-[0.2em] text-sidebar-foreground/30 font-bold px-4">
             Menu
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -89,10 +89,10 @@ export function AdminSidebar() {
                     <NavLink
                       to={item.url}
                       end={item.url === "/admin"}
-                      className="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] text-sidebar-foreground hover:text-primary hover:bg-sidebar-accent transition-all duration-200"
-                      activeClassName="sidebar-active-indicator bg-sidebar-accent text-sidebar-accent-foreground font-semibold"
+                      className="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] text-sidebar-foreground/70 hover:text-white hover:bg-sidebar-accent/80 transition-all duration-200"
+                      activeClassName="sidebar-active-indicator bg-sidebar-accent text-white font-semibold"
                     >
-                      <item.icon className="h-[18px] w-[18px] shrink-0 group-hover:text-primary transition-colors" />
+                      <item.icon className="h-[18px] w-[18px] shrink-0 group-hover:text-[hsl(187,85%,53%)] transition-colors" />
                       {!collapsed && (
                         <span className="flex-1 truncate">{item.title}</span>
                       )}
@@ -108,11 +108,11 @@ export function AdminSidebar() {
         </SidebarGroup>
 
         {/* Divider */}
-        <div className="mx-4 my-1.5 border-t border-sidebar-border" />
+        <div className="mx-4 my-1.5 border-t border-sidebar-border/50" />
 
         {/* Bottom Menu */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/50 font-bold px-4">
+          <SidebarGroupLabel className="text-[10px] uppercase tracking-[0.2em] text-sidebar-foreground/30 font-bold px-4">
             More
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -122,10 +122,10 @@ export function AdminSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink
                       to={item.url}
-                      className="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] text-sidebar-foreground hover:text-primary hover:bg-sidebar-accent transition-all duration-200"
-                      activeClassName="sidebar-active-indicator bg-sidebar-accent text-sidebar-accent-foreground font-semibold"
+                      className="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] text-sidebar-foreground/70 hover:text-white hover:bg-sidebar-accent/80 transition-all duration-200"
+                      activeClassName="sidebar-active-indicator bg-sidebar-accent text-white font-semibold"
                     >
-                      <item.icon className="h-[18px] w-[18px] shrink-0 group-hover:text-primary transition-colors" />
+                      <item.icon className="h-[18px] w-[18px] shrink-0 group-hover:text-[hsl(187,85%,53%)] transition-colors" />
                       {!collapsed && <span className="truncate">{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
@@ -137,26 +137,26 @@ export function AdminSidebar() {
       </SidebarContent>
 
       {/* User Footer */}
-      <SidebarFooter className="border-t border-sidebar-border bg-gradient-to-t from-[hsl(252,50%,96%)] to-transparent p-2">
-        <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-sidebar-accent transition-all">
-          <Avatar className="h-9 w-9 ring-2 ring-primary/20">
-            <AvatarFallback className="bg-primary/10 text-primary font-bold text-sm">
+      <SidebarFooter className="border-t border-sidebar-border/50 sidebar-gradient p-2">
+        <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-sidebar-accent/50 transition-all">
+          <Avatar className="h-9 w-9 ring-2 ring-[hsl(187,85%,53%)]/30">
+            <AvatarFallback className="bg-gradient-to-br from-[hsl(187,85%,53%)]/20 to-[hsl(210,100%,50%)]/20 text-[hsl(187,85%,53%)] font-bold text-sm">
               {initials}
             </AvatarFallback>
           </Avatar>
           {!collapsed && (
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-foreground truncate">{userName}</p>
+              <p className="text-sm font-semibold text-white truncate">{userName}</p>
               <div className="flex items-center gap-1.5">
                 <span className="h-2 w-2 rounded-full bg-emerald-400 pulse-dot" />
-                <span className="text-[11px] text-muted-foreground font-medium">Admin</span>
+                <span className="text-[11px] text-sidebar-foreground/50 font-medium">Admin</span>
               </div>
             </div>
           )}
           {!collapsed && (
             <button
               onClick={signOut}
-              className="p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-all duration-200"
+              className="p-2 rounded-lg hover:bg-red-500/10 text-sidebar-foreground/40 hover:text-red-400 transition-all duration-200"
               title="Sign out"
             >
               <LogOut className="h-4 w-4" />
