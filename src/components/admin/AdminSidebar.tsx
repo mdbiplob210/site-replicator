@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, Shield, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, Shield, Settings, LogOut, Camera } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -20,6 +20,7 @@ const menuItems = [
   { title: "ড্যাশবোর্ড", url: "/admin", icon: LayoutDashboard },
   { title: "ইউজার ম্যানেজমেন্ট", url: "/admin/users", icon: Users },
   { title: "রোল ম্যানেজমেন্ট", url: "/admin/roles", icon: Shield },
+  { title: "স্ক্রিনশট", url: "/admin/screenshots", icon: Camera },
   { title: "সেটিংস", url: "/admin/settings", icon: Settings },
 ];
 
