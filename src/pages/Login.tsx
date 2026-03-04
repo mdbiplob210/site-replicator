@@ -45,10 +45,17 @@ const Login = () => {
         if (error) throw error;
         toast({ title: "সফল!", description: "অ্যাকাউন্ট তৈরি হয়েছে। ইমেইল ভেরিফাই করুন।" });
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast({ title: "সফল!", description: "সফলভাবে লগইন হয়েছে।" });
-        navigate("/");
+        // Check if user is admin and redirect accordingly
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", data.user.id)
+          .eq("role", "admin")
+          .maybeSingle();
+        navigate(roleData ? "/admin" : "/", { replace: true });
       }
     } catch (error: any) {
       toast({ title: "ত্রুটি", description: error.message, variant: "destructive" });
