@@ -50,7 +50,7 @@ const App = () => (
           <Route path="/admin/automation" element={P("Automation", "Automate your workflows")} />
           <Route path="/admin/backup" element={P("Backup", "Data backup management")} />
           <Route path="/admin/support" element={P("Support", "Customer support")} />
-          <Route path="/admin/coming-soon" element={P("Coming Soon", "New features coming soon")} />
+          <Route path="/admin/coming-soon" element={<ProtectedAdminRoute><AdminComingSoon /></ProtectedAdminRoute>} />
           <Route path="/admin/plan" element={P("Plan", "Subscription management")} />
           <Route path="*" element={<NotFound />} />
         </Routes>
