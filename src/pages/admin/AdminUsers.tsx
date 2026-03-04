@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Shield, Trash2, Users, UserPlus, Lock, Eye, Edit,
   Activity, Clock, AlertCircle, XCircle, Monitor, RefreshCw,
-  Search, ChevronDown
+  Search, ChevronDown, ShoppingCart, CheckCircle2, RotateCcw, Truck, BarChart3
 } from "lucide-react";
 
 interface UserProfile {
