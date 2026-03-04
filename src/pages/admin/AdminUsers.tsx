@@ -476,7 +476,7 @@ const AdminUsers = () => {
                                       >
                                         <div>
                                           <p className="text-sm font-medium text-foreground">{perm.label}</p>
-                                          <p className="text-[11px] text-muted-foreground">{perm.description}</p>
+                                          <p className="text-[11px] text-muted-foreground">{perm.key.replace(/_/g, " ")}</p>
                                         </div>
                                         <Switch
                                           checked={isGranted}
