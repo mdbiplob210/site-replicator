@@ -464,6 +464,31 @@ function TrackingTab() {
 
 /* ===================== Data Reset Tab ===================== */
 function DataResetTab() {
+  const [showDialog, setShowDialog] = useState(false);
+  const [selectedSegments, setSelectedSegments] = useState<string[]>([]);
+
+  const segments = [
+    { id: "orders", label: "অর্ডার", desc: "সব অর্ডার, অর্ডার আইটেম, ব্লক অর্ডার, ইনকমপ্লিট অর্ডার" },
+    { id: "finance", label: "ফাইন্যান্স", desc: "আয়/ব্যয় রেকর্ড, ব্যাংক একাউন্ট, লোন" },
+    { id: "reports", label: "রিপোর্ট", desc: "ডেইলি রিপোর্ট" },
+    { id: "ad_spend", label: "অ্যাড স্পেন্ড", desc: "অ্যাড খরচ ট্র্যাকিং, ক্যাম্পেইন ম্যাপিং" },
+    { id: "planning", label: "প্ল্যানিং ও টাস্ক", desc: "কন্টেন্ট আইডিয়া, কন্টেন্ট প্ল্যান, মার্কেটিং প্ল্যান, টাস্ক" },
+  ];
+
+  const toggleSegment = (id: string) => {
+    setSelectedSegments((prev) =>
+      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
+    );
+  };
+
+  const toggleAll = () => {
+    if (selectedSegments.length === segments.length) {
+      setSelectedSegments([]);
+    } else {
+      setSelectedSegments(segments.map((s) => s.id));
+    }
+  };
+
   return (
     <div className="space-y-5">
       <div className="bg-card rounded-2xl border border-destructive/30 p-6 space-y-4">
@@ -475,7 +500,7 @@ function DataResetTab() {
         </div>
         <p className="text-sm text-muted-foreground">বিজনেসের নির্দিষ্ট সেগমেন্টের ডাটা মুছে ফেলুন। রিসেটের আগে স্বয়ংক্রিয়ভাবে ব্যাকআপ নেওয়া হবে।</p>
 
-        <Button variant="destructive" className="gap-2">
+        <Button variant="destructive" className="gap-2" onClick={() => setShowDialog(true)}>
           <Trash2 className="h-4 w-4" /> ডাটা রিসেট করুন
         </Button>
 
@@ -489,6 +514,72 @@ function DataResetTab() {
           </div>
         </div>
       </div>
+
+      {/* Reset Confirmation Dialog */}
+      {showDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-card rounded-2xl border border-border p-6 w-full max-w-lg mx-4 space-y-4">
+            <h3 className="text-lg font-bold text-destructive flex items-center gap-2">
+              ⚠️ সতর্কতা: ডাটা রিসেট
+            </h3>
+            <p className="text-sm text-muted-foreground">কোন কোন সেগমেন্টের ডাটা রিসেট করতে চান সিলেক্ট করুন:</p>
+
+            {/* Select All */}
+            <label className="flex items-center gap-3 cursor-pointer py-2">
+              <div
+                className={`h-5 w-5 rounded-full border-2 flex items-center justify-center transition-colors ${
+                  selectedSegments.length === segments.length
+                    ? "border-primary bg-primary"
+                    : "border-border"
+                }`}
+                onClick={toggleAll}
+              >
+                {selectedSegments.length === segments.length && (
+                  <div className="h-2 w-2 rounded-full bg-primary-foreground" />
+                )}
+              </div>
+              <span className="font-bold text-foreground" onClick={toggleAll}>সব সিলেক্ট করুন</span>
+            </label>
+
+            {/* Segment List */}
+            <div className="space-y-1 border-t border-border pt-2">
+              {segments.map((seg) => (
+                <label
+                  key={seg.id}
+                  className="flex items-start gap-3 cursor-pointer py-3 border-b border-border/50 last:border-0"
+                  onClick={() => toggleSegment(seg.id)}
+                >
+                  <div
+                    className={`h-5 w-5 rounded-full border-2 flex items-center justify-center mt-0.5 transition-colors flex-shrink-0 ${
+                      selectedSegments.includes(seg.id)
+                        ? "border-primary bg-primary"
+                        : "border-border"
+                    }`}
+                  >
+                    {selectedSegments.includes(seg.id) && (
+                      <div className="h-2 w-2 rounded-full bg-primary-foreground" />
+                    )}
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground">{seg.label}</p>
+                    <p className="text-xs text-muted-foreground">{seg.desc}</p>
+                  </div>
+                </label>
+              ))}
+            </div>
+
+            {/* Actions */}
+            <div className="flex justify-center gap-3 pt-2">
+              <Button variant="outline" onClick={() => { setShowDialog(false); setSelectedSegments([]); }}>
+                বাতিল
+              </Button>
+              <Button variant="destructive" className="gap-2" disabled={selectedSegments.length === 0}>
+                <Trash2 className="h-4 w-4" /> রিসেট করুন ({selectedSegments.length})
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
