@@ -14,6 +14,124 @@ export type Database = {
   }
   public: {
     Tables: {
+      categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          name: string
+          parent_id: string | null
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          parent_id?: string | null
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          parent_id?: string | null
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "categories_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          additional_cost: number
+          additional_images: string[] | null
+          allow_out_of_stock_orders: boolean
+          category_id: string | null
+          created_at: string
+          detailed_description: string | null
+          free_delivery: boolean
+          id: string
+          internal_note: string | null
+          main_image_url: string | null
+          name: string
+          original_price: number
+          product_code: string
+          purchase_price: number
+          selling_price: number
+          short_description: string | null
+          status: string
+          stock_quantity: number
+          updated_at: string
+          youtube_url: string | null
+        }
+        Insert: {
+          additional_cost?: number
+          additional_images?: string[] | null
+          allow_out_of_stock_orders?: boolean
+          category_id?: string | null
+          created_at?: string
+          detailed_description?: string | null
+          free_delivery?: boolean
+          id?: string
+          internal_note?: string | null
+          main_image_url?: string | null
+          name: string
+          original_price?: number
+          product_code: string
+          purchase_price?: number
+          selling_price?: number
+          short_description?: string | null
+          status?: string
+          stock_quantity?: number
+          updated_at?: string
+          youtube_url?: string | null
+        }
+        Update: {
+          additional_cost?: number
+          additional_images?: string[] | null
+          allow_out_of_stock_orders?: boolean
+          category_id?: string | null
+          created_at?: string
+          detailed_description?: string | null
+          free_delivery?: boolean
+          id?: string
+          internal_note?: string | null
+          main_image_url?: string | null
+          name?: string
+          original_price?: number
+          product_code?: string
+          purchase_price?: number
+          selling_price?: number
+          short_description?: string | null
+          status?: string
+          stock_quantity?: number
+          updated_at?: string
+          youtube_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
