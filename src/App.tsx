@@ -55,7 +55,7 @@ const App = () => (
           <Route path="/admin/planning" element={<ProtectedAdminRoute><AdminPlanning /></ProtectedAdminRoute>} />
           <Route path="/admin/tasks" element={<ProtectedAdminRoute><AdminTasks /></ProtectedAdminRoute>} />
           <Route path="/admin/analytics" element={<ProtectedAdminRoute><AdminAnalytics /></ProtectedAdminRoute>} />
-          <Route path="/admin/meta-ads" element={P("Meta Ads", "Facebook & Instagram advertising")} />
+          <Route path="/admin/meta-ads" element={<ProtectedAdminRoute><AdminMetaAds /></ProtectedAdminRoute>} />
           <Route path="/admin/automation" element={<ProtectedAdminRoute><AdminAutomation /></ProtectedAdminRoute>} />
           <Route path="/admin/backup" element={<ProtectedAdminRoute><AdminBackup /></ProtectedAdminRoute>} />
           <Route path="/admin/support" element={P("Support", "Customer support")} />
