@@ -54,7 +54,7 @@ export function useAdSpends(dateRange: string, dollarRate: number) {
         .from("ad_spends")
         .select("*")
         .order("spend_date", { ascending: false })
-        .limit(50);
+        .limit(200);
       if (error) throw error;
       return data as AdSpend[];
     },
