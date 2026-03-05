@@ -651,6 +651,12 @@ const AdminOrders = () => {
             </Table>
           </Card>
         )}
+        {/* Order Detail Dialog */}
+        <OrderDetailDialog
+          orderId={detailOrderId}
+          order={filteredOrders.find((o) => o.id === detailOrderId) || null}
+          onClose={() => setDetailOrderId(null)}
+        />
       </div>
     </AdminLayout>
   );
