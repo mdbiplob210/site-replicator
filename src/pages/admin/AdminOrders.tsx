@@ -352,7 +352,11 @@ const AdminOrders = () => {
               </PopoverContent>
             </Popover>
 
-            <Button variant="outline" size="sm" className="gap-2 rounded-xl border-border/60 shadow-sm hover:shadow" onClick={() => setCurrentView("incomplete")}>
+            <a href="/admin/orders/backfill-items">
+              <Button variant="outline" size="sm" className="gap-2 rounded-xl border-border/60 shadow-sm hover:shadow">
+                <Package className="h-4 w-4 text-primary" /> Backfill Items
+              </Button>
+            </a>
               <AlertCircle className="h-4 w-4 text-amber-500" /> Incomplete
             </Button>
             <Button variant="outline" size="sm" className="gap-2 rounded-xl border-border/60 shadow-sm hover:shadow" onClick={() => setCurrentView("fakeOrder")}>
