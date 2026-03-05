@@ -3,7 +3,7 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 import {
   Settings, Home, Sparkles, Globe, Code, RotateCcw,
   Save, Upload, ImageIcon, Phone, Mail, Link, Facebook,
-  Instagram, Trash2, Clock, Search, Info, CheckCircle2, Layout
+  Instagram, Trash2, Clock, Search, Info, CheckCircle2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
