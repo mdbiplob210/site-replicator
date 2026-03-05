@@ -25,6 +25,14 @@ import AdminTasks from "./pages/admin/AdminTasks";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import AdminMetaAds from "./pages/admin/AdminMetaAds";
 import AdminWebsiteSettings from "./pages/admin/AdminWebsiteSettings";
+import AdminMainTemplate from "./pages/admin/AdminMainTemplate";
+import AdminCheckoutTemplate from "./pages/admin/AdminCheckoutTemplate";
+import AdminProductTemplate from "./pages/admin/AdminProductTemplate";
+import AdminCategoryTemplate from "./pages/admin/AdminCategoryTemplate";
+import AdminThankYouTemplate from "./pages/admin/AdminThankYouTemplate";
+import AdminLandingPages from "./pages/admin/AdminLandingPages";
+import AdminPayment from "./pages/admin/AdminPayment";
+import AdminPages from "./pages/admin/AdminPages";
 import StorePage from "./pages/store/StorePage";
 import ProductDetail from "./pages/store/ProductDetail";
 import CheckoutPage from "./pages/store/CheckoutPage";
@@ -58,7 +66,15 @@ const App = () => (
           <Route path="/admin/settings" element={<ProtectedAdminRoute><AdminSettings /></ProtectedAdminRoute>} />
           <Route path="/admin/screenshots" element={<ProtectedAdminRoute><AdminScreenshots /></ProtectedAdminRoute>} />
           <Route path="/admin/products" element={<ProtectedAdminRoute><AdminProducts /></ProtectedAdminRoute>} />
-          <Route path="/admin/website" element={<ProtectedAdminRoute><AdminWebsiteSettings /></ProtectedAdminRoute>} />
+          <Route path="/admin/website" element={<ProtectedAdminRoute><AdminMainTemplate /></ProtectedAdminRoute>} />
+          <Route path="/admin/website/main-template" element={<ProtectedAdminRoute><AdminMainTemplate /></ProtectedAdminRoute>} />
+          <Route path="/admin/website/checkout-template" element={<ProtectedAdminRoute><AdminCheckoutTemplate /></ProtectedAdminRoute>} />
+          <Route path="/admin/website/product-template" element={<ProtectedAdminRoute><AdminProductTemplate /></ProtectedAdminRoute>} />
+          <Route path="/admin/website/category-template" element={<ProtectedAdminRoute><AdminCategoryTemplate /></ProtectedAdminRoute>} />
+          <Route path="/admin/website/thank-you" element={<ProtectedAdminRoute><AdminThankYouTemplate /></ProtectedAdminRoute>} />
+          <Route path="/admin/website/landing-pages" element={<ProtectedAdminRoute><AdminLandingPages /></ProtectedAdminRoute>} />
+          <Route path="/admin/website/payment" element={<ProtectedAdminRoute><AdminPayment /></ProtectedAdminRoute>} />
+          <Route path="/admin/website/pages" element={<ProtectedAdminRoute><AdminPages /></ProtectedAdminRoute>} />
           <Route path="/admin/website/settings" element={<ProtectedAdminRoute><AdminWebsiteSettings /></ProtectedAdminRoute>} />
           <Route path="/admin/reports" element={<ProtectedAdminRoute><AdminReports /></ProtectedAdminRoute>} />
           <Route path="/admin/finance" element={<ProtectedAdminRoute><AdminFinance /></ProtectedAdminRoute>} />
