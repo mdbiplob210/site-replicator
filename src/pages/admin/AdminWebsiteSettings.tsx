@@ -25,7 +25,7 @@ const tabs: { id: SettingsTab; label: string; icon: any }[] = [
 ];
 
 export default function AdminWebsiteSettings() {
-  const [activeTab, setActiveTab] = useState<SettingsTab>("templates");
+  const [activeTab, setActiveTab] = useState<SettingsTab>("general");
   const [publishEnabled, setPublishEnabled] = useState(false);
 
   return (
@@ -72,7 +72,6 @@ export default function AdminWebsiteSettings() {
         </div>
 
         {/* Tab Content */}
-        {activeTab === "templates" && <TemplatesTab />}
         {activeTab === "general" && <GeneralTab />}
         {activeTab === "buttons" && <ButtonsTab />}
         {activeTab === "buy_domain" && <BuyDomainTab />}
