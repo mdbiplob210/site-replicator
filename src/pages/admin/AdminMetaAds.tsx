@@ -339,7 +339,7 @@ export default function AdminMetaAds() {
         </div>
 
         {/* Product-wise Ad Spend */}
-        <ProductAdSpendTable />
+        <ProductAdSpendTable dateRange={dateRange} totalSpendUsd={totalUsd} rate={rate} />
 
         {/* Campaign Breakdown */}
         <CampaignBreakdown />
