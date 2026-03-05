@@ -330,6 +330,34 @@ export default function AdminMetaAds() {
           ))}
         </div>
 
+        {/* Daily Spend Chart */}
+        {entries.length > 0 && (
+          <div className="bg-card rounded-2xl border border-border p-6">
+            <h3 className="font-bold text-foreground mb-4">দিনভিত্তিক অ্যাড খরচ</h3>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={[...entries].sort((a, b) => a.spend_date.localeCompare(b.spend_date)).map(e => ({
+                  date: e.spend_date.slice(5),
+                  USD: Number(e.amount_usd),
+                  BDT: Number(e.amount_usd) * rate,
+                }))}>
+                  <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                  <XAxis dataKey="date" tick={{ fontSize: 12 }} className="text-muted-foreground" />
+                  <YAxis tick={{ fontSize: 12 }} className="text-muted-foreground" />
+                  <Tooltip
+                    contentStyle={{ borderRadius: 12, border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }}
+                    formatter={(value: number, name: string) => [
+                      name === 'USD' ? `$${value.toFixed(2)}` : `৳${value.toFixed(0)}`,
+                      name === 'USD' ? 'USD' : 'BDT'
+                    ]}
+                  />
+                  <Bar dataKey="USD" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
+
         {/* Entries Table */}
         {entries.length > 0 ? (
           <div className="bg-card rounded-2xl border border-border p-6">
