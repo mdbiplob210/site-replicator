@@ -352,6 +352,7 @@ export default function AdminMetaAds() {
                     ]}
                   />
                   <Bar dataKey="USD" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="BDT" fill="hsl(var(--accent))" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
