@@ -24,8 +24,9 @@ import {
 import {
   useOrders, useOrderCounts, useCreateOrder, useUpdateOrderStatus,
   useDeleteOrder, useNextOrderNumber, getStatusFromTab, getStatusLabel,
-  getStatusColor, type OrderStatus
+  getStatusColor, type OrderStatus, type OrderItemInput
 } from "@/hooks/useOrders";
+import { usePublicProducts } from "@/hooks/usePublicProducts";
 import { Constants } from "@/integrations/supabase/types";
 import { format } from "date-fns";
 
