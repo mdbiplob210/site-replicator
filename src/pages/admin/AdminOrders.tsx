@@ -663,3 +663,121 @@ const AdminOrders = () => {
 };
 
 export default AdminOrders;
+
+function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null; order: any; onClose: () => void }) {
+  const { data: items = [], isLoading } = useOrderItems(orderId);
+  const itemsTotal = items.reduce((s: number, i: any) => s + Number(i.total_price), 0);
+
+  return (
+    <Dialog open={!!orderId} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 text-lg">
+            <div className="p-2 rounded-xl bg-primary/10"><ShoppingCart className="h-5 w-5 text-primary" /></div>
+            Order Details
+            {order && <Badge variant="secondary" className="ml-2 text-xs">{order.order_number}</Badge>}
+          </DialogTitle>
+        </DialogHeader>
+
+        {order && (
+          <div className="space-y-5">
+            {/* Customer Info */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-xs text-muted-foreground">Customer</p>
+                <p className="font-medium text-foreground text-sm">{order.customer_name}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Phone</p>
+                <p className="font-medium text-foreground text-sm">{order.customer_phone || "—"}</p>
+              </div>
+              {order.customer_address && (
+                <div className="col-span-2">
+                  <p className="text-xs text-muted-foreground">Address</p>
+                  <p className="text-sm text-foreground">{order.customer_address}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Financial Summary */}
+            <div className="grid grid-cols-4 gap-3">
+              <div className="p-3 rounded-xl bg-secondary/30 border border-border/40">
+                <p className="text-[10px] text-muted-foreground">Product Cost</p>
+                <p className="font-bold text-foreground text-sm">৳{Number(order.product_cost).toLocaleString()}</p>
+              </div>
+              <div className="p-3 rounded-xl bg-secondary/30 border border-border/40">
+                <p className="text-[10px] text-muted-foreground">Delivery</p>
+                <p className="font-bold text-foreground text-sm">৳{Number(order.delivery_charge).toLocaleString()}</p>
+              </div>
+              <div className="p-3 rounded-xl bg-secondary/30 border border-border/40">
+                <p className="text-[10px] text-muted-foreground">Discount</p>
+                <p className="font-bold text-foreground text-sm">৳{Number(order.discount).toLocaleString()}</p>
+              </div>
+              <div className="p-3 rounded-xl bg-primary/5 border border-primary/20">
+                <p className="text-[10px] text-primary font-semibold">Total</p>
+                <p className="font-bold text-primary text-sm">৳{Number(order.total_amount).toLocaleString()}</p>
+              </div>
+            </div>
+
+            {/* Order Items */}
+            <div>
+              <h4 className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                <Package className="h-3.5 w-3.5 text-primary" /> Order Items
+              </h4>
+
+              {isLoading ? (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground py-4">
+                  <Loader2 className="h-4 w-4 animate-spin" /> Loading items...
+                </div>
+              ) : items.length === 0 ? (
+                <div className="text-center py-6 bg-secondary/20 rounded-xl border border-border/30">
+                  <Package className="h-6 w-6 text-muted-foreground/30 mx-auto mb-2" />
+                  <p className="text-xs text-muted-foreground">কোনো আইটেম ম্যাপ করা হয়নি</p>
+                  <a href="/admin/orders/backfill-items" className="text-xs text-primary hover:underline mt-1 inline-block">
+                    Backfill Items →
+                  </a>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {items.map((item: any) => (
+                    <div key={item.id} className="flex items-center justify-between p-3 rounded-xl bg-secondary/30 border border-border/40">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">{item.product_name}</p>
+                        <p className="text-xs text-muted-foreground">{item.product_code}</p>
+                      </div>
+                      <div className="flex items-center gap-4 text-sm">
+                        <span className="text-muted-foreground">×{item.quantity}</span>
+                        <span className="text-muted-foreground">৳{Number(item.unit_price).toLocaleString()}</span>
+                        <span className="font-semibold text-foreground w-20 text-right">৳{Number(item.total_price).toLocaleString()}</span>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="flex justify-between items-center pt-2 border-t border-border/40">
+                    <span className="text-xs text-muted-foreground">{items.length}টি আইটেম</span>
+                    <span className="text-sm font-bold text-primary">৳{itemsTotal.toLocaleString()}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Notes */}
+            {order.notes && (
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Notes</p>
+                <p className="text-sm text-foreground bg-secondary/20 rounded-xl p-3 border border-border/30">{order.notes}</p>
+              </div>
+            )}
+
+            {/* Meta */}
+            <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border/30">
+              <span>Created: {format(new Date(order.created_at), "dd MMM yyyy, hh:mm a")}</span>
+              <span className={`px-2 py-0.5 rounded-full font-medium ${getStatusColor(order.status)} text-white`}>
+                {getStatusLabel(order.status)}
+              </span>
+            </div>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
