@@ -17,8 +17,9 @@ import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import { ProductAdSpendTable } from "@/components/admin/meta-ads/ProductAdSpendTable";
 import { CampaignBreakdown } from "@/components/admin/meta-ads/CampaignBreakdown";
+import { ManualCampaignEntry } from "@/components/admin/meta-ads/ManualCampaignEntry";
 
-type View = "main" | "import";
+type View = "main" | "import" | "manual-campaign";
 
 type ParsedRow = {
   spend_date: string;
