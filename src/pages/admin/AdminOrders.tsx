@@ -606,7 +606,7 @@ const AdminOrders = () => {
               </TableHeader>
               <TableBody>
                 {filteredOrders.map((order) => (
-                  <TableRow key={order.id} className="hover:bg-secondary/20">
+                  <TableRow key={order.id} className="hover:bg-secondary/20 cursor-pointer" onClick={() => setDetailOrderId(order.id)}>
                     <TableCell className="font-mono text-sm font-semibold">{order.order_number}</TableCell>
                     <TableCell>
                       <div>
@@ -619,9 +619,9 @@ const AdminOrders = () => {
                     <TableCell>
                       <Select
                         value={order.status}
-                        onValueChange={(value) => updateStatus.mutate({ id: order.id, status: value as OrderStatus })}
+                        onValueChange={(value) => { updateStatus.mutate({ id: order.id, status: value as OrderStatus }); }}
                       >
-                        <SelectTrigger className="w-[130px] h-8 rounded-lg text-xs border-0 bg-secondary/40">
+                        <SelectTrigger className="w-[130px] h-8 rounded-lg text-xs border-0 bg-secondary/40" onClick={(e) => e.stopPropagation()}>
                           <div className="flex items-center gap-2">
                             <span className={`h-2 w-2 rounded-full ${getStatusColor(order.status)}`} />
                             <SelectValue />
@@ -641,7 +641,7 @@ const AdminOrders = () => {
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">{format(new Date(order.created_at), "dd MMM yyyy")}</TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive hover:bg-destructive/10" onClick={() => deleteOrder.mutate(order.id)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive hover:bg-destructive/10" onClick={(e) => { e.stopPropagation(); deleteOrder.mutate(order.id); }}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </TableCell>
