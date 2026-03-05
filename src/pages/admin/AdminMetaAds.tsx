@@ -149,6 +149,14 @@ export default function AdminMetaAds() {
     toast.success(`${success}টি এন্ট্রি সফলভাবে ইমপোর্ট হয়েছে!`);
   };
 
+  if (view === "manual-campaign") {
+    return (
+      <AdminLayout>
+        <ManualCampaignEntry onBack={() => setView("main")} />
+      </AdminLayout>
+    );
+  }
+
   if (view === "import") {
     return (
       <AdminLayout>
