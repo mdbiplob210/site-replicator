@@ -280,9 +280,14 @@ export default function AdminMetaAds() {
             <h1 className="text-2xl font-bold text-foreground">Meta Ads Analytics</h1>
             <p className="text-sm text-muted-foreground">Campaign → Ad Set → Ad breakdown</p>
           </div>
-          <Button variant="outline" className="gap-2" onClick={() => setView("import")}>
-            <Upload className="h-4 w-4" /> Import Data
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" className="gap-2" onClick={() => setView("import")}>
+              <Upload className="h-4 w-4" /> Manual Import
+            </Button>
+            <Button variant="outline" className="gap-2" onClick={() => window.location.reload()}>
+              <RefreshCw className="h-4 w-4" /> Refresh
+            </Button>
+          </div>
         </div>
 
         {/* Dollar Rate & Date Range */}
@@ -332,6 +337,12 @@ export default function AdminMetaAds() {
             </div>
           ))}
         </div>
+
+        {/* Product-wise Ad Spend */}
+        <ProductAdSpendTable />
+
+        {/* Campaign Breakdown */}
+        <CampaignBreakdown />
 
         {/* Daily Spend Chart */}
         {entries.length > 0 && (
