@@ -89,6 +89,7 @@ const AdminOrders = () => {
   const [deliveryRatio, setDeliveryRatio] = useState([0]);
   const [searchQuery, setSearchQuery] = useState("");
   const [newOrderOpen, setNewOrderOpen] = useState(false);
+  const [detailOrderId, setDetailOrderId] = useState<string | null>(null);
 
   // New order form state
   const [customerName, setCustomerName] = useState("");
