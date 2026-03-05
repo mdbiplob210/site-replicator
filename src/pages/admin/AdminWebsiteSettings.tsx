@@ -14,10 +14,9 @@ import {
 import { useSiteSettings, useUpdateSiteSetting } from "@/hooks/useSiteSettings";
 import { toast } from "sonner";
 
-type SettingsTab = "templates" | "general" | "buttons" | "buy_domain" | "tracking" | "data_reset";
+type SettingsTab = "general" | "buttons" | "buy_domain" | "tracking" | "data_reset";
 
 const tabs: { id: SettingsTab; label: string; icon: any }[] = [
-  { id: "templates", label: "Templates", icon: Layout },
   { id: "general", label: "General", icon: Home },
   { id: "buttons", label: "Buttons", icon: Sparkles },
   { id: "buy_domain", label: "Buy Domain", icon: Globe },
