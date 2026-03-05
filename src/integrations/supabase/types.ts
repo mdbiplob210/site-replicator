@@ -166,6 +166,172 @@ export type Database = {
         }
         Relationships: []
       }
+      meta_ads: {
+        Row: {
+          adset_id: string
+          clicks: number
+          cost_per_result: number
+          ctr: number
+          date_preset: string
+          id: string
+          name: string
+          purchases: number
+          roas: number
+          spend: number
+          status: string
+          synced_at: string
+        }
+        Insert: {
+          adset_id: string
+          clicks?: number
+          cost_per_result?: number
+          ctr?: number
+          date_preset?: string
+          id: string
+          name: string
+          purchases?: number
+          roas?: number
+          spend?: number
+          status?: string
+          synced_at?: string
+        }
+        Update: {
+          adset_id?: string
+          clicks?: number
+          cost_per_result?: number
+          ctr?: number
+          date_preset?: string
+          id?: string
+          name?: string
+          purchases?: number
+          roas?: number
+          spend?: number
+          status?: string
+          synced_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meta_ads_adset_id_fkey"
+            columns: ["adset_id"]
+            isOneToOne: false
+            referencedRelation: "meta_adsets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meta_adsets: {
+        Row: {
+          audience: string | null
+          campaign_id: string
+          clicks: number
+          cost_per_purchase: number
+          ctr: number
+          date_preset: string
+          id: string
+          name: string
+          purchases: number
+          roas: number
+          spend: number
+          status: string
+          synced_at: string
+        }
+        Insert: {
+          audience?: string | null
+          campaign_id: string
+          clicks?: number
+          cost_per_purchase?: number
+          ctr?: number
+          date_preset?: string
+          id: string
+          name: string
+          purchases?: number
+          roas?: number
+          spend?: number
+          status?: string
+          synced_at?: string
+        }
+        Update: {
+          audience?: string | null
+          campaign_id?: string
+          clicks?: number
+          cost_per_purchase?: number
+          ctr?: number
+          date_preset?: string
+          id?: string
+          name?: string
+          purchases?: number
+          roas?: number
+          spend?: number
+          status?: string
+          synced_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meta_adsets_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "meta_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meta_campaigns: {
+        Row: {
+          clicks: number
+          cost_per_purchase: number
+          ctr: number
+          daily_budget: number | null
+          date_preset: string
+          id: string
+          impressions: number
+          lifetime_budget: number | null
+          name: string
+          objective: string | null
+          purchase_value: number
+          purchases: number
+          roas: number
+          spend: number
+          status: string
+          synced_at: string
+        }
+        Insert: {
+          clicks?: number
+          cost_per_purchase?: number
+          ctr?: number
+          daily_budget?: number | null
+          date_preset?: string
+          id: string
+          impressions?: number
+          lifetime_budget?: number | null
+          name: string
+          objective?: string | null
+          purchase_value?: number
+          purchases?: number
+          roas?: number
+          spend?: number
+          status?: string
+          synced_at?: string
+        }
+        Update: {
+          clicks?: number
+          cost_per_purchase?: number
+          ctr?: number
+          daily_budget?: number | null
+          date_preset?: string
+          id?: string
+          impressions?: number
+          lifetime_budget?: number | null
+          name?: string
+          objective?: string | null
+          purchase_value?: number
+          purchases?: number
+          roas?: number
+          spend?: number
+          status?: string
+          synced_at?: string
+        }
+        Relationships: []
+      }
       order_assignments: {
         Row: {
           assigned_at: string
