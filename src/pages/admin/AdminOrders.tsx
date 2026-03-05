@@ -99,8 +99,8 @@ const AdminOrders = () => {
   const [discount, setDiscount] = useState(0);
   const [productCost, setProductCost] = useState(0);
   const [notes, setNotes] = useState("");
-
-  // Database hooks
+  const [orderItems, setOrderItems] = useState<OrderItemInput[]>([]);
+  const [productSearch, setProductSearch] = useState("");
   const statusFilter = getStatusFromTab(activeTab);
   const { data: orders = [], isLoading } = useOrders(statusFilter);
   const { data: counts = {} } = useOrderCounts();
