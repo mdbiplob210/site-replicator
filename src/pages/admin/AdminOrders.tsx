@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import {
   useOrders, useOrderCounts, useCreateOrder, useUpdateOrderStatus,
-  useDeleteOrder, useNextOrderNumber, getStatusFromTab, getStatusLabel,
+  useDeleteOrder, useNextOrderNumber, useOrderItems, getStatusFromTab, getStatusLabel,
   getStatusColor, type OrderStatus, type OrderItemInput
 } from "@/hooks/useOrders";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
