@@ -17,8 +17,9 @@ import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import { ProductAdSpendTable } from "@/components/admin/meta-ads/ProductAdSpendTable";
 import { CampaignBreakdown } from "@/components/admin/meta-ads/CampaignBreakdown";
+import { ManualCampaignEntry } from "@/components/admin/meta-ads/ManualCampaignEntry";
 
-type View = "main" | "import";
+type View = "main" | "import" | "manual-campaign";
 
 type ParsedRow = {
   spend_date: string;
@@ -147,6 +148,14 @@ export default function AdminMetaAds() {
     setParsedRows([]);
     toast.success(`${success}টি এন্ট্রি সফলভাবে ইমপোর্ট হয়েছে!`);
   };
+
+  if (view === "manual-campaign") {
+    return (
+      <AdminLayout>
+        <ManualCampaignEntry onBack={() => setView("main")} />
+      </AdminLayout>
+    );
+  }
 
   if (view === "import") {
     return (
@@ -282,8 +291,11 @@ export default function AdminMetaAds() {
             <p className="text-sm text-muted-foreground">Campaign → Ad Set → Ad breakdown</p>
           </div>
           <div className="flex gap-2">
+            <Button variant="outline" className="gap-2" onClick={() => setView("manual-campaign")}>
+              <Plus className="h-4 w-4" /> Manual Campaign
+            </Button>
             <Button variant="outline" className="gap-2" onClick={() => setView("import")}>
-              <Upload className="h-4 w-4" /> Manual Import
+              <Upload className="h-4 w-4" /> Ad Spend Import
             </Button>
             <Button variant="outline" className="gap-2" onClick={() => window.location.reload()}>
               <RefreshCw className="h-4 w-4" /> Refresh
