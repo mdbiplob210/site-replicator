@@ -66,7 +66,15 @@ const App = () => (
           <Route path="/admin/settings" element={<ProtectedAdminRoute><AdminSettings /></ProtectedAdminRoute>} />
           <Route path="/admin/screenshots" element={<ProtectedAdminRoute><AdminScreenshots /></ProtectedAdminRoute>} />
           <Route path="/admin/products" element={<ProtectedAdminRoute><AdminProducts /></ProtectedAdminRoute>} />
-          <Route path="/admin/website" element={<ProtectedAdminRoute><AdminWebsiteSettings /></ProtectedAdminRoute>} />
+          <Route path="/admin/website" element={<ProtectedAdminRoute><AdminMainTemplate /></ProtectedAdminRoute>} />
+          <Route path="/admin/website/main-template" element={<ProtectedAdminRoute><AdminMainTemplate /></ProtectedAdminRoute>} />
+          <Route path="/admin/website/checkout-template" element={<ProtectedAdminRoute><AdminCheckoutTemplate /></ProtectedAdminRoute>} />
+          <Route path="/admin/website/product-template" element={<ProtectedAdminRoute><AdminProductTemplate /></ProtectedAdminRoute>} />
+          <Route path="/admin/website/category-template" element={<ProtectedAdminRoute><AdminCategoryTemplate /></ProtectedAdminRoute>} />
+          <Route path="/admin/website/thank-you" element={<ProtectedAdminRoute><AdminThankYouTemplate /></ProtectedAdminRoute>} />
+          <Route path="/admin/website/landing-pages" element={<ProtectedAdminRoute><AdminLandingPages /></ProtectedAdminRoute>} />
+          <Route path="/admin/website/payment" element={<ProtectedAdminRoute><AdminPayment /></ProtectedAdminRoute>} />
+          <Route path="/admin/website/pages" element={<ProtectedAdminRoute><AdminPages /></ProtectedAdminRoute>} />
           <Route path="/admin/website/settings" element={<ProtectedAdminRoute><AdminWebsiteSettings /></ProtectedAdminRoute>} />
           <Route path="/admin/reports" element={<ProtectedAdminRoute><AdminReports /></ProtectedAdminRoute>} />
           <Route path="/admin/finance" element={<ProtectedAdminRoute><AdminFinance /></ProtectedAdminRoute>} />
