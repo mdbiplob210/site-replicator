@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import {
   DollarSign, TrendingUp, BarChart3,
-  Upload, Save, Calendar, Plus, ArrowLeft, X, Facebook, Trash2, Loader2
+  Upload, Save, Calendar, Plus, ArrowLeft, Facebook, Trash2, Loader2, FileSpreadsheet, CheckCircle2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,21 +10,54 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from "@/components/ui/select";
 import { useAdSpends } from "@/hooks/useAdSpends";
+import { useSiteSettings, useUpdateSiteSetting } from "@/hooks/useSiteSettings";
 import { format } from "date-fns";
+import { toast } from "sonner";
+import * as XLSX from "xlsx";
 
-type View = "main" | "manual-import";
+type View = "main" | "import";
+
+type ParsedRow = {
+  spend_date: string;
+  amount_usd: number;
+};
 
 export default function AdminMetaAds() {
   const [view, setView] = useState<View>("main");
-  const [dollarRate, setDollarRate] = useState("121");
   const [dateRange, setDateRange] = useState("today");
 
-  // Manual import state
-  const [spendDate, setSpendDate] = useState(format(new Date(), "yyyy-MM-dd"));
-  const [totalAdSpend, setTotalAdSpend] = useState("");
+  // Site settings for dollar rate
+  const { data: settings, isLoading: settingsLoading } = useSiteSettings();
+  const updateSetting = useUpdateSiteSetting();
+  const [dollarRate, setDollarRate] = useState("121");
+  const [rateSaved, setRateSaved] = useState(false);
+
+  useEffect(() => {
+    if (settings?.dollar_rate) {
+      setDollarRate(settings.dollar_rate);
+    }
+  }, [settings]);
 
   const rate = parseFloat(dollarRate) || 121;
   const { entries, allEntries, isLoading, totalUsd, totalBdt, avgDaily, addEntry, deleteEntry } = useAdSpends(dateRange, rate);
+
+  // Manual entry state
+  const [spendDate, setSpendDate] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [totalAdSpend, setTotalAdSpend] = useState("");
+
+  // Excel import state
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [parsedRows, setParsedRows] = useState<ParsedRow[]>([]);
+  const [importing, setImporting] = useState(false);
+
+  const handleSaveDollarRate = () => {
+    updateSetting.mutate({ key: "dollar_rate", value: dollarRate }, {
+      onSuccess: () => {
+        setRateSaved(true);
+        setTimeout(() => setRateSaved(false), 2000);
+      }
+    });
+  };
 
   const handleSaveEntry = () => {
     const usd = parseFloat(totalAdSpend);
@@ -34,65 +67,170 @@ export default function AdminMetaAds() {
       amount_usd: usd,
       amount_bdt: usd * rate,
     }, {
-      onSuccess: () => {
-        setTotalAdSpend("");
-      }
+      onSuccess: () => setTotalAdSpend("")
     });
   };
 
-  if (view === "manual-import") {
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const data = evt.target?.result;
+        const workbook = XLSX.read(data, { type: "binary" });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json<any>(sheet);
+
+        const rows: ParsedRow[] = [];
+        for (const row of json) {
+          // Try to find date and amount columns flexibly
+          const dateVal = row["Date"] || row["date"] || row["Reporting starts"] || row["Day"] || row["spend_date"];
+          const amountVal = row["Amount spent (USD)"] || row["Amount Spent"] || row["amount_usd"] || row["Spend"] || row["Cost"] || row["Amount"] || row["amount"];
+
+          if (dateVal && amountVal) {
+            let parsedDate: string;
+            if (typeof dateVal === "number") {
+              // Excel serial date
+              const d = XLSX.SSF.parse_date_code(dateVal);
+              parsedDate = `${d.y}-${String(d.m).padStart(2, "0")}-${String(d.d).padStart(2, "0")}`;
+            } else {
+              const d = new Date(dateVal);
+              parsedDate = isNaN(d.getTime()) ? String(dateVal) : format(d, "yyyy-MM-dd");
+            }
+
+            const amount = parseFloat(String(amountVal).replace(/[^0-9.]/g, ""));
+            if (!isNaN(amount) && amount > 0) {
+              rows.push({ spend_date: parsedDate, amount_usd: amount });
+            }
+          }
+        }
+
+        if (rows.length === 0) {
+          toast.error("কোনো ভ্যালিড ডাটা পাওয়া যায়নি। Date ও Amount কলাম আছে কিনা দেখুন।");
+        } else {
+          setParsedRows(rows);
+          toast.success(`${rows.length}টি এন্ট্রি পাওয়া গেছে!`);
+        }
+      } catch (err) {
+        toast.error("ফাইল পড়তে সমস্যা হয়েছে।");
+      }
+    };
+    reader.readAsBinaryString(file);
+    // Reset input
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleImportAll = async () => {
+    if (parsedRows.length === 0) return;
+    setImporting(true);
+    let success = 0;
+    for (const row of parsedRows) {
+      try {
+        await new Promise<void>((resolve, reject) => {
+          addEntry.mutate({
+            spend_date: row.spend_date,
+            amount_usd: row.amount_usd,
+            amount_bdt: row.amount_usd * rate,
+          }, { onSuccess: () => resolve(), onError: () => reject() });
+        });
+        success++;
+      } catch {}
+    }
+    setImporting(false);
+    setParsedRows([]);
+    toast.success(`${success}টি এন্ট্রি সফলভাবে ইমপোর্ট হয়েছে!`);
+  };
+
+  if (view === "import") {
     return (
       <AdminLayout>
         <div className="max-w-5xl mx-auto space-y-6">
           <div className="flex items-center gap-3">
             <button
-              onClick={() => setView("main")}
+              onClick={() => { setView("main"); setParsedRows([]); }}
               className="h-9 w-9 rounded-lg border border-border flex items-center justify-center hover:bg-secondary transition-colors"
             >
               <ArrowLeft className="h-4 w-4 text-muted-foreground" />
             </button>
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Manual Ad Spend Import</h1>
-              <p className="text-sm text-muted-foreground">Add daily ad spend data manually.</p>
+              <h1 className="text-2xl font-bold text-foreground">Ad Spend Import</h1>
+              <p className="text-sm text-muted-foreground">Excel/CSV ফাইল থেকে বা ম্যানুয়ালি ডাটা যোগ করুন।</p>
             </div>
           </div>
 
-          {/* Add New Entry */}
+          {/* Excel Import */}
           <div className="bg-card rounded-2xl border border-border p-6 space-y-5">
             <div>
-              <h2 className="text-lg font-bold text-foreground">Add New Entry</h2>
-              <p className="text-sm text-muted-foreground">Enter the total ad spend for a specific date.</p>
+              <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+                <FileSpreadsheet className="h-5 w-5 text-green-600" /> Excel/CSV ফাইল ইমপোর্ট
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Meta Ads Manager থেকে এক্সপোর্ট করা Excel বা CSV ফাইল আপলোড করুন। 
+                ফাইলে <strong>Date</strong> ও <strong>Amount spent (USD)</strong> কলাম থাকতে হবে।
+              </p>
             </div>
 
+            <div className="flex items-center gap-3">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".xlsx,.xls,.csv"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+              <Button variant="outline" className="gap-2" onClick={() => fileInputRef.current?.click()}>
+                <Upload className="h-4 w-4" /> ফাইল সিলেক্ট করুন
+              </Button>
+              {parsedRows.length > 0 && (
+                <span className="text-sm text-green-600 font-medium">{parsedRows.length}টি এন্ট্রি পাওয়া গেছে</span>
+              )}
+            </div>
+
+            {/* Preview parsed rows */}
+            {parsedRows.length > 0 && (
+              <div className="space-y-3">
+                <h3 className="text-sm font-bold text-foreground">প্রিভিউ:</h3>
+                <div className="max-h-60 overflow-y-auto space-y-1.5">
+                  {parsedRows.map((r, i) => (
+                    <div key={i} className="flex items-center justify-between p-2.5 rounded-lg bg-secondary/30 border border-border text-sm">
+                      <span className="text-foreground font-medium">{r.spend_date}</span>
+                      <span className="text-foreground">${r.amount_usd.toFixed(2)}</span>
+                      <span className="text-muted-foreground">≈ ৳{(r.amount_usd * rate).toFixed(0)}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex gap-3">
+                  <Button className="gap-2" onClick={handleImportAll} disabled={importing}>
+                    {importing ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                    সব ইমপোর্ট করুন ({parsedRows.length}টি)
+                  </Button>
+                  <Button variant="outline" onClick={() => setParsedRows([])}>বাতিল</Button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Manual Entry */}
+          <div className="bg-card rounded-2xl border border-border p-6 space-y-5">
+            <div>
+              <h2 className="text-lg font-bold text-foreground">ম্যানুয়াল এন্ট্রি</h2>
+              <p className="text-sm text-muted-foreground">একটি নির্দিষ্ট তারিখের জন্য অ্যাড খরচ যোগ করুন।</p>
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium text-foreground">Date *</label>
-                <Input
-                  type="date"
-                  value={spendDate}
-                  onChange={(e) => setSpendDate(e.target.value)}
-                  className="mt-1.5"
-                />
+                <Input type="date" value={spendDate} onChange={(e) => setSpendDate(e.target.value)} className="mt-1.5" />
               </div>
               <div>
                 <label className="text-sm font-medium text-foreground">Total Ad Spend (USD) *</label>
-                <Input
-                  className="mt-1.5"
-                  type="number"
-                  step="0.01"
-                  placeholder="e.g. 50.00"
-                  value={totalAdSpend}
-                  onChange={(e) => setTotalAdSpend(e.target.value)}
-                />
+                <Input className="mt-1.5" type="number" step="0.01" placeholder="e.g. 50.00" value={totalAdSpend} onChange={(e) => setTotalAdSpend(e.target.value)} />
               </div>
             </div>
-
             {totalAdSpend && parseFloat(totalAdSpend) > 0 && (
-              <p className="text-sm text-muted-foreground">
-                ≈ ৳{(parseFloat(totalAdSpend) * rate).toFixed(0)} BDT (@ {rate} rate)
-              </p>
+              <p className="text-sm text-muted-foreground">≈ ৳{(parseFloat(totalAdSpend) * rate).toFixed(0)} BDT (@ {rate} rate)</p>
             )}
-
             <Button className="gap-2" onClick={handleSaveEntry} disabled={addEntry.isPending}>
               {addEntry.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
               Save Entry
@@ -101,9 +239,9 @@ export default function AdminMetaAds() {
 
           {/* Previous Entries */}
           <div className="bg-card rounded-2xl border border-border p-6">
-            <h3 className="font-bold text-foreground mb-3">Previous Entries</h3>
+            <h3 className="font-bold text-foreground mb-3">আগের এন্ট্রিসমূহ</h3>
             {allEntries.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No manual entries yet.</p>
+              <p className="text-sm text-muted-foreground">কোনো এন্ট্রি নেই।</p>
             ) : (
               <div className="space-y-2">
                 {allEntries.map((e) => (
@@ -138,8 +276,8 @@ export default function AdminMetaAds() {
             <h1 className="text-2xl font-bold text-foreground">Meta Ads Analytics</h1>
             <p className="text-sm text-muted-foreground">Campaign → Ad Set → Ad breakdown</p>
           </div>
-          <Button variant="outline" className="gap-2" onClick={() => setView("manual-import")}>
-            <Upload className="h-4 w-4" /> Manual Import
+          <Button variant="outline" className="gap-2" onClick={() => setView("import")}>
+            <Upload className="h-4 w-4" /> Import Data
           </Button>
         </div>
 
@@ -149,7 +287,11 @@ export default function AdminMetaAds() {
             <div>
               <label className="text-sm font-medium text-foreground">1 USD = ? BDT</label>
               <div className="flex items-center gap-2 mt-1.5">
-                <Input value={dollarRate} onChange={(e) => setDollarRate(e.target.value)} className="w-28" />
+                <Input value={dollarRate} onChange={(e) => { setDollarRate(e.target.value); setRateSaved(false); }} className="w-28" />
+                <Button size="sm" variant="outline" className="gap-1.5" onClick={handleSaveDollarRate} disabled={updateSetting.isPending}>
+                  {rateSaved ? <CheckCircle2 className="h-3.5 w-3.5 text-green-600" /> : <Save className="h-3.5 w-3.5" />}
+                  {rateSaved ? "Saved" : "Save"}
+                </Button>
               </div>
             </div>
             <div>
@@ -211,7 +353,7 @@ export default function AdminMetaAds() {
           </div>
         ) : (
           <div className="bg-card rounded-2xl border border-border p-6 text-center">
-            <p className="text-muted-foreground">No ad spend entries found for this period. Use "Manual Import" to add data.</p>
+            <p className="text-muted-foreground">এই সময়ের জন্য কোনো এন্ট্রি নেই। "Import Data" থেকে ডাটা যোগ করুন।</p>
           </div>
         )}
 
@@ -221,10 +363,15 @@ export default function AdminMetaAds() {
             <Facebook className="h-8 w-8 text-blue-600" />
           </div>
           <h3 className="text-xl font-bold text-foreground mb-2">Connect Facebook Ads</h3>
-          <p className="text-sm text-muted-foreground mb-6">Login with your Facebook account to view and monitor your ad campaigns.</p>
+          <p className="text-sm text-muted-foreground mb-6">
+            আপনার Facebook অ্যাকাউন্ট কানেক্ট করুন এবং সরাসরি অ্যাড ক্যাম্পেইনের ডাটা দেখুন।
+          </p>
           <Button className="gap-2 bg-blue-600 hover:bg-blue-700 text-white">
             <Facebook className="h-4 w-4" /> Login with Facebook
           </Button>
+          <p className="text-xs text-muted-foreground mt-3">
+            কানেক্ট করলে আপনার সব Ad Account ও চলমান Ad-এর খরচ এখানে দেখা যাবে।
+          </p>
         </div>
       </div>
     </AdminLayout>
