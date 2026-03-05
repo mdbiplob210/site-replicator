@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import {
   DollarSign, TrendingUp, BarChart3, ShoppingCart,
-  Upload, Save, Calendar, Plus, ArrowLeft, Facebook, Trash2, Loader2, FileSpreadsheet, CheckCircle2, RefreshCw
+  Upload, Save, Calendar, Plus, ArrowLeft, Facebook, Trash2, Loader2, FileSpreadsheet, CheckCircle2, RefreshCw, KeyRound
 } from "lucide-react";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import * as XLSX from "xlsx";
 import { ProductAdSpendTable } from "@/components/admin/meta-ads/ProductAdSpendTable";
 import { CampaignBreakdown } from "@/components/admin/meta-ads/CampaignBreakdown";
 import { ManualCampaignEntry } from "@/components/admin/meta-ads/ManualCampaignEntry";
+import { useExchangeToken } from "@/hooks/useMetaAds";
 
 type View = "main" | "import" | "manual-campaign";
 
@@ -30,7 +31,8 @@ export default function AdminMetaAds() {
   const [view, setView] = useState<View>("main");
   const [dateRange, setDateRange] = useState("today");
   const [trendMode, setTrendMode] = useState<"weekly" | "monthly">("weekly");
-  const [fbConnected, setFbConnected] = useState(true); // Assume connected since secrets are set
+  const [fbConnected, setFbConnected] = useState(true);
+  const exchangeToken = useExchangeToken();
 
   // Site settings for dollar rate
   const { data: settings, isLoading: settingsLoading } = useSiteSettings();
@@ -299,6 +301,15 @@ export default function AdminMetaAds() {
             </Button>
             <Button variant="outline" className="gap-2" onClick={() => window.location.reload()}>
               <RefreshCw className="h-4 w-4" /> Refresh
+            </Button>
+            <Button
+              variant="outline"
+              className="gap-2"
+              onClick={() => exchangeToken.mutate()}
+              disabled={exchangeToken.isPending}
+            >
+              {exchangeToken.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />}
+              Long-Lived Token
             </Button>
           </div>
         </div>
