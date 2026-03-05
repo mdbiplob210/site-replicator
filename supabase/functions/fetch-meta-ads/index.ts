@@ -52,6 +52,32 @@ Deno.serve(async (req) => {
     const datePreset = body.date_preset || "today";
     const timeRange = body.time_range;
 
+    // ─── EXCHANGE TOKEN action: short-lived → long-lived ───
+    if (action === "exchange_token") {
+      const FB_APP_ID = Deno.env.get("FB_APP_ID");
+      const FB_APP_SECRET = Deno.env.get("FB_APP_SECRET");
+      const shortToken = body.short_lived_token || Deno.env.get("FB_ACCESS_TOKEN");
+      if (!FB_APP_ID || !FB_APP_SECRET) {
+        return new Response(JSON.stringify({ error: "FB_APP_ID or FB_APP_SECRET not configured" }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const exchangeUrl = `${FB_GRAPH_URL}/oauth/access_token?grant_type=fb_exchange_token&client_id=${FB_APP_ID}&client_secret=${FB_APP_SECRET}&fb_exchange_token=${shortToken}`;
+      const exRes = await fetch(exchangeUrl);
+      const exData = await exRes.json();
+      if (exData.error) {
+        return new Response(JSON.stringify({ error: `Token exchange failed: ${exData.error.message}` }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      return new Response(JSON.stringify({
+        success: true,
+        access_token: exData.access_token,
+        token_type: exData.token_type,
+        expires_in: exData.expires_in,
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     // ─── SYNC action: fetch from FB API and save to DB ───
     if (action === "sync") {
       const FB_ACCESS_TOKEN = Deno.env.get("FB_ACCESS_TOKEN");

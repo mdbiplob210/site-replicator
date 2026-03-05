@@ -70,6 +70,31 @@ export function useMetaAds(adsetId: string | null, dateRange: string) {
   });
 }
 
+// ─── Exchange short-lived → long-lived token ───
+
+export function useExchangeToken() {
+  return useMutation({
+    mutationFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
+
+      const res = await supabase.functions.invoke("fetch-meta-ads", {
+        body: { action: "exchange_token" },
+      });
+
+      if (res.error) throw new Error(res.error.message || "Token exchange failed");
+      if (res.data?.error) throw new Error(res.data.error);
+      return res.data;
+    },
+    onSuccess: (data) => {
+      toast.success(`Long-lived token পাওয়া গেছে! মেয়াদ: ${Math.round((data.expires_in || 0) / 86400)} দিন`);
+    },
+    onError: (err: Error) => {
+      toast.error(`Token exchange ব্যর্থ: ${err.message}`);
+    },
+  });
+}
+
 // ─── Sync from Facebook API → DB ───
 
 export function useSyncMetaAds() {
