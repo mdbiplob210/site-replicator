@@ -343,7 +343,7 @@ export default function AdminMetaAds() {
         <ProductAdSpendTable dateRange={dateRange} totalSpendUsd={totalUsd} rate={rate} />
 
         {/* Campaign Breakdown */}
-        <CampaignBreakdown dateRange={dateRange} isConnected={fbConnected} />
+        <CampaignBreakdown dateRange={dateRange} />
 
         {/* Daily Spend Chart */}
         {entries.length > 0 && (
