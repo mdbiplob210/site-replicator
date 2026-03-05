@@ -19,7 +19,7 @@ import {
   Settings, Download, Printer, RefreshCw, ChevronDown, Wifi, Ban,
   Trash2, Copy, X, ShoppingCart, ArrowLeft, Clock, CheckCircle2,
   GitMerge, PauseCircle, XCircle, Trash, Smartphone, BarChart3,
-  MessageSquare, Filter, Loader2
+  MessageSquare, Filter, Loader2, Package
 } from "lucide-react";
 import {
   useOrders, useOrderCounts, useCreateOrder, useUpdateOrderStatus,
