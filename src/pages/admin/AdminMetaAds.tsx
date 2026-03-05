@@ -359,6 +359,51 @@ export default function AdminMetaAds() {
           </div>
         )}
 
+        {/* Weekly/Monthly Trend Line Chart */}
+        {allEntries.length > 1 && (() => {
+          // Group by week (ISO week start)
+          const weekMap = new Map<string, number>();
+          const sorted = [...allEntries].sort((a, b) => a.spend_date.localeCompare(b.spend_date));
+          for (const e of sorted) {
+            const d = new Date(e.spend_date);
+            const day = d.getDay();
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+            const weekStart = new Date(d.setDate(diff));
+            const key = weekStart.toISOString().slice(0, 10);
+            weekMap.set(key, (weekMap.get(key) || 0) + Number(e.amount_usd));
+          }
+          const trendData = Array.from(weekMap.entries()).map(([week, usd]) => ({
+            week: week.slice(5),
+            USD: parseFloat(usd.toFixed(2)),
+            BDT: parseFloat((usd * rate).toFixed(0)),
+          }));
+          if (trendData.length < 2) return null;
+          return (
+            <div className="bg-card rounded-2xl border border-border p-6">
+              <h3 className="font-bold text-foreground mb-4">সাপ্তাহিক খরচের ট্রেন্ড</h3>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={trendData}>
+                    <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                    <XAxis dataKey="week" tick={{ fontSize: 12 }} />
+                    <YAxis tick={{ fontSize: 12 }} />
+                    <Tooltip
+                      contentStyle={{ borderRadius: 12, border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }}
+                      formatter={(value: number, name: string) => [
+                        name === 'USD' ? `$${value.toFixed(2)}` : `৳${value}`,
+                        name
+                      ]}
+                    />
+                    <Legend />
+                    <Line type="monotone" dataKey="USD" stroke="hsl(var(--primary))" strokeWidth={2.5} dot={{ r: 4 }} />
+                    <Line type="monotone" dataKey="BDT" stroke="hsl(var(--accent))" strokeWidth={2} dot={{ r: 3 }} strokeDasharray="5 5" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Entries Table */}
         {entries.length > 0 ? (
           <div className="bg-card rounded-2xl border border-border p-6">
