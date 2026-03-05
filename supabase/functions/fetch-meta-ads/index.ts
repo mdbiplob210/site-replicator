@@ -14,7 +14,6 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Auth check
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -23,6 +22,11 @@ Deno.serve(async (req) => {
       });
     }
 
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_ANON_KEY")!,
@@ -30,236 +34,163 @@ Deno.serve(async (req) => {
     );
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims) {
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    if (userError || !user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const FB_ACCESS_TOKEN = Deno.env.get("FB_ACCESS_TOKEN");
-    const FB_AD_ACCOUNT_ID = Deno.env.get("FB_AD_ACCOUNT_ID");
-
-    if (!FB_ACCESS_TOKEN || !FB_AD_ACCOUNT_ID) {
-      return new Response(
-        JSON.stringify({ error: "Facebook credentials not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Parse request body
     const body = await req.json().catch(() => ({}));
     const action = body.action || "campaigns";
     const datePreset = body.date_preset || "today";
-    const timeRange = body.time_range; // { since: "YYYY-MM-DD", until: "YYYY-MM-DD" }
+    const timeRange = body.time_range;
 
-    const adAccountId = FB_AD_ACCOUNT_ID.startsWith("act_")
-      ? FB_AD_ACCOUNT_ID
-      : `act_${FB_AD_ACCOUNT_ID}`;
+    // ─── SYNC action: fetch from FB API and save to DB ───
+    if (action === "sync") {
+      const FB_ACCESS_TOKEN = Deno.env.get("FB_ACCESS_TOKEN");
+      const FB_AD_ACCOUNT_ID = Deno.env.get("FB_AD_ACCOUNT_ID");
+      if (!FB_ACCESS_TOKEN || !FB_AD_ACCOUNT_ID) {
+        return new Response(JSON.stringify({ error: "Facebook credentials not configured" }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
 
-    // Build time params
-    let timeParams = "";
-    if (timeRange?.since && timeRange?.until) {
-      timeParams = `&time_range={"since":"${timeRange.since}","until":"${timeRange.until}"}`;
-    } else {
-      timeParams = `&date_preset=${datePreset}`;
-    }
+      const adAccountId = FB_AD_ACCOUNT_ID.startsWith("act_") ? FB_AD_ACCOUNT_ID : `act_${FB_AD_ACCOUNT_ID}`;
+      let timeParams = "";
+      if (timeRange?.since && timeRange?.until) {
+        timeParams = `&time_range={"since":"${timeRange.since}","until":"${timeRange.until}"}`;
+      } else {
+        timeParams = `&date_preset=${datePreset}`;
+      }
 
-    if (action === "campaigns") {
-      // Fetch campaigns with insights
+      // 1. Fetch campaigns
       const campaignsUrl = `${FB_GRAPH_URL}/${adAccountId}/campaigns?fields=id,name,status,objective,daily_budget,lifetime_budget&access_token=${FB_ACCESS_TOKEN}&limit=100`;
       const campaignsRes = await fetch(campaignsUrl);
       const campaignsData = await campaignsRes.json();
+      if (campaignsData.error) throw new Error(`FB API: ${campaignsData.error.message}`);
 
-      if (campaignsData.error) {
-        throw new Error(`FB API Error: ${campaignsData.error.message}`);
+      // Campaign insights
+      const cInsightsUrl = `${FB_GRAPH_URL}/${adAccountId}/insights?fields=campaign_id,campaign_name,spend,impressions,clicks,ctr,cpc,actions,action_values,cost_per_action_type&level=campaign${timeParams}&access_token=${FB_ACCESS_TOKEN}&limit=500`;
+      const cInsightsRes = await fetch(cInsightsUrl);
+      const cInsightsData = await cInsightsRes.json();
+      const cInsightsMap = new Map();
+      if (cInsightsData.data) {
+        for (const i of cInsightsData.data) cInsightsMap.set(i.campaign_id, i);
       }
 
-      // Fetch insights for the account
-      const insightsUrl = `${FB_GRAPH_URL}/${adAccountId}/insights?fields=campaign_id,campaign_name,spend,impressions,clicks,ctr,cpc,actions,action_values,cost_per_action_type&level=campaign${timeParams}&access_token=${FB_ACCESS_TOKEN}&limit=500`;
-      const insightsRes = await fetch(insightsUrl);
-      const insightsData = await insightsRes.json();
+      const campaignRows = (campaignsData.data || []).map((c: any) => {
+        const ins = cInsightsMap.get(c.id) || {};
+        const purchases = ins.actions?.find((a: any) => a.action_type === "purchase")?.value || 0;
+        const purchaseValue = ins.action_values?.find((a: any) => a.action_type === "purchase")?.value || 0;
+        const costPerPurchase = ins.cost_per_action_type?.find((a: any) => a.action_type === "purchase")?.value || 0;
+        const spend = parseFloat(ins.spend || "0");
+        const roas = spend > 0 ? parseFloat(purchaseValue) / spend : 0;
+        return {
+          id: c.id, name: c.name, status: c.status, objective: c.objective || null,
+          daily_budget: c.daily_budget ? parseFloat(c.daily_budget) / 100 : null,
+          lifetime_budget: c.lifetime_budget ? parseFloat(c.lifetime_budget) / 100 : null,
+          spend, impressions: parseInt(ins.impressions || "0"), clicks: parseInt(ins.clicks || "0"),
+          ctr: parseFloat(ins.ctr || "0"), purchases: parseInt(purchases),
+          purchase_value: parseFloat(purchaseValue), cost_per_purchase: parseFloat(costPerPurchase),
+          roas: parseFloat(roas.toFixed(2)), date_preset: datePreset, synced_at: new Date().toISOString(),
+        };
+      });
 
-      // Merge insights into campaigns
-      const insightsMap = new Map();
-      if (insightsData.data) {
-        for (const insight of insightsData.data) {
-          insightsMap.set(insight.campaign_id, insight);
+      // Upsert campaigns
+      if (campaignRows.length > 0) {
+        const { error: cErr } = await supabaseAdmin.from("meta_campaigns").upsert(campaignRows, { onConflict: "id" });
+        if (cErr) console.error("Campaign upsert error:", cErr);
+      }
+
+      // 2. For each campaign, fetch ad sets
+      let totalAdsets = 0;
+      let totalAds = 0;
+      for (const camp of campaignRows) {
+        const adsetsUrl = `${FB_GRAPH_URL}/${camp.id}/adsets?fields=id,name,status,targeting,daily_budget,lifetime_budget&access_token=${FB_ACCESS_TOKEN}&limit=100`;
+        const adsetsRes = await fetch(adsetsUrl);
+        const adsetsData = await adsetsRes.json();
+        if (adsetsData.error) { console.error(`Adset fetch error for ${camp.id}:`, adsetsData.error); continue; }
+
+        const asInsightsUrl = `${FB_GRAPH_URL}/${camp.id}/insights?fields=adset_id,spend,impressions,clicks,ctr,actions,action_values,cost_per_action_type&level=adset${timeParams}&access_token=${FB_ACCESS_TOKEN}&limit=500`;
+        const asInsightsRes = await fetch(asInsightsUrl);
+        const asInsightsData = await asInsightsRes.json();
+        const asMap = new Map();
+        if (asInsightsData.data) { for (const i of asInsightsData.data) asMap.set(i.adset_id, i); }
+
+        const adsetRows = (adsetsData.data || []).map((a: any) => {
+          const ins = asMap.get(a.id) || {};
+          const purchases = ins.actions?.find((x: any) => x.action_type === "purchase")?.value || 0;
+          const purchaseValue = ins.action_values?.find((x: any) => x.action_type === "purchase")?.value || 0;
+          const costPerPurchase = ins.cost_per_action_type?.find((x: any) => x.action_type === "purchase")?.value || 0;
+          const spend = parseFloat(ins.spend || "0");
+          const roas = spend > 0 ? parseFloat(purchaseValue) / spend : 0;
+          const targeting = a.targeting || {};
+          const audience = `${targeting.age_min || ""}-${targeting.age_max || ""} · ${targeting.geo_locations?.countries?.join(", ") || ""}`;
+          return {
+            id: a.id, campaign_id: camp.id, name: a.name, status: a.status, audience,
+            spend, clicks: parseInt(ins.clicks || "0"), ctr: parseFloat(ins.ctr || "0"),
+            purchases: parseInt(purchases), cost_per_purchase: parseFloat(costPerPurchase),
+            roas: parseFloat(roas.toFixed(2)), date_preset: datePreset, synced_at: new Date().toISOString(),
+          };
+        });
+
+        if (adsetRows.length > 0) {
+          const { error: asErr } = await supabaseAdmin.from("meta_adsets").upsert(adsetRows, { onConflict: "id" });
+          if (asErr) console.error("Adset upsert error:", asErr);
+          totalAdsets += adsetRows.length;
+        }
+
+        // 3. For each ad set, fetch ads
+        for (const adset of adsetRows) {
+          const adsUrl = `${FB_GRAPH_URL}/${adset.id}/ads?fields=id,name,status&access_token=${FB_ACCESS_TOKEN}&limit=100`;
+          const adsRes = await fetch(adsUrl);
+          const adsData = await adsRes.json();
+          if (adsData.error) { console.error(`Ad fetch error for ${adset.id}:`, adsData.error); continue; }
+
+          const adInsUrl = `${FB_GRAPH_URL}/${adset.id}/insights?fields=ad_id,spend,clicks,ctr,actions,action_values,cost_per_action_type&level=ad${timeParams}&access_token=${FB_ACCESS_TOKEN}&limit=500`;
+          const adInsRes = await fetch(adInsUrl);
+          const adInsData = await adInsRes.json();
+          const adMap = new Map();
+          if (adInsData.data) { for (const i of adInsData.data) adMap.set(i.ad_id, i); }
+
+          const adRows = (adsData.data || []).map((ad: any) => {
+            const ins = adMap.get(ad.id) || {};
+            const purchases = ins.actions?.find((x: any) => x.action_type === "purchase")?.value || 0;
+            const purchaseValue = ins.action_values?.find((x: any) => x.action_type === "purchase")?.value || 0;
+            const costPerResult = ins.cost_per_action_type?.find((x: any) => x.action_type === "purchase")?.value || 0;
+            const spend = parseFloat(ins.spend || "0");
+            const roas = spend > 0 ? parseFloat(purchaseValue) / spend : 0;
+            return {
+              id: ad.id, adset_id: adset.id, name: ad.name, status: ad.status,
+              spend, clicks: parseInt(ins.clicks || "0"), ctr: parseFloat(ins.ctr || "0"),
+              purchases: parseInt(purchases), cost_per_result: parseFloat(costPerResult),
+              roas: parseFloat(roas.toFixed(2)), date_preset: datePreset, synced_at: new Date().toISOString(),
+            };
+          });
+
+          if (adRows.length > 0) {
+            const { error: adErr } = await supabaseAdmin.from("meta_ads").upsert(adRows, { onConflict: "id" });
+            if (adErr) console.error("Ad upsert error:", adErr);
+            totalAds += adRows.length;
+          }
         }
       }
 
-      const campaigns = (campaignsData.data || []).map((c: any) => {
-        const insight = insightsMap.get(c.id) || {};
-        const purchases = insight.actions?.find((a: any) => a.action_type === "purchase")?.value || 0;
-        const purchaseValue = insight.action_values?.find((a: any) => a.action_type === "purchase")?.value || 0;
-        const costPerPurchase = insight.cost_per_action_type?.find((a: any) => a.action_type === "purchase")?.value || 0;
-        const spend = parseFloat(insight.spend || "0");
-        const roas = spend > 0 ? parseFloat(purchaseValue) / spend : 0;
-
-        return {
-          id: c.id,
-          name: c.name,
-          status: c.status,
-          objective: c.objective,
-          spend: spend,
-          impressions: parseInt(insight.impressions || "0"),
-          clicks: parseInt(insight.clicks || "0"),
-          ctr: parseFloat(insight.ctr || "0"),
-          purchases: parseInt(purchases),
-          purchase_value: parseFloat(purchaseValue),
-          cost_per_purchase: parseFloat(costPerPurchase),
-          roas: parseFloat(roas.toFixed(2)),
-        };
-      });
-
-      return new Response(JSON.stringify({ campaigns, total: campaigns.length }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(JSON.stringify({
+        success: true,
+        synced: { campaigns: campaignRows.length, adsets: totalAdsets, ads: totalAds },
+        date_preset: datePreset,
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    if (action === "adsets") {
-      const campaignId = body.campaign_id;
-      if (!campaignId) {
-        return new Response(JSON.stringify({ error: "campaign_id required" }), {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
-      const adsetsUrl = `${FB_GRAPH_URL}/${campaignId}/adsets?fields=id,name,status,targeting,daily_budget,lifetime_budget&access_token=${FB_ACCESS_TOKEN}&limit=100`;
-      const adsetsRes = await fetch(adsetsUrl);
-      const adsetsData = await adsetsRes.json();
-
-      if (adsetsData.error) {
-        throw new Error(`FB API Error: ${adsetsData.error.message}`);
-      }
-
-      // Insights at adset level
-      const insightsUrl = `${FB_GRAPH_URL}/${campaignId}/insights?fields=adset_id,adset_name,spend,impressions,clicks,ctr,actions,action_values,cost_per_action_type&level=adset${timeParams}&access_token=${FB_ACCESS_TOKEN}&limit=500`;
-      const insightsRes = await fetch(insightsUrl);
-      const insightsData = await insightsRes.json();
-
-      const insightsMap = new Map();
-      if (insightsData.data) {
-        for (const i of insightsData.data) insightsMap.set(i.adset_id, i);
-      }
-
-      const adsets = (adsetsData.data || []).map((a: any) => {
-        const ins = insightsMap.get(a.id) || {};
-        const purchases = ins.actions?.find((x: any) => x.action_type === "purchase")?.value || 0;
-        const purchaseValue = ins.action_values?.find((x: any) => x.action_type === "purchase")?.value || 0;
-        const costPerPurchase = ins.cost_per_action_type?.find((x: any) => x.action_type === "purchase")?.value || 0;
-        const spend = parseFloat(ins.spend || "0");
-        const roas = spend > 0 ? parseFloat(purchaseValue) / spend : 0;
-
-        // Extract audience info from targeting
-        const targeting = a.targeting || {};
-        const ageMin = targeting.age_min || "";
-        const ageMax = targeting.age_max || "";
-        const geoNames = targeting.geo_locations?.countries?.join(", ") || "";
-        const audience = `${ageMin}-${ageMax} · ${geoNames}`;
-
-        return {
-          id: a.id,
-          name: a.name,
-          status: a.status,
-          audience,
-          spend,
-          clicks: parseInt(ins.clicks || "0"),
-          ctr: parseFloat(ins.ctr || "0"),
-          purchases: parseInt(purchases),
-          cost_per_purchase: parseFloat(costPerPurchase),
-          roas: parseFloat(roas.toFixed(2)),
-        };
-      });
-
-      return new Response(JSON.stringify({ adsets }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    if (action === "ads") {
-      const adsetId = body.adset_id;
-      if (!adsetId) {
-        return new Response(JSON.stringify({ error: "adset_id required" }), {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
-      const adsUrl = `${FB_GRAPH_URL}/${adsetId}/ads?fields=id,name,status,creative{title,body,thumbnail_url}&access_token=${FB_ACCESS_TOKEN}&limit=100`;
-      const adsRes = await fetch(adsUrl);
-      const adsData = await adsRes.json();
-
-      if (adsData.error) {
-        throw new Error(`FB API Error: ${adsData.error.message}`);
-      }
-
-      const insightsUrl = `${FB_GRAPH_URL}/${adsetId}/insights?fields=ad_id,ad_name,spend,impressions,clicks,ctr,actions,action_values,cost_per_action_type&level=ad${timeParams}&access_token=${FB_ACCESS_TOKEN}&limit=500`;
-      const insightsRes = await fetch(insightsUrl);
-      const insightsData = await insightsRes.json();
-
-      const insightsMap = new Map();
-      if (insightsData.data) {
-        for (const i of insightsData.data) insightsMap.set(i.ad_id, i);
-      }
-
-      const ads = (adsData.data || []).map((a: any) => {
-        const ins = insightsMap.get(a.id) || {};
-        const purchases = ins.actions?.find((x: any) => x.action_type === "purchase")?.value || 0;
-        const purchaseValue = ins.action_values?.find((x: any) => x.action_type === "purchase")?.value || 0;
-        const costPerResult = ins.cost_per_action_type?.find((x: any) => x.action_type === "purchase")?.value || 0;
-        const spend = parseFloat(ins.spend || "0");
-        const roas = spend > 0 ? parseFloat(purchaseValue) / spend : 0;
-
-        return {
-          id: a.id,
-          name: a.name,
-          status: a.status,
-          spend,
-          clicks: parseInt(ins.clicks || "0"),
-          ctr: parseFloat(ins.ctr || "0"),
-          purchases: parseInt(purchases),
-          cost_per_result: parseFloat(costPerResult),
-          roas: parseFloat(roas.toFixed(2)),
-        };
-      });
-
-      return new Response(JSON.stringify({ ads }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // Account summary
-    if (action === "summary") {
-      const summaryUrl = `${FB_GRAPH_URL}/${adAccountId}/insights?fields=spend,impressions,clicks,ctr,actions,action_values&${timeParams.replace("&", "")}&access_token=${FB_ACCESS_TOKEN}`;
-      const summaryRes = await fetch(summaryUrl);
-      const summaryData = await summaryRes.json();
-
-      const d = summaryData.data?.[0] || {};
-      const purchases = d.actions?.find((a: any) => a.action_type === "purchase")?.value || 0;
-      const purchaseValue = d.action_values?.find((a: any) => a.action_type === "purchase")?.value || 0;
-
-      return new Response(
-        JSON.stringify({
-          spend: parseFloat(d.spend || "0"),
-          impressions: parseInt(d.impressions || "0"),
-          clicks: parseInt(d.clicks || "0"),
-          ctr: parseFloat(d.ctr || "0"),
-          purchases: parseInt(purchases),
-          purchase_value: parseFloat(purchaseValue),
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    return new Response(JSON.stringify({ error: "Invalid action" }), {
+    return new Response(JSON.stringify({ error: "Invalid action. Use 'sync'." }), {
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err: any) {
-    console.error("FB API Error:", err);
+    console.error("Edge function error:", err);
     return new Response(JSON.stringify({ error: err.message || "Internal error" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
