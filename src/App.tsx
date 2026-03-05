@@ -24,6 +24,7 @@ import AdminPlanning from "./pages/admin/AdminPlanning";
 import AdminTasks from "./pages/admin/AdminTasks";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import AdminMetaAds from "./pages/admin/AdminMetaAds";
+import AdminBackfillOrderItems from "./pages/admin/AdminBackfillOrderItems";
 import AdminWebsiteSettings from "./pages/admin/AdminWebsiteSettings";
 import AdminMainTemplate from "./pages/admin/AdminMainTemplate";
 import AdminCheckoutTemplate from "./pages/admin/AdminCheckoutTemplate";
@@ -82,6 +83,7 @@ const App = () => (
           <Route path="/admin/tasks" element={<ProtectedAdminRoute><AdminTasks /></ProtectedAdminRoute>} />
           <Route path="/admin/analytics" element={<ProtectedAdminRoute><AdminAnalytics /></ProtectedAdminRoute>} />
           <Route path="/admin/meta-ads" element={<ProtectedAdminRoute><AdminMetaAds /></ProtectedAdminRoute>} />
+          <Route path="/admin/orders/backfill-items" element={<ProtectedAdminRoute><AdminBackfillOrderItems /></ProtectedAdminRoute>} />
           <Route path="/admin/automation" element={<ProtectedAdminRoute><AdminAutomation /></ProtectedAdminRoute>} />
           <Route path="/admin/backup" element={<ProtectedAdminRoute><AdminBackup /></ProtectedAdminRoute>} />
           <Route path="/admin/support" element={P("Support", "Customer support")} />
