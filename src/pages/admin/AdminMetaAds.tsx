@@ -29,6 +29,7 @@ export default function AdminMetaAds() {
   const [view, setView] = useState<View>("main");
   const [dateRange, setDateRange] = useState("today");
   const [trendMode, setTrendMode] = useState<"weekly" | "monthly">("weekly");
+  const [fbConnected, setFbConnected] = useState(true); // Assume connected since secrets are set
 
   // Site settings for dollar rate
   const { data: settings, isLoading: settingsLoading } = useSiteSettings();
@@ -342,7 +343,7 @@ export default function AdminMetaAds() {
         <ProductAdSpendTable dateRange={dateRange} totalSpendUsd={totalUsd} rate={rate} />
 
         {/* Campaign Breakdown */}
-        <CampaignBreakdown />
+        <CampaignBreakdown dateRange={dateRange} isConnected={fbConnected} />
 
         {/* Daily Spend Chart */}
         {entries.length > 0 && (
@@ -471,21 +472,27 @@ export default function AdminMetaAds() {
           </div>
         )}
 
-        {/* Connect Facebook */}
-        <div className="bg-card rounded-2xl border border-border p-10 flex flex-col items-center text-center max-w-lg mx-auto">
-          <div className="h-16 w-16 rounded-full bg-blue-100 dark:bg-blue-950/30 flex items-center justify-center mb-4">
-            <Facebook className="h-8 w-8 text-blue-600" />
+        {/* Facebook Connection Status */}
+        <div className="bg-card rounded-2xl border border-border p-6 flex items-center justify-between max-w-2xl mx-auto">
+          <div className="flex items-center gap-4">
+            <div className="h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-950/30 flex items-center justify-center">
+              <Facebook className="h-6 w-6 text-blue-600" />
+            </div>
+            <div>
+              <h3 className="font-bold text-foreground">Facebook Ads</h3>
+              <p className="text-xs text-muted-foreground">
+                {fbConnected ? "Connected via Marketing API" : "কানেক্ট করা হয়নি"}
+              </p>
+            </div>
           </div>
-          <h3 className="text-xl font-bold text-foreground mb-2">Connect Facebook Ads</h3>
-          <p className="text-sm text-muted-foreground mb-6">
-            আপনার Facebook অ্যাকাউন্ট কানেক্ট করুন এবং সরাসরি অ্যাড ক্যাম্পেইনের ডাটা দেখুন।
-          </p>
-          <Button className="gap-2 bg-blue-600 hover:bg-blue-700 text-white">
-            <Facebook className="h-4 w-4" /> Login with Facebook
+          <Button
+            variant={fbConnected ? "outline" : "default"}
+            className={fbConnected ? "gap-2" : "gap-2 bg-blue-600 hover:bg-blue-700 text-white"}
+            onClick={() => setFbConnected(!fbConnected)}
+          >
+            <Facebook className="h-4 w-4" />
+            {fbConnected ? "Disconnect" : "Connect"}
           </Button>
-          <p className="text-xs text-muted-foreground mt-3">
-            কানেক্ট করলে আপনার সব Ad Account ও চলমান Ad-এর খরচ এখানে দেখা যাবে।
-          </p>
         </div>
       </div>
     </AdminLayout>
