@@ -291,8 +291,11 @@ export default function AdminMetaAds() {
             <p className="text-sm text-muted-foreground">Campaign → Ad Set → Ad breakdown</p>
           </div>
           <div className="flex gap-2">
+            <Button variant="outline" className="gap-2" onClick={() => setView("manual-campaign")}>
+              <Plus className="h-4 w-4" /> Manual Campaign
+            </Button>
             <Button variant="outline" className="gap-2" onClick={() => setView("import")}>
-              <Upload className="h-4 w-4" /> Manual Import
+              <Upload className="h-4 w-4" /> Ad Spend Import
             </Button>
             <Button variant="outline" className="gap-2" onClick={() => window.location.reload()}>
               <RefreshCw className="h-4 w-4" /> Refresh
