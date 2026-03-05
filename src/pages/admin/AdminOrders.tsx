@@ -108,6 +108,16 @@ const AdminOrders = () => {
   const updateStatus = useUpdateOrderStatus();
   const deleteOrder = useDeleteOrder();
   const { data: nextOrderNumber = "ORD-00001" } = useNextOrderNumber();
+  const { data: allProducts = [] } = usePublicProducts();
+
+  // Filter products for search
+  const filteredProducts = useMemo(() => {
+    if (!productSearch.trim()) return allProducts.slice(0, 10);
+    const q = productSearch.toLowerCase();
+    return allProducts.filter((p: any) =>
+      p.name.toLowerCase().includes(q) || p.product_code.toLowerCase().includes(q)
+    ).slice(0, 10);
+  }, [allProducts, productSearch]);
 
   // Filtered orders by search
   const filteredOrders = orders.filter((o) => {
@@ -120,20 +130,61 @@ const AdminOrders = () => {
     );
   });
 
+  const addProductToOrder = (product: any) => {
+    const existing = orderItems.find((i) => i.product_id === product.id);
+    if (existing) {
+      setOrderItems(orderItems.map((i) =>
+        i.product_id === product.id
+          ? { ...i, quantity: i.quantity + 1, total_price: (i.quantity + 1) * i.unit_price }
+          : i
+      ));
+    } else {
+      setOrderItems([...orderItems, {
+        product_id: product.id,
+        product_name: product.name,
+        product_code: product.product_code,
+        quantity: 1,
+        unit_price: Number(product.selling_price),
+        total_price: Number(product.selling_price),
+      }]);
+    }
+    setProductSearch("");
+  };
+
+  const updateItemQuantity = (index: number, qty: number) => {
+    if (qty <= 0) {
+      setOrderItems(orderItems.filter((_, i) => i !== index));
+      return;
+    }
+    setOrderItems(orderItems.map((item, i) =>
+      i === index ? { ...item, quantity: qty, total_price: qty * item.unit_price } : item
+    ));
+  };
+
+  const removeItem = (index: number) => {
+    setOrderItems(orderItems.filter((_, i) => i !== index));
+  };
+
+  const itemsTotal = orderItems.reduce((sum, i) => sum + i.total_price, 0);
+
   const handleCreateOrder = () => {
     if (!customerName.trim()) return;
-    const computedTotal = totalAmount || (productCost + deliveryCharge - discount);
+    const computedProductCost = orderItems.length > 0 ? itemsTotal : productCost;
+    const computedTotal = totalAmount || (computedProductCost + deliveryCharge - discount);
     createOrder.mutate({
-      order_number: nextOrderNumber,
-      customer_name: customerName,
-      customer_phone: customerPhone || null,
-      customer_address: customerAddress || null,
-      total_amount: computedTotal,
-      delivery_charge: deliveryCharge,
-      discount,
-      product_cost: productCost,
-      notes: notes || null,
-      status: "processing",
+      order: {
+        order_number: nextOrderNumber,
+        customer_name: customerName,
+        customer_phone: customerPhone || null,
+        customer_address: customerAddress || null,
+        total_amount: computedTotal,
+        delivery_charge: deliveryCharge,
+        discount,
+        product_cost: computedProductCost,
+        notes: notes || null,
+        status: "processing",
+      },
+      items: orderItems,
     }, {
       onSuccess: () => {
         setNewOrderOpen(false);
@@ -151,6 +202,8 @@ const AdminOrders = () => {
     setDiscount(0);
     setProductCost(0);
     setNotes("");
+    setOrderItems([]);
+    setProductSearch("");
   };
 
   if (currentView === "incomplete") {
