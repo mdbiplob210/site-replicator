@@ -26,6 +26,7 @@ type ParsedRow = {
 export default function AdminMetaAds() {
   const [view, setView] = useState<View>("main");
   const [dateRange, setDateRange] = useState("today");
+  const [trendMode, setTrendMode] = useState<"weekly" | "monthly">("weekly");
 
   // Site settings for dollar rate
   const { data: settings, isLoading: settingsLoading } = useSiteSettings();
@@ -361,31 +362,56 @@ export default function AdminMetaAds() {
 
         {/* Weekly/Monthly Trend Line Chart */}
         {allEntries.length > 1 && (() => {
-          // Group by week (ISO week start)
-          const weekMap = new Map<string, number>();
           const sorted = [...allEntries].sort((a, b) => a.spend_date.localeCompare(b.spend_date));
+          const groupMap = new Map<string, number>();
+
           for (const e of sorted) {
-            const d = new Date(e.spend_date);
-            const day = d.getDay();
-            const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-            const weekStart = new Date(d.setDate(diff));
-            const key = weekStart.toISOString().slice(0, 10);
-            weekMap.set(key, (weekMap.get(key) || 0) + Number(e.amount_usd));
+            let key: string;
+            if (trendMode === "weekly") {
+              const d = new Date(e.spend_date);
+              const day = d.getDay();
+              const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+              const weekStart = new Date(d.setDate(diff));
+              key = weekStart.toISOString().slice(0, 10);
+            } else {
+              key = e.spend_date.slice(0, 7); // YYYY-MM
+            }
+            groupMap.set(key, (groupMap.get(key) || 0) + Number(e.amount_usd));
           }
-          const trendData = Array.from(weekMap.entries()).map(([week, usd]) => ({
-            week: week.slice(5),
+
+          const trendData = Array.from(groupMap.entries()).map(([label, usd]) => ({
+            label: trendMode === "weekly" ? label.slice(5) : label,
             USD: parseFloat(usd.toFixed(2)),
             BDT: parseFloat((usd * rate).toFixed(0)),
           }));
+
           if (trendData.length < 2) return null;
           return (
             <div className="bg-card rounded-2xl border border-border p-6">
-              <h3 className="font-bold text-foreground mb-4">সাপ্তাহিক খরচের ট্রেন্ড</h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-foreground">
+                  {trendMode === "weekly" ? "সাপ্তাহিক" : "মাসিক"} খরচের ট্রেন্ড
+                </h3>
+                <div className="flex gap-1 bg-secondary rounded-lg p-1">
+                  <button
+                    onClick={() => setTrendMode("weekly")}
+                    className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${trendMode === "weekly" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                  >
+                    সাপ্তাহিক
+                  </button>
+                  <button
+                    onClick={() => setTrendMode("monthly")}
+                    className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${trendMode === "monthly" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                  >
+                    মাসিক
+                  </button>
+                </div>
+              </div>
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={trendData}>
                     <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                    <XAxis dataKey="week" tick={{ fontSize: 12 }} />
+                    <XAxis dataKey="label" tick={{ fontSize: 12 }} />
                     <YAxis tick={{ fontSize: 12 }} />
                     <Tooltip
                       contentStyle={{ borderRadius: 12, border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }}
