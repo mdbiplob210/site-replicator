@@ -19,7 +19,7 @@ import {
   Settings, Download, Printer, RefreshCw, ChevronDown, Wifi, Ban,
   Trash2, Copy, X, ShoppingCart, ArrowLeft, Clock, CheckCircle2,
   GitMerge, PauseCircle, XCircle, Trash, Smartphone, BarChart3,
-  MessageSquare, Filter, Loader2
+  MessageSquare, Filter, Loader2, Package
 } from "lucide-react";
 import {
   useOrders, useOrderCounts, useCreateOrder, useUpdateOrderStatus,
@@ -352,6 +352,11 @@ const AdminOrders = () => {
               </PopoverContent>
             </Popover>
 
+            <a href="/admin/orders/backfill-items">
+              <Button variant="outline" size="sm" className="gap-2 rounded-xl border-border/60 shadow-sm hover:shadow">
+                <Package className="h-4 w-4 text-primary" /> Backfill Items
+              </Button>
+            </a>
             <Button variant="outline" size="sm" className="gap-2 rounded-xl border-border/60 shadow-sm hover:shadow" onClick={() => setCurrentView("incomplete")}>
               <AlertCircle className="h-4 w-4 text-amber-500" /> Incomplete
             </Button>
