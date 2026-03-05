@@ -8,8 +8,17 @@ export type OrderInsert = TablesInsert<"orders">;
 export type OrderUpdate = TablesUpdate<"orders">;
 export type OrderStatus = Order["status"];
 
+export type OrderItemInput = {
+  product_id: string | null;
+  product_name: string;
+  product_code: string;
+  quantity: number;
+  unit_price: number;
+  total_price: number;
+};
+
 const STATUS_MAP: Record<string, OrderStatus> = {
-  "All Orders": "processing", // not used for filtering
+  "All Orders": "processing",
   "New Orders": "processing",
   "Confirmed": "confirmed",
   "In Courier": "in_courier",
@@ -73,6 +82,22 @@ export function useOrders(statusFilter: string | null = null) {
   });
 }
 
+export function useOrderItems(orderId: string | null) {
+  return useQuery({
+    queryKey: ["order-items", orderId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("order_items" as any)
+        .select("*")
+        .eq("order_id", orderId!)
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return data as any[];
+    },
+    enabled: !!orderId,
+  });
+}
+
 export function useOrderCounts() {
   return useQuery({
     queryKey: ["order-counts"],
@@ -94,18 +119,39 @@ export function useCreateOrder() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (order: OrderInsert) => {
-      const { data, error } = await supabase
+    mutationFn: async ({ order, items }: { order: OrderInsert; items: OrderItemInput[] }) => {
+      // Create order
+      const { data: orderData, error: orderError } = await supabase
         .from("orders")
         .insert(order)
         .select()
         .single();
-      if (error) throw error;
-      return data;
+      if (orderError) throw orderError;
+
+      // Insert order items
+      if (items.length > 0) {
+        const itemRows = items.map((item) => ({
+          order_id: orderData.id,
+          product_id: item.product_id,
+          product_name: item.product_name,
+          product_code: item.product_code,
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+          total_price: item.total_price,
+        }));
+
+        const { error: itemsError } = await supabase
+          .from("order_items" as any)
+          .insert(itemRows as any);
+        if (itemsError) throw itemsError;
+      }
+
+      return orderData;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       queryClient.invalidateQueries({ queryKey: ["order-counts"] });
+      queryClient.invalidateQueries({ queryKey: ["order-items"] });
       toast.success("অর্ডার সফলভাবে তৈরি হয়েছে!");
     },
     onError: (error: Error) => {

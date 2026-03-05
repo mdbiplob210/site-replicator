@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -24,8 +24,9 @@ import {
 import {
   useOrders, useOrderCounts, useCreateOrder, useUpdateOrderStatus,
   useDeleteOrder, useNextOrderNumber, getStatusFromTab, getStatusLabel,
-  getStatusColor, type OrderStatus
+  getStatusColor, type OrderStatus, type OrderItemInput
 } from "@/hooks/useOrders";
+import { usePublicProducts } from "@/hooks/usePublicProducts";
 import { Constants } from "@/integrations/supabase/types";
 import { format } from "date-fns";
 
@@ -98,8 +99,8 @@ const AdminOrders = () => {
   const [discount, setDiscount] = useState(0);
   const [productCost, setProductCost] = useState(0);
   const [notes, setNotes] = useState("");
-
-  // Database hooks
+  const [orderItems, setOrderItems] = useState<OrderItemInput[]>([]);
+  const [productSearch, setProductSearch] = useState("");
   const statusFilter = getStatusFromTab(activeTab);
   const { data: orders = [], isLoading } = useOrders(statusFilter);
   const { data: counts = {} } = useOrderCounts();
@@ -107,6 +108,16 @@ const AdminOrders = () => {
   const updateStatus = useUpdateOrderStatus();
   const deleteOrder = useDeleteOrder();
   const { data: nextOrderNumber = "ORD-00001" } = useNextOrderNumber();
+  const { data: allProducts = [] } = usePublicProducts();
+
+  // Filter products for search
+  const filteredProducts = useMemo(() => {
+    if (!productSearch.trim()) return allProducts.slice(0, 10);
+    const q = productSearch.toLowerCase();
+    return allProducts.filter((p: any) =>
+      p.name.toLowerCase().includes(q) || p.product_code.toLowerCase().includes(q)
+    ).slice(0, 10);
+  }, [allProducts, productSearch]);
 
   // Filtered orders by search
   const filteredOrders = orders.filter((o) => {
@@ -119,20 +130,61 @@ const AdminOrders = () => {
     );
   });
 
+  const addProductToOrder = (product: any) => {
+    const existing = orderItems.find((i) => i.product_id === product.id);
+    if (existing) {
+      setOrderItems(orderItems.map((i) =>
+        i.product_id === product.id
+          ? { ...i, quantity: i.quantity + 1, total_price: (i.quantity + 1) * i.unit_price }
+          : i
+      ));
+    } else {
+      setOrderItems([...orderItems, {
+        product_id: product.id,
+        product_name: product.name,
+        product_code: product.product_code,
+        quantity: 1,
+        unit_price: Number(product.selling_price),
+        total_price: Number(product.selling_price),
+      }]);
+    }
+    setProductSearch("");
+  };
+
+  const updateItemQuantity = (index: number, qty: number) => {
+    if (qty <= 0) {
+      setOrderItems(orderItems.filter((_, i) => i !== index));
+      return;
+    }
+    setOrderItems(orderItems.map((item, i) =>
+      i === index ? { ...item, quantity: qty, total_price: qty * item.unit_price } : item
+    ));
+  };
+
+  const removeItem = (index: number) => {
+    setOrderItems(orderItems.filter((_, i) => i !== index));
+  };
+
+  const itemsTotal = orderItems.reduce((sum, i) => sum + i.total_price, 0);
+
   const handleCreateOrder = () => {
     if (!customerName.trim()) return;
-    const computedTotal = totalAmount || (productCost + deliveryCharge - discount);
+    const computedProductCost = orderItems.length > 0 ? itemsTotal : productCost;
+    const computedTotal = totalAmount || (computedProductCost + deliveryCharge - discount);
     createOrder.mutate({
-      order_number: nextOrderNumber,
-      customer_name: customerName,
-      customer_phone: customerPhone || null,
-      customer_address: customerAddress || null,
-      total_amount: computedTotal,
-      delivery_charge: deliveryCharge,
-      discount,
-      product_cost: productCost,
-      notes: notes || null,
-      status: "processing",
+      order: {
+        order_number: nextOrderNumber,
+        customer_name: customerName,
+        customer_phone: customerPhone || null,
+        customer_address: customerAddress || null,
+        total_amount: computedTotal,
+        delivery_charge: deliveryCharge,
+        discount,
+        product_cost: computedProductCost,
+        notes: notes || null,
+        status: "processing",
+      },
+      items: orderItems,
     }, {
       onSuccess: () => {
         setNewOrderOpen(false);
@@ -150,6 +202,8 @@ const AdminOrders = () => {
     setDiscount(0);
     setProductCost(0);
     setNotes("");
+    setOrderItems([]);
+    setProductSearch("");
   };
 
   if (currentView === "incomplete") {
@@ -388,10 +442,68 @@ const AdminOrders = () => {
                     <Label className="text-xs font-semibold">Address</Label>
                     <Textarea placeholder="Enter address" rows={2} className="rounded-xl" value={customerAddress} onChange={(e) => setCustomerAddress(e.target.value)} />
                   </div>
+
+                  {/* Product Items */}
+                  <div className="space-y-3">
+                    <Label className="text-xs font-semibold">প্রোডাক্ট যোগ করুন</Label>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="প্রোডাক্ট সার্চ করুন (নাম বা কোড)..."
+                        className="pl-10 rounded-xl"
+                        value={productSearch}
+                        onChange={(e) => setProductSearch(e.target.value)}
+                      />
+                    </div>
+                    {productSearch && filteredProducts.length > 0 && (
+                      <div className="border border-border rounded-xl max-h-40 overflow-y-auto bg-card shadow-md">
+                        {filteredProducts.map((p: any) => (
+                          <button
+                            key={p.id}
+                            onClick={() => addProductToOrder(p)}
+                            className="w-full text-left px-3 py-2 hover:bg-secondary/60 transition-colors flex items-center justify-between text-sm border-b border-border/30 last:border-0"
+                          >
+                            <div>
+                              <span className="font-medium text-foreground">{p.name}</span>
+                              <span className="text-xs text-muted-foreground ml-2">({p.product_code})</span>
+                            </div>
+                            <span className="text-xs font-semibold text-primary">৳{Number(p.selling_price).toLocaleString()}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {orderItems.length > 0 && (
+                      <div className="space-y-2">
+                        {orderItems.map((item, idx) => (
+                          <div key={idx} className="flex items-center gap-3 p-2.5 rounded-xl bg-secondary/30 border border-border/40">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-foreground truncate">{item.product_name}</p>
+                              <p className="text-xs text-muted-foreground">{item.product_code} · ৳{item.unit_price}</p>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <button onClick={() => updateItemQuantity(idx, item.quantity - 1)} className="h-7 w-7 rounded-lg border border-border flex items-center justify-center hover:bg-secondary text-foreground">−</button>
+                              <span className="w-8 text-center text-sm font-semibold text-foreground">{item.quantity}</span>
+                              <button onClick={() => updateItemQuantity(idx, item.quantity + 1)} className="h-7 w-7 rounded-lg border border-border flex items-center justify-center hover:bg-secondary text-foreground">+</button>
+                            </div>
+                            <span className="text-sm font-semibold text-foreground w-20 text-right">৳{item.total_price.toLocaleString()}</span>
+                            <button onClick={() => removeItem(idx)} className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-destructive/10 text-muted-foreground hover:text-destructive">
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                        <div className="flex justify-between items-center pt-2 border-t border-border/40">
+                          <span className="text-xs font-semibold text-muted-foreground">{orderItems.length}টি আইটেম</span>
+                          <span className="text-sm font-bold text-primary">সাবটোটাল: ৳{itemsTotal.toLocaleString()}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
                   <div className="grid grid-cols-4 gap-3">
                     <div className="space-y-1.5">
                       <Label className="text-xs font-semibold">Product Cost (৳)</Label>
-                      <Input type="number" className="rounded-xl" value={productCost} onChange={(e) => setProductCost(Number(e.target.value))} />
+                      <Input type="number" className="rounded-xl" value={orderItems.length > 0 ? itemsTotal : productCost} onChange={(e) => setProductCost(Number(e.target.value))} disabled={orderItems.length > 0} />
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-semibold">Delivery (৳)</Label>
@@ -403,7 +515,7 @@ const AdminOrders = () => {
                     </div>
                     <div className="text-right p-3 rounded-xl bg-primary/5 border border-primary/20">
                       <p className="text-xs text-primary font-semibold">Total</p>
-                      <p className="text-2xl font-bold text-primary">৳{productCost + deliveryCharge - discount}</p>
+                      <p className="text-2xl font-bold text-primary">৳{(orderItems.length > 0 ? itemsTotal : productCost) + deliveryCharge - discount}</p>
                     </div>
                   </div>
                   <div className="space-y-1.5">
