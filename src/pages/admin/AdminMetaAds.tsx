@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import {
-  DollarSign, TrendingUp, BarChart3,
-  Upload, Save, Calendar, Plus, ArrowLeft, Facebook, Trash2, Loader2, FileSpreadsheet, CheckCircle2
+  DollarSign, TrendingUp, BarChart3, ShoppingCart,
+  Upload, Save, Calendar, Plus, ArrowLeft, Facebook, Trash2, Loader2, FileSpreadsheet, CheckCircle2, RefreshCw
 } from "lucide-react";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,8 @@ import { useSiteSettings, useUpdateSiteSetting } from "@/hooks/useSiteSettings";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
+import { ProductAdSpendTable } from "@/components/admin/meta-ads/ProductAdSpendTable";
+import { CampaignBreakdown } from "@/components/admin/meta-ads/CampaignBreakdown";
 
 type View = "main" | "import";
 
@@ -314,11 +316,11 @@ export default function AdminMetaAds() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { icon: DollarSign, label: "Spend (USD)", value: `$${totalUsd.toFixed(2)}` },
             { icon: TrendingUp, label: "Spend (BDT)", value: `৳${totalBdt.toFixed(0)}` },
-            { icon: Calendar, label: "Entries", value: String(entries.length) },
+            { icon: ShoppingCart, label: "Total Orders", value: "25" },
             { icon: BarChart3, label: "Avg Daily", value: `$${avgDaily.toFixed(2)}` },
           ].map((s, i) => (
             <div key={i} className="bg-card rounded-2xl border border-border p-5">
