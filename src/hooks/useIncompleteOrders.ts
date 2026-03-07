@@ -25,9 +25,9 @@ export interface IncompleteOrder {
   updated_at: string;
 }
 
-export function useIncompleteOrders(status?: string) {
+export function useIncompleteOrders(status?: string, sourceFilter?: "all" | "ip_blocked" | "abandoned_form") {
   return useQuery({
-    queryKey: ["incomplete-orders", status],
+    queryKey: ["incomplete-orders", status, sourceFilter],
     queryFn: async () => {
       let query = supabase
         .from("incomplete_orders" as any)
@@ -38,6 +38,12 @@ export function useIncompleteOrders(status?: string) {
         query = query.eq("status", status);
       }
 
+      if (sourceFilter === "abandoned_form") {
+        query = query.eq("block_reason", "abandoned_form");
+      } else if (sourceFilter === "ip_blocked") {
+        query = query.neq("block_reason", "abandoned_form");
+      }
+
       const { data, error } = await query;
       if (error) throw error;
       return data as unknown as IncompleteOrder[];
@@ -45,13 +51,21 @@ export function useIncompleteOrders(status?: string) {
   });
 }
 
-export function useIncompleteOrderCounts() {
+export function useIncompleteOrderCounts(sourceFilter?: "all" | "ip_blocked" | "abandoned_form") {
   return useQuery({
-    queryKey: ["incomplete-order-counts"],
+    queryKey: ["incomplete-order-counts", sourceFilter],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("incomplete_orders" as any)
-        .select("status");
+        .select("status, block_reason");
+
+      if (sourceFilter === "abandoned_form") {
+        query = query.eq("block_reason", "abandoned_form");
+      } else if (sourceFilter === "ip_blocked") {
+        query = query.neq("block_reason", "abandoned_form");
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       const counts: Record<string, number> = { total: 0 };
       (data as any[]).forEach((row) => {

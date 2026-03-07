@@ -91,6 +91,7 @@ const AdminOrders = () => {
   const [currentView, setCurrentView] = useState<View>("orders");
   const [incompleteFilter, setIncompleteFilter] = useState("Today");
   const [activeIncompleteTab, setActiveIncompleteTab] = useState("Processing");
+  const [incompleteSourceFilter, setIncompleteSourceFilter] = useState<"all" | "ip_blocked" | "abandoned_form">("all");
   const [deliveryRatio, setDeliveryRatio] = useState([0]);
   const [searchQuery, setSearchQuery] = useState("");
   const [newOrderOpen, setNewOrderOpen] = useState(false);
@@ -122,8 +123,8 @@ const AdminOrders = () => {
     "Hold": "on_hold", "Cancelled": "cancelled", "Deleted": "deleted"
   };
   const incompleteStatusFilter = incompleteStatusMap[activeIncompleteTab] || "processing";
-  const { data: incompleteOrders = [], isLoading: incompleteLoading } = useIncompleteOrders(incompleteStatusFilter);
-  const { data: incompleteCounts = {} } = useIncompleteOrderCounts();
+  const { data: incompleteOrders = [], isLoading: incompleteLoading } = useIncompleteOrders(incompleteStatusFilter, incompleteSourceFilter);
+  const { data: incompleteCounts = {} } = useIncompleteOrderCounts(incompleteSourceFilter);
   const updateIncompleteStatus = useUpdateIncompleteOrderStatus();
   const deleteIncomplete = useDeleteIncompleteOrder();
   const convertIncomplete = useConvertIncompleteToOrder();
@@ -243,6 +244,29 @@ const AdminOrders = () => {
             </div>
             <Badge variant="secondary" className="ml-auto">{incompleteCounts.total || 0} মোট</Badge>
           </div>
+
+          {/* Source filter: All / IP Blocked / Abandoned Form */}
+          <div className="flex items-center gap-1 bg-card rounded-xl border border-border/60 p-1 w-fit">
+            {([
+              { key: "all" as const, label: "সব", icon: "📋" },
+              { key: "ip_blocked" as const, label: "IP ব্লক", icon: "🚫" },
+              { key: "abandoned_form" as const, label: "ফর্ম Abandoned", icon: "📝" },
+            ]).map((f) => (
+              <button
+                key={f.key}
+                onClick={() => setIncompleteSourceFilter(f.key)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                  incompleteSourceFilter === f.key
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+                }`}
+              >
+                <span>{f.icon}</span> {f.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Status tabs */}
           <div className="flex items-center gap-6 border-b border-border/40 pb-0">
             {incompleteTabs.map((tab) => (
               <button key={tab.label} onClick={() => setActiveIncompleteTab(tab.label)} className={`flex items-center gap-2 pb-3 text-sm font-medium border-b-2 transition-all duration-200 ${activeIncompleteTab === tab.label ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
@@ -270,7 +294,11 @@ const AdminOrders = () => {
                     <div className="flex-1 min-w-0 space-y-2">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-bold text-foreground">{io.customer_name}</span>
-                        <Badge variant="destructive" className="text-xs">Blocked</Badge>
+                        {io.block_reason === "abandoned_form" ? (
+                          <Badge variant="secondary" className="text-xs bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">📝 Abandoned</Badge>
+                        ) : (
+                          <Badge variant="destructive" className="text-xs">🚫 IP Blocked</Badge>
+                        )}
                         {io.landing_page_slug && <Badge variant="outline" className="text-xs">LP: {io.landing_page_slug}</Badge>}
                       </div>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-muted-foreground">
