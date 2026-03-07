@@ -134,6 +134,7 @@ const AdminOrders = () => {
   const [newOrderOpen, setNewOrderOpen] = useState(false);
   const [detailOrderId, setDetailOrderId] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [productSearchFocused, setProductSearchFocused] = useState(false);
 
   // Modal states for action buttons
   const [orderItemsModalOpen, setOrderItemsModalOpen] = useState(false);
@@ -279,14 +280,21 @@ const AdminOrders = () => {
   const deleteIncomplete = useDeleteIncompleteOrder();
   const convertIncomplete = useConvertIncompleteToOrder();
 
-  // Filter products for search
+  // Filter products for search — show top selling (by order count) when empty
   const filteredProducts = useMemo(() => {
-    if (!productSearch.trim()) return allProducts.slice(0, 10);
+    // Build a sales count map from allOrderItems
+    const salesMap: Record<string, number> = {};
+    allOrderItems.forEach((oi: any) => {
+      const key = oi.product_id || oi.product_name;
+      salesMap[key] = (salesMap[key] || 0) + 1;
+    });
+    const sorted = [...allProducts].sort((a: any, b: any) => (salesMap[b.id] || 0) - (salesMap[a.id] || 0));
+    if (!productSearch.trim()) return sorted.slice(0, 15);
     const q = productSearch.toLowerCase();
-    return allProducts.filter((p: any) =>
+    return sorted.filter((p: any) =>
       p.name.toLowerCase().includes(q) || p.product_code.toLowerCase().includes(q)
-    ).slice(0, 10);
-  }, [allProducts, productSearch]);
+    ).slice(0, 15);
+  }, [allProducts, productSearch, allOrderItems]);
 
   // Bangladesh districts list removed - using bdDistrictList const above
 
@@ -1056,23 +1064,36 @@ const AdminOrders = () => {
                     <Textarea placeholder="Enter address" rows={2} className="rounded-xl" value={customerAddress} onChange={(e) => setCustomerAddress(e.target.value)} />
                   </div>
 
-                  {/* Pathao City/Zone/Area Auto-detect */}
-                  {customerAddress && (detectedLocation.city || detectedLocation.zone || detectedLocation.area) && (
-                    <div className="grid grid-cols-3 gap-2">
-                      <div className="p-2 rounded-lg bg-secondary/30 border border-border/40">
-                        <p className="text-[10px] font-semibold text-muted-foreground mb-0.5">City</p>
-                        <p className="text-xs font-bold text-foreground">{detectedLocation.city || "—"}</p>
-                      </div>
-                      <div className="p-2 rounded-lg bg-secondary/30 border border-border/40">
-                        <p className="text-[10px] font-semibold text-muted-foreground mb-0.5">Zone</p>
-                        <p className="text-xs font-bold text-foreground">{detectedLocation.zone || "—"}</p>
-                      </div>
-                      <div className="p-2 rounded-lg bg-secondary/30 border border-border/40">
-                        <p className="text-[10px] font-semibold text-muted-foreground mb-0.5">Area/Thana</p>
-                        <p className="text-xs font-bold text-foreground">{detectedLocation.area || "—"}</p>
-                      </div>
+                  {/* Pathao City/Zone/Area — Auto-detect + Manual Select */}
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="space-y-1">
+                      <Label className="text-[10px] font-semibold text-muted-foreground">City</Label>
+                      <Select value={pathaoCity || detectedLocation.city || ""} onValueChange={setPathaoCity}>
+                        <SelectTrigger className="rounded-lg h-8 text-xs"><SelectValue placeholder="City সিলেক্ট করুন" /></SelectTrigger>
+                        <SelectContent className="max-h-60">
+                          {bdDistrictList.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
                     </div>
-                  )}
+                    <div className="space-y-1">
+                      <Label className="text-[10px] font-semibold text-muted-foreground">Zone</Label>
+                      <Select value={pathaoZone || detectedLocation.zone || ""} onValueChange={setPathaoZone}>
+                        <SelectTrigger className="rounded-lg h-8 text-xs"><SelectValue placeholder="Zone সিলেক্ট করুন" /></SelectTrigger>
+                        <SelectContent>
+                          {bdZoneList.map((z) => <SelectItem key={z} value={z}>{z}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[10px] font-semibold text-muted-foreground">Area/Thana</Label>
+                      <Select value={pathaoArea || detectedLocation.area || ""} onValueChange={setPathaoArea}>
+                        <SelectTrigger className="rounded-lg h-8 text-xs"><SelectValue placeholder="Area সিলেক্ট করুন" /></SelectTrigger>
+                        <SelectContent className="max-h-60">
+                          {bdThanaList.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
 
                   {/* Product Items */}
                   <div className="space-y-3">
@@ -1084,21 +1105,30 @@ const AdminOrders = () => {
                         className="pl-10 rounded-xl"
                         value={productSearch}
                         onChange={(e) => setProductSearch(e.target.value)}
+                        onFocus={() => setProductSearchFocused(true)}
+                        onBlur={() => setTimeout(() => setProductSearchFocused(false), 200)}
                       />
                     </div>
-                    {productSearch && filteredProducts.length > 0 && (
-                      <div className="border border-border rounded-xl max-h-40 overflow-y-auto bg-card shadow-md">
+                    {productSearchFocused && filteredProducts.length > 0 && (
+                      <div className="border border-border rounded-xl max-h-48 overflow-y-auto bg-card shadow-md">
+                        {!productSearch.trim() && (
+                          <div className="px-3 py-1.5 text-[10px] font-semibold text-muted-foreground bg-secondary/30 border-b border-border/30">🔥 Top Selling Products</div>
+                        )}
                         {filteredProducts.map((p: any) => (
                           <button
                             key={p.id}
-                            onClick={() => addProductToOrder(p)}
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={() => { addProductToOrder(p); setProductSearchFocused(true); }}
                             className="w-full text-left px-3 py-2 hover:bg-secondary/60 transition-colors flex items-center justify-between text-sm border-b border-border/30 last:border-0"
                           >
                             <div>
                               <span className="font-medium text-foreground">{p.name}</span>
                               <span className="text-xs text-muted-foreground ml-2">({p.product_code})</span>
                             </div>
-                            <span className="text-xs font-semibold text-primary">৳{Number(p.selling_price).toLocaleString()}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-semibold text-primary">৳{Number(p.selling_price).toLocaleString()}</span>
+                              {Number(p.stock_quantity) > 0 && <span className="text-[10px] text-muted-foreground">({p.stock_quantity})</span>}
+                            </div>
                           </button>
                         ))}
                       </div>
@@ -1692,8 +1722,69 @@ export default AdminOrders;
 
 function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null; order: any; onClose: () => void }) {
   const { data: items = [], isLoading } = useOrderItems(orderId);
+  const { data: allProducts = [] } = usePublicProducts();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const itemsTotal = items.reduce((s: number, i: any) => s + Number(i.total_price), 0);
   
+  // Editable fields
+  const [editName, setEditName] = useState("");
+  const [editPhone, setEditPhone] = useState("");
+  const [editAddress, setEditAddress] = useState("");
+  const [editNotes, setEditNotes] = useState("");
+  const [editCourierNote, setEditCourierNote] = useState("");
+  const [editDelivery, setEditDelivery] = useState(0);
+  const [editDiscount, setEditDiscount] = useState(0);
+  const [editCity, setEditCity] = useState("");
+  const [editZone, setEditZone] = useState("");
+  const [editArea, setEditArea] = useState("");
+  const [detailProductSearch, setDetailProductSearch] = useState("");
+  const [detailProductFocused, setDetailProductFocused] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Populate fields when order changes
+  const orderRef = order?.id;
+  useMemo(() => {
+    if (order) {
+      setEditName(order.customer_name || "");
+      setEditPhone(order.customer_phone || "");
+      setEditAddress(order.customer_address || "");
+      setEditNotes(order.notes || "");
+      setEditCourierNote(order.courier_note || "");
+      setEditDelivery(Number(order.delivery_charge));
+      setEditDiscount(Number(order.discount));
+    }
+  }, [orderRef]);
+
+  // Auto-detect location from address
+  const detectedLoc = useMemo(() => {
+    const addr = editAddress.toLowerCase();
+    if (!addr) return { city: "", zone: "", area: "" };
+    const city = bdDistrictList.find(d => addr.includes(d.toLowerCase())) || "";
+    const zone = bdZoneList.find(z => addr.includes(z.toLowerCase().replace(" metro", "").replace(" sub", ""))) || 
+      (city ? (["Dhaka", "Chittagong", "Rajshahi", "Khulna", "Sylhet", "Rangpur"].includes(city) ? `${city} Metro` : "") : "");
+    const area = bdThanaList.find(t => addr.includes(t.toLowerCase())) || "";
+    return { city, zone, area };
+  }, [editAddress]);
+
+  // Product search for detail dialog
+  const { data: allOrderItemsForSales = [] } = useQuery({
+    queryKey: ["all-order-items-filter"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("order_items").select("order_id, product_name, product_code, product_id");
+      if (error) throw error;
+      return data;
+    },
+  });
+  const detailFilteredProducts = useMemo(() => {
+    const salesMap: Record<string, number> = {};
+    allOrderItemsForSales.forEach((oi: any) => { salesMap[oi.product_id || oi.product_name] = (salesMap[oi.product_id || oi.product_name] || 0) + 1; });
+    const sorted = [...allProducts].sort((a: any, b: any) => (salesMap[b.id] || 0) - (salesMap[a.id] || 0));
+    if (!detailProductSearch.trim()) return sorted.slice(0, 15);
+    const q = detailProductSearch.toLowerCase();
+    return sorted.filter((p: any) => p.name.toLowerCase().includes(q) || p.product_code.toLowerCase().includes(q)).slice(0, 15);
+  }, [allProducts, detailProductSearch, allOrderItemsForSales]);
+
   // Activity logs
   const { data: activityLogs = [] } = useQuery({
     queryKey: ["order-activity-logs", orderId],
@@ -1710,84 +1801,210 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
     enabled: !!orderId,
   });
 
+  // Old orders by phone
+  const { data: detailOldOrders = [] } = useQuery({
+    queryKey: ["old-orders-phone-detail", editPhone],
+    queryFn: async () => {
+      if (!editPhone || editPhone.length < 6) return [];
+      const { data, error } = await supabase.from("orders").select("*").eq("customer_phone", editPhone).neq("id", orderId!).order("created_at", { ascending: false }).limit(10);
+      if (error) throw error;
+      return data as any[];
+    },
+    enabled: !!editPhone && editPhone.length >= 6 && !!orderId,
+  });
+
+  const logActivity = async (action: string, fieldName?: string, oldValue?: string, newValue?: string, details?: string) => {
+    if (!orderId) return;
+    try {
+      await supabase.from("order_activity_logs" as any).insert({
+        order_id: orderId, user_id: user?.id || null, user_name: user?.email || "System",
+        action, field_name: fieldName || null, old_value: oldValue || null, new_value: newValue || null, details: details || null,
+      } as any);
+    } catch (e) { console.error(e); }
+  };
+
+  const handleSaveChanges = async () => {
+    if (!order || !orderId) return;
+    setIsSaving(true);
+    try {
+      const changes: Record<string, any> = {};
+      if (editName !== order.customer_name) { changes.customer_name = editName; await logActivity("field_edited", "customer_name", order.customer_name, editName); }
+      if (editPhone !== (order.customer_phone || "")) { changes.customer_phone = editPhone || null; await logActivity("field_edited", "customer_phone", order.customer_phone, editPhone); }
+      if (editAddress !== (order.customer_address || "")) { changes.customer_address = editAddress || null; await logActivity("field_edited", "customer_address", order.customer_address, editAddress); }
+      if (editNotes !== (order.notes || "")) { changes.notes = editNotes || null; await logActivity("note_added", "notes", order.notes, editNotes); }
+      if (editCourierNote !== (order.courier_note || "")) { changes.courier_note = editCourierNote || null; await logActivity("field_edited", "courier_note", order.courier_note, editCourierNote); }
+      if (editDelivery !== Number(order.delivery_charge)) { changes.delivery_charge = editDelivery; await logActivity("field_edited", "delivery_charge", String(order.delivery_charge), String(editDelivery)); }
+      if (editDiscount !== Number(order.discount)) { changes.discount = editDiscount; await logActivity("field_edited", "discount", String(order.discount), String(editDiscount)); }
+
+      if (Object.keys(changes).length > 0) {
+        // Recalculate total if delivery/discount changed
+        if (changes.delivery_charge !== undefined || changes.discount !== undefined) {
+          const newTotal = Number(order.product_cost) + (changes.delivery_charge ?? Number(order.delivery_charge)) - (changes.discount ?? Number(order.discount));
+          changes.total_amount = newTotal;
+        }
+        const { error } = await supabase.from("orders").update(changes).eq("id", orderId);
+        if (error) throw error;
+        queryClient.invalidateQueries({ queryKey: ["orders"] });
+        queryClient.invalidateQueries({ queryKey: ["order-counts"] });
+        queryClient.invalidateQueries({ queryKey: ["order-activity-logs", orderId] });
+        toast.success("অর্ডার আপডেট হয়েছে!");
+      }
+    } catch (e: any) {
+      toast.error("আপডেট ব্যর্থ: " + e.message);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const addProductToDetailOrder = async (product: any) => {
+    if (!orderId) return;
+    try {
+      const { error } = await supabase.from("order_items").insert({
+        order_id: orderId, product_id: product.id, product_name: product.name,
+        product_code: product.product_code, quantity: 1, unit_price: Number(product.selling_price), total_price: Number(product.selling_price),
+      });
+      if (error) throw error;
+      await logActivity("field_edited", "order_items", undefined, undefined, `প্রোডাক্ট যোগ করা হয়েছে: ${product.name}`);
+      queryClient.invalidateQueries({ queryKey: ["order-items", orderId] });
+      queryClient.invalidateQueries({ queryKey: ["all-order-items-filter"] });
+      setDetailProductSearch("");
+      toast.success("প্রোডাক্ট যোগ হয়েছে!");
+    } catch (e: any) { toast.error(e.message); }
+  };
+
   return (
     <Dialog open={!!orderId} onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl">
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl" onInteractOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-lg">
             <div className="p-2 rounded-xl bg-primary/10"><ShoppingCart className="h-5 w-5 text-primary" /></div>
             Order Details
             {order && <Badge variant="secondary" className="ml-2 text-xs">{order.order_number}</Badge>}
+            {order && <Badge className={cn("ml-1 text-[10px]", getStatusColor(order.status))}>{getStatusLabel(order.status)}</Badge>}
           </DialogTitle>
         </DialogHeader>
 
         {order && (
           <div className="space-y-5">
-            {/* Customer Info */}
+            {/* Customer Info - Editable */}
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-xs text-muted-foreground">Customer</p>
-                <p className="font-medium text-foreground text-sm">{order.customer_name}</p>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">Customer Name</Label>
+                <Input className="rounded-xl" value={editName} onChange={(e) => setEditName(e.target.value)} />
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Phone</p>
-                <p className="font-medium text-foreground text-sm">{order.customer_phone || "—"}</p>
-              </div>
-              {order.customer_address && (
-                <div className="col-span-2">
-                  <p className="text-xs text-muted-foreground">Address</p>
-                  <p className="text-sm text-foreground">{order.customer_address}</p>
-                </div>
-              )}
-              {order.source && (
-                <div>
-                  <p className="text-xs text-muted-foreground">Source</p>
-                  <Badge variant="outline" className="text-xs gap-1 mt-0.5">
-                    <Globe className="h-3 w-3" />
-                    {order.source}
-                  </Badge>
-                </div>
-              )}
-            </div>
-
-            {/* Financial Summary */}
-            <div className="grid grid-cols-4 gap-3">
-              <div className="p-3 rounded-xl bg-secondary/30 border border-border/40">
-                <p className="text-[10px] text-muted-foreground">Product Cost</p>
-                <p className="font-bold text-foreground text-sm">৳{Number(order.product_cost).toLocaleString()}</p>
-              </div>
-              <div className="p-3 rounded-xl bg-secondary/30 border border-border/40">
-                <p className="text-[10px] text-muted-foreground">Delivery</p>
-                <p className="font-bold text-foreground text-sm">৳{Number(order.delivery_charge).toLocaleString()}</p>
-              </div>
-              <div className="p-3 rounded-xl bg-secondary/30 border border-border/40">
-                <p className="text-[10px] text-muted-foreground">Discount</p>
-                <p className="font-bold text-foreground text-sm">৳{Number(order.discount).toLocaleString()}</p>
-              </div>
-              <div className="p-3 rounded-xl bg-primary/5 border border-primary/20">
-                <p className="text-[10px] text-primary font-semibold">Total</p>
-                <p className="font-bold text-primary text-sm">৳{Number(order.total_amount).toLocaleString()}</p>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">Phone</Label>
+                <Input className="rounded-xl" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} />
               </div>
             </div>
 
-            {/* Order Items */}
-            <div>
-              <h4 className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
-                <Package className="h-3.5 w-3.5 text-primary" /> Order Items
-              </h4>
+            {/* Old orders by phone */}
+            {detailOldOrders.length > 0 && (
+              <div className="p-3 rounded-xl border border-border/60 bg-secondary/20">
+                <p className="text-xs font-bold text-foreground mb-2 flex items-center gap-1.5">
+                  <History className="h-3.5 w-3.5" /> পুরনো অর্ডার ({detailOldOrders.length}টি)
+                </p>
+                <div className="max-h-28 overflow-y-auto space-y-1">
+                  {detailOldOrders.slice(0, 5).map((o: any) => (
+                    <div key={o.id} className="flex items-center justify-between text-xs p-1.5 rounded-lg hover:bg-background/50">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-semibold text-foreground">{o.order_number}</span>
+                        <Badge className={cn("text-[9px] h-4", getStatusColor(o.status))}>{getStatusLabel(o.status)}</Badge>
+                      </div>
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <span>৳{Number(o.total_amount).toLocaleString()}</span>
+                        <span>{format(new Date(o.created_at), "dd MMM yy")}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Address */}
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold">Address</Label>
+              <Textarea className="rounded-xl" rows={2} value={editAddress} onChange={(e) => setEditAddress(e.target.value)} />
+            </div>
+
+            {/* City/Zone/Area Manual Select */}
+            <div className="grid grid-cols-3 gap-2">
+              <div className="space-y-1">
+                <Label className="text-[10px] font-semibold text-muted-foreground">City</Label>
+                <Select value={editCity || detectedLoc.city || ""} onValueChange={setEditCity}>
+                  <SelectTrigger className="rounded-lg h-8 text-xs"><SelectValue placeholder="City সিলেক্ট করুন" /></SelectTrigger>
+                  <SelectContent className="max-h-60">
+                    {bdDistrictList.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[10px] font-semibold text-muted-foreground">Zone</Label>
+                <Select value={editZone || detectedLoc.zone || ""} onValueChange={setEditZone}>
+                  <SelectTrigger className="rounded-lg h-8 text-xs"><SelectValue placeholder="Zone সিলেক্ট করুন" /></SelectTrigger>
+                  <SelectContent>
+                    {bdZoneList.map((z) => <SelectItem key={z} value={z}>{z}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[10px] font-semibold text-muted-foreground">Area/Thana</Label>
+                <Select value={editArea || detectedLoc.area || ""} onValueChange={setEditArea}>
+                  <SelectTrigger className="rounded-lg h-8 text-xs"><SelectValue placeholder="Area সিলেক্ট করুন" /></SelectTrigger>
+                  <SelectContent className="max-h-60">
+                    {bdThanaList.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Order Items + Add Product */}
+            <div className="space-y-3">
+              <Label className="text-xs font-semibold">প্রোডাক্ট যোগ করুন</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="প্রোডাক্ট সার্চ করুন..."
+                  className="pl-10 rounded-xl"
+                  value={detailProductSearch}
+                  onChange={(e) => setDetailProductSearch(e.target.value)}
+                  onFocus={() => setDetailProductFocused(true)}
+                  onBlur={() => setTimeout(() => setDetailProductFocused(false), 200)}
+                />
+              </div>
+              {detailProductFocused && detailFilteredProducts.length > 0 && (
+                <div className="border border-border rounded-xl max-h-48 overflow-y-auto bg-card shadow-md">
+                  {!detailProductSearch.trim() && (
+                    <div className="px-3 py-1.5 text-[10px] font-semibold text-muted-foreground bg-secondary/30 border-b border-border/30">🔥 Top Selling Products</div>
+                  )}
+                  {detailFilteredProducts.map((p: any) => (
+                    <button
+                      key={p.id}
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => { addProductToDetailOrder(p); setDetailProductFocused(true); }}
+                      className="w-full text-left px-3 py-2 hover:bg-secondary/60 transition-colors flex items-center justify-between text-sm border-b border-border/30 last:border-0"
+                    >
+                      <div>
+                        <span className="font-medium text-foreground">{p.name}</span>
+                        <span className="text-xs text-muted-foreground ml-2">({p.product_code})</span>
+                      </div>
+                      <span className="text-xs font-semibold text-primary">৳{Number(p.selling_price).toLocaleString()}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
               {isLoading ? (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground py-4">
-                  <Loader2 className="h-4 w-4 animate-spin" /> Loading items...
-                </div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground py-4"><Loader2 className="h-4 w-4 animate-spin" /> Loading items...</div>
               ) : items.length === 0 ? (
-                <div className="text-center py-6 bg-secondary/20 rounded-xl border border-border/30">
-                  <Package className="h-6 w-6 text-muted-foreground/30 mx-auto mb-2" />
-                  <p className="text-xs text-muted-foreground">কোনো আইটেম ম্যাপ করা হয়নি</p>
+                <div className="text-center py-4 bg-secondary/20 rounded-xl border border-border/30">
+                  <Package className="h-6 w-6 text-muted-foreground/30 mx-auto mb-1" />
+                  <p className="text-xs text-muted-foreground">কোনো আইটেম নেই</p>
                 </div>
               ) : (
                 <div className="space-y-2">
                   {items.map((item: any) => (
-                    <div key={item.id} className="flex items-center justify-between p-3 rounded-xl bg-secondary/30 border border-border/40">
+                    <div key={item.id} className="flex items-center justify-between p-2.5 rounded-xl bg-secondary/30 border border-border/40">
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-foreground truncate">{item.product_name}</p>
                         <p className="text-xs text-muted-foreground">{item.product_code}</p>
@@ -1807,21 +2024,42 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
               )}
             </div>
 
+            {/* Financial */}
+            <div className="grid grid-cols-4 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">Product Cost (৳)</Label>
+                <Input type="number" className="rounded-xl" value={Number(order.product_cost)} disabled />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">Delivery (৳)</Label>
+                <Input type="number" className="rounded-xl" value={editDelivery} onChange={(e) => setEditDelivery(Number(e.target.value))} />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">Discount (৳)</Label>
+                <Input type="number" className="rounded-xl" value={editDiscount} onChange={(e) => setEditDiscount(Number(e.target.value))} />
+              </div>
+              <div className="text-right p-3 rounded-xl bg-primary/5 border border-primary/20">
+                <p className="text-xs text-primary font-semibold">Total</p>
+                <p className="text-2xl font-bold text-primary">৳{(Number(order.product_cost) + editDelivery - editDiscount).toLocaleString()}</p>
+              </div>
+            </div>
+
             {/* Dual Notes */}
             <div className="grid grid-cols-2 gap-3">
-              {order.notes && (
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><MessageSquare className="h-3 w-3" /> Staff Note</p>
-                  <p className="text-xs text-foreground bg-secondary/20 rounded-xl p-2.5 border border-border/30">{order.notes}</p>
-                </div>
-              )}
-              {order.courier_note && (
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Truck className="h-3 w-3" /> Courier Note</p>
-                  <p className="text-xs text-foreground bg-amber-500/5 rounded-xl p-2.5 border border-amber-500/20">{order.courier_note}</p>
-                </div>
-              )}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold flex items-center gap-1"><MessageSquare className="h-3 w-3" /> Staff Note</Label>
+                <Textarea rows={2} className="rounded-xl text-xs" value={editNotes} onChange={(e) => setEditNotes(e.target.value)} />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold flex items-center gap-1"><Truck className="h-3 w-3" /> Courier Note</Label>
+                <Textarea rows={2} className="rounded-xl text-xs" value={editCourierNote} onChange={(e) => setEditCourierNote(e.target.value)} />
+              </div>
             </div>
+
+            {/* Save Button */}
+            <Button className="w-full rounded-xl shadow-sm" onClick={handleSaveChanges} disabled={isSaving}>
+              {isSaving ? <><Loader2 className="h-4 w-4 animate-spin" /> Saving...</> : "পরিবর্তন সেভ করুন"}
+            </Button>
 
             {/* Activity Log */}
             {activityLogs.length > 0 && (
@@ -1840,7 +2078,7 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                           <span className="font-semibold">{log.user_name || "System"}</span>
                           {" "}
                           {log.action === "created" && "অর্ডার তৈরি করেছে"}
-                          {log.action === "status_changed" && <>স্ট্যাটাস পরিবর্তন করেছে: <Badge variant="outline" className="text-[9px] h-4">{log.old_value}</Badge> → <Badge variant="secondary" className="text-[9px] h-4">{log.new_value}</Badge></>}
+                          {log.action === "status_changed" && <>স্ট্যাটাস পরিবর্তন: <Badge variant="outline" className="text-[9px] h-4">{log.old_value}</Badge> → <Badge variant="secondary" className="text-[9px] h-4">{log.new_value}</Badge></>}
                           {log.action === "field_edited" && <>"{log.field_name}" পরিবর্তন করেছে</>}
                           {log.action === "note_added" && "নোট যোগ করেছে"}
                           {!["created", "status_changed", "field_edited", "note_added"].includes(log.action) && log.action}
@@ -1857,9 +2095,9 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
             {/* Meta */}
             <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border/30">
               <span>Created: {format(new Date(order.created_at), "dd MMM yyyy, hh:mm a")}</span>
-              <span className={`px-2 py-0.5 rounded-full font-medium ${getStatusColor(order.status)} text-white`}>
-                {getStatusLabel(order.status)}
-              </span>
+              {order.source && (
+                <Badge variant="outline" className="text-xs gap-1"><Globe className="h-3 w-3" />{order.source}</Badge>
+              )}
             </div>
           </div>
         )}
