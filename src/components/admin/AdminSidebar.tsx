@@ -50,7 +50,6 @@ const mainMenuItems = [
 
 const bottomMenuItems = [
   { title: "Order API", url: "/admin/api-keys", icon: Key },
-  { title: "Courier", url: "/admin/courier", icon: Truck },
   { title: "Meta Ads", url: "/admin/meta-ads", icon: Megaphone },
   { title: "Automation", url: "/admin/automation", icon: Zap },
   { title: "Backup", url: "/admin/backup", icon: Database },

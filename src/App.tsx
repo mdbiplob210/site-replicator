@@ -24,7 +24,6 @@ import AdminPlanning from "./pages/admin/AdminPlanning";
 import AdminTasks from "./pages/admin/AdminTasks";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import AdminMetaAds from "./pages/admin/AdminMetaAds";
-import AdminCourier from "./pages/admin/AdminCourier";
 import AdminApiKeys from "./pages/admin/AdminApiKeys";
 import AdminBackfillOrderItems from "./pages/admin/AdminBackfillOrderItems";
 import AdminWebsiteSettings from "./pages/admin/AdminWebsiteSettings";
