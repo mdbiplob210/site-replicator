@@ -166,6 +166,47 @@ export type Database = {
         }
         Relationships: []
       }
+      landing_page_events: {
+        Row: {
+          created_at: string
+          event_name: string | null
+          event_type: string
+          id: string
+          landing_page_id: string
+          referrer: string | null
+          user_agent: string | null
+          visitor_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_name?: string | null
+          event_type?: string
+          id?: string
+          landing_page_id: string
+          referrer?: string | null
+          user_agent?: string | null
+          visitor_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_name?: string | null
+          event_type?: string
+          id?: string
+          landing_page_id?: string
+          referrer?: string | null
+          user_agent?: string | null
+          visitor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "landing_page_events_landing_page_id_fkey"
+            columns: ["landing_page_id"]
+            isOneToOne: false
+            referencedRelation: "landing_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       landing_pages: {
         Row: {
           created_at: string
