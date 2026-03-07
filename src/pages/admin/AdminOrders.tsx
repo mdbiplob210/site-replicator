@@ -330,21 +330,75 @@ const AdminOrders = () => {
       }
       return true;
     });
-  }, [orders, searchQuery, filterSource, filterPhone, filterAmountMin, filterAmountMax, filterDeviceType, filterAddress, filterDistrict, filterPaymentStatus, filterCourierProvider, filterCourierStatus, filterStatus, filterProductSearch, filterCategory, filterCourierCharged, filterNotes, filterUrl, filterOrderTag, filterSalesType, courierByOrderId, orderItemsByOrderId, allProducts]);
+  }, [orders, searchQuery, filterSource, filterPhone, filterAmountMin, filterAmountMax, filterDeviceType, filterAddress, filterDistrict, filterThana, filterZone, filterPaymentStatus, filterCourierProvider, filterCourierStatus, filterStatus, filterProductSearch, filterCategory, filterCourierCharged, filterNotes, filterUrl, filterOrderTag, filterSalesType, courierByOrderId, orderItemsByOrderId, allProducts]);
 
-  const activeFilterCount = [filterSource, filterPhone, filterAmountMin, filterAmountMax, filterAddress, filterDistrict, filterStatus, filterProductSearch, filterNotes, filterUrl, filterOrderTag].filter(Boolean).length
-    + [filterDeviceType, filterPaymentStatus, filterCourierProvider, filterCourierStatus, filterCategory, filterCourierCharged, filterSalesType].filter(v => v !== "all").length
+  const activeFilterCount = [filterSource, filterPhone, filterAmountMin, filterAmountMax, filterAddress, filterStatus, filterProductSearch, filterNotes, filterUrl, filterOrderTag].filter(Boolean).length
+    + [filterDeviceType, filterPaymentStatus, filterCourierProvider, filterCourierStatus, filterCategory, filterCourierCharged, filterSalesType, filterDistrict, filterThana, filterZone].filter(v => v !== "all").length
     + (orderDateFilter !== "all" ? 1 : 0);
 
   const clearAllFilters = () => {
     setFilterSource(""); setFilterPhone(""); setFilterAmountMin(""); setFilterAmountMax("");
-    setFilterDeviceType("all"); setFilterAddress(""); setFilterDistrict("");
+    setFilterDeviceType("all"); setFilterAddress(""); setFilterDistrict("all"); setFilterThana("all"); setFilterZone("all");
     setFilterPaymentStatus("all"); setFilterCourierProvider("all"); setFilterCourierStatus("all");
     setFilterStatus(""); setFilterProductSearch(""); setFilterCategory("all");
     setFilterCourierCharged("all"); setFilterNotes(""); setFilterUrl("");
     setFilterOrderTag(""); setFilterSalesType("all");
     setOrderDateFilter("all"); setCustomDateFrom(undefined); setCustomDateTo(undefined);
   };
+
+  // Order Items Summary data
+  const orderItemsSummary = useMemo(() => {
+    const productMap: Record<string, { name: string; code: string; orderCount: number; totalQty: number; totalAmount: number }> = {};
+    filteredOrders.forEach((o) => {
+      const items = orderItemsByOrderId[o.id] || [];
+      items.forEach((item: any) => {
+        const key = item.product_id || item.product_code || item.product_name;
+        if (!productMap[key]) {
+          productMap[key] = { name: item.product_name, code: item.product_code, orderCount: 0, totalQty: 0, totalAmount: 0 };
+        }
+        productMap[key].orderCount += 1;
+        productMap[key].totalQty += (item.quantity || 1);
+        productMap[key].totalAmount += Number(item.total_price || 0);
+      });
+    });
+    return Object.values(productMap).sort((a, b) => b.orderCount - a.orderCount);
+  }, [filteredOrders, orderItemsByOrderId]);
+
+  // Order Sources Summary
+  const orderSourcesSummary = useMemo(() => {
+    const sourceMap: Record<string, { count: number; totalAmount: number }> = {};
+    filteredOrders.forEach((o) => {
+      const src = o.source || "প্যানেল (Manual)";
+      if (!sourceMap[src]) sourceMap[src] = { count: 0, totalAmount: 0 };
+      sourceMap[src].count += 1;
+      sourceMap[src].totalAmount += Number(o.total_amount);
+    });
+    return Object.entries(sourceMap).sort((a, b) => b[1].count - a[1].count);
+  }, [filteredOrders]);
+
+  // Duplicate Orders (same phone or same IP)
+  const duplicateOrders = useMemo(() => {
+    const phoneMap: Record<string, typeof filteredOrders> = {};
+    const ipMap: Record<string, typeof filteredOrders> = {};
+    filteredOrders.forEach((o) => {
+      if (o.customer_phone) {
+        if (!phoneMap[o.customer_phone]) phoneMap[o.customer_phone] = [];
+        phoneMap[o.customer_phone].push(o);
+      }
+      if (o.client_ip) {
+        if (!ipMap[o.client_ip]) ipMap[o.client_ip] = [];
+        ipMap[o.client_ip].push(o);
+      }
+    });
+    const dupes: { key: string; type: string; orders: typeof filteredOrders }[] = [];
+    Object.entries(phoneMap).forEach(([phone, ords]) => {
+      if (ords.length > 1) dupes.push({ key: phone, type: "📞 Phone", orders: ords });
+    });
+    Object.entries(ipMap).forEach(([ip, ords]) => {
+      if (ords.length > 1) dupes.push({ key: ip, type: "🌐 IP", orders: ords });
+    });
+    return dupes.sort((a, b) => b.orders.length - a.orders.length);
+  }, [filteredOrders]);
 
   const addProductToOrder = (product: any) => {
     const existing = orderItems.find((i) => i.product_id === product.id);
