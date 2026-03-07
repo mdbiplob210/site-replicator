@@ -932,30 +932,28 @@ const AdminOrders = () => {
               <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform duration-200", filtersOpen && "rotate-180")} />
             </Button>
           </CollapsibleTrigger>
-          <CollapsibleContent className="mt-3">
-            <Card className="p-4 border-border/40 shadow-sm space-y-4">
-              {/* Row 1: Order Created At, Courier Submitted At, Status Added At, Note Added At */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground">Order Created At</Label>
+          <CollapsibleContent className="mt-2">
+            <Card className="p-3 border-border/40 shadow-sm space-y-2.5">
+              {/* Row 1: Date filters compact */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-semibold text-muted-foreground">Order Date</Label>
                   <Select value={orderDateFilter} onValueChange={(v) => setOrderDateFilter(v as OrderDateFilter)}>
-                    <SelectTrigger className="rounded-xl h-9 text-sm">
-                      <SelectValue placeholder="All Time" />
-                    </SelectTrigger>
+                    <SelectTrigger className="rounded-lg h-7 text-xs"><SelectValue placeholder="All Time" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Time</SelectItem>
                       <SelectItem value="today">Today</SelectItem>
                       <SelectItem value="yesterday">Yesterday</SelectItem>
                       <SelectItem value="7days">Last 7 Days</SelectItem>
                       <SelectItem value="30days">Last 30 Days</SelectItem>
-                      <SelectItem value="custom">Custom Range</SelectItem>
+                      <SelectItem value="custom">Custom</SelectItem>
                     </SelectContent>
                   </Select>
                   {orderDateFilter === "custom" && (
-                    <div className="flex gap-1.5 mt-1">
+                    <div className="flex gap-1 mt-0.5">
                       <Popover>
                         <PopoverTrigger asChild>
-                          <Button variant="outline" size="sm" className={cn("flex-1 justify-start text-[10px] rounded-lg h-7 px-2", !customDateFrom && "text-muted-foreground")}>
+                          <Button variant="outline" size="sm" className={cn("flex-1 justify-start text-[9px] rounded-md h-6 px-1.5", !customDateFrom && "text-muted-foreground")}>
                             {customDateFrom ? format(customDateFrom, "dd/MM/yy") : "From"}
                           </Button>
                         </PopoverTrigger>
@@ -965,7 +963,7 @@ const AdminOrders = () => {
                       </Popover>
                       <Popover>
                         <PopoverTrigger asChild>
-                          <Button variant="outline" size="sm" className={cn("flex-1 justify-start text-[10px] rounded-lg h-7 px-2", !customDateTo && "text-muted-foreground")}>
+                          <Button variant="outline" size="sm" className={cn("flex-1 justify-start text-[9px] rounded-md h-6 px-1.5", !customDateTo && "text-muted-foreground")}>
                             {customDateTo ? format(customDateTo, "dd/MM/yy") : "To"}
                           </Button>
                         </PopoverTrigger>
@@ -976,41 +974,25 @@ const AdminOrders = () => {
                     </div>
                   )}
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground">Courier Submitted At</Label>
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-semibold text-muted-foreground">Courier Date</Label>
                   <Select defaultValue="all">
-                    <SelectTrigger className="rounded-xl h-9 text-sm"><SelectValue placeholder="All Time" /></SelectTrigger>
+                    <SelectTrigger className="rounded-lg h-7 text-xs"><SelectValue placeholder="All" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Time</SelectItem>
                       <SelectItem value="today">Today</SelectItem>
-                      <SelectItem value="7days">Last 7 Days</SelectItem>
-                      <SelectItem value="30days">Last 30 Days</SelectItem>
+                      <SelectItem value="7days">7 Days</SelectItem>
+                      <SelectItem value="30days">30 Days</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground">Status Added At</Label>
-                  <Select defaultValue="all">
-                    <SelectTrigger className="rounded-xl h-9 text-sm"><SelectValue placeholder="All Time" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Time</SelectItem>
-                      <SelectItem value="today">Today</SelectItem>
-                      <SelectItem value="7days">Last 7 Days</SelectItem>
-                      <SelectItem value="30days">Last 30 Days</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-semibold text-muted-foreground">Order Tag</Label>
+                  <Input placeholder="Tag..." className="rounded-lg h-7 text-xs" value={filterOrderTag} onChange={(e) => setFilterOrderTag(e.target.value)} />
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground">Note Added At</Label>
-                  <Select defaultValue="all">
-                    <SelectTrigger className="rounded-xl h-9 text-sm"><SelectValue placeholder="All Time" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Time</SelectItem>
-                      <SelectItem value="today">Today</SelectItem>
-                      <SelectItem value="7days">Last 7 Days</SelectItem>
-                      <SelectItem value="30days">Last 30 Days</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-semibold text-muted-foreground">URL / Website</Label>
+                  <Input placeholder="URL..." className="rounded-lg h-7 text-xs" value={filterUrl} onChange={(e) => setFilterUrl(e.target.value)} />
                 </div>
               </div>
 
