@@ -1105,21 +1105,30 @@ const AdminOrders = () => {
                         className="pl-10 rounded-xl"
                         value={productSearch}
                         onChange={(e) => setProductSearch(e.target.value)}
+                        onFocus={() => setProductSearchFocused(true)}
+                        onBlur={() => setTimeout(() => setProductSearchFocused(false), 200)}
                       />
                     </div>
-                    {productSearch && filteredProducts.length > 0 && (
-                      <div className="border border-border rounded-xl max-h-40 overflow-y-auto bg-card shadow-md">
+                    {productSearchFocused && filteredProducts.length > 0 && (
+                      <div className="border border-border rounded-xl max-h-48 overflow-y-auto bg-card shadow-md">
+                        {!productSearch.trim() && (
+                          <div className="px-3 py-1.5 text-[10px] font-semibold text-muted-foreground bg-secondary/30 border-b border-border/30">🔥 Top Selling Products</div>
+                        )}
                         {filteredProducts.map((p: any) => (
                           <button
                             key={p.id}
-                            onClick={() => addProductToOrder(p)}
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={() => { addProductToOrder(p); setProductSearchFocused(true); }}
                             className="w-full text-left px-3 py-2 hover:bg-secondary/60 transition-colors flex items-center justify-between text-sm border-b border-border/30 last:border-0"
                           >
                             <div>
                               <span className="font-medium text-foreground">{p.name}</span>
                               <span className="text-xs text-muted-foreground ml-2">({p.product_code})</span>
                             </div>
-                            <span className="text-xs font-semibold text-primary">৳{Number(p.selling_price).toLocaleString()}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-semibold text-primary">৳{Number(p.selling_price).toLocaleString()}</span>
+                              {Number(p.stock_quantity) > 0 && <span className="text-[10px] text-muted-foreground">({p.stock_quantity})</span>}
+                            </div>
                           </button>
                         ))}
                       </div>
