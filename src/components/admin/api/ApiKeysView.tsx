@@ -7,8 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useApiKeys, useCreateApiKey, useUpdateApiKey, useDeleteApiKey } from "@/hooks/useApiKeys";
-import { Key, Plus, Trash2, Copy, Eye, EyeOff, BookOpen, Code, ArrowLeft } from "lucide-react";
+import { useApiKeys, useCreateApiKey, useUpdateApiKey, useDeleteApiKey, useSyncOrders } from "@/hooks/useApiKeys";
+import { Key, Plus, Trash2, Copy, Eye, EyeOff, BookOpen, Code, ArrowLeft, RefreshCw, Globe, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -28,22 +28,43 @@ export function ApiKeysView({ onBack }: ApiKeysViewProps) {
   const createKey = useCreateApiKey();
   const updateKey = useUpdateApiKey();
   const deleteKey = useDeleteApiKey();
+  const syncOrders = useSyncOrders();
   const [showCreate, setShowCreate] = useState(false);
   const [newLabel, setNewLabel] = useState("");
+  const [newSourceUrl, setNewSourceUrl] = useState("");
   const [newPerms, setNewPerms] = useState<string[]>(["orders:create", "incomplete_orders:create"]);
   const [visibleKeys, setVisibleKeys] = useState<Record<string, boolean>>({});
+  const [editingSourceUrl, setEditingSourceUrl] = useState<Record<string, string>>({});
+  const [syncingKeyId, setSyncingKeyId] = useState<string | null>(null);
 
   const apiBaseUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/order-api`;
 
   const handleCreate = () => {
     if (!newLabel.trim()) { toast.error("লেবেল দিন"); return; }
-    createKey.mutate({ label: newLabel, permissions: newPerms }, {
-      onSuccess: () => { setShowCreate(false); setNewLabel(""); }
+    createKey.mutate({ label: newLabel, permissions: newPerms, source_url: newSourceUrl || undefined }, {
+      onSuccess: () => { setShowCreate(false); setNewLabel(""); setNewSourceUrl(""); }
     });
   };
 
   const togglePerm = (perm: string) => {
     setNewPerms(prev => prev.includes(perm) ? prev.filter(p => p !== perm) : [...prev, perm]);
+  };
+
+  const handleSync = async (keyId: string) => {
+    setSyncingKeyId(keyId);
+    try {
+      await syncOrders.mutateAsync(keyId);
+    } finally {
+      setSyncingKeyId(null);
+    }
+  };
+
+  const saveSourceUrl = (keyId: string) => {
+    const url = editingSourceUrl[keyId];
+    if (url !== undefined) {
+      updateKey.mutate({ id: keyId, updates: { source_url: url || null } as any });
+      setEditingSourceUrl(prev => { const n = { ...prev }; delete n[keyId]; return n; });
+    }
   };
 
   return (
@@ -58,7 +79,7 @@ export function ApiKeysView({ onBack }: ApiKeysViewProps) {
           </div>
           <div>
             <h1 className="text-xl font-bold text-foreground tracking-tight">Order API Keys</h1>
-            <p className="text-sm text-muted-foreground">বাহ্যিক ওয়েবসাইট থেকে অর্ডার রিসিভ করতে API Key ব্যবহার করুন</p>
+            <p className="text-sm text-muted-foreground">বাহ্যিক ওয়েবসাইট থেকে অর্ডার রিসিভ ও সিঙ্ক করুন</p>
           </div>
         </div>
         <Dialog open={showCreate} onOpenChange={setShowCreate}>
@@ -69,8 +90,13 @@ export function ApiKeysView({ onBack }: ApiKeysViewProps) {
             <DialogHeader><DialogTitle>নতুন API Key তৈরি করুন</DialogTitle></DialogHeader>
             <div className="space-y-4">
               <div>
-                <Label>লেবেল</Label>
+                <Label>লেবেল (কোন সাইটের জন্য)</Label>
                 <Input placeholder="যেমন: মূল ওয়েবসাইট, Laravel Site" value={newLabel} onChange={e => setNewLabel(e.target.value)} />
+              </div>
+              <div>
+                <Label>Source URL (অর্ডার সিঙ্ক করতে)</Label>
+                <Input placeholder="https://yoursite.com/api/orders" value={newSourceUrl} onChange={e => setNewSourceUrl(e.target.value)} />
+                <p className="text-xs text-muted-foreground mt-1">বাহ্যিক সাইটের API endpoint যেখান থেকে অর্ডার টেনে আনা হবে। না দিলেও চলবে।</p>
               </div>
               <div>
                 <Label>পার্মিশন</Label>
@@ -104,8 +130,9 @@ export function ApiKeysView({ onBack }: ApiKeysViewProps) {
             <Card><CardContent className="py-10 text-center text-muted-foreground">কোনো API Key নেই। নতুন তৈরি করুন।</CardContent></Card>
           ) : (
             keys?.map(key => (
-              <Card key={key.id}>
-                <CardContent className="pt-6 space-y-3">
+              <Card key={key.id} className="border-border/40">
+                <CardContent className="pt-6 space-y-4">
+                  {/* Header */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <h3 className="font-semibold">{key.label}</h3>
@@ -118,6 +145,8 @@ export function ApiKeysView({ onBack }: ApiKeysViewProps) {
                       </Button>
                     </div>
                   </div>
+
+                  {/* API Key display */}
                   <div className="flex items-center gap-2">
                     <code className="flex-1 text-sm bg-muted p-2 rounded font-mono">
                       {visibleKeys[key.id] ? key.api_key : "••••••••••••••••••••••••"}
@@ -129,9 +158,59 @@ export function ApiKeysView({ onBack }: ApiKeysViewProps) {
                       <Copy className="h-4 w-4" />
                     </Button>
                   </div>
+
+                  {/* Source URL */}
+                  <div className="bg-muted/30 rounded-xl p-3 border border-border/40 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Globe className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm font-medium">Source URL (অর্ডার সিঙ্ক)</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        placeholder="https://yoursite.com/api/orders"
+                        value={editingSourceUrl[key.id] !== undefined ? editingSourceUrl[key.id] : (key.source_url || "")}
+                        onChange={e => setEditingSourceUrl(prev => ({ ...prev, [key.id]: e.target.value }))}
+                        className="text-sm"
+                      />
+                      {editingSourceUrl[key.id] !== undefined && (
+                        <Button size="sm" onClick={() => saveSourceUrl(key.id)} disabled={updateKey.isPending}>
+                          সেভ
+                        </Button>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-2"
+                        disabled={!key.source_url || syncingKeyId === key.id}
+                        onClick={() => handleSync(key.id)}
+                      >
+                        {syncingKeyId === key.id ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <RefreshCw className="h-3.5 w-3.5" />
+                        )}
+                        {syncingKeyId === key.id ? "সিঙ্ক হচ্ছে..." : "অর্ডার সিঙ্ক করুন"}
+                      </Button>
+                      {key.last_synced_at && (
+                        <span className="text-xs text-muted-foreground">
+                          সর্বশেষ সিঙ্ক: {new Date(key.last_synced_at).toLocaleString("bn-BD")}
+                        </span>
+                      )}
+                    </div>
+                    {!key.source_url && (
+                      <p className="text-xs text-muted-foreground">
+                        💡 Source URL দিন যাতে বাহ্যিক সাইট থেকে অর্ডার সিঙ্ক করতে পারেন। URL টি GET রিকোয়েস্টে অর্ডার JSON রিটার্ন করবে।
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Permissions */}
                   <div className="flex flex-wrap gap-1">
                     {key.permissions.map(p => <Badge key={p} variant="outline" className="text-xs">{p}</Badge>)}
                   </div>
+
                   {key.last_used_at && (
                     <p className="text-xs text-muted-foreground">সর্বশেষ ব্যবহার: {new Date(key.last_used_at).toLocaleString("bn-BD")}</p>
                   )}
@@ -219,6 +298,60 @@ X-API-Key: your_api_key_here
   "block_reason": "api_submission",
   "source": "my-website"
 }`}</pre>
+          </div>
+
+          <div className="bg-muted/50 p-4 rounded-lg space-y-3">
+            <h3 className="font-bold text-lg">🔄 Source URL — অর্ডার সিঙ্ক সিস্টেম</h3>
+            <p className="text-sm">API Key-তে Source URL দিলে "অর্ডার সিঙ্ক" বাটনে ক্লিক করে বাহ্যিক সাইট থেকে অর্ডার টেনে আনা যায়।</p>
+            <p className="text-sm font-medium mt-2">আপনার বাহ্যিক সাইটে এই রকম একটি GET endpoint তৈরি করুন:</p>
+            <pre className="bg-background p-3 rounded border text-xs overflow-x-auto">{`// Laravel Example - GET /api/orders
+Route::get('/api/orders', function(Request $request) {
+    // API Key verify করুন (optional)
+    $apiKey = $request->header('X-API-Key');
+    
+    // আজকের বা নতুন অর্ডারগুলো রিটার্ন করুন
+    $orders = Order::where('synced', false)
+        ->orWhere('created_at', '>=', now()->subDay())
+        ->get()
+        ->map(function($order) {
+            return [
+                'type' => 'order',    // বা 'incomplete_order'
+                'order_number' => $order->order_number,
+                'customer_name' => $order->customer_name,
+                'customer_phone' => $order->customer_phone,
+                'customer_address' => $order->customer_address,
+                'product_cost' => $order->product_cost,
+                'delivery_charge' => $order->delivery_charge,
+                'discount' => $order->discount,
+                'total_amount' => $order->total_amount,
+                'status' => 'processing',
+                'items' => $order->items->map(fn($i) => [
+                    'product_name' => $i->product_name,
+                    'product_code' => $i->product_code,
+                    'quantity' => $i->quantity,
+                    'unit_price' => $i->unit_price,
+                    'total_price' => $i->total_price,
+                ])
+            ];
+        });
+    
+    // Mark as synced
+    Order::where('synced', false)->update(['synced' => true]);
+    
+    return response()->json(['data' => $orders]);
+});`}</pre>
+            <div className="mt-3 space-y-1">
+              <p className="text-xs font-semibold text-foreground">সাপোর্টেড রেসপন্স ফরম্যাট:</p>
+              <pre className="bg-background p-2 rounded border text-xs">{`// Format 1: Array
+[{ "customer_name": "...", ... }, ...]
+
+// Format 2: data key
+{ "data": [{ "customer_name": "...", ... }] }
+
+// Format 3: orders key
+{ "orders": [{ "customer_name": "...", ... }] }`}</pre>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">💡 ডুপ্লিকেট চেক: একই order_number বা একই phone+name থাকলে অর্ডার বাদ দেওয়া হবে।</p>
           </div>
 
           <div className="bg-muted/50 p-4 rounded-lg space-y-3">
