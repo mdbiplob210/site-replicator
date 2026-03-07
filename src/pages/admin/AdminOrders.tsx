@@ -35,6 +35,7 @@ import {
   useConvertIncompleteToOrder, type IncompleteDateFilter,
 } from "@/hooks/useIncompleteOrders";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
+import { CourierSettingsView } from "@/components/admin/courier/CourierSettingsView";
 import { Constants } from "@/integrations/supabase/types";
 
 const statusTabs = [
@@ -86,7 +87,7 @@ const incompleteTabs = [
   { label: "Deleted", icon: Trash },
 ];
 
-type View = "orders" | "incomplete" | "fakeOrder";
+type View = "orders" | "incomplete" | "fakeOrder" | "courier";
 
 const AdminOrders = () => {
   const [activeTab, setActiveTab] = useState("All Orders");
