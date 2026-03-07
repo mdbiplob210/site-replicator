@@ -185,6 +185,16 @@ const AdminOrders = () => {
     ).slice(0, 10);
   }, [allProducts, productSearch]);
 
+  // Bangladesh districts for filtering
+  const bdDistricts = useMemo(() => [
+    "ঢাকা", "চট্টগ্রাম", "রাজশাহী", "খুলনা", "বরিশাল", "সিলেট", "রংপুর", "ময়মনসিংহ",
+    "কুমিল্লা", "গাজীপুর", "নারায়ণগঞ্জ", "টাঙ্গাইল", "কিশোরগঞ্জ", "মানিকগঞ্জ", "মুন্সীগঞ্জ",
+    "নরসিংদী", "ফরিদপুর", "গোপালগঞ্জ", "মাদারীপুর", "শরীয়তপুর", "রাজবাড়ী",
+    "Dhaka", "Chittagong", "Rajshahi", "Khulna", "Barisal", "Sylhet", "Rangpur", "Mymensingh",
+    "Comilla", "Gazipur", "Narayanganj", "Tangail", "Kishoreganj", "Manikganj",
+    "Cox's Bazar", "Bogra", "Jessore", "Dinajpur", "Pabna", "Noakhali", "Brahmanbaria"
+  ], []);
+
   // Filtered orders by search + advanced filters
   const filteredOrders = useMemo(() => {
     return orders.filter((o) => {
@@ -220,11 +230,30 @@ const AdminOrders = () => {
       if (filterAddress) {
         if (!(o.customer_address && o.customer_address.toLowerCase().includes(filterAddress.toLowerCase()))) return false;
       }
+      // District filter
+      if (filterDistrict) {
+        if (!(o.customer_address && o.customer_address.toLowerCase().includes(filterDistrict.toLowerCase()))) return false;
+      }
+      // Payment status (based on delivery_charge vs total)
+      if (filterPaymentStatus !== "all") {
+        if (filterPaymentStatus === "paid" && Number(o.delivery_charge) > 0) return false;
+        if (filterPaymentStatus === "cod" && Number(o.delivery_charge) === 0) return false;
+        if (filterPaymentStatus === "free_delivery" && Number(o.delivery_charge) > 0) return false;
+      }
+      // Courier provider
+      if (filterCourierProvider !== "all") {
+        const co = courierByOrderId[o.id];
+        if (!co || co.provider_id !== filterCourierProvider) return false;
+      }
       return true;
     });
-  }, [orders, searchQuery, filterSource, filterPhone, filterAmountMin, filterAmountMax, filterDeviceType, filterAddress]);
+  }, [orders, searchQuery, filterSource, filterPhone, filterAmountMin, filterAmountMax, filterDeviceType, filterAddress, filterDistrict, filterPaymentStatus, filterCourierProvider, courierByOrderId]);
 
-  const activeFilterCount = [filterSource, filterPhone, filterAmountMin, filterAmountMax, filterAddress].filter(Boolean).length + (filterDeviceType !== "all" ? 1 : 0) + (orderDateFilter !== "all" ? 1 : 0);
+  const activeFilterCount = [filterSource, filterPhone, filterAmountMin, filterAmountMax, filterAddress, filterDistrict].filter(Boolean).length
+    + (filterDeviceType !== "all" ? 1 : 0)
+    + (orderDateFilter !== "all" ? 1 : 0)
+    + (filterPaymentStatus !== "all" ? 1 : 0)
+    + (filterCourierProvider !== "all" ? 1 : 0);
 
   const clearAllFilters = () => {
     setFilterSource("");
@@ -233,6 +262,9 @@ const AdminOrders = () => {
     setFilterAmountMax("");
     setFilterDeviceType("all");
     setFilterAddress("");
+    setFilterDistrict("");
+    setFilterPaymentStatus("all");
+    setFilterCourierProvider("all");
     setOrderDateFilter("all");
     setCustomDateFrom(undefined);
     setCustomDateTo(undefined);
