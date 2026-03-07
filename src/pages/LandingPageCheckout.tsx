@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useLandingPageBySlug } from "@/hooks/useLandingPages";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 
 export default function LandingPageCheckout() {
   const { slug } = useParams<{ slug: string }>();
@@ -28,18 +28,75 @@ export default function LandingPageCheckout() {
 
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "";
 
-  // Build checkout HTML with order submission script
   const buildCheckoutHtml = () => {
     let trackingScripts = "";
+
+    // Rich tracking helper
+    const richTrackingHelper = `
+<script>
+window._lpTrack = {
+  generateEventId: function() { return 'eid_' + Math.random().toString(36).substr(2,9) + '_' + Date.now(); },
+  getDayName: function() { return ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date().getDay()]; },
+  getHourRange: function() { var h = new Date().getHours(); return h + '-' + (h+1); },
+  getMonthName: function() { return ['January','February','March','April','May','June','July','August','September','October','November','December'][new Date().getMonth()]; },
+  getTrafficSource: function() { try { return document.referrer ? new URL(document.referrer).hostname : 'direct'; } catch(e) { return 'direct'; } },
+  getCookie: function(name) { var v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)'); return v ? decodeURIComponent(v[2]) : ''; },
+  getFbp: function() { return this.getCookie('_fbp') || ''; },
+  getFbc: function() { var fbc = this.getCookie('_fbc'); if (!fbc) { try { var fbclid = new URL(window.location.href).searchParams.get('fbclid'); if (fbclid) fbc = 'fb.1.' + Date.now() + '.' + fbclid; } catch(e){} } return fbc || ''; },
+  getBaseParams: function() {
+    return { event_url: window.location.href, landing_page: window.location.href, page_title: document.title || 'Checkout', traffic_source: this.getTrafficSource(), user_role: 'guest', event_day: this.getDayName(), event_hour: this.getHourRange(), event_month: this.getMonthName(), plugin: 'LovableLP' };
+  },
+  sendServerEvent: function(eventName, customData) {
+    var CAPI_URL = '${supabaseUrl}/functions/v1/fb-conversions-api';
+    var payload = { pixel_id: '${page.fb_pixel_id || ''}', event_name: eventName, event_id: customData.event_id || this.generateEventId(), event_url: window.location.href, user_agent: navigator.userAgent, fbp: this.getFbp(), fbc: this.getFbc(), custom_data: customData };
+    try { navigator.sendBeacon(CAPI_URL, JSON.stringify(payload)); } catch(e) { fetch(CAPI_URL, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)}).catch(function(){}); }
+  }
+};
+</script>
+`;
 
     if (page.fb_pixel_id) {
       trackingScripts += `
 <script>
 !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
 fbq('init','${page.fb_pixel_id}');
-fbq('track','PageView');
-fbq('track','InitiateCheckout');
-</script>`;
+var _eid = window._lpTrack.generateEventId();
+var _bp = window._lpTrack.getBaseParams();
+fbq('track','PageView', {}, {eventID: _eid});
+window._lpTrack.sendServerEvent('PageView', {event_id: _eid});
+
+// InitiateCheckout with rich params
+var _icEid = window._lpTrack.generateEventId();
+var _icForm = document.querySelector ? document.querySelector('[data-checkout-form]') : null;
+setTimeout(function() {
+  _icForm = document.querySelector('[data-checkout-form]');
+  var icParams = {
+    content_type: 'product',
+    currency: 'BDT',
+    page_title: 'Checkout',
+    event_day: _bp.event_day,
+    event_hour: _bp.event_hour,
+    event_month: _bp.event_month,
+    traffic_source: _bp.traffic_source,
+    user_role: 'guest',
+    plugin: 'LovableLP',
+    event_url: window.location.href,
+    landing_page: window.location.href
+  };
+  if (_icForm) {
+    icParams.content_name = _icForm.getAttribute('data-product-name') || '';
+    icParams.content_ids = _icForm.getAttribute('data-product-code') ? [_icForm.getAttribute('data-product-code')] : [];
+    icParams.value = parseFloat(_icForm.getAttribute('data-unit-price') || '0');
+    icParams.content_category = _icForm.getAttribute('data-category') || '';
+    icParams.num_items = parseInt(_icForm.getAttribute('data-quantity') || '1');
+    icParams.subtotal = icParams.value;
+  }
+  fbq('track', 'InitiateCheckout', icParams, {eventID: _icEid});
+  window._lpTrack.sendServerEvent('InitiateCheckout', {event_id: _icEid, ...icParams});
+}, 100);
+</script>
+<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${page.fb_pixel_id}&ev=PageView&noscript=1"/></noscript>
+`;
     }
 
     if (page.tiktok_pixel_id) {
@@ -62,7 +119,7 @@ ttq.track('InitiateCheckout');
       trackingScripts += `\n${page.custom_head_scripts}\n`;
     }
 
-    // Order submission script injected into checkout page
+    // Enhanced order submission with rich Purchase event
     const orderScript = `
 <script>
 (function(){
@@ -70,13 +127,13 @@ ttq.track('InitiateCheckout');
   var SLUG = '${page.slug}';
   var VID = localStorage.getItem('_lp_vid') || '';
 
-  // Listen for form submissions with data-checkout-form attribute
   document.addEventListener('submit', function(e) {
     var form = e.target.closest('[data-checkout-form]');
     if (!form) return;
     e.preventDefault();
 
     var btn = form.querySelector('[type="submit"], button:not([type])');
+    var btnOrigText = btn ? btn.textContent : '';
     if (btn) { btn.disabled = true; btn.textContent = 'অপেক্ষা করুন...'; }
 
     var formData = new FormData(form);
@@ -103,18 +160,75 @@ ttq.track('InitiateCheckout');
     .then(function(r) { return r.json(); })
     .then(function(data) {
       if (data.success) {
-        // Fire purchase events
+        var totalValue = payload.unit_price * payload.quantity;
+        var eventId = window._lpTrack ? window._lpTrack.generateEventId() : '';
+        var baseParams = window._lpTrack ? window._lpTrack.getBaseParams() : {};
+
+        // FB Purchase with ALL PixelYourSite-style params
         if (typeof fbq === 'function') {
-          fbq('track', 'Purchase', { value: payload.unit_price * payload.quantity, currency: 'BDT', content_name: payload.product_name });
-        }
-        if (typeof ttq !== 'undefined' && ttq.track) {
-          ttq.track('CompletePayment', { value: payload.unit_price * payload.quantity, currency: 'BDT' });
-        }
-        if (typeof dataLayer !== 'undefined') {
-          dataLayer.push({ event: 'conversion_Purchase', value: payload.unit_price * payload.quantity });
+          var purchaseParams = {
+            value: totalValue,
+            currency: 'BDT',
+            content_type: 'product',
+            content_name: payload.product_name,
+            content_ids: payload.product_code ? [payload.product_code] : [],
+            num_items: payload.quantity,
+            content_category: form.getAttribute('data-category') || '',
+            subtotal: totalValue,
+            event_day: baseParams.event_day || '',
+            event_hour: baseParams.event_hour || '',
+            event_month: baseParams.event_month || '',
+            event_url: baseParams.event_url || window.location.href,
+            landing_page: baseParams.landing_page || window.location.href,
+            page_title: 'Checkout',
+            traffic_source: baseParams.traffic_source || 'direct',
+            user_role: 'guest',
+            plugin: 'LovableLP',
+            tags: form.getAttribute('data-tags') || '',
+            order_id: data.order_number
+          };
+          fbq('track', 'Purchase', purchaseParams, {eventID: eventId});
+          console.log('[FB Pixel] Purchase', purchaseParams);
         }
 
-        // Show success or redirect
+        // Server-side Purchase via Conversions API
+        if (window._lpTrack && '${page.fb_pixel_id}') {
+          window._lpTrack.sendServerEvent('Purchase', {
+            event_id: eventId,
+            value: totalValue,
+            currency: 'BDT',
+            content_name: payload.product_name,
+            content_ids: payload.product_code ? [payload.product_code] : [],
+            content_type: 'product',
+            num_items: payload.quantity,
+            order_id: data.order_number
+          });
+        }
+
+        // TikTok CompletePayment
+        if (typeof ttq !== 'undefined' && ttq.track) {
+          ttq.track('CompletePayment', {
+            value: totalValue,
+            currency: 'BDT',
+            content_name: payload.product_name,
+            content_id: payload.product_code || '',
+            content_type: 'product',
+            quantity: payload.quantity
+          });
+        }
+
+        // GTM
+        if (typeof dataLayer !== 'undefined') {
+          dataLayer.push({
+            event: 'conversion_Purchase',
+            value: totalValue,
+            currency: 'BDT',
+            content_name: payload.product_name,
+            order_id: data.order_number,
+            num_items: payload.quantity
+          });
+        }
+
         var successUrl = form.getAttribute('data-success-url');
         if (successUrl) {
           window.location.href = successUrl;
@@ -124,22 +238,24 @@ ttq.track('InitiateCheckout');
         }
       } else {
         alert(data.error || 'অর্ডার সাবমিট করতে সমস্যা হয়েছে');
-        if (btn) { btn.disabled = false; btn.textContent = 'অর্ডার করুন'; }
+        if (btn) { btn.disabled = false; btn.textContent = btnOrigText || 'অর্ডার করুন'; }
       }
     })
     .catch(function(err) {
       alert('ত্রুটি: ' + err.message);
-      if (btn) { btn.disabled = false; btn.textContent = 'অর্ডার করুন'; }
+      if (btn) { btn.disabled = false; btn.textContent = btnOrigText || 'অর্ডার করুন'; }
     });
   });
 })();
 </script>`;
 
+    const allScripts = richTrackingHelper + trackingScripts + orderScript;
+
     if (page.checkout_html!.includes("</head>")) {
-      return page.checkout_html!.replace("</head>", `${trackingScripts}${orderScript}</head>`);
+      return page.checkout_html!.replace("</head>", `${allScripts}</head>`);
     }
 
-    return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${trackingScripts}${orderScript}</head><body>${page.checkout_html}</body></html>`;
+    return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${allScripts}</head><body>${page.checkout_html}</body></html>`;
   };
 
   return (
