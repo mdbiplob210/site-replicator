@@ -1,4 +1,7 @@
 import { useState, useMemo } from "react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import { Calendar as CalendarWidget } from "@/components/ui/calendar";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,7 +36,6 @@ import {
 } from "@/hooks/useIncompleteOrders";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
 import { Constants } from "@/integrations/supabase/types";
-import { format } from "date-fns";
 
 const statusTabs = [
   { label: "All Orders", color: "bg-primary", icon: ShoppingCart },
@@ -96,6 +98,8 @@ const AdminOrders = () => {
   const [deliveryRatio, setDeliveryRatio] = useState([0]);
   const [searchQuery, setSearchQuery] = useState("");
   const [orderDateFilter, setOrderDateFilter] = useState<OrderDateFilter>("all");
+  const [customDateFrom, setCustomDateFrom] = useState<Date | undefined>();
+  const [customDateTo, setCustomDateTo] = useState<Date | undefined>();
   const [newOrderOpen, setNewOrderOpen] = useState(false);
   const [detailOrderId, setDetailOrderId] = useState<string | null>(null);
 
@@ -111,8 +115,8 @@ const AdminOrders = () => {
   const [orderItems, setOrderItems] = useState<OrderItemInput[]>([]);
   const [productSearch, setProductSearch] = useState("");
   const statusFilter = getStatusFromTab(activeTab);
-  const { data: orders = [], isLoading } = useOrders(statusFilter, orderDateFilter);
-  const { data: counts = {} } = useOrderCounts(orderDateFilter);
+  const { data: orders = [], isLoading } = useOrders(statusFilter, orderDateFilter, customDateFrom, customDateTo);
+  const { data: counts = {} } = useOrderCounts(orderDateFilter, customDateFrom, customDateTo);
   const createOrder = useCreateOrder();
   const updateStatus = useUpdateOrderStatus();
   const deleteOrder = useDeleteOrder();
@@ -694,26 +698,74 @@ const AdminOrders = () => {
         </Card>
 
         {/* Date Filter */}
-        <div className="flex items-center gap-1 bg-card rounded-xl border border-border/60 p-1 w-fit">
-          {([
-            { key: "all" as OrderDateFilter, label: "সব সময়" },
-            { key: "today" as OrderDateFilter, label: "আজ" },
-            { key: "yesterday" as OrderDateFilter, label: "গতকাল" },
-            { key: "7days" as OrderDateFilter, label: "৭ দিন" },
-            { key: "30days" as OrderDateFilter, label: "৩০ দিন" },
-          ]).map((f) => (
-            <button
-              key={f.key}
-              onClick={() => setOrderDateFilter(f.key)}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                orderDateFilter === f.key
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
-              }`}
-            >
-              {f.label}
-            </button>
-          ))}
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-1 bg-card rounded-xl border border-border/60 p-1 w-fit">
+            {([
+              { key: "all" as OrderDateFilter, label: "সব সময়" },
+              { key: "today" as OrderDateFilter, label: "আজ" },
+              { key: "yesterday" as OrderDateFilter, label: "গতকাল" },
+              { key: "7days" as OrderDateFilter, label: "৭ দিন" },
+              { key: "30days" as OrderDateFilter, label: "৩০ দিন" },
+              { key: "custom" as OrderDateFilter, label: "📅 Custom" },
+            ]).map((f) => (
+              <button
+                key={f.key}
+                onClick={() => setOrderDateFilter(f.key)}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                  orderDateFilter === f.key
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+
+          {orderDateFilter === "custom" && (
+            <div className="flex items-center gap-2">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className={cn("gap-1.5 text-xs rounded-xl", !customDateFrom && "text-muted-foreground")}>
+                    <Calendar className="h-3.5 w-3.5" />
+                    {customDateFrom ? format(customDateFrom, "dd MMM yyyy") : "শুরু তারিখ"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarWidget
+                    mode="single"
+                    selected={customDateFrom}
+                    onSelect={setCustomDateFrom}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+              <span className="text-xs text-muted-foreground">→</span>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className={cn("gap-1.5 text-xs rounded-xl", !customDateTo && "text-muted-foreground")}>
+                    <Calendar className="h-3.5 w-3.5" />
+                    {customDateTo ? format(customDateTo, "dd MMM yyyy") : "শেষ তারিখ"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarWidget
+                    mode="single"
+                    selected={customDateTo}
+                    onSelect={setCustomDateTo}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+              {(customDateFrom || customDateTo) && (
+                <Button variant="ghost" size="sm" className="h-8 px-2 text-xs text-muted-foreground" onClick={() => { setCustomDateFrom(undefined); setCustomDateTo(undefined); }}>
+                  <X className="h-3 w-3" />
+                </Button>
+              )}
+            </div>
+          )}
         </div>
 
         {isLoading ? (
