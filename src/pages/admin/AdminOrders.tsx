@@ -30,7 +30,7 @@ import {
 import {
   useOrders, useOrderCounts, useCreateOrder, useUpdateOrderStatus,
   useDeleteOrder, useNextOrderNumber, useOrderItems, getStatusFromTab, getStatusLabel,
-  getStatusColor, type OrderStatus, type OrderItemInput, type OrderDateFilter
+  getStatusColor, type Order, type OrderStatus, type OrderItemInput, type OrderDateFilter
 } from "@/hooks/useOrders";
 import {
   useIncompleteOrders, useIncompleteOrderCounts,
