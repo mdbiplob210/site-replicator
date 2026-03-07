@@ -995,9 +995,9 @@ const AdminOrders = () => {
             />
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" className="h-9 w-9 rounded-xl border-border/60"><RefreshCw className="h-4 w-4" /></Button>
-            <Button variant="outline" size="sm" className="gap-1.5 h-9 rounded-xl border-border/60"><Download className="h-4 w-4" /> Export</Button>
-            <Button variant="outline" size="sm" className="gap-1.5 h-9 rounded-xl border-border/60"><Printer className="h-4 w-4" /> Print</Button>
+            <Button variant="outline" size="icon" className="h-9 w-9 rounded-xl border-border/60" onClick={handleRefresh} title="রিফ্রেশ"><RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} /></Button>
+            <Button variant="outline" size="sm" className="gap-1.5 h-9 rounded-xl border-border/60" onClick={handleExport}><Download className="h-4 w-4" /> Export</Button>
+            <Button variant="outline" size="sm" className="gap-1.5 h-9 rounded-xl border-border/60" onClick={handlePrint}><Printer className="h-4 w-4" /> Print</Button>
           </div>
         </Card>
 
