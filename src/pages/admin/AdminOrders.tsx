@@ -483,6 +483,7 @@ const AdminOrders = () => {
     printWindow.print();
   }, [filteredOrders]);
 
+  const addProductToOrder = (product: any) => {
     const existing = orderItems.find((i) => i.product_id === product.id);
     if (existing) {
       setOrderItems(orderItems.map((i) =>
