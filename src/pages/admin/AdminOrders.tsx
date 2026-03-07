@@ -266,15 +266,7 @@ const AdminOrders = () => {
     ).slice(0, 10);
   }, [allProducts, productSearch]);
 
-  // Bangladesh districts for filtering
-  const bdDistricts = useMemo(() => [
-    "ঢাকা", "চট্টগ্রাম", "রাজশাহী", "খুলনা", "বরিশাল", "সিলেট", "রংপুর", "ময়মনসিংহ",
-    "কুমিল্লা", "গাজীপুর", "নারায়ণগঞ্জ", "টাঙ্গাইল", "কিশোরগঞ্জ", "মানিকগঞ্জ", "মুন্সীগঞ্জ",
-    "নরসিংদী", "ফরিদপুর", "গোপালগঞ্জ", "মাদারীপুর", "শরীয়তপুর", "রাজবাড়ী",
-    "Dhaka", "Chittagong", "Rajshahi", "Khulna", "Barisal", "Sylhet", "Rangpur", "Mymensingh",
-    "Comilla", "Gazipur", "Narayanganj", "Tangail", "Kishoreganj", "Manikganj",
-    "Cox's Bazar", "Bogra", "Jessore", "Dinajpur", "Pabna", "Noakhali", "Brahmanbaria"
-  ], []);
+  // Bangladesh districts list removed - using bdDistrictList const above
 
   // Filtered orders by search + advanced filters
   const filteredOrders = useMemo(() => {
