@@ -15,6 +15,7 @@ import { toast } from "sonner";
 const ALL_PERMISSIONS = [
   { value: "orders:create", label: "অর্ডার তৈরি" },
   { value: "orders:read", label: "অর্ডার দেখা" },
+  { value: "orders:update", label: "অর্ডার আপডেট" },
   { value: "incomplete_orders:create", label: "ইনকমপ্লিট অর্ডার তৈরি" },
   { value: "incomplete_orders:read", label: "ইনকমপ্লিট অর্ডার দেখা" },
 ];
@@ -355,12 +356,59 @@ Route::get('/api/orders', function(Request $request) {
           </div>
 
           <div className="bg-muted/50 p-4 rounded-lg space-y-3">
-            <h3 className="font-bold text-lg">📋 GET — অর্ডার লিস্ট দেখুন</h3>
-            <pre className="bg-background p-3 rounded border text-xs overflow-x-auto">{`GET ${apiBaseUrl}?type=orders&limit=50&status=processing
+            <h3 className="font-bold text-lg">🛡️ ডুপ্লিকেট প্রোটেকশন (স্বয়ংক্রিয়)</h3>
+            <p className="text-sm">API-তে অর্ডার পাঠালে স্বয়ংক্রিয়ভাবে IP ও ফোন নম্বর চেক করে। ১-২৪ ঘণ্টার মধ্যে একই IP বা ফোন থেকে ডুপ্লিকেট অর্ডার আসলে সেটি <strong>Incomplete Orders</strong>-এ চলে যাবে।</p>
+            <pre className="bg-background p-3 rounded border text-xs overflow-x-auto">{`// ডুপ্লিকেট হলে 429 রেসপন্স আসবে:
+{
+  "success": false,
+  "blocked": true,
+  "duplicate": true,
+  "reason": "একই ফোন (017...) থেকে 24ঘণ্টার মধ্যে আগেই অর্ডার হয়েছে",
+  "incomplete_order_id": "uuid...",
+  "tracking": { "ip": "...", "device": "Mobile | Android | Chrome" }
+}
+
+// কাস্টম ডুপ্লিকেট উইন্ডো (১-৪৮ ঘণ্টা):
+{ "duplicate_window_hours": 12, ... }`}</pre>
+          </div>
+
+          <div className="bg-muted/50 p-4 rounded-lg space-y-3">
+            <h3 className="font-bold text-lg">📱 ইউজার ট্র্যাকিং (স্বয়ংক্রিয়)</h3>
+            <p className="text-sm">প্রতিটি অর্ডারের সাথে স্বয়ংক্রিয়ভাবে ট্র্যাক হয়:</p>
+            <ul className="text-sm list-disc ml-5 space-y-1">
+              <li><strong>IP Address</strong> — ক্লায়েন্টের আইপি</li>
+              <li><strong>Device Type</strong> — Mobile / Desktop / Tablet</li>
+              <li><strong>OS</strong> — Android 14, iOS 17, Windows 10 ইত্যাদি</li>
+              <li><strong>Browser</strong> — Chrome, Safari, Firefox, Edge</li>
+              <li><strong>User-Agent</strong> — সম্পূর্ণ ব্রাউজার স্ট্রিং</li>
+              <li><strong>Source</strong> — কোন ওয়েবসাইট থেকে এসেছে</li>
+            </ul>
+          </div>
+
+          <div className="bg-muted/50 p-4 rounded-lg space-y-3">
+            <h3 className="font-bold text-lg">📋 GET — অর্ডার লিস্ট (পেজিনেশন সহ)</h3>
+            <pre className="bg-background p-3 rounded border text-xs overflow-x-auto">{`// সব অর্ডার (order_items সহ)
+GET ${apiBaseUrl}?type=orders&limit=50&offset=0
 X-API-Key: your_api_key_here
 
-GET ${apiBaseUrl}?type=incomplete_orders&limit=50
-X-API-Key: your_api_key_here`}</pre>
+// ফিল্টার সহ
+GET ${apiBaseUrl}?type=orders&status=processing&phone=01700000000&since=2026-03-01
+GET ${apiBaseUrl}?type=incomplete_orders&limit=20&offset=40
+
+// রেসপন্স:
+{ "success": true, "data": [...], "total": 150, "returned": 50, "limit": 50, "offset": 0 }`}</pre>
+          </div>
+
+          <div className="bg-muted/50 p-4 rounded-lg space-y-3">
+            <h3 className="font-bold text-lg">✏️ PATCH — অর্ডার স্ট্যাটাস আপডেট</h3>
+            <pre className="bg-background p-3 rounded border text-xs overflow-x-auto">{`PATCH ${apiBaseUrl}
+X-API-Key: your_api_key_here
+
+{
+  "order_id": "uuid-of-order",
+  "status": "confirmed",
+  "notes": "ফোনে কনফার্ম হয়েছে"
+}`}</pre>
           </div>
 
           <div className="bg-muted/50 p-4 rounded-lg space-y-3">
@@ -369,18 +417,29 @@ X-API-Key: your_api_key_here`}</pre>
   "success": true,
   "data": { ... },
   "order_number": "ORD-00042",
-  "message": "Order created successfully"
+  "order_id": "uuid...",
+  "message": "Order created successfully",
+  "tracking": {
+    "ip": "103.x.x.x",
+    "device": "Mobile | Android 14 | Chrome",
+    "source": "My Website"
+  }
 }`}</pre>
           </div>
 
           <div className="bg-muted/50 p-4 rounded-lg space-y-3">
             <h3 className="font-bold text-lg">❌ Error রেসপন্স</h3>
-            <pre className="bg-background p-3 rounded border text-xs overflow-x-auto">{`// 401 - Missing API Key
+            <pre className="bg-background p-3 rounded border text-xs overflow-x-auto">{`// 400 - Missing required fields
+{ "error": "customer_name is required" }
+
+// 401 - Missing API Key
 { "error": "Missing X-API-Key header" }
 
 // 403 - Invalid key or no permission
 { "error": "Invalid or inactive API key" }
-{ "error": "Permission denied: orders:create" }
+
+// 429 - Duplicate order (blocked)
+{ "success": false, "blocked": true, "duplicate": true, ... }
 
 // 500 - Server error
 { "error": "Internal error" }`}</pre>
