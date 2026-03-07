@@ -562,7 +562,88 @@ const AdminOrders = () => {
     setNotes("");
     setOrderItems([]);
     setProductSearch("");
+    setPathaoCity("");
+    setPathaoZone("");
+    setPathaoArea("");
   };
+
+  // Auto-detect Pathao city/zone/area from address
+  const detectedLocation = useMemo(() => {
+    const addr = customerAddress.toLowerCase();
+    if (!addr) return { city: "", zone: "", area: "" };
+    const city = bdDistrictList.find(d => addr.includes(d.toLowerCase())) || "";
+    const zone = bdZoneList.find(z => addr.includes(z.toLowerCase().replace(" metro", "").replace(" sub", ""))) || 
+      (city ? (["Dhaka", "Chittagong", "Rajshahi", "Khulna", "Sylhet", "Rangpur"].includes(city) ? `${city} Metro` : "") : "");
+    const area = bdThanaList.find(t => addr.includes(t.toLowerCase())) || "";
+    return { city, zone, area };
+  }, [customerAddress]);
+
+  // Old orders lookup by phone
+  const { data: oldOrdersByPhone = [] } = useQuery({
+    queryKey: ["old-orders-phone", customerPhone],
+    queryFn: async () => {
+      if (!customerPhone || customerPhone.length < 6) return [];
+      const { data, error } = await supabase
+        .from("orders")
+        .select("*")
+        .eq("customer_phone", customerPhone)
+        .order("created_at", { ascending: false })
+        .limit(20);
+      if (error) throw error;
+      return data as Order[];
+    },
+    enabled: !!customerPhone && customerPhone.length >= 6,
+  });
+
+  // Fraud check - courier delivery history by phone
+  const { data: fraudCheckData } = useQuery({
+    queryKey: ["fraud-check", customerPhone],
+    queryFn: async () => {
+      if (!customerPhone || customerPhone.length < 6) return null;
+      // Get all orders for this phone
+      const { data: phoneOrders, error } = await supabase
+        .from("orders")
+        .select("id, status, total_amount")
+        .eq("customer_phone", customerPhone);
+      if (error) throw error;
+      if (!phoneOrders || phoneOrders.length === 0) return null;
+
+      const orderIds = phoneOrders.map(o => o.id);
+      // Get courier orders for these
+      const { data: courierData } = await supabase
+        .from("courier_orders")
+        .select("order_id, courier_status, courier_provider_id")
+        .in("order_id", orderIds);
+
+      // Get provider names
+      const { data: providers } = await supabase
+        .from("courier_providers")
+        .select("id, name");
+
+      const providerMap: Record<string, string> = {};
+      (providers || []).forEach((p: any) => { providerMap[p.id] = p.name; });
+
+      // Aggregate by provider
+      const stats: Record<string, { total: number; delivered: number; returned: number; cancelled: number }> = {};
+      (courierData || []).forEach((co: any) => {
+        const name = providerMap[co.courier_provider_id] || "Unknown";
+        if (!stats[name]) stats[name] = { total: 0, delivered: 0, returned: 0, cancelled: 0 };
+        stats[name].total++;
+        if (co.courier_status === "delivered") stats[name].delivered++;
+        if (co.courier_status === "returned" || co.courier_status === "return") stats[name].returned++;
+        if (co.courier_status === "cancelled") stats[name].cancelled++;
+      });
+
+      const totalOrders = phoneOrders.length;
+      const deliveredCount = phoneOrders.filter(o => o.status === "delivered").length;
+      const cancelledCount = phoneOrders.filter(o => o.status === "cancelled").length;
+      const returnedCount = phoneOrders.filter(o => o.status === "returned").length;
+      const totalSpent = phoneOrders.filter(o => o.status === "delivered").reduce((s, o) => s + Number(o.total_amount), 0);
+
+      return { totalOrders, deliveredCount, cancelledCount, returnedCount, totalSpent, courierStats: stats };
+    },
+    enabled: !!customerPhone && customerPhone.length >= 6,
+  });
 
   if (currentView === "api") {
     return (
