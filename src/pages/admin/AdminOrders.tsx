@@ -294,7 +294,11 @@ const AdminOrders = () => {
                     <div className="flex-1 min-w-0 space-y-2">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-bold text-foreground">{io.customer_name}</span>
-                        <Badge variant="destructive" className="text-xs">Blocked</Badge>
+                        {io.block_reason === "abandoned_form" ? (
+                          <Badge variant="secondary" className="text-xs bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">📝 Abandoned</Badge>
+                        ) : (
+                          <Badge variant="destructive" className="text-xs">🚫 IP Blocked</Badge>
+                        )}
                         {io.landing_page_slug && <Badge variant="outline" className="text-xs">LP: {io.landing_page_slug}</Badge>}
                       </div>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-muted-foreground">
