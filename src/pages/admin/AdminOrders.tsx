@@ -144,13 +144,13 @@ const AdminOrders = () => {
   const { data: nextOrderNumber = "ORD-00001" } = useNextOrderNumber();
   const { data: allProducts = [] } = usePublicProducts();
 
-  // Courier orders for filtering
+   // Courier orders for filtering
   const { data: courierOrders = [] } = useQuery({
     queryKey: ["courier-orders-filter"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("courier_orders")
-        .select("order_id, courier_provider_id, courier_status");
+        .select("order_id, courier_provider_id, courier_status, submitted_at");
       if (error) throw error;
       return data;
     },
@@ -165,13 +165,49 @@ const AdminOrders = () => {
       return data;
     },
   });
+  const { data: categories = [] } = useQuery({
+    queryKey: ["categories-filter"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("categories")
+        .select("id, name, slug");
+      if (error) throw error;
+      return data;
+    },
+  });
+  const { data: allOrderItems = [] } = useQuery({
+    queryKey: ["all-order-items-filter"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("order_items")
+        .select("order_id, product_name, product_code, product_id");
+      if (error) throw error;
+      return data;
+    },
+  });
 
-  // Build courier lookup maps
+  // Build lookup maps
   const courierByOrderId = useMemo(() => {
-    const map: Record<string, { provider_id: string; status: string }> = {};
-    courierOrders.forEach((co: any) => { map[co.order_id] = { provider_id: co.courier_provider_id, status: co.courier_status }; });
+    const map: Record<string, { provider_id: string; status: string; submitted_at: string }> = {};
+    courierOrders.forEach((co: any) => { map[co.order_id] = { provider_id: co.courier_provider_id, status: co.courier_status, submitted_at: co.submitted_at }; });
     return map;
   }, [courierOrders]);
+
+  const orderItemsByOrderId = useMemo(() => {
+    const map: Record<string, any[]> = {};
+    allOrderItems.forEach((oi: any) => {
+      if (!map[oi.order_id]) map[oi.order_id] = [];
+      map[oi.order_id].push(oi);
+    });
+    return map;
+  }, [allOrderItems]);
+
+  // Get unique sources for dropdown
+  const uniqueSources = useMemo(() => {
+    const sources = new Set<string>();
+    orders.forEach((o) => { if (o.source) sources.add(o.source); });
+    return Array.from(sources);
+  }, [orders]);
 
   // Incomplete orders hooks
   const incompleteStatusMap: Record<string, string> = {
