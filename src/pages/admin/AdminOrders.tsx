@@ -134,6 +134,7 @@ const AdminOrders = () => {
   const [newOrderOpen, setNewOrderOpen] = useState(false);
   const [detailOrderId, setDetailOrderId] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [productSearchFocused, setProductSearchFocused] = useState(false);
 
   // Modal states for action buttons
   const [orderItemsModalOpen, setOrderItemsModalOpen] = useState(false);
