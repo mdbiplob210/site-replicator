@@ -1,1 +1,16 @@
 project_id = "hogejkqzynixmjwodkoi"
+
+[functions.capture-screenshot]
+verify_jwt = false
+
+[functions.fetch-meta-ads]
+verify_jwt = false
+
+[functions.track-landing-event]
+verify_jwt = false
+
+[functions.submit-landing-order]
+verify_jwt = false
+
+[functions.fb-conversions-api]
+verify_jwt = false
