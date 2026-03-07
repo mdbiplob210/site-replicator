@@ -67,11 +67,6 @@ const orderStatusSettings = [
   { label: "Incomplete", color: "bg-amber-400" },
 ];
 
-const courierProviders = [
-  { name: "Steadfast", description: "Steadfast Courier Ltd." },
-  { name: "Pathao", description: "Pathao Courier Service" },
-  { name: "RedX", description: "RedX Logistics" },
-];
 
 const dateFilterOptions = [
   "Today", "Yesterday", "Last 7 Days", "Last 14 Days", "Last 30 Days", "Last Year", "Custom Range"
@@ -495,28 +490,10 @@ const AdminOrders = () => {
               <ShieldAlert className="h-4 w-4 text-red-500" /> Fake Order
             </Button>
 
-            {/* Courier Dialog */}
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2 rounded-xl border-border/60 shadow-sm hover:shadow"><Truck className="h-4 w-4 text-violet-500" /> Courier</Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-md rounded-2xl">
-                <DialogHeader><DialogTitle className="flex items-center gap-2 text-lg"><div className="p-2 rounded-xl bg-violet-50"><Truck className="h-5 w-5 text-violet-500" /></div>Courier Management</DialogTitle></DialogHeader>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    {courierProviders.map((c) => (
-                      <div key={c.name} className="flex items-center justify-between p-3 rounded-xl border border-border/40 hover:bg-secondary/30 cursor-pointer group">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-lg bg-secondary/60"><Truck className="h-4 w-4 text-muted-foreground" /></div>
-                          <div><p className="font-semibold text-foreground text-sm">{c.name}</p><p className="text-[11px] text-muted-foreground">{c.description}</p></div>
-                        </div>
-                        <ChevronDown className="h-4 w-4 text-muted-foreground/50 -rotate-90" />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
+            {/* Courier Button */}
+            <Button variant="outline" size="sm" className="gap-2 rounded-xl border-border/60 shadow-sm hover:shadow" onClick={() => setCurrentView("courier")}>
+              <Truck className="h-4 w-4 text-violet-500" /> Courier
+            </Button>
 
             {/* API Keys Dialog */}
             <Dialog>
