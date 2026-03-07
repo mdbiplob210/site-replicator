@@ -49,7 +49,7 @@ const mainMenuItems = [
 ];
 
 const bottomMenuItems = [
-  { title: "Order API", url: "/admin/api-keys", icon: Key },
+  { title: "Meta Ads", url: "/admin/meta-ads", icon: Megaphone },
   { title: "Meta Ads", url: "/admin/meta-ads", icon: Megaphone },
   { title: "Automation", url: "/admin/automation", icon: Zap },
   { title: "Backup", url: "/admin/backup", icon: Database },
