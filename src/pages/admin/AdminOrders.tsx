@@ -116,6 +116,18 @@ const AdminOrders = () => {
   const { data: nextOrderNumber = "ORD-00001" } = useNextOrderNumber();
   const { data: allProducts = [] } = usePublicProducts();
 
+  // Incomplete orders hooks
+  const incompleteStatusMap: Record<string, string> = {
+    "Processing": "processing", "Confirmed": "confirmed", "Converted": "converted",
+    "Hold": "on_hold", "Cancelled": "cancelled", "Deleted": "deleted"
+  };
+  const incompleteStatusFilter = incompleteStatusMap[activeIncompleteTab] || "processing";
+  const { data: incompleteOrders = [], isLoading: incompleteLoading } = useIncompleteOrders(incompleteStatusFilter);
+  const { data: incompleteCounts = {} } = useIncompleteOrderCounts();
+  const updateIncompleteStatus = useUpdateIncompleteOrderStatus();
+  const deleteIncomplete = useDeleteIncompleteOrder();
+  const convertIncomplete = useConvertIncompleteToOrder();
+
   // Filter products for search
   const filteredProducts = useMemo(() => {
     if (!productSearch.trim()) return allProducts.slice(0, 10);
