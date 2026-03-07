@@ -169,6 +169,7 @@ export type Database = {
       courier_providers: {
         Row: {
           api_configs: Json
+          auth_token: string | null
           created_at: string
           id: string
           is_active: boolean
@@ -179,6 +180,7 @@ export type Database = {
         }
         Insert: {
           api_configs?: Json
+          auth_token?: string | null
           created_at?: string
           id?: string
           is_active?: boolean
@@ -189,6 +191,7 @@ export type Database = {
         }
         Update: {
           api_configs?: Json
+          auth_token?: string | null
           created_at?: string
           id?: string
           is_active?: boolean
