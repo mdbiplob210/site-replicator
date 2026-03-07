@@ -324,17 +324,92 @@ Deno.serve(async (req) => {
 
       if (orderError) throw orderError
 
-      // Insert order items if provided
+      // Insert order items if provided & auto-create products
       if (body.items && Array.isArray(body.items) && body.items.length > 0) {
-        const itemRows = body.items.map((item: any) => ({
-          order_id: orderData.id,
-          product_name: item.product_name || item.name || 'Unknown',
-          product_code: item.product_code || item.code || '',
-          product_id: item.product_id || null,
-          quantity: item.quantity || 1,
-          unit_price: item.unit_price || item.price || 0,
-          total_price: item.total_price || item.total || (item.unit_price || 0) * (item.quantity || 1),
-        }))
+        const itemRows = []
+        for (const item of body.items) {
+          const productName = item.product_name || item.name || 'Unknown'
+          const productCode = item.product_code || item.code || ''
+          const unitPrice = item.unit_price || item.price || 0
+          const imageUrl = item.image_url || item.image || item.main_image_url || null
+          let productId = item.product_id || null
+
+          // Auto-create product if product_code provided and not exists
+          if (productCode && !productId) {
+            const { data: existingProduct } = await supabase
+              .from('products')
+              .select('id')
+              .eq('product_code', productCode)
+              .limit(1)
+              .single()
+
+            if (existingProduct) {
+              productId = existingProduct.id
+            } else {
+              // Check by name if no code match
+              const { data: nameMatch } = await supabase
+                .from('products')
+                .select('id')
+                .eq('name', productName)
+                .limit(1)
+                .single()
+
+              if (nameMatch) {
+                productId = nameMatch.id
+              } else {
+                // Create new product
+                const { data: newProduct } = await supabase.from('products').insert({
+                  name: productName,
+                  product_code: productCode,
+                  selling_price: unitPrice,
+                  original_price: item.original_price || item.regular_price || unitPrice,
+                  purchase_price: item.purchase_price || item.cost_price || 0,
+                  main_image_url: imageUrl,
+                  status: 'active',
+                  stock_quantity: 0,
+                }).select('id').single()
+
+                if (newProduct) productId = newProduct.id
+              }
+            }
+          } else if (!productCode && productName !== 'Unknown' && !productId) {
+            // Fallback: check by name only
+            const { data: nameMatch } = await supabase
+              .from('products')
+              .select('id')
+              .eq('name', productName)
+              .limit(1)
+              .single()
+
+            if (nameMatch) {
+              productId = nameMatch.id
+            } else {
+              const autoCode = 'AUTO-' + productName.replace(/[^a-zA-Z0-9]/g, '-').substring(0, 20).toUpperCase() + '-' + Date.now().toString(36)
+              const { data: newProduct } = await supabase.from('products').insert({
+                name: productName,
+                product_code: autoCode,
+                selling_price: unitPrice,
+                original_price: item.original_price || item.regular_price || unitPrice,
+                purchase_price: item.purchase_price || item.cost_price || 0,
+                main_image_url: imageUrl,
+                status: 'active',
+                stock_quantity: 0,
+              }).select('id').single()
+
+              if (newProduct) productId = newProduct.id
+            }
+          }
+
+          itemRows.push({
+            order_id: orderData.id,
+            product_name: productName,
+            product_code: productCode,
+            product_id: productId,
+            quantity: item.quantity || 1,
+            unit_price: unitPrice,
+            total_price: item.total_price || item.total || unitPrice * (item.quantity || 1),
+          })
+        }
         await supabase.from('order_items').insert(itemRows)
       }
 
