@@ -1149,9 +1149,15 @@ const AdminOrders = () => {
                       <p className="text-2xl font-bold text-primary">৳{(orderItems.length > 0 ? itemsTotal : productCost) + deliveryCharge - discount}</p>
                     </div>
                   </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold">Notes</Label>
-                    <Textarea placeholder="Add order notes..." rows={2} className="rounded-xl" value={notes} onChange={(e) => setNotes(e.target.value)} />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold flex items-center gap-1"><MessageSquare className="h-3 w-3" /> Staff Note</Label>
+                      <Textarea placeholder="Internal staff note..." rows={2} className="rounded-xl text-xs" value={notes} onChange={(e) => setNotes(e.target.value)} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold flex items-center gap-1"><Truck className="h-3 w-3" /> Courier Note</Label>
+                      <Textarea placeholder="Courier/packing note (memo তে প্রিন্ট হবে)..." rows={2} className="rounded-xl text-xs" value={courierNote} onChange={(e) => setCourierNote(e.target.value)} />
+                    </div>
                   </div>
                   <Button className="w-full rounded-xl shadow-sm" onClick={handleCreateOrder} disabled={createOrder.isPending || !customerName.trim()}>
                     {createOrder.isPending ? <><Loader2 className="h-4 w-4 animate-spin" /> Creating...</> : <><Plus className="h-4 w-4" /> Create Order</>}
