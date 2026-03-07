@@ -1541,3 +1541,97 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
     </Dialog>
   );
 }
+
+function CourierStatusModal({
+  open, onOpenChange, filteredOrders, courierByOrderId, courierProviders, updateStatus
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  filteredOrders: any[];
+  courierByOrderId: Record<string, { provider_id: string; status: string; submitted_at: string }>;
+  courierProviders: any[];
+  updateStatus: any;
+}) {
+  const providerNameMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    courierProviders.forEach((cp: any) => { map[cp.id] = cp.name; });
+    return map;
+  }, [courierProviders]);
+
+  // Find orders where courier status says delivered but order status is not delivered
+  const mismatchedOrders = useMemo(() => {
+    return filteredOrders.filter((o) => {
+      const co = courierByOrderId[o.id];
+      if (!co) return false;
+      // courier says delivered but order not delivered
+      if (co.status === "delivered" && o.status !== "delivered") return true;
+      // courier says returned but order not returned
+      if (co.status === "returned" && o.status !== "returned") return true;
+      // courier says cancelled but order still in_courier
+      if (co.status === "cancelled" && o.status === "in_courier") return true;
+      return false;
+    }).map((o) => ({
+      ...o,
+      courierStatus: courierByOrderId[o.id]?.status,
+      providerName: providerNameMap[courierByOrderId[o.id]?.provider_id] || "Unknown",
+    }));
+  }, [filteredOrders, courierByOrderId, providerNameMap]);
+
+  const handleBulkUpdate = () => {
+    mismatchedOrders.forEach((o) => {
+      const co = courierByOrderId[o.id];
+      if (!co) return;
+      let newStatus: OrderStatus | null = null;
+      if (co.status === "delivered") newStatus = "delivered";
+      else if (co.status === "returned") newStatus = "returned";
+      else if (co.status === "cancelled") newStatus = "cancelled";
+      if (newStatus && o.status !== newStatus) {
+        updateStatus.mutate({ id: o.id, status: newStatus });
+      }
+    });
+    onOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto rounded-2xl">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Truck className="h-5 w-5 text-violet-600" /> Courier Status Sync
+            <Badge variant="secondary" className="ml-2">{mismatchedOrders.length} mismatch</Badge>
+          </DialogTitle>
+        </DialogHeader>
+        {mismatchedOrders.length === 0 ? (
+          <div className="text-center py-8">
+            <CheckCircle2 className="h-10 w-10 text-emerald-500 mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground">সব অর্ডারের স্ট্যাটাস কুরিয়ারের সাথে সিঙ্ক আছে! ✅</p>
+          </div>
+        ) : (
+          <>
+            <p className="text-xs text-muted-foreground">নিচের অর্ডারগুলোতে কুরিয়ার স্ট্যাটাস ও অর্ডার স্ট্যাটাসে পার্থক্য আছে:</p>
+            <div className="space-y-1.5 max-h-[50vh] overflow-y-auto">
+              {mismatchedOrders.map((o) => (
+                <div key={o.id} className="flex items-center justify-between p-2.5 rounded-xl bg-secondary/30 border border-border/40 text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono font-semibold">{o.order_number}</span>
+                    <span className="text-muted-foreground">{o.customer_name}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-[10px]">{o.providerName}</Badge>
+                    <span className={`px-1.5 py-0.5 rounded-full text-white text-[10px] ${getStatusColor(o.status)}`}>{getStatusLabel(o.status)}</span>
+                    <span className="text-muted-foreground">→</span>
+                    <span className="px-1.5 py-0.5 rounded-full bg-emerald-500 text-white text-[10px]">{o.courierStatus}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <Button className="w-full rounded-xl" onClick={handleBulkUpdate} disabled={updateStatus.isPending}>
+              {updateStatus.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              সব স্ট্যাটাস আপডেট করো ({mismatchedOrders.length}টি)
+            </Button>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
