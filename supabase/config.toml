@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.fb-conversions-api]
 verify_jwt = false
+
+[functions.track-partial-order]
+verify_jwt = false
