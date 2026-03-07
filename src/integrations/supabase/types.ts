@@ -82,6 +82,114 @@ export type Database = {
           },
         ]
       }
+      courier_orders: {
+        Row: {
+          consignment_id: string | null
+          courier_provider_id: string
+          courier_response: Json | null
+          courier_status: string
+          id: string
+          order_id: string
+          submitted_at: string
+          tracking_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          consignment_id?: string | null
+          courier_provider_id: string
+          courier_response?: Json | null
+          courier_status?: string
+          id?: string
+          order_id: string
+          submitted_at?: string
+          tracking_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          consignment_id?: string | null
+          courier_provider_id?: string
+          courier_response?: Json | null
+          courier_status?: string
+          id?: string
+          order_id?: string
+          submitted_at?: string
+          tracking_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "courier_orders_courier_provider_id_fkey"
+            columns: ["courier_provider_id"]
+            isOneToOne: false
+            referencedRelation: "courier_providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "courier_orders_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      courier_providers: {
+        Row: {
+          api_configs: Json
+          created_at: string
+          id: string
+          is_active: boolean
+          logo_url: string | null
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          api_configs?: Json
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          api_configs?: Json
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      courier_webhook_logs: {
+        Row: {
+          courier_slug: string
+          created_at: string
+          id: string
+          payload: Json
+          processed: boolean
+        }
+        Insert: {
+          courier_slug: string
+          created_at?: string
+          id?: string
+          payload: Json
+          processed?: boolean
+        }
+        Update: {
+          courier_slug?: string
+          created_at?: string
+          id?: string
+          payload?: Json
+          processed?: boolean
+        }
+        Relationships: []
+      }
       employee_panels: {
         Row: {
           created_at: string
