@@ -1741,6 +1741,9 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
   const [detailProductSearch, setDetailProductSearch] = useState("");
   const [detailProductFocused, setDetailProductFocused] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [logFilterUser, setLogFilterUser] = useState("all");
+  const [logFilterAction, setLogFilterAction] = useState("all");
+  const [logFilterDate, setLogFilterDate] = useState<Date | undefined>();
 
   // Populate fields when order changes
   const orderRef = order?.id;
@@ -2062,35 +2065,83 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
             </Button>
 
             {/* Activity Log */}
-            {activityLogs.length > 0 && (
-              <div>
-                <h4 className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
-                  <Clock className="h-3.5 w-3.5 text-primary" /> Activity Log
-                </h4>
-                <div className="max-h-40 overflow-y-auto space-y-1">
-                  {activityLogs.map((log: any) => (
-                    <div key={log.id} className="flex items-start gap-2 p-2 rounded-lg bg-secondary/20 border border-border/20 text-xs">
-                      <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <History className="h-3 w-3 text-primary" />
+            {activityLogs.length > 0 && (() => {
+              const uniqueUsers = Array.from(new Set(activityLogs.map((l: any) => l.user_name || "System")));
+              const uniqueActions = Array.from(new Set(activityLogs.map((l: any) => l.action)));
+              const filtered = activityLogs.filter((log: any) => {
+                if (logFilterUser !== "all" && (log.user_name || "System") !== logFilterUser) return false;
+                if (logFilterAction !== "all" && log.action !== logFilterAction) return false;
+                if (logFilterDate) {
+                  const logDate = new Date(log.created_at);
+                  if (logDate.toDateString() !== logFilterDate.toDateString()) return false;
+                }
+                return true;
+              });
+              return (
+                <div>
+                  <h4 className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                    <Clock className="h-3.5 w-3.5 text-primary" /> Activity Log
+                    <Badge variant="secondary" className="text-[9px] ml-1">{filtered.length}/{activityLogs.length}</Badge>
+                  </h4>
+                  <div className="flex items-center gap-1.5 mb-2 flex-wrap">
+                    <Select value={logFilterUser} onValueChange={setLogFilterUser}>
+                      <SelectTrigger className="rounded-lg h-6 text-[10px] w-auto min-w-[80px]"><SelectValue placeholder="User" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">সব User</SelectItem>
+                        {uniqueUsers.map((u) => <SelectItem key={u} value={u}>{u}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    <Select value={logFilterAction} onValueChange={setLogFilterAction}>
+                      <SelectTrigger className="rounded-lg h-6 text-[10px] w-auto min-w-[90px]"><SelectValue placeholder="Action" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">সব Action</SelectItem>
+                        {uniqueActions.map((a) => <SelectItem key={a} value={a}>{a === "created" ? "তৈরি" : a === "status_changed" ? "স্ট্যাটাস" : a === "field_edited" ? "এডিট" : a === "note_added" ? "নোট" : a}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" size="sm" className={cn("h-6 text-[10px] rounded-lg px-2", !logFilterDate && "text-muted-foreground")}>
+                          <Calendar className="h-3 w-3 mr-1" />
+                          {logFilterDate ? format(logFilterDate, "dd MMM") : "তারিখ"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <CalendarWidget mode="single" selected={logFilterDate} onSelect={setLogFilterDate} initialFocus className={cn("p-3 pointer-events-auto")} />
+                      </PopoverContent>
+                    </Popover>
+                    {(logFilterUser !== "all" || logFilterAction !== "all" || logFilterDate) && (
+                      <Button variant="ghost" size="sm" className="h-6 text-[10px] px-1.5 text-destructive" onClick={() => { setLogFilterUser("all"); setLogFilterAction("all"); setLogFilterDate(undefined); }}>
+                        <X className="h-3 w-3" />
+                      </Button>
+                    )}
+                  </div>
+                  <div className="max-h-40 overflow-y-auto space-y-1">
+                    {filtered.length === 0 ? (
+                      <p className="text-center text-xs text-muted-foreground py-3">কোনো activity পাওয়া যায়নি</p>
+                    ) : filtered.map((log: any) => (
+                      <div key={log.id} className="flex items-start gap-2 p-2 rounded-lg bg-secondary/20 border border-border/20 text-xs">
+                        <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <History className="h-3 w-3 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-foreground">
+                            <span className="font-semibold">{log.user_name || "System"}</span>
+                            {" "}
+                            {log.action === "created" && "অর্ডার তৈরি করেছে"}
+                            {log.action === "status_changed" && <>স্ট্যাটাস পরিবর্তন: <Badge variant="outline" className="text-[9px] h-4">{log.old_value}</Badge> → <Badge variant="secondary" className="text-[9px] h-4">{log.new_value}</Badge></>}
+                            {log.action === "field_edited" && <>"{log.field_name}" পরিবর্তন করেছে</>}
+                            {log.action === "note_added" && "নোট যোগ করেছে"}
+                            {!["created", "status_changed", "field_edited", "note_added"].includes(log.action) && log.action}
+                          </p>
+                          {log.details && <p className="text-muted-foreground mt-0.5">{log.details}</p>}
+                          <p className="text-muted-foreground/60 mt-0.5">{format(new Date(log.created_at), "dd MMM yyyy, hh:mm a")}</p>
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-foreground">
-                          <span className="font-semibold">{log.user_name || "System"}</span>
-                          {" "}
-                          {log.action === "created" && "অর্ডার তৈরি করেছে"}
-                          {log.action === "status_changed" && <>স্ট্যাটাস পরিবর্তন: <Badge variant="outline" className="text-[9px] h-4">{log.old_value}</Badge> → <Badge variant="secondary" className="text-[9px] h-4">{log.new_value}</Badge></>}
-                          {log.action === "field_edited" && <>"{log.field_name}" পরিবর্তন করেছে</>}
-                          {log.action === "note_added" && "নোট যোগ করেছে"}
-                          {!["created", "status_changed", "field_edited", "note_added"].includes(log.action) && log.action}
-                        </p>
-                        {log.details && <p className="text-muted-foreground mt-0.5">{log.details}</p>}
-                        <p className="text-muted-foreground/60 mt-0.5">{format(new Date(log.created_at), "dd MMM yyyy, hh:mm a")}</p>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* Meta */}
             <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border/30">
