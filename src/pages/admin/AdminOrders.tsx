@@ -114,6 +114,15 @@ const AdminOrders = () => {
   const [filterDistrict, setFilterDistrict] = useState("");
   const [filterPaymentStatus, setFilterPaymentStatus] = useState("all");
   const [filterCourierProvider, setFilterCourierProvider] = useState("all");
+  const [filterCourierStatus, setFilterCourierStatus] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("");
+  const [filterProductSearch, setFilterProductSearch] = useState("");
+  const [filterCategory, setFilterCategory] = useState("all");
+  const [filterCourierCharged, setFilterCourierCharged] = useState("all");
+  const [filterNotes, setFilterNotes] = useState("");
+  const [filterUrl, setFilterUrl] = useState("");
+  const [filterOrderTag, setFilterOrderTag] = useState("");
+  const [filterSalesType, setFilterSalesType] = useState("all");
 
   // New order form state
   const [customerName, setCustomerName] = useState("");
@@ -135,13 +144,13 @@ const AdminOrders = () => {
   const { data: nextOrderNumber = "ORD-00001" } = useNextOrderNumber();
   const { data: allProducts = [] } = usePublicProducts();
 
-  // Courier orders for filtering
+   // Courier orders for filtering
   const { data: courierOrders = [] } = useQuery({
     queryKey: ["courier-orders-filter"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("courier_orders")
-        .select("order_id, courier_provider_id, courier_status");
+        .select("order_id, courier_provider_id, courier_status, submitted_at");
       if (error) throw error;
       return data;
     },
@@ -156,13 +165,49 @@ const AdminOrders = () => {
       return data;
     },
   });
+  const { data: categories = [] } = useQuery({
+    queryKey: ["categories-filter"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("categories")
+        .select("id, name, slug");
+      if (error) throw error;
+      return data;
+    },
+  });
+  const { data: allOrderItems = [] } = useQuery({
+    queryKey: ["all-order-items-filter"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("order_items")
+        .select("order_id, product_name, product_code, product_id");
+      if (error) throw error;
+      return data;
+    },
+  });
 
-  // Build courier lookup maps
+  // Build lookup maps
   const courierByOrderId = useMemo(() => {
-    const map: Record<string, { provider_id: string; status: string }> = {};
-    courierOrders.forEach((co: any) => { map[co.order_id] = { provider_id: co.courier_provider_id, status: co.courier_status }; });
+    const map: Record<string, { provider_id: string; status: string; submitted_at: string }> = {};
+    courierOrders.forEach((co: any) => { map[co.order_id] = { provider_id: co.courier_provider_id, status: co.courier_status, submitted_at: co.submitted_at }; });
     return map;
   }, [courierOrders]);
+
+  const orderItemsByOrderId = useMemo(() => {
+    const map: Record<string, any[]> = {};
+    allOrderItems.forEach((oi: any) => {
+      if (!map[oi.order_id]) map[oi.order_id] = [];
+      map[oi.order_id].push(oi);
+    });
+    return map;
+  }, [allOrderItems]);
+
+  // Get unique sources for dropdown
+  const uniqueSources = useMemo(() => {
+    const sources = new Set<string>();
+    orders.forEach((o) => { if (o.source) sources.add(o.source); });
+    return Array.from(sources);
+  }, [orders]);
 
   // Incomplete orders hooks
   const incompleteStatusMap: Record<string, string> = {
@@ -198,80 +243,77 @@ const AdminOrders = () => {
   // Filtered orders by search + advanced filters
   const filteredOrders = useMemo(() => {
     return orders.filter((o) => {
-      // Text search
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
-        if (!(
-          o.customer_name.toLowerCase().includes(q) ||
-          o.order_number.toLowerCase().includes(q) ||
-          (o.customer_phone && o.customer_phone.toLowerCase().includes(q))
-        )) return false;
+        if (!(o.customer_name.toLowerCase().includes(q) || o.order_number.toLowerCase().includes(q) || (o.customer_phone && o.customer_phone.toLowerCase().includes(q)))) return false;
       }
-      // Source filter
-      if (filterSource) {
-        const src = (o.source || "প্যানেল").toLowerCase();
-        if (!src.includes(filterSource.toLowerCase())) return false;
-      }
-      // Phone filter
-      if (filterPhone) {
-        if (!(o.customer_phone && o.customer_phone.includes(filterPhone))) return false;
-      }
-      // Amount range
+      if (filterSource && !(o.source || "প্যানেল").toLowerCase().includes(filterSource.toLowerCase())) return false;
+      if (filterPhone && !(o.customer_phone && o.customer_phone.includes(filterPhone))) return false;
       if (filterAmountMin && Number(o.total_amount) < Number(filterAmountMin)) return false;
       if (filterAmountMax && Number(o.total_amount) > Number(filterAmountMax)) return false;
-      // Device type
       if (filterDeviceType !== "all") {
         const device = (o.device_info || "").toLowerCase();
         if (filterDeviceType === "mobile" && !device.includes("mobile")) return false;
         if (filterDeviceType === "desktop" && !device.includes("desktop")) return false;
         if (filterDeviceType === "tablet" && !device.includes("tablet")) return false;
       }
-      // Address filter
-      if (filterAddress) {
-        if (!(o.customer_address && o.customer_address.toLowerCase().includes(filterAddress.toLowerCase()))) return false;
-      }
-      // District filter
-      if (filterDistrict) {
-        if (!(o.customer_address && o.customer_address.toLowerCase().includes(filterDistrict.toLowerCase()))) return false;
-      }
-      // Payment status (based on delivery_charge vs total)
+      if (filterAddress && !(o.customer_address && o.customer_address.toLowerCase().includes(filterAddress.toLowerCase()))) return false;
+      if (filterDistrict && !(o.customer_address && o.customer_address.toLowerCase().includes(filterDistrict.toLowerCase()))) return false;
       if (filterPaymentStatus !== "all") {
         if (filterPaymentStatus === "paid" && Number(o.delivery_charge) > 0) return false;
         if (filterPaymentStatus === "cod" && Number(o.delivery_charge) === 0) return false;
         if (filterPaymentStatus === "free_delivery" && Number(o.delivery_charge) > 0) return false;
       }
-      // Courier provider
       if (filterCourierProvider !== "all") {
         const co = courierByOrderId[o.id];
-        if (filterCourierProvider === "no_courier") {
-          if (co) return false;
-        } else {
-          if (!co || co.provider_id !== filterCourierProvider) return false;
-        }
+        if (filterCourierProvider === "no_courier") { if (co) return false; }
+        else { if (!co || co.provider_id !== filterCourierProvider) return false; }
+      }
+      if (filterCourierStatus !== "all") {
+        const co = courierByOrderId[o.id];
+        if (!co || co.status !== filterCourierStatus) return false;
+      }
+      if (filterStatus) {
+        const sl = getStatusLabel(o.status).toLowerCase();
+        if (!sl.includes(filterStatus.toLowerCase()) && !o.status.includes(filterStatus.toLowerCase())) return false;
+      }
+      if (filterProductSearch) {
+        const items = orderItemsByOrderId[o.id] || [];
+        const q = filterProductSearch.toLowerCase();
+        if (!items.some((i: any) => i.product_name.toLowerCase().includes(q) || i.product_code.toLowerCase().includes(q))) return false;
+      }
+      if (filterCategory !== "all") {
+        const items = orderItemsByOrderId[o.id] || [];
+        const pids = items.map((i: any) => i.product_id).filter(Boolean);
+        if (!allProducts.some((p: any) => pids.includes(p.id) && p.category_id === filterCategory)) return false;
+      }
+      if (filterCourierCharged !== "all") {
+        if (filterCourierCharged === "charged" && Number(o.delivery_charge) === 0) return false;
+        if (filterCourierCharged === "free" && Number(o.delivery_charge) > 0) return false;
+      }
+      if (filterNotes && !(o.notes && o.notes.toLowerCase().includes(filterNotes.toLowerCase()))) return false;
+      if (filterUrl && !(o.source && o.source.toLowerCase().includes(filterUrl.toLowerCase()))) return false;
+      if (filterOrderTag && !(o.notes && o.notes.toLowerCase().includes(filterOrderTag.toLowerCase()))) return false;
+      if (filterSalesType !== "all") {
+        if (filterSalesType === "api" && !o.source) return false;
+        if (filterSalesType === "manual" && o.source) return false;
       }
       return true;
     });
-  }, [orders, searchQuery, filterSource, filterPhone, filterAmountMin, filterAmountMax, filterDeviceType, filterAddress, filterDistrict, filterPaymentStatus, filterCourierProvider, courierByOrderId]);
+  }, [orders, searchQuery, filterSource, filterPhone, filterAmountMin, filterAmountMax, filterDeviceType, filterAddress, filterDistrict, filterPaymentStatus, filterCourierProvider, filterCourierStatus, filterStatus, filterProductSearch, filterCategory, filterCourierCharged, filterNotes, filterUrl, filterOrderTag, filterSalesType, courierByOrderId, orderItemsByOrderId, allProducts]);
 
-  const activeFilterCount = [filterSource, filterPhone, filterAmountMin, filterAmountMax, filterAddress, filterDistrict].filter(Boolean).length
-    + (filterDeviceType !== "all" ? 1 : 0)
-    + (orderDateFilter !== "all" ? 1 : 0)
-    + (filterPaymentStatus !== "all" ? 1 : 0)
-    + (filterCourierProvider !== "all" ? 1 : 0);
+  const activeFilterCount = [filterSource, filterPhone, filterAmountMin, filterAmountMax, filterAddress, filterDistrict, filterStatus, filterProductSearch, filterNotes, filterUrl, filterOrderTag].filter(Boolean).length
+    + [filterDeviceType, filterPaymentStatus, filterCourierProvider, filterCourierStatus, filterCategory, filterCourierCharged, filterSalesType].filter(v => v !== "all").length
+    + (orderDateFilter !== "all" ? 1 : 0);
 
   const clearAllFilters = () => {
-    setFilterSource("");
-    setFilterPhone("");
-    setFilterAmountMin("");
-    setFilterAmountMax("");
-    setFilterDeviceType("all");
-    setFilterAddress("");
-    setFilterDistrict("");
-    setFilterPaymentStatus("all");
-    setFilterCourierProvider("all");
-    setOrderDateFilter("all");
-    setCustomDateFrom(undefined);
-    setCustomDateTo(undefined);
+    setFilterSource(""); setFilterPhone(""); setFilterAmountMin(""); setFilterAmountMax("");
+    setFilterDeviceType("all"); setFilterAddress(""); setFilterDistrict("");
+    setFilterPaymentStatus("all"); setFilterCourierProvider("all"); setFilterCourierStatus("all");
+    setFilterStatus(""); setFilterProductSearch(""); setFilterCategory("all");
+    setFilterCourierCharged("all"); setFilterNotes(""); setFilterUrl("");
+    setFilterOrderTag(""); setFilterSalesType("all");
+    setOrderDateFilter("all"); setCustomDateFrom(undefined); setCustomDateTo(undefined);
   };
 
   const addProductToOrder = (product: any) => {
@@ -808,48 +850,39 @@ const AdminOrders = () => {
           </CollapsibleTrigger>
           <CollapsibleContent className="mt-3">
             <Card className="p-4 border-border/40 shadow-sm space-y-4">
-              {/* Row 1: Date Filters */}
+              {/* Row 1: Order Created At, Courier Submitted At, Status Added At, Note Added At */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground">📅 তারিখ ফিল্টার</Label>
+                  <Label className="text-xs font-semibold text-muted-foreground">Order Created At</Label>
                   <Select value={orderDateFilter} onValueChange={(v) => setOrderDateFilter(v as OrderDateFilter)}>
                     <SelectTrigger className="rounded-xl h-9 text-sm">
-                      <SelectValue placeholder="সব সময়" />
+                      <SelectValue placeholder="All Time" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">সব সময়</SelectItem>
-                      <SelectItem value="today">আজ</SelectItem>
-                      <SelectItem value="yesterday">গতকাল</SelectItem>
-                      <SelectItem value="7days">৭ দিন</SelectItem>
-                      <SelectItem value="30days">৩০ দিন</SelectItem>
-                      <SelectItem value="custom">📅 Custom Range</SelectItem>
+                      <SelectItem value="all">All Time</SelectItem>
+                      <SelectItem value="today">Today</SelectItem>
+                      <SelectItem value="yesterday">Yesterday</SelectItem>
+                      <SelectItem value="7days">Last 7 Days</SelectItem>
+                      <SelectItem value="30days">Last 30 Days</SelectItem>
+                      <SelectItem value="custom">Custom Range</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
-
-                {orderDateFilter === "custom" && (
-                  <>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold text-muted-foreground">শুরু তারিখ</Label>
+                  {orderDateFilter === "custom" && (
+                    <div className="flex gap-1.5 mt-1">
                       <Popover>
                         <PopoverTrigger asChild>
-                          <Button variant="outline" size="sm" className={cn("w-full justify-start gap-1.5 text-xs rounded-xl h-9", !customDateFrom && "text-muted-foreground")}>
-                            <Calendar className="h-3.5 w-3.5" />
-                            {customDateFrom ? format(customDateFrom, "dd MMM yyyy") : "তারিখ নির্বাচন"}
+                          <Button variant="outline" size="sm" className={cn("flex-1 justify-start text-[10px] rounded-lg h-7 px-2", !customDateFrom && "text-muted-foreground")}>
+                            {customDateFrom ? format(customDateFrom, "dd/MM/yy") : "From"}
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
                           <CalendarWidget mode="single" selected={customDateFrom} onSelect={setCustomDateFrom} initialFocus className={cn("p-3 pointer-events-auto")} />
                         </PopoverContent>
                       </Popover>
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold text-muted-foreground">শেষ তারিখ</Label>
                       <Popover>
                         <PopoverTrigger asChild>
-                          <Button variant="outline" size="sm" className={cn("w-full justify-start gap-1.5 text-xs rounded-xl h-9", !customDateTo && "text-muted-foreground")}>
-                            <Calendar className="h-3.5 w-3.5" />
-                            {customDateTo ? format(customDateTo, "dd MMM yyyy") : "তারিখ নির্বাচন"}
+                          <Button variant="outline" size="sm" className={cn("flex-1 justify-start text-[10px] rounded-lg h-7 px-2", !customDateTo && "text-muted-foreground")}>
+                            {customDateTo ? format(customDateTo, "dd/MM/yy") : "To"}
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
@@ -857,17 +890,69 @@ const AdminOrders = () => {
                         </PopoverContent>
                       </Popover>
                     </div>
-                  </>
-                )}
-
+                  )}
+                </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground">📱 ডিভাইস</Label>
-                  <Select value={filterDeviceType} onValueChange={setFilterDeviceType}>
-                    <SelectTrigger className="rounded-xl h-9 text-sm">
-                      <SelectValue placeholder="সব ডিভাইস" />
-                    </SelectTrigger>
+                  <Label className="text-xs font-semibold text-muted-foreground">Courier Submitted At</Label>
+                  <Select defaultValue="all">
+                    <SelectTrigger className="rounded-xl h-9 text-sm"><SelectValue placeholder="All Time" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">সব ডিভাইস</SelectItem>
+                      <SelectItem value="all">All Time</SelectItem>
+                      <SelectItem value="today">Today</SelectItem>
+                      <SelectItem value="7days">Last 7 Days</SelectItem>
+                      <SelectItem value="30days">Last 30 Days</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground">Status Added At</Label>
+                  <Select defaultValue="all">
+                    <SelectTrigger className="rounded-xl h-9 text-sm"><SelectValue placeholder="All Time" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Time</SelectItem>
+                      <SelectItem value="today">Today</SelectItem>
+                      <SelectItem value="7days">Last 7 Days</SelectItem>
+                      <SelectItem value="30days">Last 30 Days</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground">Note Added At</Label>
+                  <Select defaultValue="all">
+                    <SelectTrigger className="rounded-xl h-9 text-sm"><SelectValue placeholder="All Time" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Time</SelectItem>
+                      <SelectItem value="today">Today</SelectItem>
+                      <SelectItem value="7days">Last 7 Days</SelectItem>
+                      <SelectItem value="30days">Last 30 Days</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Row 2: Status, Order Source, Order Tag, Device */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground">Status</Label>
+                  <Input placeholder="Search status..." className="rounded-xl h-9 text-sm" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground">Order Source</Label>
+                  <Input placeholder="Search source..." className="rounded-xl h-9 text-sm" value={filterSource} onChange={(e) => setFilterSource(e.target.value)} list="source-suggestions" />
+                  <datalist id="source-suggestions">
+                    {uniqueSources.map((s) => <option key={s} value={s} />)}
+                  </datalist>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground">Order Tag</Label>
+                  <Input placeholder="Search tag..." className="rounded-xl h-9 text-sm" value={filterOrderTag} onChange={(e) => setFilterOrderTag(e.target.value)} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground">📱 Device</Label>
+                  <Select value={filterDeviceType} onValueChange={setFilterDeviceType}>
+                    <SelectTrigger className="rounded-xl h-9 text-sm"><SelectValue placeholder="All" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
                       <SelectItem value="mobile">📱 Mobile</SelectItem>
                       <SelectItem value="desktop">💻 Desktop</SelectItem>
                       <SelectItem value="tablet">📟 Tablet</SelectItem>
@@ -876,49 +961,92 @@ const AdminOrders = () => {
                 </div>
               </div>
 
-              {/* Row 2: Core Filters */}
+              {/* Row 3: Courier, Courier Status, Phone, Address */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground">🌐 অর্ডার সোর্স</Label>
-                  <Input placeholder="সোর্স সার্চ..." className="rounded-xl h-9 text-sm" value={filterSource} onChange={(e) => setFilterSource(e.target.value)} />
+                  <Label className="text-xs font-semibold text-muted-foreground">Courier</Label>
+                  <Select value={filterCourierProvider} onValueChange={setFilterCourierProvider}>
+                    <SelectTrigger className="rounded-xl h-9 text-sm"><SelectValue placeholder="All" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="no_courier">📦 Not in Courier</SelectItem>
+                      {courierProviders.map((cp: any) => (
+                        <SelectItem key={cp.id} value={cp.id}>{cp.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground">📞 ফোন নম্বর</Label>
-                  <Input placeholder="ফোন সার্চ..." className="rounded-xl h-9 text-sm" value={filterPhone} onChange={(e) => setFilterPhone(e.target.value)} />
+                  <Label className="text-xs font-semibold text-muted-foreground">Courier Status</Label>
+                  <Select value={filterCourierStatus} onValueChange={setFilterCourierStatus}>
+                    <SelectTrigger className="rounded-xl h-9 text-sm"><SelectValue placeholder="All" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="picked_up">Picked Up</SelectItem>
+                      <SelectItem value="in_transit">In Transit</SelectItem>
+                      <SelectItem value="delivered">Delivered</SelectItem>
+                      <SelectItem value="returned">Returned</SelectItem>
+                      <SelectItem value="cancelled">Cancelled</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground">📍 ঠিকানা</Label>
-                  <Input placeholder="ঠিকানা সার্চ..." className="rounded-xl h-9 text-sm" value={filterAddress} onChange={(e) => setFilterAddress(e.target.value)} />
+                  <Label className="text-xs font-semibold text-muted-foreground">📞 Phone</Label>
+                  <Input placeholder="Search phone..." className="rounded-xl h-9 text-sm" value={filterPhone} onChange={(e) => setFilterPhone(e.target.value)} />
                 </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-muted-foreground">৳ Min</Label>
-                    <Input type="number" placeholder="0" className="rounded-xl h-9 text-sm" value={filterAmountMin} onChange={(e) => setFilterAmountMin(e.target.value)} />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-muted-foreground">৳ Max</Label>
-                    <Input type="number" placeholder="∞" className="rounded-xl h-9 text-sm" value={filterAmountMax} onChange={(e) => setFilterAmountMax(e.target.value)} />
-                  </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground">📍 Address</Label>
+                  <Input placeholder="Search address..." className="rounded-xl h-9 text-sm" value={filterAddress} onChange={(e) => setFilterAddress(e.target.value)} />
                 </div>
               </div>
 
-              {/* Row 3: District, Payment Status, Courier Provider */}
+              {/* Row 4: Courier Charged, Select Product, Product Category, District */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground">🏘️ জেলা / District</Label>
-                  <Input placeholder="জেলা সার্চ..." className="rounded-xl h-9 text-sm" value={filterDistrict} onChange={(e) => setFilterDistrict(e.target.value)} list="district-suggestions" />
+                  <Label className="text-xs font-semibold text-muted-foreground">Courier Charged</Label>
+                  <Select value={filterCourierCharged} onValueChange={setFilterCourierCharged}>
+                    <SelectTrigger className="rounded-xl h-9 text-sm"><SelectValue placeholder="All" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="charged">Charged</SelectItem>
+                      <SelectItem value="free">Free</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground">Select Product</Label>
+                  <Input placeholder="Search product..." className="rounded-xl h-9 text-sm" value={filterProductSearch} onChange={(e) => setFilterProductSearch(e.target.value)} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground">Product Category</Label>
+                  <Select value={filterCategory} onValueChange={setFilterCategory}>
+                    <SelectTrigger className="rounded-xl h-9 text-sm"><SelectValue placeholder="All" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Categories</SelectItem>
+                      {categories.map((cat: any) => (
+                        <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground">District</Label>
+                  <Input placeholder="Search district..." className="rounded-xl h-9 text-sm" value={filterDistrict} onChange={(e) => setFilterDistrict(e.target.value)} list="district-suggestions" />
                   <datalist id="district-suggestions">
                     {bdDistricts.map((d) => <option key={d} value={d} />)}
                   </datalist>
                 </div>
+              </div>
+
+              {/* Row 5: Payment Status, Website/URL, Sales Type, Notes */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground">💰 পেমেন্ট স্ট্যাটাস</Label>
+                  <Label className="text-xs font-semibold text-muted-foreground">Payment Status</Label>
                   <Select value={filterPaymentStatus} onValueChange={setFilterPaymentStatus}>
-                    <SelectTrigger className="rounded-xl h-9 text-sm">
-                      <SelectValue placeholder="সব" />
-                    </SelectTrigger>
+                    <SelectTrigger className="rounded-xl h-9 text-sm"><SelectValue placeholder="All" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">সব</SelectItem>
+                      <SelectItem value="all">All</SelectItem>
                       <SelectItem value="cod">💵 Cash on Delivery</SelectItem>
                       <SelectItem value="paid">✅ Paid / Prepaid</SelectItem>
                       <SelectItem value="free_delivery">🎁 Free Delivery</SelectItem>
@@ -926,39 +1054,60 @@ const AdminOrders = () => {
                   </Select>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground">🚚 কুরিয়ার প্রোভাইডার</Label>
-                  <Select value={filterCourierProvider} onValueChange={setFilterCourierProvider}>
-                    <SelectTrigger className="rounded-xl h-9 text-sm">
-                      <SelectValue placeholder="সব কুরিয়ার" />
-                    </SelectTrigger>
+                  <Label className="text-xs font-semibold text-muted-foreground">Website / URL</Label>
+                  <Input placeholder="Search URL..." className="rounded-xl h-9 text-sm" value={filterUrl} onChange={(e) => setFilterUrl(e.target.value)} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground">Sales Type</Label>
+                  <Select value={filterSalesType} onValueChange={setFilterSalesType}>
+                    <SelectTrigger className="rounded-xl h-9 text-sm"><SelectValue placeholder="All" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">সব কুরিয়ার</SelectItem>
-                      <SelectItem value="no_courier">📦 কুরিয়ারে নেই</SelectItem>
-                      {courierProviders.map((cp: any) => (
-                        <SelectItem key={cp.id} value={cp.id}>{cp.name}</SelectItem>
-                      ))}
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="api">🌐 API / Website</SelectItem>
+                      <SelectItem value="manual">📝 Manual / Panel</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground">🔍 Notes</Label>
+                  <Input placeholder="Search notes..." className="rounded-xl h-9 text-sm" value={filterNotes} onChange={(e) => setFilterNotes(e.target.value)} />
+                </div>
               </div>
 
+              {/* Row 6: Amount Range */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground">Product Amount Min</Label>
+                  <Input type="number" placeholder="0" className="rounded-xl h-9 text-sm" value={filterAmountMin} onChange={(e) => setFilterAmountMin(e.target.value)} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground">Product Amount Max</Label>
+                  <Input type="number" placeholder="∞" className="rounded-xl h-9 text-sm" value={filterAmountMax} onChange={(e) => setFilterAmountMax(e.target.value)} />
+                </div>
+              </div>
 
-              <div className="flex items-center justify-between pt-2 border-t border-border/30">
-                <div className="flex items-center gap-2">
-                  {activeFilterCount > 0 && (
-                    <Button variant="ghost" size="sm" className="gap-1.5 text-xs text-muted-foreground hover:text-destructive" onClick={clearAllFilters}>
-                      <X className="h-3 w-3" /> সব ফিল্টার মুছুন
-                    </Button>
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" className="gap-1.5 text-xs rounded-xl" onClick={() => setCurrentView("incomplete")}>
-                    <AlertCircle className="h-3.5 w-3.5 text-amber-500" /> Duplicate / Incomplete
+              {/* Bottom Action Bar */}
+              <div className="flex items-center gap-2 flex-wrap pt-3 border-t border-border/30">
+                {activeFilterCount > 0 && (
+                  <Button size="sm" variant="destructive" className="gap-1.5 text-xs rounded-full h-8 px-3" onClick={clearAllFilters}>
+                    <X className="h-3 w-3" /> Clear Filter
                   </Button>
-                  <Badge variant="secondary" className="text-xs">
-                    {filteredOrders.length} অর্ডার পাওয়া গেছে
-                  </Badge>
-                </div>
+                )}
+                <Button size="sm" variant="outline" className="gap-1.5 text-xs rounded-full h-8 px-3 bg-emerald-500/10 text-emerald-700 border-emerald-200 hover:bg-emerald-500/20">
+                  <Package className="h-3 w-3" /> Order Items
+                </Button>
+                <Button size="sm" variant="outline" className="gap-1.5 text-xs rounded-full h-8 px-3 bg-primary/10 text-primary border-primary/20 hover:bg-primary/20">
+                  <Globe className="h-3 w-3" /> Order Sources
+                </Button>
+                <Button size="sm" variant="outline" className="gap-1.5 text-xs rounded-full h-8 px-3 bg-amber-500/10 text-amber-700 border-amber-200 hover:bg-amber-500/20" onClick={() => setCurrentView("incomplete")}>
+                  <AlertCircle className="h-3 w-3" /> Duplicate Orders
+                </Button>
+                <Button size="sm" variant="outline" className="gap-1.5 text-xs rounded-full h-8 px-3 bg-violet-500/10 text-violet-700 border-violet-200 hover:bg-violet-500/20">
+                  <Truck className="h-3 w-3" /> Courier Statuses
+                </Button>
+                <Badge variant="secondary" className="text-xs ml-auto">
+                  {filteredOrders.length} অর্ডার পাওয়া গেছে
+                </Badge>
               </div>
             </Card>
           </CollapsibleContent>
