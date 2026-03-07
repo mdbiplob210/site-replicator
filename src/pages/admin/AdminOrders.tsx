@@ -525,19 +525,7 @@ const AdminOrders = () => {
             <p className="text-muted-foreground text-sm">Manage and track all orders across channels</p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2 rounded-xl border-border/60 shadow-sm hover:shadow">
-                  <Calendar className="h-4 w-4" /> Date Filter <ChevronDown className="h-3 w-3 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent align="start" className="w-48 p-2 rounded-xl">
-                <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground/60 px-2 py-1.5">Quick Select</p>
-                {dateFilterOptions.map((opt) => (
-                  <button key={opt} className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-secondary/80 transition-colors text-foreground">{opt}</button>
-                ))}
-              </PopoverContent>
-            </Popover>
+            {/* Date Filter removed - moved to advanced filter panel */}
 
             <a href="/admin/orders/backfill-items">
               <Button variant="outline" size="sm" className="gap-2 rounded-xl border-border/60 shadow-sm hover:shadow">
