@@ -1741,6 +1741,9 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
   const [detailProductSearch, setDetailProductSearch] = useState("");
   const [detailProductFocused, setDetailProductFocused] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [logFilterUser, setLogFilterUser] = useState("all");
+  const [logFilterAction, setLogFilterAction] = useState("all");
+  const [logFilterDate, setLogFilterDate] = useState<Date | undefined>();
 
   // Populate fields when order changes
   const orderRef = order?.id;
