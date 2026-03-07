@@ -244,6 +244,29 @@ const AdminOrders = () => {
             </div>
             <Badge variant="secondary" className="ml-auto">{incompleteCounts.total || 0} মোট</Badge>
           </div>
+
+          {/* Source filter: All / IP Blocked / Abandoned Form */}
+          <div className="flex items-center gap-1 bg-card rounded-xl border border-border/60 p-1 w-fit">
+            {([
+              { key: "all" as const, label: "সব", icon: "📋" },
+              { key: "ip_blocked" as const, label: "IP ব্লক", icon: "🚫" },
+              { key: "abandoned_form" as const, label: "ফর্ম Abandoned", icon: "📝" },
+            ]).map((f) => (
+              <button
+                key={f.key}
+                onClick={() => setIncompleteSourceFilter(f.key)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                  incompleteSourceFilter === f.key
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+                }`}
+              >
+                <span>{f.icon}</span> {f.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Status tabs */}
           <div className="flex items-center gap-6 border-b border-border/40 pb-0">
             {incompleteTabs.map((tab) => (
               <button key={tab.label} onClick={() => setActiveIncompleteTab(tab.label)} className={`flex items-center gap-2 pb-3 text-sm font-medium border-b-2 transition-all duration-200 ${activeIncompleteTab === tab.label ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
