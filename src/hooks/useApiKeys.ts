@@ -9,6 +9,8 @@ export type ApiKey = {
   permissions: string[];
   is_active: boolean;
   last_used_at: string | null;
+  source_url: string | null;
+  last_synced_at: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -30,10 +32,12 @@ export function useApiKeys() {
 export function useCreateApiKey() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ label, permissions }: { label: string; permissions: string[] }) => {
+    mutationFn: async ({ label, permissions, source_url }: { label: string; permissions: string[]; source_url?: string }) => {
+      const insertData: any = { label, permissions };
+      if (source_url) insertData.source_url = source_url;
       const { data, error } = await supabase
         .from("api_keys" as any)
-        .insert({ label, permissions } as any)
+        .insert(insertData)
         .select()
         .single();
       if (error) throw error;
@@ -80,5 +84,40 @@ export function useDeleteApiKey() {
       toast.success("API Key ডিলিট হয়েছে!");
     },
     onError: (e: Error) => toast.error("ডিলিট ব্যর্থ: " + e.message),
+  });
+}
+
+export function useSyncOrders() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (apiKeyId: string) => {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      if (!token) throw new Error("লগইন করুন");
+
+      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+      const res = await fetch(
+        `https://${projectId}.supabase.co/functions/v1/sync-orders`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ api_key_id: apiKeyId }),
+        }
+      );
+
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || result.detail || "Sync failed");
+      return result;
+    },
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ["api-keys"] });
+      qc.invalidateQueries({ queryKey: ["orders"] });
+      qc.invalidateQueries({ queryKey: ["incomplete-orders"] });
+      toast.success(data.message || `${data.synced} অর্ডার সিঙ্ক হয়েছে`);
+    },
+    onError: (e: Error) => toast.error("সিঙ্ক ব্যর্থ: " + e.message),
   });
 }
