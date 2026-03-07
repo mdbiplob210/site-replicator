@@ -22,7 +22,7 @@ import {
   Settings, Download, Printer, RefreshCw, ChevronDown, Wifi, Ban,
   Trash2, Copy, X, ShoppingCart, ArrowLeft, Clock, CheckCircle2,
   GitMerge, PauseCircle, XCircle, Trash, Smartphone, BarChart3,
-  MessageSquare, Filter, Loader2, Package
+  MessageSquare, Filter, Loader2, Package, Globe
 } from "lucide-react";
 import {
   useOrders, useOrderCounts, useCreateOrder, useUpdateOrderStatus,
@@ -775,6 +775,7 @@ const AdminOrders = () => {
                   <TableHead className="font-bold text-xs">Customer</TableHead>
                   <TableHead className="font-bold text-xs">Phone</TableHead>
                   <TableHead className="font-bold text-xs">Amount</TableHead>
+                  <TableHead className="font-bold text-xs">Source</TableHead>
                   <TableHead className="font-bold text-xs">Status</TableHead>
                   <TableHead className="font-bold text-xs">Date</TableHead>
                   <TableHead className="font-bold text-xs text-right">Actions</TableHead>
@@ -792,6 +793,16 @@ const AdminOrders = () => {
                     </TableCell>
                     <TableCell className="text-sm">{order.customer_phone || "—"}</TableCell>
                     <TableCell className="font-semibold text-sm">৳{Number(order.total_amount).toLocaleString()}</TableCell>
+                    <TableCell>
+                      {order.source ? (
+                        <Badge variant="outline" className="text-xs gap-1">
+                          <Globe className="h-3 w-3" />
+                          {order.source}
+                        </Badge>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">প্যানেল</span>
+                      )}
+                    </TableCell>
                     <TableCell>
                       <Select
                         value={order.status}
@@ -871,6 +882,15 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                 <div className="col-span-2">
                   <p className="text-xs text-muted-foreground">Address</p>
                   <p className="text-sm text-foreground">{order.customer_address}</p>
+                </div>
+              )}
+              {order.source && (
+                <div>
+                  <p className="text-xs text-muted-foreground">Source</p>
+                  <Badge variant="outline" className="text-xs gap-1 mt-0.5">
+                    <Globe className="h-3 w-3" />
+                    {order.source}
+                  </Badge>
                 </div>
               )}
             </div>

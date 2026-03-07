@@ -152,6 +152,7 @@ Deno.serve(async (req) => {
         client_ip: body.client_ip || null,
         user_agent: body.user_agent || null,
         device_info: body.device_info || null,
+        source: body.source || keyData.label || null,
       }).select().single()
 
       if (orderError) throw orderError
