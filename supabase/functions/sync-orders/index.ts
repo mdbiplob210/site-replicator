@@ -218,6 +218,7 @@ Deno.serve(async (req) => {
             total_amount: ext.total_amount || ext.total || 0,
             status: ext.status || 'processing',
             notes: ext.notes || null,
+            source: ext.source || keyData.label || 'API Sync',
           }).select().single()
 
           if (orderError) throw orderError
