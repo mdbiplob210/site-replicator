@@ -34,6 +34,7 @@ import AdminThankYouTemplate from "./pages/admin/AdminThankYouTemplate";
 import AdminLandingPages from "./pages/admin/AdminLandingPages";
 import AdminPayment from "./pages/admin/AdminPayment";
 import AdminPages from "./pages/admin/AdminPages";
+import LandingPageView from "./pages/LandingPageView";
 import StorePage from "./pages/store/StorePage";
 import ProductDetail from "./pages/store/ProductDetail";
 import CheckoutPage from "./pages/store/CheckoutPage";
@@ -89,6 +90,7 @@ const App = () => (
           <Route path="/admin/support" element={P("Support", "Customer support")} />
           <Route path="/admin/coming-soon" element={<ProtectedAdminRoute><AdminComingSoon /></ProtectedAdminRoute>} />
           <Route path="/admin/plan" element={P("Plan", "Subscription management")} />
+          <Route path="/lp/:slug" element={<LandingPageView />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
