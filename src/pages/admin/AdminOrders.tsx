@@ -243,7 +243,11 @@ const AdminOrders = () => {
       // Courier provider
       if (filterCourierProvider !== "all") {
         const co = courierByOrderId[o.id];
-        if (!co || co.provider_id !== filterCourierProvider) return false;
+        if (filterCourierProvider === "no_courier") {
+          if (co) return false;
+        } else {
+          if (!co || co.provider_id !== filterCourierProvider) return false;
+        }
       }
       return true;
     });
