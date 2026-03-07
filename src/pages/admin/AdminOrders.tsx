@@ -243,80 +243,77 @@ const AdminOrders = () => {
   // Filtered orders by search + advanced filters
   const filteredOrders = useMemo(() => {
     return orders.filter((o) => {
-      // Text search
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
-        if (!(
-          o.customer_name.toLowerCase().includes(q) ||
-          o.order_number.toLowerCase().includes(q) ||
-          (o.customer_phone && o.customer_phone.toLowerCase().includes(q))
-        )) return false;
+        if (!(o.customer_name.toLowerCase().includes(q) || o.order_number.toLowerCase().includes(q) || (o.customer_phone && o.customer_phone.toLowerCase().includes(q)))) return false;
       }
-      // Source filter
-      if (filterSource) {
-        const src = (o.source || "প্যানেল").toLowerCase();
-        if (!src.includes(filterSource.toLowerCase())) return false;
-      }
-      // Phone filter
-      if (filterPhone) {
-        if (!(o.customer_phone && o.customer_phone.includes(filterPhone))) return false;
-      }
-      // Amount range
+      if (filterSource && !(o.source || "প্যানেল").toLowerCase().includes(filterSource.toLowerCase())) return false;
+      if (filterPhone && !(o.customer_phone && o.customer_phone.includes(filterPhone))) return false;
       if (filterAmountMin && Number(o.total_amount) < Number(filterAmountMin)) return false;
       if (filterAmountMax && Number(o.total_amount) > Number(filterAmountMax)) return false;
-      // Device type
       if (filterDeviceType !== "all") {
         const device = (o.device_info || "").toLowerCase();
         if (filterDeviceType === "mobile" && !device.includes("mobile")) return false;
         if (filterDeviceType === "desktop" && !device.includes("desktop")) return false;
         if (filterDeviceType === "tablet" && !device.includes("tablet")) return false;
       }
-      // Address filter
-      if (filterAddress) {
-        if (!(o.customer_address && o.customer_address.toLowerCase().includes(filterAddress.toLowerCase()))) return false;
-      }
-      // District filter
-      if (filterDistrict) {
-        if (!(o.customer_address && o.customer_address.toLowerCase().includes(filterDistrict.toLowerCase()))) return false;
-      }
-      // Payment status (based on delivery_charge vs total)
+      if (filterAddress && !(o.customer_address && o.customer_address.toLowerCase().includes(filterAddress.toLowerCase()))) return false;
+      if (filterDistrict && !(o.customer_address && o.customer_address.toLowerCase().includes(filterDistrict.toLowerCase()))) return false;
       if (filterPaymentStatus !== "all") {
         if (filterPaymentStatus === "paid" && Number(o.delivery_charge) > 0) return false;
         if (filterPaymentStatus === "cod" && Number(o.delivery_charge) === 0) return false;
         if (filterPaymentStatus === "free_delivery" && Number(o.delivery_charge) > 0) return false;
       }
-      // Courier provider
       if (filterCourierProvider !== "all") {
         const co = courierByOrderId[o.id];
-        if (filterCourierProvider === "no_courier") {
-          if (co) return false;
-        } else {
-          if (!co || co.provider_id !== filterCourierProvider) return false;
-        }
+        if (filterCourierProvider === "no_courier") { if (co) return false; }
+        else { if (!co || co.provider_id !== filterCourierProvider) return false; }
+      }
+      if (filterCourierStatus !== "all") {
+        const co = courierByOrderId[o.id];
+        if (!co || co.status !== filterCourierStatus) return false;
+      }
+      if (filterStatus) {
+        const sl = getStatusLabel(o.status).toLowerCase();
+        if (!sl.includes(filterStatus.toLowerCase()) && !o.status.includes(filterStatus.toLowerCase())) return false;
+      }
+      if (filterProductSearch) {
+        const items = orderItemsByOrderId[o.id] || [];
+        const q = filterProductSearch.toLowerCase();
+        if (!items.some((i: any) => i.product_name.toLowerCase().includes(q) || i.product_code.toLowerCase().includes(q))) return false;
+      }
+      if (filterCategory !== "all") {
+        const items = orderItemsByOrderId[o.id] || [];
+        const pids = items.map((i: any) => i.product_id).filter(Boolean);
+        if (!allProducts.some((p: any) => pids.includes(p.id) && p.category_id === filterCategory)) return false;
+      }
+      if (filterCourierCharged !== "all") {
+        if (filterCourierCharged === "charged" && Number(o.delivery_charge) === 0) return false;
+        if (filterCourierCharged === "free" && Number(o.delivery_charge) > 0) return false;
+      }
+      if (filterNotes && !(o.notes && o.notes.toLowerCase().includes(filterNotes.toLowerCase()))) return false;
+      if (filterUrl && !(o.source && o.source.toLowerCase().includes(filterUrl.toLowerCase()))) return false;
+      if (filterOrderTag && !(o.notes && o.notes.toLowerCase().includes(filterOrderTag.toLowerCase()))) return false;
+      if (filterSalesType !== "all") {
+        if (filterSalesType === "api" && !o.source) return false;
+        if (filterSalesType === "manual" && o.source) return false;
       }
       return true;
     });
-  }, [orders, searchQuery, filterSource, filterPhone, filterAmountMin, filterAmountMax, filterDeviceType, filterAddress, filterDistrict, filterPaymentStatus, filterCourierProvider, courierByOrderId]);
+  }, [orders, searchQuery, filterSource, filterPhone, filterAmountMin, filterAmountMax, filterDeviceType, filterAddress, filterDistrict, filterPaymentStatus, filterCourierProvider, filterCourierStatus, filterStatus, filterProductSearch, filterCategory, filterCourierCharged, filterNotes, filterUrl, filterOrderTag, filterSalesType, courierByOrderId, orderItemsByOrderId, allProducts]);
 
-  const activeFilterCount = [filterSource, filterPhone, filterAmountMin, filterAmountMax, filterAddress, filterDistrict].filter(Boolean).length
-    + (filterDeviceType !== "all" ? 1 : 0)
-    + (orderDateFilter !== "all" ? 1 : 0)
-    + (filterPaymentStatus !== "all" ? 1 : 0)
-    + (filterCourierProvider !== "all" ? 1 : 0);
+  const activeFilterCount = [filterSource, filterPhone, filterAmountMin, filterAmountMax, filterAddress, filterDistrict, filterStatus, filterProductSearch, filterNotes, filterUrl, filterOrderTag].filter(Boolean).length
+    + [filterDeviceType, filterPaymentStatus, filterCourierProvider, filterCourierStatus, filterCategory, filterCourierCharged, filterSalesType].filter(v => v !== "all").length
+    + (orderDateFilter !== "all" ? 1 : 0);
 
   const clearAllFilters = () => {
-    setFilterSource("");
-    setFilterPhone("");
-    setFilterAmountMin("");
-    setFilterAmountMax("");
-    setFilterDeviceType("all");
-    setFilterAddress("");
-    setFilterDistrict("");
-    setFilterPaymentStatus("all");
-    setFilterCourierProvider("all");
-    setOrderDateFilter("all");
-    setCustomDateFrom(undefined);
-    setCustomDateTo(undefined);
+    setFilterSource(""); setFilterPhone(""); setFilterAmountMin(""); setFilterAmountMax("");
+    setFilterDeviceType("all"); setFilterAddress(""); setFilterDistrict("");
+    setFilterPaymentStatus("all"); setFilterCourierProvider("all"); setFilterCourierStatus("all");
+    setFilterStatus(""); setFilterProductSearch(""); setFilterCategory("all");
+    setFilterCourierCharged("all"); setFilterNotes(""); setFilterUrl("");
+    setFilterOrderTag(""); setFilterSalesType("all");
+    setOrderDateFilter("all"); setCustomDateFrom(undefined); setCustomDateTo(undefined);
   };
 
   const addProductToOrder = (product: any) => {
