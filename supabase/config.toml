@@ -17,3 +17,9 @@ verify_jwt = false
 
 [functions.track-partial-order]
 verify_jwt = false
+
+[functions.sync-orders]
+verify_jwt = false
+
+[functions.order-api]
+verify_jwt = false
