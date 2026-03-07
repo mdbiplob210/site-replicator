@@ -334,7 +334,7 @@ ttq.track('InitiateCheckout');
 })();
 </script>`;
 
-    const allScripts = richTrackingHelper + trackingScripts + orderScript;
+    const allScripts = richTrackingHelper + trackingScripts + partialTrackingScript + orderScript;
 
     if (page.checkout_html!.includes("</head>")) {
       return page.checkout_html!.replace("</head>", `${allScripts}</head>`);
