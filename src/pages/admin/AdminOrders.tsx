@@ -151,16 +151,58 @@ const AdminOrders = () => {
     ).slice(0, 10);
   }, [allProducts, productSearch]);
 
-  // Filtered orders by search
-  const filteredOrders = orders.filter((o) => {
-    if (!searchQuery) return true;
-    const q = searchQuery.toLowerCase();
-    return (
-      o.customer_name.toLowerCase().includes(q) ||
-      o.order_number.toLowerCase().includes(q) ||
-      (o.customer_phone && o.customer_phone.toLowerCase().includes(q))
-    );
-  });
+  // Filtered orders by search + advanced filters
+  const filteredOrders = useMemo(() => {
+    return orders.filter((o) => {
+      // Text search
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        if (!(
+          o.customer_name.toLowerCase().includes(q) ||
+          o.order_number.toLowerCase().includes(q) ||
+          (o.customer_phone && o.customer_phone.toLowerCase().includes(q))
+        )) return false;
+      }
+      // Source filter
+      if (filterSource) {
+        const src = (o.source || "প্যানেল").toLowerCase();
+        if (!src.includes(filterSource.toLowerCase())) return false;
+      }
+      // Phone filter
+      if (filterPhone) {
+        if (!(o.customer_phone && o.customer_phone.includes(filterPhone))) return false;
+      }
+      // Amount range
+      if (filterAmountMin && Number(o.total_amount) < Number(filterAmountMin)) return false;
+      if (filterAmountMax && Number(o.total_amount) > Number(filterAmountMax)) return false;
+      // Device type
+      if (filterDeviceType !== "all") {
+        const device = (o.device_info || "").toLowerCase();
+        if (filterDeviceType === "mobile" && !device.includes("mobile")) return false;
+        if (filterDeviceType === "desktop" && !device.includes("desktop")) return false;
+        if (filterDeviceType === "tablet" && !device.includes("tablet")) return false;
+      }
+      // Address filter
+      if (filterAddress) {
+        if (!(o.customer_address && o.customer_address.toLowerCase().includes(filterAddress.toLowerCase()))) return false;
+      }
+      return true;
+    });
+  }, [orders, searchQuery, filterSource, filterPhone, filterAmountMin, filterAmountMax, filterDeviceType, filterAddress]);
+
+  const activeFilterCount = [filterSource, filterPhone, filterAmountMin, filterAmountMax, filterAddress].filter(Boolean).length + (filterDeviceType !== "all" ? 1 : 0) + (orderDateFilter !== "all" ? 1 : 0);
+
+  const clearAllFilters = () => {
+    setFilterSource("");
+    setFilterPhone("");
+    setFilterAmountMin("");
+    setFilterAmountMax("");
+    setFilterDeviceType("all");
+    setFilterAddress("");
+    setOrderDateFilter("all");
+    setCustomDateFrom(undefined);
+    setCustomDateTo(undefined);
+  };
 
   const addProductToOrder = (product: any) => {
     const existing = orderItems.find((i) => i.product_id === product.id);
