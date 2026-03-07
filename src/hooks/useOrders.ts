@@ -2,6 +2,27 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import { toast } from "sonner";
+import { startOfDay, subDays } from "date-fns";
+
+export type OrderDateFilter = "all" | "today" | "yesterday" | "7days" | "30days";
+
+function getOrderDateRange(filter: OrderDateFilter): { from: string | null; to: string | null } {
+  const now = new Date();
+  switch (filter) {
+    case "today":
+      return { from: startOfDay(now).toISOString(), to: null };
+    case "yesterday": {
+      const yd = subDays(now, 1);
+      return { from: startOfDay(yd).toISOString(), to: startOfDay(now).toISOString() };
+    }
+    case "7days":
+      return { from: startOfDay(subDays(now, 7)).toISOString(), to: null };
+    case "30days":
+      return { from: startOfDay(subDays(now, 30)).toISOString(), to: null };
+    default:
+      return { from: null, to: null };
+  }
+}
 
 export type Order = Tables<"orders">;
 export type OrderInsert = TablesInsert<"orders">;
@@ -62,9 +83,9 @@ export const getStatusColor = (status: OrderStatus): string => {
   return colors[status] || "bg-muted";
 };
 
-export function useOrders(statusFilter: string | null = null) {
+export function useOrders(statusFilter: string | null = null, dateFilter: OrderDateFilter = "all") {
   return useQuery({
-    queryKey: ["orders", statusFilter],
+    queryKey: ["orders", statusFilter, dateFilter],
     queryFn: async () => {
       let query = supabase
         .from("orders")
@@ -74,6 +95,10 @@ export function useOrders(statusFilter: string | null = null) {
       if (statusFilter) {
         query = query.eq("status", statusFilter as OrderStatus);
       }
+
+      const range = getOrderDateRange(dateFilter);
+      if (range.from) query = query.gte("created_at", range.from);
+      if (range.to) query = query.lt("created_at", range.to);
 
       const { data, error } = await query;
       if (error) throw error;
@@ -98,11 +123,17 @@ export function useOrderItems(orderId: string | null) {
   });
 }
 
-export function useOrderCounts() {
+export function useOrderCounts(dateFilter: OrderDateFilter = "all") {
   return useQuery({
-    queryKey: ["order-counts"],
+    queryKey: ["order-counts", dateFilter],
     queryFn: async () => {
-      const { data, error } = await supabase.from("orders").select("status");
+      let query = supabase.from("orders").select("status, created_at");
+
+      const range = getOrderDateRange(dateFilter);
+      if (range.from) query = query.gte("created_at", range.from);
+      if (range.to) query = query.lt("created_at", range.to);
+
+      const { data, error } = await query;
       if (error) throw error;
 
       const counts: Record<string, number> = { "All Orders": data.length };
