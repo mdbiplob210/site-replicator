@@ -100,6 +100,15 @@ const AdminOrders = () => {
   const [customDateTo, setCustomDateTo] = useState<Date | undefined>();
   const [newOrderOpen, setNewOrderOpen] = useState(false);
   const [detailOrderId, setDetailOrderId] = useState<string | null>(null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+
+  // Advanced filter states
+  const [filterSource, setFilterSource] = useState("");
+  const [filterPhone, setFilterPhone] = useState("");
+  const [filterAmountMin, setFilterAmountMin] = useState("");
+  const [filterAmountMax, setFilterAmountMax] = useState("");
+  const [filterDeviceType, setFilterDeviceType] = useState("all");
+  const [filterAddress, setFilterAddress] = useState("");
 
   // New order form state
   const [customerName, setCustomerName] = useState("");
