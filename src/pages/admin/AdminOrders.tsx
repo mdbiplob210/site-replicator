@@ -133,6 +133,35 @@ const AdminOrders = () => {
   const { data: nextOrderNumber = "ORD-00001" } = useNextOrderNumber();
   const { data: allProducts = [] } = usePublicProducts();
 
+  // Courier orders for filtering
+  const { data: courierOrders = [] } = useQuery({
+    queryKey: ["courier-orders-filter"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("courier_orders")
+        .select("order_id, courier_provider_id, courier_status");
+      if (error) throw error;
+      return data;
+    },
+  });
+  const { data: courierProviders = [] } = useQuery({
+    queryKey: ["courier-providers-filter"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("courier_providers")
+        .select("id, name, slug");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Build courier lookup maps
+  const courierByOrderId = useMemo(() => {
+    const map: Record<string, { provider_id: string; status: string }> = {};
+    courierOrders.forEach((co: any) => { map[co.order_id] = { provider_id: co.courier_provider_id, status: co.courier_status }; });
+    return map;
+  }, [courierOrders]);
+
   // Incomplete orders hooks
   const incompleteStatusMap: Record<string, string> = {
     "Processing": "processing", "Confirmed": "confirmed", "Converted": "converted",
