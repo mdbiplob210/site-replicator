@@ -22,7 +22,7 @@ import {
   Settings, Download, Printer, RefreshCw, ChevronDown, Wifi, Ban,
   Trash2, Copy, X, ShoppingCart, ArrowLeft, Clock, CheckCircle2,
   GitMerge, PauseCircle, XCircle, Trash, Smartphone, BarChart3,
-  MessageSquare, Filter, Loader2, Package
+  MessageSquare, Filter, Loader2, Package, Globe
 } from "lucide-react";
 import {
   useOrders, useOrderCounts, useCreateOrder, useUpdateOrderStatus,
