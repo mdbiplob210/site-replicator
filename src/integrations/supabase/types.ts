@@ -637,6 +637,53 @@ export type Database = {
         }
         Relationships: []
       }
+      order_activity_logs: {
+        Row: {
+          action: string
+          created_at: string
+          details: string | null
+          field_name: string | null
+          id: string
+          new_value: string | null
+          old_value: string | null
+          order_id: string
+          user_id: string | null
+          user_name: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: string | null
+          field_name?: string | null
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+          order_id: string
+          user_id?: string | null
+          user_name?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: string | null
+          field_name?: string | null
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+          order_id?: string
+          user_id?: string | null
+          user_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_activity_logs_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_assignments: {
         Row: {
           assigned_at: string
@@ -729,6 +776,7 @@ export type Database = {
       orders: {
         Row: {
           client_ip: string | null
+          courier_note: string | null
           created_at: string
           customer_address: string | null
           customer_name: string
@@ -748,6 +796,7 @@ export type Database = {
         }
         Insert: {
           client_ip?: string | null
+          courier_note?: string | null
           created_at?: string
           customer_address?: string | null
           customer_name: string
@@ -767,6 +816,7 @@ export type Database = {
         }
         Update: {
           client_ip?: string | null
+          courier_note?: string | null
           created_at?: string
           customer_address?: string | null
           customer_name?: string
