@@ -166,6 +166,48 @@ export type Database = {
         }
         Relationships: []
       }
+      landing_pages: {
+        Row: {
+          created_at: string
+          custom_head_scripts: string | null
+          fb_pixel_id: string | null
+          gtm_id: string | null
+          html_content: string
+          id: string
+          is_active: boolean
+          slug: string
+          tiktok_pixel_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          custom_head_scripts?: string | null
+          fb_pixel_id?: string | null
+          gtm_id?: string | null
+          html_content?: string
+          id?: string
+          is_active?: boolean
+          slug: string
+          tiktok_pixel_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          custom_head_scripts?: string | null
+          fb_pixel_id?: string | null
+          gtm_id?: string | null
+          html_content?: string
+          id?: string
+          is_active?: boolean
+          slug?: string
+          tiktok_pixel_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       meta_ads: {
         Row: {
           adset_id: string
