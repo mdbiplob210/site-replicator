@@ -29,7 +29,7 @@ import {
 import {
   useIncompleteOrders, useIncompleteOrderCounts,
   useUpdateIncompleteOrderStatus, useDeleteIncompleteOrder,
-  useConvertIncompleteToOrder,
+  useConvertIncompleteToOrder, type IncompleteDateFilter,
 } from "@/hooks/useIncompleteOrders";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
 import { Constants } from "@/integrations/supabase/types";
