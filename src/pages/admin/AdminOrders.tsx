@@ -96,6 +96,8 @@ const AdminOrders = () => {
   const [deliveryRatio, setDeliveryRatio] = useState([0]);
   const [searchQuery, setSearchQuery] = useState("");
   const [orderDateFilter, setOrderDateFilter] = useState<OrderDateFilter>("all");
+  const [customDateFrom, setCustomDateFrom] = useState<Date | undefined>();
+  const [customDateTo, setCustomDateTo] = useState<Date | undefined>();
   const [newOrderOpen, setNewOrderOpen] = useState(false);
   const [detailOrderId, setDetailOrderId] = useState<string | null>(null);
 
