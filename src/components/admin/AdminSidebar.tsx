@@ -2,7 +2,7 @@ import { useState } from "react";
 import {
   LayoutDashboard, ShoppingCart, Package, Globe, FileText, Wallet,
   Lightbulb, ListChecks, BarChart3, Megaphone, Zap, Database,
-  Users, HeadphonesIcon, Sparkles, CreditCard, LogOut, ChevronDown, Camera, Truck, Key,
+  Users, HeadphonesIcon, Sparkles, CreditCard, LogOut, ChevronDown, Camera, Key,
   Layout, ShoppingBag, Gift, Grid3X3, Heart, Layers, CreditCard as PaymentIcon,
   File, Settings, PieChart
 } from "lucide-react";
@@ -50,7 +50,6 @@ const mainMenuItems = [
 
 const bottomMenuItems = [
   { title: "Order API", url: "/admin/api-keys", icon: Key },
-  { title: "Courier", url: "/admin/courier", icon: Truck },
   { title: "Meta Ads", url: "/admin/meta-ads", icon: Megaphone },
   { title: "Automation", url: "/admin/automation", icon: Zap },
   { title: "Backup", url: "/admin/backup", icon: Database },

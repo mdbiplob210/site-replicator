@@ -24,7 +24,6 @@ import AdminPlanning from "./pages/admin/AdminPlanning";
 import AdminTasks from "./pages/admin/AdminTasks";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import AdminMetaAds from "./pages/admin/AdminMetaAds";
-import AdminCourier from "./pages/admin/AdminCourier";
 import AdminApiKeys from "./pages/admin/AdminApiKeys";
 import AdminBackfillOrderItems from "./pages/admin/AdminBackfillOrderItems";
 import AdminWebsiteSettings from "./pages/admin/AdminWebsiteSettings";
@@ -89,7 +88,6 @@ const App = () => (
           <Route path="/admin/tasks" element={<ProtectedAdminRoute><AdminTasks /></ProtectedAdminRoute>} />
           <Route path="/admin/analytics" element={<ProtectedAdminRoute><AdminAnalytics /></ProtectedAdminRoute>} />
           <Route path="/admin/meta-ads" element={<ProtectedAdminRoute><AdminMetaAds /></ProtectedAdminRoute>} />
-          <Route path="/admin/courier" element={<ProtectedAdminRoute><AdminCourier /></ProtectedAdminRoute>} />
           <Route path="/admin/api-keys" element={<ProtectedAdminRoute><AdminApiKeys /></ProtectedAdminRoute>} />
           <Route path="/admin/orders/backfill-items" element={<ProtectedAdminRoute><AdminBackfillOrderItems /></ProtectedAdminRoute>} />
           <Route path="/admin/automation" element={<ProtectedAdminRoute><AdminAutomation /></ProtectedAdminRoute>} />

@@ -2,7 +2,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-auth-token',
 }
 
 Deno.serve(async (req) => {
@@ -13,7 +13,8 @@ Deno.serve(async (req) => {
   try {
     const url = new URL(req.url)
     const courierSlug = url.searchParams.get('courier')
-    
+    const authToken = req.headers.get('x-auth-token') || url.searchParams.get('token')
+
     if (!courierSlug) {
       return new Response(JSON.stringify({ error: 'Missing courier parameter' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -27,6 +28,23 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
 
+    // Validate auth token if provided
+    if (authToken) {
+      const { data: provider } = await supabase
+        .from('courier_providers')
+        .select('id')
+        .eq('slug', courierSlug)
+        .eq('auth_token', authToken)
+        .eq('is_active', true)
+        .single()
+      
+      if (!provider) {
+        return new Response(JSON.stringify({ error: 'Invalid auth token' }), {
+          status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+    }
+
     // Log the webhook
     await supabase.from('courier_webhook_logs').insert({
       courier_slug: courierSlug,
@@ -37,39 +55,95 @@ Deno.serve(async (req) => {
     let trackingId: string | null = null
     let newStatus: string | null = null
     let orderStatus: string | null = null
+    let deliveryFee: number | null = null
+    let codAmount: number | null = null
+    let weight: string | null = null
+    let area: string | null = null
+    let hubName: string | null = null
+    let riderName: string | null = null
+    let riderPhone: string | null = null
+    let deliveryDate: string | null = null
+    let returnReason: string | null = null
 
     switch (courierSlug) {
       case 'pathao': {
         trackingId = payload.consignment_id || payload.tracking_id
         newStatus = payload.status || payload.delivery_status
+        deliveryFee = payload.delivery_fee || payload.total_fee || null
+        codAmount = payload.cod_amount || payload.amount_to_collect || null
+        weight = payload.item_weight || null
+        area = payload.recipient_area || payload.delivery_area || null
+        riderName = payload.rider_name || null
+        riderPhone = payload.rider_phone || null
+        deliveryDate = payload.delivered_at || payload.updated_at || null
+        returnReason = payload.return_reason || null
         break
       }
       case 'redx': {
         trackingId = payload.tracking_id || payload.parcel_id
         newStatus = payload.status || payload.parcel_status
+        deliveryFee = payload.delivery_charge || payload.charge || null
+        codAmount = payload.cash_collection_amount || payload.cod_amount || null
+        weight = payload.weight || null
+        area = payload.area || payload.district || null
+        riderName = payload.pickup_man_name || payload.rider_name || null
+        riderPhone = payload.pickup_man_phone || payload.rider_phone || null
+        deliveryDate = payload.delivered_at || null
+        returnReason = payload.cancel_reason || null
         break
       }
       case 'steadfast': {
-        trackingId = payload.tracking_code || payload.consignment_id
+        trackingId = payload.tracking_code || payload.consignment_id || payload.invoice
         newStatus = payload.status || payload.delivery_status
+        deliveryFee = payload.charge || payload.delivery_charge || null
+        codAmount = payload.cod_amount || payload.amount || null
+        area = payload.district || payload.thana || null
+        riderName = payload.rider_name || null
+        riderPhone = payload.rider_phone || null
+        deliveryDate = payload.delivery_date || null
+        returnReason = payload.note || null
         break
       }
       case 'ecourier': {
-        trackingId = payload.ecr_id || payload.tracking_id
-        newStatus = payload.status || payload.parcel_status
+        trackingId = payload.ecr_id || payload.tracking_id || payload.ecr
+        newStatus = payload.status || payload.parcel_status || payload.comment
+        deliveryFee = payload.charge || payload.delivery_charge || null
+        codAmount = payload.product_price || payload.cod_amount || null
+        area = payload.to_district || payload.district || null
+        riderName = payload.rider || null
+        deliveryDate = payload.updated_at || null
+        returnReason = payload.comment || null
         break
       }
       default: {
         trackingId = payload.tracking_id || payload.consignment_id
         newStatus = payload.status
+        deliveryFee = payload.delivery_fee || payload.charge || null
+        codAmount = payload.cod_amount || null
       }
     }
 
     if (trackingId && newStatus) {
+      // Build extended courier response with all tracked data
+      const extendedData: Record<string, any> = {}
+      if (deliveryFee !== null) extendedData.delivery_fee = deliveryFee
+      if (codAmount !== null) extendedData.cod_amount = codAmount
+      if (weight) extendedData.weight = weight
+      if (area) extendedData.area = area
+      if (hubName) extendedData.hub_name = hubName
+      if (riderName) extendedData.rider_name = riderName
+      if (riderPhone) extendedData.rider_phone = riderPhone
+      if (deliveryDate) extendedData.delivery_date = deliveryDate
+      if (returnReason) extendedData.return_reason = returnReason
+
       // Update courier_orders
       const { data: courierOrder } = await supabase
         .from('courier_orders')
-        .update({ courier_status: newStatus, updated_at: new Date().toISOString() })
+        .update({ 
+          courier_status: newStatus, 
+          updated_at: new Date().toISOString(),
+          courier_response: { ...extendedData, raw_status: newStatus, last_webhook: new Date().toISOString() }
+        })
         .or(`tracking_id.eq.${trackingId},consignment_id.eq.${trackingId}`)
         .select('order_id')
         .maybeSingle()
@@ -77,13 +151,13 @@ Deno.serve(async (req) => {
       // Map courier status to order status
       if (courierOrder) {
         const statusLower = newStatus.toLowerCase()
-        if (statusLower.includes('deliver')) {
+        if (statusLower.includes('deliver') && !statusLower.includes('partial')) {
           orderStatus = 'delivered'
         } else if (statusLower.includes('return') || statusLower.includes('rts')) {
           orderStatus = 'returned'
         } else if (statusLower.includes('cancel')) {
           orderStatus = 'cancelled'
-        } else if (statusLower.includes('transit') || statusLower.includes('pickup') || statusLower.includes('hub')) {
+        } else if (statusLower.includes('transit') || statusLower.includes('pickup') || statusLower.includes('hub') || statusLower.includes('on_the_way')) {
           orderStatus = 'in_courier'
         }
 
@@ -91,6 +165,14 @@ Deno.serve(async (req) => {
           await supabase
             .from('orders')
             .update({ status: orderStatus, updated_at: new Date().toISOString() })
+            .eq('id', courierOrder.order_id)
+        }
+
+        // Update delivery_charge on price change
+        if (deliveryFee !== null) {
+          await supabase
+            .from('orders')
+            .update({ delivery_charge: deliveryFee })
             .eq('id', courierOrder.order_id)
         }
       }
