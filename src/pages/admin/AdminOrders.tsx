@@ -123,8 +123,8 @@ const AdminOrders = () => {
     "Hold": "on_hold", "Cancelled": "cancelled", "Deleted": "deleted"
   };
   const incompleteStatusFilter = incompleteStatusMap[activeIncompleteTab] || "processing";
-  const { data: incompleteOrders = [], isLoading: incompleteLoading } = useIncompleteOrders(incompleteStatusFilter);
-  const { data: incompleteCounts = {} } = useIncompleteOrderCounts();
+  const { data: incompleteOrders = [], isLoading: incompleteLoading } = useIncompleteOrders(incompleteStatusFilter, incompleteSourceFilter);
+  const { data: incompleteCounts = {} } = useIncompleteOrderCounts(incompleteSourceFilter);
   const updateIncompleteStatus = useUpdateIncompleteOrderStatus();
   const deleteIncomplete = useDeleteIncompleteOrder();
   const convertIncomplete = useConvertIncompleteToOrder();
