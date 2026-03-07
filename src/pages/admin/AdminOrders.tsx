@@ -86,6 +86,34 @@ const incompleteTabs = [
   { label: "Deleted", icon: Trash },
 ];
 
+// Bangladesh Districts, Thanas, Zones
+const bdDistrictList = [
+  "Dhaka", "Chittagong", "Rajshahi", "Khulna", "Barisal", "Sylhet", "Rangpur", "Mymensingh",
+  "Comilla", "Gazipur", "Narayanganj", "Tangail", "Kishoreganj", "Manikganj", "Munshiganj",
+  "Narsingdi", "Faridpur", "Gopalganj", "Madaripur", "Shariatpur", "Rajbari",
+  "Cox's Bazar", "Bogra", "Jessore", "Dinajpur", "Pabna", "Noakhali", "Brahmanbaria",
+  "Habiganj", "Moulvibazar", "Sunamganj", "Feni", "Lakshmipur", "Chandpur",
+  "Pirojpur", "Jhalokati", "Barguna", "Patuakhali", "Bhola", "Kushtia", "Meherpur",
+  "Chuadanga", "Jhenaidah", "Magura", "Narail", "Satkhira", "Bagerhat",
+  "Chapainawabganj", "Naogaon", "Natore", "Nawabganj", "Joypurhat", "Sirajganj",
+  "Thakurgaon", "Panchagarh", "Nilphamari", "Lalmonirhat", "Kurigram", "Gaibandha",
+  "Sherpur", "Jamalpur", "Netrokona",
+];
+
+const bdThanaList = [
+  "Dhanmondi", "Gulshan", "Banani", "Uttara", "Mirpur", "Mohammadpur", "Tejgaon", "Motijheel",
+  "Ramna", "Lalbagh", "Kotwali", "Pallabi", "Kafrul", "Cantonment", "Turag", "Savar",
+  "Keraniganj", "Demra", "Jatrabari", "Sutrapur", "Wari", "Khilgaon", "Badda",
+  "Adabor", "Hazaribagh", "Kamrangirchar", "Shyampur", "Kadamtali",
+  "Agrabad", "Patenga", "Halishahar", "Double Mooring", "Pahartali", "Bayezid",
+];
+
+const bdZoneList = [
+  "Dhaka Metro", "Dhaka Sub", "Chittagong Metro", "Chittagong Sub",
+  "Rajshahi Metro", "Khulna Metro", "Sylhet Metro", "Rangpur Metro",
+  "Barisal Metro", "Mymensingh Metro", "Outside Metro",
+];
+
 type View = "orders" | "incomplete" | "fakeOrder" | "courier" | "api";
 
 const AdminOrders = () => {
@@ -104,6 +132,12 @@ const AdminOrders = () => {
   const [detailOrderId, setDetailOrderId] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
 
+  // Modal states for action buttons
+  const [orderItemsModalOpen, setOrderItemsModalOpen] = useState(false);
+  const [orderSourcesModalOpen, setOrderSourcesModalOpen] = useState(false);
+  const [duplicateOrdersModalOpen, setDuplicateOrdersModalOpen] = useState(false);
+  const [courierStatusModalOpen, setCourierStatusModalOpen] = useState(false);
+
   // Advanced filter states
   const [filterSource, setFilterSource] = useState("");
   const [filterPhone, setFilterPhone] = useState("");
@@ -111,7 +145,9 @@ const AdminOrders = () => {
   const [filterAmountMax, setFilterAmountMax] = useState("");
   const [filterDeviceType, setFilterDeviceType] = useState("all");
   const [filterAddress, setFilterAddress] = useState("");
-  const [filterDistrict, setFilterDistrict] = useState("");
+  const [filterDistrict, setFilterDistrict] = useState("all");
+  const [filterThana, setFilterThana] = useState("all");
+  const [filterZone, setFilterZone] = useState("all");
   const [filterPaymentStatus, setFilterPaymentStatus] = useState("all");
   const [filterCourierProvider, setFilterCourierProvider] = useState("all");
   const [filterCourierStatus, setFilterCourierStatus] = useState("all");
