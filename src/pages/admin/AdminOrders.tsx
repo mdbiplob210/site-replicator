@@ -932,7 +932,7 @@ const AdminOrders = () => {
             </Dialog>
 
             {/* New Order Dialog */}
-            <Dialog open={newOrderOpen} onOpenChange={(open) => { if (!open) return; setNewOrderOpen(open); }}>
+            <Dialog open={newOrderOpen} onOpenChange={setNewOrderOpen}>
               <DialogTrigger asChild>
                 <Button className="gap-2 rounded-xl shadow-md shadow-primary/20"><Plus className="h-4 w-4" /> New Order</Button>
               </DialogTrigger>
