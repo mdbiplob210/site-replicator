@@ -183,6 +183,16 @@ const AdminOrders = () => {
   const { data: nextOrderNumber = "ORD-00001" } = useNextOrderNumber();
   const { data: allProducts = [] } = usePublicProducts();
 
+  // Refresh all order data
+  const handleRefresh = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["orders"] });
+    queryClient.invalidateQueries({ queryKey: ["order-counts"] });
+    queryClient.invalidateQueries({ queryKey: ["order-items"] });
+    queryClient.invalidateQueries({ queryKey: ["courier-orders-filter"] });
+    queryClient.invalidateQueries({ queryKey: ["all-order-items-filter"] });
+    queryClient.invalidateQueries({ queryKey: ["next-order-number"] });
+    toast.success("ডেটা রিফ্রেশ হচ্ছে...");
+  }, [queryClient]);
 
   // Courier orders for filtering
   const { data: courierOrders = [] } = useQuery({
