@@ -4,7 +4,7 @@ import {
   Lightbulb, ListChecks, BarChart3, Megaphone, Zap, Database,
   Users, HeadphonesIcon, Sparkles, CreditCard, LogOut, ChevronDown, Camera,
   Layout, ShoppingBag, Gift, Grid3X3, Heart, Layers, CreditCard as PaymentIcon,
-  File, Settings
+  File, Settings, PieChart
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -32,6 +32,7 @@ const websiteSubItems = [
   { title: "Landing Pages", url: "/admin/website/landing-pages", icon: Layers },
   { title: "Payment", url: "/admin/website/payment", icon: PaymentIcon },
   { title: "Pages", url: "/admin/website/pages", icon: File },
+  { title: "LP Analytics", url: "/admin/website/landing-pages/analytics", icon: PieChart },
   { title: "Settings", url: "/admin/website/settings", icon: Settings },
 ];
 
