@@ -12,6 +12,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from "@/components/ui/select";
 import { useSiteSettings, useUpdateSiteSetting } from "@/hooks/useSiteSettings";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 type SettingsTab = "general" | "buttons" | "buy_domain" | "tracking" | "data_reset";
