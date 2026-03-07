@@ -8,6 +8,7 @@ export type CourierProvider = {
   slug: string;
   logo_url: string | null;
   is_active: boolean;
+  auth_token: string | null;
   api_configs: ApiConfig[];
   created_at: string;
   updated_at: string;
@@ -18,6 +19,8 @@ export type ApiConfig = {
   base_url: string;
   api_key: string;
   secret_key?: string;
+  client_id?: string;
+  store_id?: string;
   extra?: Record<string, string>;
 };
 
@@ -115,7 +118,6 @@ export function useSubmitToCourier() {
         .single();
       if (error) throw error;
 
-      // Update order status to in_courier
       await supabase
         .from("orders")
         .update({ status: "in_courier" as any })
