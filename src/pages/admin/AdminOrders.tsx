@@ -267,6 +267,29 @@ const AdminOrders = () => {
             ))}
           </div>
 
+          {/* Date filter */}
+          <div className="flex items-center gap-1 bg-card rounded-xl border border-border/60 p-1 w-fit">
+            {([
+              { key: "all" as IncompleteDateFilter, label: "সব সময়" },
+              { key: "today" as IncompleteDateFilter, label: "আজ" },
+              { key: "yesterday" as IncompleteDateFilter, label: "গতকাল" },
+              { key: "7days" as IncompleteDateFilter, label: "৭ দিন" },
+              { key: "30days" as IncompleteDateFilter, label: "৩০ দিন" },
+            ]).map((f) => (
+              <button
+                key={f.key}
+                onClick={() => setIncompleteDateFilter(f.key)}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                  incompleteDateFilter === f.key
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+
           {/* Status tabs */}
           <div className="flex items-center gap-6 border-b border-border/40 pb-0">
             {incompleteTabs.map((tab) => (
