@@ -26,6 +26,11 @@ import {
   useDeleteOrder, useNextOrderNumber, useOrderItems, getStatusFromTab, getStatusLabel,
   getStatusColor, type OrderStatus, type OrderItemInput
 } from "@/hooks/useOrders";
+import {
+  useIncompleteOrders, useIncompleteOrderCounts,
+  useUpdateIncompleteOrderStatus, useDeleteIncompleteOrder,
+  useConvertIncompleteToOrder,
+} from "@/hooks/useIncompleteOrders";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
 import { Constants } from "@/integrations/supabase/types";
 import { format } from "date-fns";
@@ -110,6 +115,18 @@ const AdminOrders = () => {
   const deleteOrder = useDeleteOrder();
   const { data: nextOrderNumber = "ORD-00001" } = useNextOrderNumber();
   const { data: allProducts = [] } = usePublicProducts();
+
+  // Incomplete orders hooks
+  const incompleteStatusMap: Record<string, string> = {
+    "Processing": "processing", "Confirmed": "confirmed", "Converted": "converted",
+    "Hold": "on_hold", "Cancelled": "cancelled", "Deleted": "deleted"
+  };
+  const incompleteStatusFilter = incompleteStatusMap[activeIncompleteTab] || "processing";
+  const { data: incompleteOrders = [], isLoading: incompleteLoading } = useIncompleteOrders(incompleteStatusFilter);
+  const { data: incompleteCounts = {} } = useIncompleteOrderCounts();
+  const updateIncompleteStatus = useUpdateIncompleteOrderStatus();
+  const deleteIncomplete = useDeleteIncompleteOrder();
+  const convertIncomplete = useConvertIncompleteToOrder();
 
   // Filter products for search
   const filteredProducts = useMemo(() => {
@@ -221,27 +238,74 @@ const AdminOrders = () => {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-foreground tracking-tight">Incomplete Orders</h1>
-                <p className="text-sm text-muted-foreground">Abandoned checkouts awaiting recovery</p>
+                <p className="text-sm text-muted-foreground">২৪ ঘণ্টার মধ্যে ব্লক হওয়া ও abandoned অর্ডারসমূহ</p>
               </div>
             </div>
-          </div>
-          <div className="flex items-center gap-0.5 bg-card rounded-xl border border-border/60 p-1 w-fit shadow-sm">
-            {incompleteFilters.map((f) => (
-              <button key={f} onClick={() => setIncompleteFilter(f)} className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${incompleteFilter === f ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"}`}>{f}</button>
-            ))}
+            <Badge variant="secondary" className="ml-auto">{incompleteCounts.total || 0} মোট</Badge>
           </div>
           <div className="flex items-center gap-6 border-b border-border/40 pb-0">
             {incompleteTabs.map((tab) => (
               <button key={tab.label} onClick={() => setActiveIncompleteTab(tab.label)} className={`flex items-center gap-2 pb-3 text-sm font-medium border-b-2 transition-all duration-200 ${activeIncompleteTab === tab.label ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
                 <tab.icon className="h-4 w-4" />{tab.label}
+                {incompleteCounts[incompleteStatusMap[tab.label]] > 0 && (
+                  <Badge variant="secondary" className="text-xs px-1.5 py-0">{incompleteCounts[incompleteStatusMap[tab.label]]}</Badge>
+                )}
               </button>
             ))}
           </div>
-          <Card className="p-16 text-center border-border/40">
-            <div className="inline-flex p-4 rounded-2xl bg-secondary/60 mb-4"><ShoppingCart className="h-10 w-10 text-muted-foreground/30" /></div>
-            <p className="text-lg font-semibold text-muted-foreground">No incomplete orders</p>
-            <p className="text-sm text-muted-foreground/70 mt-1">Orders will appear here when customers abandon checkout</p>
-          </Card>
+
+          {incompleteLoading ? (
+            <div className="flex items-center justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+          ) : incompleteOrders.length === 0 ? (
+            <Card className="p-16 text-center border-border/40">
+              <div className="inline-flex p-4 rounded-2xl bg-secondary/60 mb-4"><ShoppingCart className="h-10 w-10 text-muted-foreground/30" /></div>
+              <p className="text-lg font-semibold text-muted-foreground">কোনো incomplete order নেই</p>
+              <p className="text-sm text-muted-foreground/70 mt-1">ব্লক হওয়া অর্ডার এখানে দেখা যাবে</p>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {incompleteOrders.map((io) => (
+                <Card key={io.id} className="p-4 border-border/40">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0 space-y-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-bold text-foreground">{io.customer_name}</span>
+                        <Badge variant="destructive" className="text-xs">Blocked</Badge>
+                        {io.landing_page_slug && <Badge variant="outline" className="text-xs">LP: {io.landing_page_slug}</Badge>}
+                      </div>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-muted-foreground">
+                        <div><span className="font-medium">ফোন:</span> {io.customer_phone || "N/A"}</div>
+                        <div><span className="font-medium">IP:</span> {io.client_ip || "N/A"}</div>
+                        <div><span className="font-medium">ডিভাইস:</span> {io.device_info || "N/A"}</div>
+                        <div><span className="font-medium">মোট:</span> ৳{io.total_amount}</div>
+                      </div>
+                      {io.product_name && (
+                        <p className="text-xs text-muted-foreground">
+                          <span className="font-medium">প্রোডাক্ট:</span> {io.product_name} {io.product_code ? `(${io.product_code})` : ""} × {io.quantity}
+                        </p>
+                      )}
+                      <p className="text-xs text-destructive/80 bg-destructive/5 rounded px-2 py-1 inline-block">
+                        🚫 {io.block_reason}
+                      </p>
+                      <p className="text-xs text-muted-foreground">{format(new Date(io.created_at), "dd MMM yyyy, hh:mm a")}</p>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {activeIncompleteTab !== "Converted" && (
+                        <Button size="sm" variant="outline" className="gap-1 text-xs" onClick={() => convertIncomplete.mutate(io)}>
+                          <GitMerge className="h-3 w-3" /> অর্ডারে কনভার্ট
+                        </Button>
+                      )}
+                      <Button size="sm" variant="ghost" className="text-destructive" onClick={() => {
+                        if (confirm("ডিলিট করতে চান?")) deleteIncomplete.mutate(io.id);
+                      }}>
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       </AdminLayout>
     );

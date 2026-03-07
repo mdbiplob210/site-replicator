@@ -166,6 +166,75 @@ export type Database = {
         }
         Relationships: []
       }
+      incomplete_orders: {
+        Row: {
+          block_reason: string
+          client_ip: string | null
+          created_at: string
+          customer_address: string | null
+          customer_name: string
+          customer_phone: string | null
+          delivery_charge: number | null
+          device_info: string | null
+          discount: number | null
+          id: string
+          landing_page_slug: string | null
+          notes: string | null
+          product_code: string | null
+          product_name: string | null
+          quantity: number | null
+          status: string
+          total_amount: number | null
+          unit_price: number | null
+          updated_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          block_reason?: string
+          client_ip?: string | null
+          created_at?: string
+          customer_address?: string | null
+          customer_name: string
+          customer_phone?: string | null
+          delivery_charge?: number | null
+          device_info?: string | null
+          discount?: number | null
+          id?: string
+          landing_page_slug?: string | null
+          notes?: string | null
+          product_code?: string | null
+          product_name?: string | null
+          quantity?: number | null
+          status?: string
+          total_amount?: number | null
+          unit_price?: number | null
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          block_reason?: string
+          client_ip?: string | null
+          created_at?: string
+          customer_address?: string | null
+          customer_name?: string
+          customer_phone?: string | null
+          delivery_charge?: number | null
+          device_info?: string | null
+          discount?: number | null
+          id?: string
+          landing_page_slug?: string | null
+          notes?: string | null
+          product_code?: string | null
+          product_name?: string | null
+          quantity?: number | null
+          status?: string
+          total_amount?: number | null
+          unit_price?: number | null
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       landing_page_events: {
         Row: {
           created_at: string
@@ -509,11 +578,13 @@ export type Database = {
       }
       orders: {
         Row: {
+          client_ip: string | null
           created_at: string
           customer_address: string | null
           customer_name: string
           customer_phone: string | null
           delivery_charge: number
+          device_info: string | null
           discount: number
           id: string
           notes: string | null
@@ -522,13 +593,16 @@ export type Database = {
           status: Database["public"]["Enums"]["order_status"]
           total_amount: number
           updated_at: string
+          user_agent: string | null
         }
         Insert: {
+          client_ip?: string | null
           created_at?: string
           customer_address?: string | null
           customer_name: string
           customer_phone?: string | null
           delivery_charge?: number
+          device_info?: string | null
           discount?: number
           id?: string
           notes?: string | null
@@ -537,13 +611,16 @@ export type Database = {
           status?: Database["public"]["Enums"]["order_status"]
           total_amount?: number
           updated_at?: string
+          user_agent?: string | null
         }
         Update: {
+          client_ip?: string | null
           created_at?: string
           customer_address?: string | null
           customer_name?: string
           customer_phone?: string | null
           delivery_charge?: number
+          device_info?: string | null
           discount?: number
           id?: string
           notes?: string | null
@@ -552,6 +629,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["order_status"]
           total_amount?: number
           updated_at?: string
+          user_agent?: string | null
         }
         Relationships: []
       }
