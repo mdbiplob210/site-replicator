@@ -119,6 +119,88 @@ ttq.track('InitiateCheckout');
       trackingScripts += `\n${page.custom_head_scripts}\n`;
     }
 
+    // Partial form tracking script
+    const partialTrackingScript = `
+<script>
+(function(){
+  var PARTIAL_URL = '${supabaseUrl}/functions/v1/track-partial-order';
+  var SLUG = '${page.slug}';
+  var VID = localStorage.getItem('_lp_vid') || '';
+  var _partialTimer = null;
+  var _lastSent = '';
+
+  function getFormData(form) {
+    var fd = new FormData(form);
+    return {
+      customer_name: fd.get('customer_name') || '',
+      customer_phone: fd.get('customer_phone') || '',
+      customer_address: fd.get('customer_address') || '',
+      product_name: fd.get('product_name') || form.getAttribute('data-product-name') || '',
+      product_code: fd.get('product_code') || form.getAttribute('data-product-code') || '',
+      quantity: parseInt(fd.get('quantity') || form.getAttribute('data-quantity') || '1'),
+      unit_price: parseFloat(fd.get('unit_price') || form.getAttribute('data-unit-price') || '0'),
+      delivery_charge: parseFloat(fd.get('delivery_charge') || form.getAttribute('data-delivery-charge') || '0'),
+      discount: parseFloat(fd.get('discount') || form.getAttribute('data-discount') || '0')
+    };
+  }
+
+  function sendPartial(form) {
+    var d = getFormData(form);
+    if (!d.customer_name && !d.customer_phone && !d.customer_address) return;
+    var key = JSON.stringify(d);
+    if (key === _lastSent) return;
+    _lastSent = key;
+
+    var payload = Object.assign({}, d, {
+      action: 'save_partial',
+      landing_page_slug: SLUG,
+      visitor_id: VID
+    });
+
+    try {
+      navigator.sendBeacon(PARTIAL_URL, JSON.stringify(payload));
+    } catch(e) {
+      fetch(PARTIAL_URL, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)}).catch(function(){});
+    }
+  }
+
+  // Listen for input changes on checkout forms
+  document.addEventListener('input', function(e) {
+    var form = e.target.closest('[data-checkout-form]');
+    if (!form) return;
+    if (_partialTimer) clearTimeout(_partialTimer);
+    _partialTimer = setTimeout(function(){ sendPartial(form); }, 2000);
+  });
+
+  // Also send on blur (when user leaves a field)
+  document.addEventListener('focusout', function(e) {
+    var form = e.target.closest('[data-checkout-form]');
+    if (!form) return;
+    if (_partialTimer) clearTimeout(_partialTimer);
+    _partialTimer = setTimeout(function(){ sendPartial(form); }, 500);
+  });
+
+  // Send on page unload if there's partial data
+  window.addEventListener('beforeunload', function() {
+    var forms = document.querySelectorAll('[data-checkout-form]');
+    for (var i = 0; i < forms.length; i++) {
+      sendPartial(forms[i]);
+    }
+  });
+
+  // Expose remove function for after successful order
+  window._removePartial = function() {
+    try {
+      navigator.sendBeacon(PARTIAL_URL, JSON.stringify({
+        action: 'remove_partial',
+        landing_page_slug: SLUG,
+        visitor_id: VID
+      }));
+    } catch(e) {}
+  };
+})();
+</script>`;
+
     // Enhanced order submission with rich Purchase event
     const orderScript = `
 <script>
@@ -160,6 +242,9 @@ ttq.track('InitiateCheckout');
     .then(function(r) { return r.json(); })
     .then(function(data) {
       if (data.success) {
+        // Remove partial incomplete order on success
+        if (window._removePartial) window._removePartial();
+
         var totalValue = payload.unit_price * payload.quantity;
         var eventId = window._lpTrack ? window._lpTrack.generateEventId() : '';
         var baseParams = window._lpTrack ? window._lpTrack.getBaseParams() : {};
