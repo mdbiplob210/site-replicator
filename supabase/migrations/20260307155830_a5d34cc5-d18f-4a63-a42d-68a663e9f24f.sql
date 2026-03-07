@@ -1,0 +1,1 @@
+ALTER TABLE public.landing_pages ADD COLUMN checkout_html text DEFAULT '';

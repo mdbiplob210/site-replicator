@@ -209,6 +209,7 @@ export type Database = {
       }
       landing_pages: {
         Row: {
+          checkout_html: string | null
           created_at: string
           custom_head_scripts: string | null
           fb_pixel_id: string | null
@@ -222,6 +223,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          checkout_html?: string | null
           created_at?: string
           custom_head_scripts?: string | null
           fb_pixel_id?: string | null
@@ -235,6 +237,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          checkout_html?: string | null
           created_at?: string
           custom_head_scripts?: string | null
           fb_pixel_id?: string | null
