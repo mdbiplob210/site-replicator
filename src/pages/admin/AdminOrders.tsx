@@ -528,6 +528,21 @@ const AdminOrders = () => {
 
   const itemsTotal = orderItems.reduce((sum, i) => sum + i.total_price, 0);
 
+  const logActivity = async (orderId: string, action: string, fieldName?: string, oldValue?: string, newValue?: string, details?: string) => {
+    try {
+      await supabase.from("order_activity_logs" as any).insert({
+        order_id: orderId,
+        user_id: user?.id || null,
+        user_name: user?.email || "System",
+        action,
+        field_name: fieldName || null,
+        old_value: oldValue || null,
+        new_value: newValue || null,
+        details: details || null,
+      } as any);
+    } catch (e) { console.error("Activity log error:", e); }
+  };
+
   const handleCreateOrder = () => {
     if (!customerName.trim()) return;
     const computedProductCost = orderItems.length > 0 ? itemsTotal : productCost;
@@ -543,11 +558,15 @@ const AdminOrders = () => {
         discount,
         product_cost: computedProductCost,
         notes: notes || null,
+        courier_note: courierNote || null,
         status: "processing",
-      },
+      } as any,
       items: orderItems,
     }, {
-      onSuccess: () => {
+      onSuccess: (data: any) => {
+        if (data?.id) {
+          logActivity(data.id, "created", undefined, undefined, undefined, `Order ${nextOrderNumber} created by ${user?.email || "Admin"}`);
+        }
         setNewOrderOpen(false);
         resetForm();
       }
