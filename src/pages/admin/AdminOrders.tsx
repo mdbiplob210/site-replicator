@@ -722,76 +722,137 @@ const AdminOrders = () => {
           </div>
         </Card>
 
-        {/* Date Filter */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex items-center gap-1 bg-card rounded-xl border border-border/60 p-1 w-fit">
-            {([
-              { key: "all" as OrderDateFilter, label: "সব সময়" },
-              { key: "today" as OrderDateFilter, label: "আজ" },
-              { key: "yesterday" as OrderDateFilter, label: "গতকাল" },
-              { key: "7days" as OrderDateFilter, label: "৭ দিন" },
-              { key: "30days" as OrderDateFilter, label: "৩০ দিন" },
-              { key: "custom" as OrderDateFilter, label: "📅 Custom" },
-            ]).map((f) => (
-              <button
-                key={f.key}
-                onClick={() => setOrderDateFilter(f.key)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                  orderDateFilter === f.key
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
-                }`}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
+        {/* Advanced Filter Panel */}
+        <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
+          <CollapsibleTrigger asChild>
+            <Button variant="outline" size="sm" className="gap-2 rounded-xl border-border/60 shadow-sm hover:shadow w-full justify-between">
+              <div className="flex items-center gap-2">
+                <SlidersHorizontal className="h-4 w-4 text-primary" />
+                <span className="font-semibold">ফিল্টারিং</span>
+                {activeFilterCount > 0 && (
+                  <Badge className="h-5 min-w-[20px] px-1.5 text-[10px] font-bold">{activeFilterCount}</Badge>
+                )}
+              </div>
+              <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform duration-200", filtersOpen && "rotate-180")} />
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="mt-3">
+            <Card className="p-4 border-border/40 shadow-sm space-y-4">
+              {/* Row 1: Date Filters */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground">📅 তারিখ ফিল্টার</Label>
+                  <Select value={orderDateFilter} onValueChange={(v) => setOrderDateFilter(v as OrderDateFilter)}>
+                    <SelectTrigger className="rounded-xl h-9 text-sm">
+                      <SelectValue placeholder="সব সময়" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">সব সময়</SelectItem>
+                      <SelectItem value="today">আজ</SelectItem>
+                      <SelectItem value="yesterday">গতকাল</SelectItem>
+                      <SelectItem value="7days">৭ দিন</SelectItem>
+                      <SelectItem value="30days">৩০ দিন</SelectItem>
+                      <SelectItem value="custom">📅 Custom Range</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-          {orderDateFilter === "custom" && (
-            <div className="flex items-center gap-2">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" size="sm" className={cn("gap-1.5 text-xs rounded-xl", !customDateFrom && "text-muted-foreground")}>
-                    <Calendar className="h-3.5 w-3.5" />
-                    {customDateFrom ? format(customDateFrom, "dd MMM yyyy") : "শুরু তারিখ"}
+                {orderDateFilter === "custom" && (
+                  <>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold text-muted-foreground">শুরু তারিখ</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" size="sm" className={cn("w-full justify-start gap-1.5 text-xs rounded-xl h-9", !customDateFrom && "text-muted-foreground")}>
+                            <Calendar className="h-3.5 w-3.5" />
+                            {customDateFrom ? format(customDateFrom, "dd MMM yyyy") : "তারিখ নির্বাচন"}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <CalendarWidget mode="single" selected={customDateFrom} onSelect={setCustomDateFrom} initialFocus className={cn("p-3 pointer-events-auto")} />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold text-muted-foreground">শেষ তারিখ</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" size="sm" className={cn("w-full justify-start gap-1.5 text-xs rounded-xl h-9", !customDateTo && "text-muted-foreground")}>
+                            <Calendar className="h-3.5 w-3.5" />
+                            {customDateTo ? format(customDateTo, "dd MMM yyyy") : "তারিখ নির্বাচন"}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <CalendarWidget mode="single" selected={customDateTo} onSelect={setCustomDateTo} initialFocus className={cn("p-3 pointer-events-auto")} />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  </>
+                )}
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground">📱 ডিভাইস</Label>
+                  <Select value={filterDeviceType} onValueChange={setFilterDeviceType}>
+                    <SelectTrigger className="rounded-xl h-9 text-sm">
+                      <SelectValue placeholder="সব ডিভাইস" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">সব ডিভাইস</SelectItem>
+                      <SelectItem value="mobile">📱 Mobile</SelectItem>
+                      <SelectItem value="desktop">💻 Desktop</SelectItem>
+                      <SelectItem value="tablet">📟 Tablet</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Row 2: Core Filters */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground">🌐 অর্ডার সোর্স</Label>
+                  <Input placeholder="সোর্স সার্চ..." className="rounded-xl h-9 text-sm" value={filterSource} onChange={(e) => setFilterSource(e.target.value)} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground">📞 ফোন নম্বর</Label>
+                  <Input placeholder="ফোন সার্চ..." className="rounded-xl h-9 text-sm" value={filterPhone} onChange={(e) => setFilterPhone(e.target.value)} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground">📍 ঠিকানা</Label>
+                  <Input placeholder="ঠিকানা সার্চ..." className="rounded-xl h-9 text-sm" value={filterAddress} onChange={(e) => setFilterAddress(e.target.value)} />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-muted-foreground">৳ Min</Label>
+                    <Input type="number" placeholder="0" className="rounded-xl h-9 text-sm" value={filterAmountMin} onChange={(e) => setFilterAmountMin(e.target.value)} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-muted-foreground">৳ Max</Label>
+                    <Input type="number" placeholder="∞" className="rounded-xl h-9 text-sm" value={filterAmountMax} onChange={(e) => setFilterAmountMax(e.target.value)} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Action Bar */}
+              <div className="flex items-center justify-between pt-2 border-t border-border/30">
+                <div className="flex items-center gap-2">
+                  {activeFilterCount > 0 && (
+                    <Button variant="ghost" size="sm" className="gap-1.5 text-xs text-muted-foreground hover:text-destructive" onClick={clearAllFilters}>
+                      <X className="h-3 w-3" /> সব ফিল্টার মুছুন
+                    </Button>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" className="gap-1.5 text-xs rounded-xl" onClick={() => setCurrentView("incomplete")}>
+                    <AlertCircle className="h-3.5 w-3.5 text-amber-500" /> Duplicate / Incomplete
                   </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <CalendarWidget
-                    mode="single"
-                    selected={customDateFrom}
-                    onSelect={setCustomDateFrom}
-                    initialFocus
-                    className={cn("p-3 pointer-events-auto")}
-                  />
-                </PopoverContent>
-              </Popover>
-              <span className="text-xs text-muted-foreground">→</span>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" size="sm" className={cn("gap-1.5 text-xs rounded-xl", !customDateTo && "text-muted-foreground")}>
-                    <Calendar className="h-3.5 w-3.5" />
-                    {customDateTo ? format(customDateTo, "dd MMM yyyy") : "শেষ তারিখ"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <CalendarWidget
-                    mode="single"
-                    selected={customDateTo}
-                    onSelect={setCustomDateTo}
-                    initialFocus
-                    className={cn("p-3 pointer-events-auto")}
-                  />
-                </PopoverContent>
-              </Popover>
-              {(customDateFrom || customDateTo) && (
-                <Button variant="ghost" size="sm" className="h-8 px-2 text-xs text-muted-foreground" onClick={() => { setCustomDateFrom(undefined); setCustomDateTo(undefined); }}>
-                  <X className="h-3 w-3" />
-                </Button>
-              )}
-            </div>
-          )}
-        </div>
+                  <Badge variant="secondary" className="text-xs">
+                    {filteredOrders.length} অর্ডার পাওয়া গেছে
+                  </Badge>
+                </div>
+              </div>
+            </Card>
+          </CollapsibleContent>
+        </Collapsible>
 
         {isLoading ? (
           <Card className="p-16 text-center border-border/40">
