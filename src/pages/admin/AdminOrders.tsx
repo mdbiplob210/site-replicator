@@ -898,7 +898,47 @@ const AdminOrders = () => {
                 </div>
               </div>
 
-              {/* Bottom Action Bar */}
+              {/* Row 3: District, Payment Status, Courier Provider */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground">🏘️ জেলা / District</Label>
+                  <Input placeholder="জেলা সার্চ..." className="rounded-xl h-9 text-sm" value={filterDistrict} onChange={(e) => setFilterDistrict(e.target.value)} list="district-suggestions" />
+                  <datalist id="district-suggestions">
+                    {bdDistricts.map((d) => <option key={d} value={d} />)}
+                  </datalist>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground">💰 পেমেন্ট স্ট্যাটাস</Label>
+                  <Select value={filterPaymentStatus} onValueChange={setFilterPaymentStatus}>
+                    <SelectTrigger className="rounded-xl h-9 text-sm">
+                      <SelectValue placeholder="সব" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">সব</SelectItem>
+                      <SelectItem value="cod">💵 Cash on Delivery</SelectItem>
+                      <SelectItem value="paid">✅ Paid / Prepaid</SelectItem>
+                      <SelectItem value="free_delivery">🎁 Free Delivery</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground">🚚 কুরিয়ার প্রোভাইডার</Label>
+                  <Select value={filterCourierProvider} onValueChange={setFilterCourierProvider}>
+                    <SelectTrigger className="rounded-xl h-9 text-sm">
+                      <SelectValue placeholder="সব কুরিয়ার" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">সব কুরিয়ার</SelectItem>
+                      <SelectItem value="no_courier">📦 কুরিয়ারে নেই</SelectItem>
+                      {courierProviders.map((cp: any) => (
+                        <SelectItem key={cp.id} value={cp.id}>{cp.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+
               <div className="flex items-center justify-between pt-2 border-t border-border/30">
                 <div className="flex items-center gap-2">
                   {activeFilterCount > 0 && (
