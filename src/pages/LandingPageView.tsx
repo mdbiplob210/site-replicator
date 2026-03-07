@@ -198,7 +198,7 @@ ttq.page();
 `;
 
     // Analytics tracking script — tracks views and clicks to backend
-    const supabaseUrl = "${import.meta.env.VITE_SUPABASE_URL || ''}";
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
     const analyticsScript = `
 <!-- Landing Page Analytics -->
 <script>
