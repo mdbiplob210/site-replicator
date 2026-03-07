@@ -232,6 +232,14 @@ const AdminOrders = () => {
     setProductSearch("");
   };
 
+  if (currentView === "courier") {
+    return (
+      <AdminLayout>
+        <CourierSettingsView onBack={() => setCurrentView("orders")} />
+      </AdminLayout>
+    );
+  }
+
   if (currentView === "incomplete") {
     return (
       <AdminLayout>
