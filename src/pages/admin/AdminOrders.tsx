@@ -884,6 +884,15 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                   <p className="text-sm text-foreground">{order.customer_address}</p>
                 </div>
               )}
+              {order.source && (
+                <div>
+                  <p className="text-xs text-muted-foreground">Source</p>
+                  <Badge variant="outline" className="text-xs gap-1 mt-0.5">
+                    <Globe className="h-3 w-3" />
+                    {order.source}
+                  </Badge>
+                </div>
+              )}
             </div>
 
             {/* Financial Summary */}
