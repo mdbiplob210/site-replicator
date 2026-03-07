@@ -36,6 +36,7 @@ import {
 } from "@/hooks/useIncompleteOrders";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
 import { CourierSettingsView } from "@/components/admin/courier/CourierSettingsView";
+import { ApiKeysView } from "@/components/admin/api/ApiKeysView";
 import { Constants } from "@/integrations/supabase/types";
 
 const statusTabs = [
@@ -82,7 +83,7 @@ const incompleteTabs = [
   { label: "Deleted", icon: Trash },
 ];
 
-type View = "orders" | "incomplete" | "fakeOrder" | "courier";
+type View = "orders" | "incomplete" | "fakeOrder" | "courier" | "api";
 
 const AdminOrders = () => {
   const [activeTab, setActiveTab] = useState("All Orders");
@@ -226,6 +227,14 @@ const AdminOrders = () => {
     setOrderItems([]);
     setProductSearch("");
   };
+
+  if (currentView === "api") {
+    return (
+      <AdminLayout>
+        <ApiKeysView onBack={() => setCurrentView("orders")} />
+      </AdminLayout>
+    );
+  }
 
   if (currentView === "courier") {
     return (
@@ -495,19 +504,9 @@ const AdminOrders = () => {
               <Truck className="h-4 w-4 text-violet-500" /> Courier
             </Button>
 
-            {/* API Keys Dialog */}
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2 rounded-xl border-border/60 shadow-sm hover:shadow"><Key className="h-4 w-4 text-amber-500" /> API Keys</Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-md rounded-2xl">
-                <DialogHeader><DialogTitle className="flex items-center gap-2 text-lg"><div className="p-2 rounded-xl bg-amber-50"><Key className="h-5 w-5 text-amber-500" /></div>Order API Keys</DialogTitle></DialogHeader>
-                <div className="space-y-4">
-                  <div><p className="text-xs font-semibold text-foreground mb-2">Webhook Endpoint</p><div className="flex items-center gap-2 bg-secondary/60 rounded-xl p-3 border border-border/40"><code className="text-xs text-muted-foreground flex-1 truncate font-mono">https://app.sohozpro.com/api/orders-webhook</code><Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg"><Copy className="h-3.5 w-3.5" /></Button></div></div>
-                  <div className="text-center py-8"><div className="inline-flex p-3 rounded-2xl bg-secondary/60 mb-3"><Key className="h-7 w-7 text-muted-foreground/30" /></div><p className="text-sm text-muted-foreground font-medium">No API keys yet</p></div>
-                </div>
-              </DialogContent>
-            </Dialog>
+            <Button variant="outline" size="sm" className="gap-2 rounded-xl border-border/60 shadow-sm hover:shadow" onClick={() => setCurrentView("api")}>
+              <Key className="h-4 w-4 text-amber-500" /> API Keys
+            </Button>
 
             {/* Settings Dialog */}
             <Dialog>
