@@ -32,6 +32,7 @@ import AdminProductTemplate from "./pages/admin/AdminProductTemplate";
 import AdminCategoryTemplate from "./pages/admin/AdminCategoryTemplate";
 import AdminThankYouTemplate from "./pages/admin/AdminThankYouTemplate";
 import AdminLandingPages from "./pages/admin/AdminLandingPages";
+import AdminLandingPageAnalytics from "./pages/admin/AdminLandingPageAnalytics";
 import AdminPayment from "./pages/admin/AdminPayment";
 import AdminPages from "./pages/admin/AdminPages";
 import LandingPageView from "./pages/LandingPageView";
@@ -75,6 +76,7 @@ const App = () => (
           <Route path="/admin/website/category-template" element={<ProtectedAdminRoute><AdminCategoryTemplate /></ProtectedAdminRoute>} />
           <Route path="/admin/website/thank-you" element={<ProtectedAdminRoute><AdminThankYouTemplate /></ProtectedAdminRoute>} />
           <Route path="/admin/website/landing-pages" element={<ProtectedAdminRoute><AdminLandingPages /></ProtectedAdminRoute>} />
+          <Route path="/admin/website/landing-pages/analytics" element={<ProtectedAdminRoute><AdminLandingPageAnalytics /></ProtectedAdminRoute>} />
           <Route path="/admin/website/payment" element={<ProtectedAdminRoute><AdminPayment /></ProtectedAdminRoute>} />
           <Route path="/admin/website/pages" element={<ProtectedAdminRoute><AdminPages /></ProtectedAdminRoute>} />
           <Route path="/admin/website/settings" element={<ProtectedAdminRoute><AdminWebsiteSettings /></ProtectedAdminRoute>} />

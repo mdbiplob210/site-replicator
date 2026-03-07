@@ -197,13 +197,54 @@ ttq.page();
 </script>
 `;
 
+    // Analytics tracking script — tracks views and clicks to backend
+    const supabaseUrl = "${import.meta.env.VITE_SUPABASE_URL || ''}";
+    const analyticsScript = `
+<!-- Landing Page Analytics -->
+<script>
+(function(){
+  var TRACK_URL = '${supabaseUrl}/functions/v1/track-landing-event';
+  var SLUG = '${page.slug}';
+  var VID = localStorage.getItem('_lp_vid');
+  if (!VID) { VID = 'v_' + Math.random().toString(36).substr(2,9) + Date.now(); localStorage.setItem('_lp_vid', VID); }
+
+  function send(eventType, eventName) {
+    try {
+      navigator.sendBeacon(TRACK_URL, JSON.stringify({
+        slug: SLUG,
+        event_type: eventType,
+        event_name: eventName || null,
+        visitor_id: VID,
+        referrer: document.referrer || null
+      }));
+    } catch(e) {
+      fetch(TRACK_URL, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({slug:SLUG,event_type:eventType,event_name:eventName||null,visitor_id:VID,referrer:document.referrer||null})}).catch(function(){});
+    }
+  }
+
+  // Track page view
+  send('view');
+
+  // Track clicks on tracked elements
+  document.addEventListener('click', function(e) {
+    var el = e.target.closest('[data-track-event]');
+    if (el) {
+      send('conversion', el.getAttribute('data-track-event'));
+    } else if (e.target.closest('a, button, [role="button"], input[type="submit"]')) {
+      send('click', (e.target.closest('a, button, [role="button"], input[type="submit"]').textContent || '').trim().substring(0, 50));
+    }
+  });
+})();
+</script>
+`;
+
     // If HTML already has </head>, inject tracking into it
     if (page.html_content.includes("</head>")) {
-      return page.html_content.replace("</head>", `${trackingScripts}${conversionScript}</head>`);
+      return page.html_content.replace("</head>", `${trackingScripts}${conversionScript}${analyticsScript}</head>`);
     }
 
     // Otherwise wrap in full HTML
-    return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${trackingScripts}${conversionScript}</head><body>${page.html_content}</body></html>`;
+    return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${trackingScripts}${conversionScript}${analyticsScript}</head><body>${page.html_content}</body></html>`;
   };
 
   return (
