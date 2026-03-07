@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { Calendar } from "@/components/ui/calendar";
+import { Calendar as CalendarWidget } from "@/components/ui/calendar";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -36,7 +36,6 @@ import {
 } from "@/hooks/useIncompleteOrders";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
 import { Constants } from "@/integrations/supabase/types";
-import { format } from "date-fns";
 
 const statusTabs = [
   { label: "All Orders", color: "bg-primary", icon: ShoppingCart },
