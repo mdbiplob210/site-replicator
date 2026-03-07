@@ -128,13 +128,13 @@ export function useOrderItems(orderId: string | null) {
   });
 }
 
-export function useOrderCounts(dateFilter: OrderDateFilter = "all") {
+export function useOrderCounts(dateFilter: OrderDateFilter = "all", customFrom?: Date, customTo?: Date) {
   return useQuery({
-    queryKey: ["order-counts", dateFilter],
+    queryKey: ["order-counts", dateFilter, customFrom?.toISOString(), customTo?.toISOString()],
     queryFn: async () => {
       let query = supabase.from("orders").select("status, created_at");
 
-      const range = getOrderDateRange(dateFilter);
+      const range = getOrderDateRange(dateFilter, customFrom, customTo);
       if (range.from) query = query.gte("created_at", range.from);
       if (range.to) query = query.lt("created_at", range.to);
 
