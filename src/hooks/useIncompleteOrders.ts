@@ -1,6 +1,27 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { startOfDay, subDays, startOfMonth, startOfYear } from "date-fns";
+
+export type IncompleteDateFilter = "today" | "yesterday" | "7days" | "30days" | "all";
+
+function getDateRange(filter: IncompleteDateFilter): { from: string | null; to: string | null } {
+  const now = new Date();
+  switch (filter) {
+    case "today":
+      return { from: startOfDay(now).toISOString(), to: null };
+    case "yesterday": {
+      const yd = subDays(now, 1);
+      return { from: startOfDay(yd).toISOString(), to: startOfDay(now).toISOString() };
+    }
+    case "7days":
+      return { from: startOfDay(subDays(now, 7)).toISOString(), to: null };
+    case "30days":
+      return { from: startOfDay(subDays(now, 30)).toISOString(), to: null };
+    default:
+      return { from: null, to: null };
+  }
+}
 
 export interface IncompleteOrder {
   id: string;
