@@ -391,7 +391,56 @@ function BuyDomainTab() {
 
 /* ===================== Tracking Tab ===================== */
 function TrackingTab() {
+  const { data: settings = {}, isLoading } = useSiteSettings();
+  const updateSetting = useUpdateSiteSetting();
   const [trackingActive, setTrackingActive] = useState(true);
+  const [gtmId, setGtmId] = useState("");
+  const [clarityId, setClarityId] = useState("");
+  const [fbPixelId, setFbPixelId] = useState("");
+  const [fbAccessToken, setFbAccessToken] = useState("");
+  const [fbTestCode, setFbTestCode] = useState("");
+  const [tiktokPixelId, setTiktokPixelId] = useState("");
+  const [loaded, setLoaded] = useState(false);
+
+  // Load saved values
+  if (!loaded && !isLoading && settings) {
+    setGtmId(settings["gtm_id"] || "");
+    setClarityId(settings["clarity_id"] || "");
+    setFbPixelId(settings["fb_pixel_id"] || "");
+    setFbAccessToken(settings["fb_access_token"] || "");
+    setFbTestCode(settings["fb_test_code"] || "");
+    setTiktokPixelId(settings["tiktok_pixel_id"] || "");
+    setLoaded(true);
+  }
+
+  const handleSave = async () => {
+    const entries = [
+      { key: "gtm_id", value: gtmId },
+      { key: "clarity_id", value: clarityId },
+      { key: "fb_pixel_id", value: fbPixelId },
+      { key: "fb_access_token", value: fbAccessToken },
+      { key: "fb_test_code", value: fbTestCode },
+      { key: "tiktok_pixel_id", value: tiktokPixelId },
+    ];
+    try {
+      for (const entry of entries) {
+        // Upsert: try update first, if no rows affected then insert
+        const { data, error } = await supabase
+          .from("site_settings")
+          .select("id")
+          .eq("key", entry.key)
+          .maybeSingle();
+        if (data) {
+          await supabase.from("site_settings").update({ value: entry.value, updated_at: new Date().toISOString() } as any).eq("key", entry.key);
+        } else {
+          await supabase.from("site_settings").insert({ key: entry.key, value: entry.value } as any);
+        }
+      }
+      toast.success("ট্র্যাকিং সেটিংস সেভ হয়েছে!");
+    } catch (e: any) {
+      toast.error("সেভ করতে সমস্যা: " + e.message);
+    }
+  };
 
   return (
     <div className="space-y-5">
@@ -411,18 +460,18 @@ function TrackingTab() {
 
         <div>
           <label className="text-sm font-medium text-foreground">Google Tag Manager</label>
-          <Input className="mt-1.5" placeholder="GTM-XXXXXXX" />
+          <Input className="mt-1.5" placeholder="GTM-XXXXXXX" value={gtmId} onChange={(e) => setGtmId(e.target.value)} />
           <p className="text-xs text-muted-foreground mt-1">আপনার GTM Container ID দিন</p>
         </div>
 
         <div>
           <label className="text-sm font-medium text-foreground">Microsoft Clarity</label>
-          <Input className="mt-1.5" placeholder="abcdefghij" />
+          <Input className="mt-1.5" placeholder="abcdefghij" value={clarityId} onChange={(e) => setClarityId(e.target.value)} />
           <p className="text-xs text-muted-foreground mt-1">আপনার Clarity Project ID দিন</p>
         </div>
       </div>
 
-      {/* Facebook Pixel */}
+      {/* Facebook Pixel & CAPI */}
       <div className="bg-card rounded-2xl border border-border p-6 space-y-5">
         <div className="flex items-center gap-2">
           <Facebook className="h-5 w-5 text-blue-600" />
@@ -432,20 +481,48 @@ function TrackingTab() {
 
         <div>
           <label className="text-sm font-medium text-foreground">Facebook Pixel ID</label>
-          <Input className="mt-1.5" placeholder="123456789012345" />
+          <Input className="mt-1.5" placeholder="123456789012345" value={fbPixelId} onChange={(e) => setFbPixelId(e.target.value)} />
           <p className="text-xs text-muted-foreground mt-1">Meta Events Manager → Data Sources → আপনার Pixel ID কপি করুন</p>
         </div>
 
         <div>
           <label className="text-sm font-medium text-foreground">Conversions API Access Token</label>
-          <Input className="mt-1.5" placeholder="EAAxxxxxxxx..." />
+          <Input className="mt-1.5" type="password" placeholder="EAAxxxxxxxx..." value={fbAccessToken} onChange={(e) => setFbAccessToken(e.target.value)} />
           <p className="text-xs text-muted-foreground mt-1">Meta Events Manager → Settings → Conversions API → Generate Access Token</p>
         </div>
 
         <div>
           <label className="text-sm font-medium text-foreground">Test Event Code (Optional)</label>
-          <Input className="mt-1.5" placeholder="TEST12345" />
+          <Input className="mt-1.5" placeholder="TEST12345" value={fbTestCode} onChange={(e) => setFbTestCode(e.target.value)} />
           <p className="text-xs text-muted-foreground mt-1">টেস্ট মোডে ইভেন্ট পাঠাতে Events Manager → Test Events থেকে কোড দিন। প্রোডাকশনে ফাঁকা রাখুন।</p>
+        </div>
+
+        <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
+          <div className="flex items-start gap-2">
+            <Info className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
+            <div className="text-xs text-blue-800 dark:text-blue-300 space-y-1">
+              <p className="font-medium">কিভাবে Access Token পাবেন?</p>
+              <ol className="list-decimal list-inside space-y-0.5">
+                <li>Meta Events Manager → Settings এ যান</li>
+                <li>Conversions API সেকশনে "Generate Access Token" ক্লিক করুন</li>
+                <li>টোকেন কপি করে এখানে পেস্ট করুন</li>
+                <li>Save করুন — সার্ভার-সাইড ইভেন্ট অটো কাজ করবে</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* TikTok Pixel */}
+      <div className="bg-card rounded-2xl border border-border p-6 space-y-5">
+        <div className="flex items-center gap-2">
+          <span className="text-lg">🎵</span>
+          <h3 className="font-bold text-foreground">TikTok Pixel</h3>
+        </div>
+        <div>
+          <label className="text-sm font-medium text-foreground">TikTok Pixel ID</label>
+          <Input className="mt-1.5" placeholder="CXXXXXXXXXXXXXXXXX" value={tiktokPixelId} onChange={(e) => setTiktokPixelId(e.target.value)} />
+          <p className="text-xs text-muted-foreground mt-1">TikTok Ads Manager → Assets → Events → Pixel ID কপি করুন</p>
         </div>
       </div>
 
@@ -455,10 +532,10 @@ function TrackingTab() {
           <span className="text-lg">📊</span>
           <h3 className="font-bold text-foreground">Coming Soon</h3>
         </div>
-        <p className="text-sm text-muted-foreground">Google Analytics 4, TikTok Pixel, Custom Script injection — সব কিছু এখানে যোগ করা যাবে</p>
+        <p className="text-sm text-muted-foreground">Google Analytics 4, Custom Script injection — সব কিছু এখানে যোগ করা যাবে</p>
       </div>
 
-      <Button className="w-full gap-2">
+      <Button className="w-full gap-2" onClick={handleSave}>
         <Save className="h-4 w-4" /> Save Tracking Settings
       </Button>
     </div>
