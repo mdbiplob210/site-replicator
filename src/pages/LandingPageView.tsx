@@ -121,7 +121,7 @@ fbq('track','PageView');
       trackingScripts += `
 <!-- TikTok Pixel -->
 <script>
-!function(w,d,t){w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=[\"page\",\"track\",\"identify\",\"instances\",\"debug\",\"on\",\"off\",\"once\",\"ready\",\"alias\",\"group\",\"enableCookie\",\"disableCookie\",\"holdConsent\",\"revokeConsent\",\"grantConsent\"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e};ttq.load=function(e,n){var r=\"https://analytics.tiktok.com/i18n/pixel/events.js\",o=n&&n.partner;ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=r,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};var i=document.createElement(\"script\");i.type=\"text/javascript\",i.async=!0,i.src=r+\"?sdkid=\"+e+\"&lib=\"+t;var a=document.getElementsByTagName(\"script\")[0];a.parentNode.insertBefore(i,a)};
+!function(w,d,t){w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e};ttq.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js",o=n&&n.partner;ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=r,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};var i=document.createElement("script");i.type="text/javascript",i.async=!0,i.src=r+"?sdkid="+e+"&lib="+t;var a=document.getElementsByTagName("script")[0];a.parentNode.insertBefore(i,a)};
 ttq.load('${page.tiktok_pixel_id}');
 ttq.page();
 }(window,document,'ttq');
@@ -137,18 +137,73 @@ ttq.page();
     }
 
     if (page.custom_head_scripts) {
-      trackingScripts += `
-${page.custom_head_scripts}
-`;
+      trackingScripts += `\n${page.custom_head_scripts}\n`;
     }
 
-    // If HTML already has <head>, inject tracking into it
+    // Conversion tracking script — auto-detects data-track-* attributes on any element
+    const conversionScript = `
+<!-- Conversion Tracking -->
+<script>
+(function(){
+  function fireEvent(el) {
+    var event = el.getAttribute('data-track-event');
+    var currency = el.getAttribute('data-track-currency') || 'BDT';
+    var value = parseFloat(el.getAttribute('data-track-value') || '0');
+    var contentName = el.getAttribute('data-track-content-name') || '';
+    var contentId = el.getAttribute('data-track-content-id') || '';
+    if (!event) return;
+
+    var params = {};
+    if (value) params.value = value;
+    if (currency) params.currency = currency;
+    if (contentName) params.content_name = contentName;
+    if (contentId) params.content_ids = [contentId];
+
+    // Facebook Pixel
+    if (typeof fbq === 'function') {
+      var fbEvent = event;
+      var fbParams = {value: value, currency: currency};
+      if (contentName) fbParams.content_name = contentName;
+      if (contentId) fbParams.content_ids = [contentId];
+      fbq('track', fbEvent, fbParams);
+      console.log('[Tracking] FB:', fbEvent, fbParams);
+    }
+
+    // TikTok Pixel
+    if (typeof ttq !== 'undefined' && ttq.track) {
+      var ttEvent = event;
+      // Map common FB events to TikTok events
+      var ttMap = {Purchase:'CompletePayment',AddToCart:'AddToCart',Lead:'SubmitForm',InitiateCheckout:'InitiateCheckout',ViewContent:'ViewContent',CompleteRegistration:'CompleteRegistration'};
+      if (ttMap[event]) ttEvent = ttMap[event];
+      var ttParams = {value: value, currency: currency};
+      if (contentName) ttParams.content_name = contentName;
+      if (contentId) ttParams.content_id = contentId;
+      ttq.track(ttEvent, ttParams);
+      console.log('[Tracking] TikTok:', ttEvent, ttParams);
+    }
+
+    // GTM dataLayer
+    if (typeof dataLayer !== 'undefined') {
+      dataLayer.push({event: 'conversion_' + event, value: value, currency: currency, content_name: contentName});
+      console.log('[Tracking] GTM:', event);
+    }
+  }
+
+  document.addEventListener('click', function(e) {
+    var el = e.target.closest('[data-track-event]');
+    if (el) fireEvent(el);
+  });
+})();
+</script>
+`;
+
+    // If HTML already has </head>, inject tracking into it
     if (page.html_content.includes("</head>")) {
-      return page.html_content.replace("</head>", `${trackingScripts}</head>`);
+      return page.html_content.replace("</head>", `${trackingScripts}${conversionScript}</head>`);
     }
 
     // Otherwise wrap in full HTML
-    return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${trackingScripts}</head><body>${page.html_content}</body></html>`;
+    return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${trackingScripts}${conversionScript}</head><body>${page.html_content}</body></html>`;
   };
 
   return (

@@ -238,6 +238,22 @@ export default function AdminLandingPages() {
                   placeholder="এখানে আপনার সম্পূর্ণ HTML কোড পেস্ট করুন..."
                   className="min-h-[400px] font-mono text-sm"
                 />
+                <div className="bg-muted/50 border rounded-lg p-4 space-y-2">
+                  <p className="text-sm font-semibold text-foreground">🎯 Conversion Tracking ব্যবহার:</p>
+                  <p className="text-xs text-muted-foreground">
+                    আপনার HTML এর যেকোনো বাটন/লিংকে নিচের attribute যোগ করুন। ক্লিক করলেই FB Pixel, TikTok Pixel ও GTM এ ইভেন্ট ফায়ার হবে।
+                  </p>
+                  <div className="bg-background border rounded p-3 font-mono text-xs space-y-1.5 overflow-x-auto">
+                    <p className="text-primary">{`<button data-track-event="Purchase" data-track-value="1200" data-track-currency="BDT">`}</p>
+                    <p className="text-muted-foreground pl-4">অর্ডার করুন</p>
+                    <p className="text-primary">{`</button>`}</p>
+                  </div>
+                  <div className="text-xs text-muted-foreground space-y-1">
+                    <p><strong>সাপোর্টেড ইভেন্ট:</strong> Purchase, AddToCart, Lead, InitiateCheckout, ViewContent, CompleteRegistration</p>
+                    <p><strong>অতিরিক্ত attribute:</strong> data-track-content-name, data-track-content-id</p>
+                    <p className="text-primary/80">FB → সরাসরি ইভেন্ট নাম | TikTok → Purchase→CompletePayment, Lead→SubmitForm ম্যাপ হবে</p>
+                  </div>
+                </div>
               </div>
             </TabsContent>
 
