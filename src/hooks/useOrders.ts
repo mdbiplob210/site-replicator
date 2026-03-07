@@ -2,11 +2,11 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import { toast } from "sonner";
-import { startOfDay, subDays } from "date-fns";
+import { startOfDay, endOfDay, subDays } from "date-fns";
 
-export type OrderDateFilter = "all" | "today" | "yesterday" | "7days" | "30days";
+export type OrderDateFilter = "all" | "today" | "yesterday" | "7days" | "30days" | "custom";
 
-function getOrderDateRange(filter: OrderDateFilter): { from: string | null; to: string | null } {
+export function getOrderDateRange(filter: OrderDateFilter, customFrom?: Date, customTo?: Date): { from: string | null; to: string | null } {
   const now = new Date();
   switch (filter) {
     case "today":
@@ -19,6 +19,11 @@ function getOrderDateRange(filter: OrderDateFilter): { from: string | null; to: 
       return { from: startOfDay(subDays(now, 7)).toISOString(), to: null };
     case "30days":
       return { from: startOfDay(subDays(now, 30)).toISOString(), to: null };
+    case "custom":
+      return {
+        from: customFrom ? startOfDay(customFrom).toISOString() : null,
+        to: customTo ? endOfDay(customTo).toISOString() : null,
+      };
     default:
       return { from: null, to: null };
   }
@@ -83,9 +88,9 @@ export const getStatusColor = (status: OrderStatus): string => {
   return colors[status] || "bg-muted";
 };
 
-export function useOrders(statusFilter: string | null = null, dateFilter: OrderDateFilter = "all") {
+export function useOrders(statusFilter: string | null = null, dateFilter: OrderDateFilter = "all", customFrom?: Date, customTo?: Date) {
   return useQuery({
-    queryKey: ["orders", statusFilter, dateFilter],
+    queryKey: ["orders", statusFilter, dateFilter, customFrom?.toISOString(), customTo?.toISOString()],
     queryFn: async () => {
       let query = supabase
         .from("orders")
@@ -96,7 +101,7 @@ export function useOrders(statusFilter: string | null = null, dateFilter: OrderD
         query = query.eq("status", statusFilter as OrderStatus);
       }
 
-      const range = getOrderDateRange(dateFilter);
+      const range = getOrderDateRange(dateFilter, customFrom, customTo);
       if (range.from) query = query.gte("created_at", range.from);
       if (range.to) query = query.lt("created_at", range.to);
 
