@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Calendar as CalendarWidget } from "@/components/ui/calendar";
@@ -173,11 +174,13 @@ const AdminOrders = () => {
   const [notes, setNotes] = useState("");
   const [orderItems, setOrderItems] = useState<OrderItemInput[]>([]);
   const [productSearch, setProductSearch] = useState("");
+  const [courierNote, setCourierNote] = useState("");
   
   // Pathao city/zone/area auto-detect
   const [pathaoCity, setPathaoCity] = useState("");
   const [pathaoZone, setPathaoZone] = useState("");
   const [pathaoArea, setPathaoArea] = useState("");
+  const { user } = useAuth();
   const statusFilter = getStatusFromTab(activeTab);
   const queryClient = useQueryClient();
   const { data: orders = [], isLoading } = useOrders(statusFilter, orderDateFilter, customDateFrom, customDateTo);
@@ -525,6 +528,21 @@ const AdminOrders = () => {
 
   const itemsTotal = orderItems.reduce((sum, i) => sum + i.total_price, 0);
 
+  const logActivity = async (orderId: string, action: string, fieldName?: string, oldValue?: string, newValue?: string, details?: string) => {
+    try {
+      await supabase.from("order_activity_logs" as any).insert({
+        order_id: orderId,
+        user_id: user?.id || null,
+        user_name: user?.email || "System",
+        action,
+        field_name: fieldName || null,
+        old_value: oldValue || null,
+        new_value: newValue || null,
+        details: details || null,
+      } as any);
+    } catch (e) { console.error("Activity log error:", e); }
+  };
+
   const handleCreateOrder = () => {
     if (!customerName.trim()) return;
     const computedProductCost = orderItems.length > 0 ? itemsTotal : productCost;
@@ -540,11 +558,15 @@ const AdminOrders = () => {
         discount,
         product_cost: computedProductCost,
         notes: notes || null,
+        courier_note: courierNote || null,
         status: "processing",
-      },
+      } as any,
       items: orderItems,
     }, {
-      onSuccess: () => {
+      onSuccess: (data: any) => {
+        if (data?.id) {
+          logActivity(data.id, "created", undefined, undefined, undefined, `Order ${nextOrderNumber} created by ${user?.email || "Admin"}`);
+        }
         setNewOrderOpen(false);
         resetForm();
       }
@@ -560,6 +582,7 @@ const AdminOrders = () => {
     setDiscount(0);
     setProductCost(0);
     setNotes("");
+    setCourierNote("");
     setOrderItems([]);
     setProductSearch("");
     setPathaoCity("");
@@ -1126,9 +1149,15 @@ const AdminOrders = () => {
                       <p className="text-2xl font-bold text-primary">৳{(orderItems.length > 0 ? itemsTotal : productCost) + deliveryCharge - discount}</p>
                     </div>
                   </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold">Notes</Label>
-                    <Textarea placeholder="Add order notes..." rows={2} className="rounded-xl" value={notes} onChange={(e) => setNotes(e.target.value)} />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold flex items-center gap-1"><MessageSquare className="h-3 w-3" /> Staff Note</Label>
+                      <Textarea placeholder="Internal staff note..." rows={2} className="rounded-xl text-xs" value={notes} onChange={(e) => setNotes(e.target.value)} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold flex items-center gap-1"><Truck className="h-3 w-3" /> Courier Note</Label>
+                      <Textarea placeholder="Courier/packing note (memo তে প্রিন্ট হবে)..." rows={2} className="rounded-xl text-xs" value={courierNote} onChange={(e) => setCourierNote(e.target.value)} />
+                    </div>
                   </div>
                   <Button className="w-full rounded-xl shadow-sm" onClick={handleCreateOrder} disabled={createOrder.isPending || !customerName.trim()}>
                     {createOrder.isPending ? <><Loader2 className="h-4 w-4 animate-spin" /> Creating...</> : <><Plus className="h-4 w-4" /> Create Order</>}
@@ -1612,7 +1641,11 @@ const AdminOrders = () => {
                     <TableCell>
                       <Select
                         value={order.status}
-                        onValueChange={(value) => { updateStatus.mutate({ id: order.id, status: value as OrderStatus }); }}
+                        onValueChange={(value) => { 
+                          const oldStatus = order.status;
+                          updateStatus.mutate({ id: order.id, status: value as OrderStatus });
+                          logActivity(order.id, "status_changed", "status", getStatusLabel(oldStatus), getStatusLabel(value as OrderStatus));
+                        }}
                       >
                         <SelectTrigger className="w-[130px] h-8 rounded-lg text-xs border-0 bg-secondary/40" onClick={(e) => e.stopPropagation()}>
                           <div className="flex items-center gap-2">
@@ -1660,6 +1693,22 @@ export default AdminOrders;
 function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null; order: any; onClose: () => void }) {
   const { data: items = [], isLoading } = useOrderItems(orderId);
   const itemsTotal = items.reduce((s: number, i: any) => s + Number(i.total_price), 0);
+  
+  // Activity logs
+  const { data: activityLogs = [] } = useQuery({
+    queryKey: ["order-activity-logs", orderId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("order_activity_logs" as any)
+        .select("*")
+        .eq("order_id", orderId!)
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return data as any[];
+    },
+    enabled: !!orderId,
+  });
 
   return (
     <Dialog open={!!orderId} onOpenChange={(open) => { if (!open) onClose(); }}>
@@ -1726,7 +1775,6 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
               <h4 className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
                 <Package className="h-3.5 w-3.5 text-primary" /> Order Items
               </h4>
-
               {isLoading ? (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground py-4">
                   <Loader2 className="h-4 w-4 animate-spin" /> Loading items...
@@ -1735,9 +1783,6 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                 <div className="text-center py-6 bg-secondary/20 rounded-xl border border-border/30">
                   <Package className="h-6 w-6 text-muted-foreground/30 mx-auto mb-2" />
                   <p className="text-xs text-muted-foreground">কোনো আইটেম ম্যাপ করা হয়নি</p>
-                  <a href="/admin/orders/backfill-items" className="text-xs text-primary hover:underline mt-1 inline-block">
-                    Backfill Items →
-                  </a>
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -1762,11 +1807,50 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
               )}
             </div>
 
-            {/* Notes */}
-            {order.notes && (
+            {/* Dual Notes */}
+            <div className="grid grid-cols-2 gap-3">
+              {order.notes && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><MessageSquare className="h-3 w-3" /> Staff Note</p>
+                  <p className="text-xs text-foreground bg-secondary/20 rounded-xl p-2.5 border border-border/30">{order.notes}</p>
+                </div>
+              )}
+              {order.courier_note && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Truck className="h-3 w-3" /> Courier Note</p>
+                  <p className="text-xs text-foreground bg-amber-500/5 rounded-xl p-2.5 border border-amber-500/20">{order.courier_note}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Activity Log */}
+            {activityLogs.length > 0 && (
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Notes</p>
-                <p className="text-sm text-foreground bg-secondary/20 rounded-xl p-3 border border-border/30">{order.notes}</p>
+                <h4 className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                  <Clock className="h-3.5 w-3.5 text-primary" /> Activity Log
+                </h4>
+                <div className="max-h-40 overflow-y-auto space-y-1">
+                  {activityLogs.map((log: any) => (
+                    <div key={log.id} className="flex items-start gap-2 p-2 rounded-lg bg-secondary/20 border border-border/20 text-xs">
+                      <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <History className="h-3 w-3 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-foreground">
+                          <span className="font-semibold">{log.user_name || "System"}</span>
+                          {" "}
+                          {log.action === "created" && "অর্ডার তৈরি করেছে"}
+                          {log.action === "status_changed" && <>স্ট্যাটাস পরিবর্তন করেছে: <Badge variant="outline" className="text-[9px] h-4">{log.old_value}</Badge> → <Badge variant="secondary" className="text-[9px] h-4">{log.new_value}</Badge></>}
+                          {log.action === "field_edited" && <>"{log.field_name}" পরিবর্তন করেছে</>}
+                          {log.action === "note_added" && "নোট যোগ করেছে"}
+                          {!["created", "status_changed", "field_edited", "note_added"].includes(log.action) && log.action}
+                        </p>
+                        {log.details && <p className="text-muted-foreground mt-0.5">{log.details}</p>}
+                        <p className="text-muted-foreground/60 mt-0.5">{format(new Date(log.created_at), "dd MMM yyyy, hh:mm a")}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
