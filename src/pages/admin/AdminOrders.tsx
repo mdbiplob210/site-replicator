@@ -775,6 +775,7 @@ const AdminOrders = () => {
                   <TableHead className="font-bold text-xs">Customer</TableHead>
                   <TableHead className="font-bold text-xs">Phone</TableHead>
                   <TableHead className="font-bold text-xs">Amount</TableHead>
+                  <TableHead className="font-bold text-xs">Source</TableHead>
                   <TableHead className="font-bold text-xs">Status</TableHead>
                   <TableHead className="font-bold text-xs">Date</TableHead>
                   <TableHead className="font-bold text-xs text-right">Actions</TableHead>
@@ -792,6 +793,16 @@ const AdminOrders = () => {
                     </TableCell>
                     <TableCell className="text-sm">{order.customer_phone || "—"}</TableCell>
                     <TableCell className="font-semibold text-sm">৳{Number(order.total_amount).toLocaleString()}</TableCell>
+                    <TableCell>
+                      {order.source ? (
+                        <Badge variant="outline" className="text-xs gap-1">
+                          <Globe className="h-3 w-3" />
+                          {order.source}
+                        </Badge>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">প্যানেল</span>
+                      )}
+                    </TableCell>
                     <TableCell>
                       <Select
                         value={order.status}
