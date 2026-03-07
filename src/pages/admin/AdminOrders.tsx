@@ -109,6 +109,9 @@ const AdminOrders = () => {
   const [filterAmountMax, setFilterAmountMax] = useState("");
   const [filterDeviceType, setFilterDeviceType] = useState("all");
   const [filterAddress, setFilterAddress] = useState("");
+  const [filterDistrict, setFilterDistrict] = useState("");
+  const [filterPaymentStatus, setFilterPaymentStatus] = useState("all");
+  const [filterCourierProvider, setFilterCourierProvider] = useState("all");
 
   // New order form state
   const [customerName, setCustomerName] = useState("");
