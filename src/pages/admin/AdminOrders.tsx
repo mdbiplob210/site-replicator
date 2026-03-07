@@ -1063,23 +1063,36 @@ const AdminOrders = () => {
                     <Textarea placeholder="Enter address" rows={2} className="rounded-xl" value={customerAddress} onChange={(e) => setCustomerAddress(e.target.value)} />
                   </div>
 
-                  {/* Pathao City/Zone/Area Auto-detect */}
-                  {customerAddress && (detectedLocation.city || detectedLocation.zone || detectedLocation.area) && (
-                    <div className="grid grid-cols-3 gap-2">
-                      <div className="p-2 rounded-lg bg-secondary/30 border border-border/40">
-                        <p className="text-[10px] font-semibold text-muted-foreground mb-0.5">City</p>
-                        <p className="text-xs font-bold text-foreground">{detectedLocation.city || "—"}</p>
-                      </div>
-                      <div className="p-2 rounded-lg bg-secondary/30 border border-border/40">
-                        <p className="text-[10px] font-semibold text-muted-foreground mb-0.5">Zone</p>
-                        <p className="text-xs font-bold text-foreground">{detectedLocation.zone || "—"}</p>
-                      </div>
-                      <div className="p-2 rounded-lg bg-secondary/30 border border-border/40">
-                        <p className="text-[10px] font-semibold text-muted-foreground mb-0.5">Area/Thana</p>
-                        <p className="text-xs font-bold text-foreground">{detectedLocation.area || "—"}</p>
-                      </div>
+                  {/* Pathao City/Zone/Area — Auto-detect + Manual Select */}
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="space-y-1">
+                      <Label className="text-[10px] font-semibold text-muted-foreground">City</Label>
+                      <Select value={pathaoCity || detectedLocation.city || ""} onValueChange={setPathaoCity}>
+                        <SelectTrigger className="rounded-lg h-8 text-xs"><SelectValue placeholder="City সিলেক্ট করুন" /></SelectTrigger>
+                        <SelectContent className="max-h-60">
+                          {bdDistrictList.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
                     </div>
-                  )}
+                    <div className="space-y-1">
+                      <Label className="text-[10px] font-semibold text-muted-foreground">Zone</Label>
+                      <Select value={pathaoZone || detectedLocation.zone || ""} onValueChange={setPathaoZone}>
+                        <SelectTrigger className="rounded-lg h-8 text-xs"><SelectValue placeholder="Zone সিলেক্ট করুন" /></SelectTrigger>
+                        <SelectContent>
+                          {bdZoneList.map((z) => <SelectItem key={z} value={z}>{z}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[10px] font-semibold text-muted-foreground">Area/Thana</Label>
+                      <Select value={pathaoArea || detectedLocation.area || ""} onValueChange={setPathaoArea}>
+                        <SelectTrigger className="rounded-lg h-8 text-xs"><SelectValue placeholder="Area সিলেক্ট করুন" /></SelectTrigger>
+                        <SelectContent className="max-h-60">
+                          {bdThanaList.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
 
                   {/* Product Items */}
                   <div className="space-y-3">
