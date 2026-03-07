@@ -942,7 +942,6 @@ const AdminOrders = () => {
                     <div className="p-2 rounded-xl bg-primary/10"><ShoppingCart className="h-5 w-5 text-primary" /></div>
                     Create New Order
                     <Badge variant="secondary" className="ml-2 text-xs">{nextOrderNumber}</Badge>
-                    <button onClick={() => setNewOrderOpen(false)} className="ml-auto p-1.5 rounded-lg hover:bg-secondary transition-colors"><X className="h-4 w-4" /></button>
                   </DialogTitle>
                 </DialogHeader>
                 <div className="space-y-5">
