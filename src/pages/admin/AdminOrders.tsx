@@ -936,12 +936,13 @@ const AdminOrders = () => {
               <DialogTrigger asChild>
                 <Button className="gap-2 rounded-xl shadow-md shadow-primary/20"><Plus className="h-4 w-4" /> New Order</Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl" onInteractOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
+              <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl" onInteractOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()} onCloseAutoFocus={(e) => e.preventDefault()}>
                 <DialogHeader>
                   <DialogTitle className="flex items-center gap-2 text-lg">
                     <div className="p-2 rounded-xl bg-primary/10"><ShoppingCart className="h-5 w-5 text-primary" /></div>
                     Create New Order
                     <Badge variant="secondary" className="ml-2 text-xs">{nextOrderNumber}</Badge>
+                    <button onClick={() => setNewOrderOpen(false)} className="ml-auto p-1.5 rounded-lg hover:bg-secondary transition-colors"><X className="h-4 w-4" /></button>
                   </DialogTitle>
                 </DialogHeader>
                 <div className="space-y-5">
@@ -952,13 +953,104 @@ const AdminOrders = () => {
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-semibold">Phone</Label>
-                      <Input placeholder="Enter phone" className="rounded-xl" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} />
+                      <Input placeholder="01XXXXXXXXX" className="rounded-xl" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} />
                     </div>
                   </div>
+
+                  {/* Fraud Check & Old Orders by Phone */}
+                  {customerPhone && customerPhone.length >= 6 && (
+                    <div className="space-y-2">
+                      {fraudCheckData && (
+                        <div className="p-3 rounded-xl border border-border/60 bg-secondary/20">
+                          <div className="flex items-center gap-2 mb-2">
+                            <AlertTriangle className="h-4 w-4 text-amber-500" />
+                            <span className="text-xs font-bold text-foreground">Customer History</span>
+                            <Badge variant={fraudCheckData.cancelledCount + fraudCheckData.returnedCount > 2 ? "destructive" : "secondary"} className="text-[10px] ml-auto">
+                              {fraudCheckData.cancelledCount + fraudCheckData.returnedCount > 2 ? "⚠ High Risk" : "Normal"}
+                            </Badge>
+                          </div>
+                          <div className="grid grid-cols-5 gap-2 text-center">
+                            <div className="p-1.5 rounded-lg bg-background border border-border/40">
+                              <p className="text-lg font-bold text-foreground">{fraudCheckData.totalOrders}</p>
+                              <p className="text-[10px] text-muted-foreground">Total</p>
+                            </div>
+                            <div className="p-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                              <p className="text-lg font-bold text-emerald-600">{fraudCheckData.deliveredCount}</p>
+                              <p className="text-[10px] text-muted-foreground">Delivered</p>
+                            </div>
+                            <div className="p-1.5 rounded-lg bg-red-500/10 border border-red-500/20">
+                              <p className="text-lg font-bold text-red-500">{fraudCheckData.cancelledCount}</p>
+                              <p className="text-[10px] text-muted-foreground">Cancelled</p>
+                            </div>
+                            <div className="p-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                              <p className="text-lg font-bold text-amber-600">{fraudCheckData.returnedCount}</p>
+                              <p className="text-[10px] text-muted-foreground">Returned</p>
+                            </div>
+                            <div className="p-1.5 rounded-lg bg-primary/10 border border-primary/20">
+                              <p className="text-lg font-bold text-primary">৳{fraudCheckData.totalSpent.toLocaleString()}</p>
+                              <p className="text-[10px] text-muted-foreground">Spent</p>
+                            </div>
+                          </div>
+                          {Object.keys(fraudCheckData.courierStats).length > 0 && (
+                            <div className="mt-2 space-y-1">
+                              <p className="text-[10px] font-semibold text-muted-foreground">Courier History:</p>
+                              <div className="flex flex-wrap gap-1.5">
+                                {Object.entries(fraudCheckData.courierStats).map(([name, s]: [string, any]) => (
+                                  <Badge key={name} variant="outline" className="text-[10px] gap-1">
+                                    {name}: {s.total} ({s.delivered}✓ {s.returned > 0 ? `${s.returned}↩` : ""})
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {oldOrdersByPhone.length > 0 && (
+                        <div className="p-3 rounded-xl border border-border/60 bg-secondary/20">
+                          <p className="text-xs font-bold text-foreground mb-2 flex items-center gap-1.5">
+                            <History className="h-3.5 w-3.5" /> পুরনো অর্ডার ({oldOrdersByPhone.length}টি)
+                          </p>
+                          <div className="max-h-32 overflow-y-auto space-y-1">
+                            {oldOrdersByPhone.slice(0, 5).map((o) => (
+                              <div key={o.id} className="flex items-center justify-between text-xs p-1.5 rounded-lg hover:bg-background/50">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-mono font-semibold text-foreground">{o.order_number}</span>
+                                  <Badge className={cn("text-[9px] h-4", getStatusColor(o.status))}>{getStatusLabel(o.status)}</Badge>
+                                </div>
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                  <span>৳{Number(o.total_amount).toLocaleString()}</span>
+                                  <span>{format(new Date(o.created_at), "dd MMM yy")}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   <div className="space-y-1.5">
                     <Label className="text-xs font-semibold">Address</Label>
                     <Textarea placeholder="Enter address" rows={2} className="rounded-xl" value={customerAddress} onChange={(e) => setCustomerAddress(e.target.value)} />
                   </div>
+
+                  {/* Pathao City/Zone/Area Auto-detect */}
+                  {customerAddress && (detectedLocation.city || detectedLocation.zone || detectedLocation.area) && (
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="p-2 rounded-lg bg-secondary/30 border border-border/40">
+                        <p className="text-[10px] font-semibold text-muted-foreground mb-0.5">City</p>
+                        <p className="text-xs font-bold text-foreground">{detectedLocation.city || "—"}</p>
+                      </div>
+                      <div className="p-2 rounded-lg bg-secondary/30 border border-border/40">
+                        <p className="text-[10px] font-semibold text-muted-foreground mb-0.5">Zone</p>
+                        <p className="text-xs font-bold text-foreground">{detectedLocation.zone || "—"}</p>
+                      </div>
+                      <div className="p-2 rounded-lg bg-secondary/30 border border-border/40">
+                        <p className="text-[10px] font-semibold text-muted-foreground mb-0.5">Area/Thana</p>
+                        <p className="text-xs font-bold text-foreground">{detectedLocation.area || "—"}</p>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Product Items */}
                   <div className="space-y-3">
