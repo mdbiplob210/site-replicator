@@ -582,6 +582,7 @@ const AdminOrders = () => {
     setDiscount(0);
     setProductCost(0);
     setNotes("");
+    setCourierNote("");
     setOrderItems([]);
     setProductSearch("");
     setPathaoCity("");
