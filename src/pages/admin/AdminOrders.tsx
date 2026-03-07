@@ -86,6 +86,34 @@ const incompleteTabs = [
   { label: "Deleted", icon: Trash },
 ];
 
+// Bangladesh Districts, Thanas, Zones
+const bdDistrictList = [
+  "Dhaka", "Chittagong", "Rajshahi", "Khulna", "Barisal", "Sylhet", "Rangpur", "Mymensingh",
+  "Comilla", "Gazipur", "Narayanganj", "Tangail", "Kishoreganj", "Manikganj", "Munshiganj",
+  "Narsingdi", "Faridpur", "Gopalganj", "Madaripur", "Shariatpur", "Rajbari",
+  "Cox's Bazar", "Bogra", "Jessore", "Dinajpur", "Pabna", "Noakhali", "Brahmanbaria",
+  "Habiganj", "Moulvibazar", "Sunamganj", "Feni", "Lakshmipur", "Chandpur",
+  "Pirojpur", "Jhalokati", "Barguna", "Patuakhali", "Bhola", "Kushtia", "Meherpur",
+  "Chuadanga", "Jhenaidah", "Magura", "Narail", "Satkhira", "Bagerhat",
+  "Chapainawabganj", "Naogaon", "Natore", "Nawabganj", "Joypurhat", "Sirajganj",
+  "Thakurgaon", "Panchagarh", "Nilphamari", "Lalmonirhat", "Kurigram", "Gaibandha",
+  "Sherpur", "Jamalpur", "Netrokona",
+];
+
+const bdThanaList = [
+  "Dhanmondi", "Gulshan", "Banani", "Uttara", "Mirpur", "Mohammadpur", "Tejgaon", "Motijheel",
+  "Ramna", "Lalbagh", "Kotwali", "Pallabi", "Kafrul", "Cantonment", "Turag", "Savar",
+  "Keraniganj", "Demra", "Jatrabari", "Sutrapur", "Wari", "Khilgaon", "Badda",
+  "Adabor", "Hazaribagh", "Kamrangirchar", "Shyampur", "Kadamtali",
+  "Agrabad", "Patenga", "Halishahar", "Double Mooring", "Pahartali", "Bayezid",
+];
+
+const bdZoneList = [
+  "Dhaka Metro", "Dhaka Sub", "Chittagong Metro", "Chittagong Sub",
+  "Rajshahi Metro", "Khulna Metro", "Sylhet Metro", "Rangpur Metro",
+  "Barisal Metro", "Mymensingh Metro", "Outside Metro",
+];
+
 type View = "orders" | "incomplete" | "fakeOrder" | "courier" | "api";
 
 const AdminOrders = () => {
@@ -104,6 +132,12 @@ const AdminOrders = () => {
   const [detailOrderId, setDetailOrderId] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
 
+  // Modal states for action buttons
+  const [orderItemsModalOpen, setOrderItemsModalOpen] = useState(false);
+  const [orderSourcesModalOpen, setOrderSourcesModalOpen] = useState(false);
+  const [duplicateOrdersModalOpen, setDuplicateOrdersModalOpen] = useState(false);
+  const [courierStatusModalOpen, setCourierStatusModalOpen] = useState(false);
+
   // Advanced filter states
   const [filterSource, setFilterSource] = useState("");
   const [filterPhone, setFilterPhone] = useState("");
@@ -111,7 +145,9 @@ const AdminOrders = () => {
   const [filterAmountMax, setFilterAmountMax] = useState("");
   const [filterDeviceType, setFilterDeviceType] = useState("all");
   const [filterAddress, setFilterAddress] = useState("");
-  const [filterDistrict, setFilterDistrict] = useState("");
+  const [filterDistrict, setFilterDistrict] = useState("all");
+  const [filterThana, setFilterThana] = useState("all");
+  const [filterZone, setFilterZone] = useState("all");
   const [filterPaymentStatus, setFilterPaymentStatus] = useState("all");
   const [filterCourierProvider, setFilterCourierProvider] = useState("all");
   const [filterCourierStatus, setFilterCourierStatus] = useState("all");
@@ -230,15 +266,7 @@ const AdminOrders = () => {
     ).slice(0, 10);
   }, [allProducts, productSearch]);
 
-  // Bangladesh districts for filtering
-  const bdDistricts = useMemo(() => [
-    "ঢাকা", "চট্টগ্রাম", "রাজশাহী", "খুলনা", "বরিশাল", "সিলেট", "রংপুর", "ময়মনসিংহ",
-    "কুমিল্লা", "গাজীপুর", "নারায়ণগঞ্জ", "টাঙ্গাইল", "কিশোরগঞ্জ", "মানিকগঞ্জ", "মুন্সীগঞ্জ",
-    "নরসিংদী", "ফরিদপুর", "গোপালগঞ্জ", "মাদারীপুর", "শরীয়তপুর", "রাজবাড়ী",
-    "Dhaka", "Chittagong", "Rajshahi", "Khulna", "Barisal", "Sylhet", "Rangpur", "Mymensingh",
-    "Comilla", "Gazipur", "Narayanganj", "Tangail", "Kishoreganj", "Manikganj",
-    "Cox's Bazar", "Bogra", "Jessore", "Dinajpur", "Pabna", "Noakhali", "Brahmanbaria"
-  ], []);
+  // Bangladesh districts list removed - using bdDistrictList const above
 
   // Filtered orders by search + advanced filters
   const filteredOrders = useMemo(() => {
@@ -258,7 +286,9 @@ const AdminOrders = () => {
         if (filterDeviceType === "tablet" && !device.includes("tablet")) return false;
       }
       if (filterAddress && !(o.customer_address && o.customer_address.toLowerCase().includes(filterAddress.toLowerCase()))) return false;
-      if (filterDistrict && !(o.customer_address && o.customer_address.toLowerCase().includes(filterDistrict.toLowerCase()))) return false;
+      if (filterDistrict !== "all" && !(o.customer_address && o.customer_address.toLowerCase().includes(filterDistrict.toLowerCase()))) return false;
+      if (filterThana !== "all" && !(o.customer_address && o.customer_address.toLowerCase().includes(filterThana.toLowerCase()))) return false;
+      if (filterZone !== "all" && !(o.customer_address && o.customer_address.toLowerCase().includes(filterZone.toLowerCase()))) return false;
       if (filterPaymentStatus !== "all") {
         if (filterPaymentStatus === "paid" && Number(o.delivery_charge) > 0) return false;
         if (filterPaymentStatus === "cod" && Number(o.delivery_charge) === 0) return false;
@@ -300,21 +330,75 @@ const AdminOrders = () => {
       }
       return true;
     });
-  }, [orders, searchQuery, filterSource, filterPhone, filterAmountMin, filterAmountMax, filterDeviceType, filterAddress, filterDistrict, filterPaymentStatus, filterCourierProvider, filterCourierStatus, filterStatus, filterProductSearch, filterCategory, filterCourierCharged, filterNotes, filterUrl, filterOrderTag, filterSalesType, courierByOrderId, orderItemsByOrderId, allProducts]);
+  }, [orders, searchQuery, filterSource, filterPhone, filterAmountMin, filterAmountMax, filterDeviceType, filterAddress, filterDistrict, filterThana, filterZone, filterPaymentStatus, filterCourierProvider, filterCourierStatus, filterStatus, filterProductSearch, filterCategory, filterCourierCharged, filterNotes, filterUrl, filterOrderTag, filterSalesType, courierByOrderId, orderItemsByOrderId, allProducts]);
 
-  const activeFilterCount = [filterSource, filterPhone, filterAmountMin, filterAmountMax, filterAddress, filterDistrict, filterStatus, filterProductSearch, filterNotes, filterUrl, filterOrderTag].filter(Boolean).length
-    + [filterDeviceType, filterPaymentStatus, filterCourierProvider, filterCourierStatus, filterCategory, filterCourierCharged, filterSalesType].filter(v => v !== "all").length
+  const activeFilterCount = [filterSource, filterPhone, filterAmountMin, filterAmountMax, filterAddress, filterStatus, filterProductSearch, filterNotes, filterUrl, filterOrderTag].filter(Boolean).length
+    + [filterDeviceType, filterPaymentStatus, filterCourierProvider, filterCourierStatus, filterCategory, filterCourierCharged, filterSalesType, filterDistrict, filterThana, filterZone].filter(v => v !== "all").length
     + (orderDateFilter !== "all" ? 1 : 0);
 
   const clearAllFilters = () => {
     setFilterSource(""); setFilterPhone(""); setFilterAmountMin(""); setFilterAmountMax("");
-    setFilterDeviceType("all"); setFilterAddress(""); setFilterDistrict("");
+    setFilterDeviceType("all"); setFilterAddress(""); setFilterDistrict("all"); setFilterThana("all"); setFilterZone("all");
     setFilterPaymentStatus("all"); setFilterCourierProvider("all"); setFilterCourierStatus("all");
     setFilterStatus(""); setFilterProductSearch(""); setFilterCategory("all");
     setFilterCourierCharged("all"); setFilterNotes(""); setFilterUrl("");
     setFilterOrderTag(""); setFilterSalesType("all");
     setOrderDateFilter("all"); setCustomDateFrom(undefined); setCustomDateTo(undefined);
   };
+
+  // Order Items Summary data
+  const orderItemsSummary = useMemo(() => {
+    const productMap: Record<string, { name: string; code: string; orderCount: number; totalQty: number; totalAmount: number }> = {};
+    filteredOrders.forEach((o) => {
+      const items = orderItemsByOrderId[o.id] || [];
+      items.forEach((item: any) => {
+        const key = item.product_id || item.product_code || item.product_name;
+        if (!productMap[key]) {
+          productMap[key] = { name: item.product_name, code: item.product_code, orderCount: 0, totalQty: 0, totalAmount: 0 };
+        }
+        productMap[key].orderCount += 1;
+        productMap[key].totalQty += (item.quantity || 1);
+        productMap[key].totalAmount += Number(item.total_price || 0);
+      });
+    });
+    return Object.values(productMap).sort((a, b) => b.orderCount - a.orderCount);
+  }, [filteredOrders, orderItemsByOrderId]);
+
+  // Order Sources Summary
+  const orderSourcesSummary = useMemo(() => {
+    const sourceMap: Record<string, { count: number; totalAmount: number }> = {};
+    filteredOrders.forEach((o) => {
+      const src = o.source || "প্যানেল (Manual)";
+      if (!sourceMap[src]) sourceMap[src] = { count: 0, totalAmount: 0 };
+      sourceMap[src].count += 1;
+      sourceMap[src].totalAmount += Number(o.total_amount);
+    });
+    return Object.entries(sourceMap).sort((a, b) => b[1].count - a[1].count);
+  }, [filteredOrders]);
+
+  // Duplicate Orders (same phone or same IP)
+  const duplicateOrders = useMemo(() => {
+    const phoneMap: Record<string, typeof filteredOrders> = {};
+    const ipMap: Record<string, typeof filteredOrders> = {};
+    filteredOrders.forEach((o) => {
+      if (o.customer_phone) {
+        if (!phoneMap[o.customer_phone]) phoneMap[o.customer_phone] = [];
+        phoneMap[o.customer_phone].push(o);
+      }
+      if (o.client_ip) {
+        if (!ipMap[o.client_ip]) ipMap[o.client_ip] = [];
+        ipMap[o.client_ip].push(o);
+      }
+    });
+    const dupes: { key: string; type: string; orders: typeof filteredOrders }[] = [];
+    Object.entries(phoneMap).forEach(([phone, ords]) => {
+      if (ords.length > 1) dupes.push({ key: phone, type: "📞 Phone", orders: ords });
+    });
+    Object.entries(ipMap).forEach(([ip, ords]) => {
+      if (ords.length > 1) dupes.push({ key: ip, type: "🌐 IP", orders: ords });
+    });
+    return dupes.sort((a, b) => b.orders.length - a.orders.length);
+  }, [filteredOrders]);
 
   const addProductToOrder = (product: any) => {
     const existing = orderItems.find((i) => i.product_id === product.id);
@@ -848,30 +932,28 @@ const AdminOrders = () => {
               <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform duration-200", filtersOpen && "rotate-180")} />
             </Button>
           </CollapsibleTrigger>
-          <CollapsibleContent className="mt-3">
-            <Card className="p-4 border-border/40 shadow-sm space-y-4">
-              {/* Row 1: Order Created At, Courier Submitted At, Status Added At, Note Added At */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground">Order Created At</Label>
+          <CollapsibleContent className="mt-2">
+            <Card className="p-3 border-border/40 shadow-sm space-y-2.5">
+              {/* Row 1: Date filters compact */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-semibold text-muted-foreground">Order Date</Label>
                   <Select value={orderDateFilter} onValueChange={(v) => setOrderDateFilter(v as OrderDateFilter)}>
-                    <SelectTrigger className="rounded-xl h-9 text-sm">
-                      <SelectValue placeholder="All Time" />
-                    </SelectTrigger>
+                    <SelectTrigger className="rounded-lg h-7 text-xs"><SelectValue placeholder="All Time" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Time</SelectItem>
                       <SelectItem value="today">Today</SelectItem>
                       <SelectItem value="yesterday">Yesterday</SelectItem>
                       <SelectItem value="7days">Last 7 Days</SelectItem>
                       <SelectItem value="30days">Last 30 Days</SelectItem>
-                      <SelectItem value="custom">Custom Range</SelectItem>
+                      <SelectItem value="custom">Custom</SelectItem>
                     </SelectContent>
                   </Select>
                   {orderDateFilter === "custom" && (
-                    <div className="flex gap-1.5 mt-1">
+                    <div className="flex gap-1 mt-0.5">
                       <Popover>
                         <PopoverTrigger asChild>
-                          <Button variant="outline" size="sm" className={cn("flex-1 justify-start text-[10px] rounded-lg h-7 px-2", !customDateFrom && "text-muted-foreground")}>
+                          <Button variant="outline" size="sm" className={cn("flex-1 justify-start text-[9px] rounded-md h-6 px-1.5", !customDateFrom && "text-muted-foreground")}>
                             {customDateFrom ? format(customDateFrom, "dd/MM/yy") : "From"}
                           </Button>
                         </PopoverTrigger>
@@ -881,7 +963,7 @@ const AdminOrders = () => {
                       </Popover>
                       <Popover>
                         <PopoverTrigger asChild>
-                          <Button variant="outline" size="sm" className={cn("flex-1 justify-start text-[10px] rounded-lg h-7 px-2", !customDateTo && "text-muted-foreground")}>
+                          <Button variant="outline" size="sm" className={cn("flex-1 justify-start text-[9px] rounded-md h-6 px-1.5", !customDateTo && "text-muted-foreground")}>
                             {customDateTo ? format(customDateTo, "dd/MM/yy") : "To"}
                           </Button>
                         </PopoverTrigger>
@@ -892,94 +974,74 @@ const AdminOrders = () => {
                     </div>
                   )}
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground">Courier Submitted At</Label>
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-semibold text-muted-foreground">Courier Date</Label>
                   <Select defaultValue="all">
-                    <SelectTrigger className="rounded-xl h-9 text-sm"><SelectValue placeholder="All Time" /></SelectTrigger>
+                    <SelectTrigger className="rounded-lg h-7 text-xs"><SelectValue placeholder="All" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Time</SelectItem>
                       <SelectItem value="today">Today</SelectItem>
-                      <SelectItem value="7days">Last 7 Days</SelectItem>
-                      <SelectItem value="30days">Last 30 Days</SelectItem>
+                      <SelectItem value="7days">7 Days</SelectItem>
+                      <SelectItem value="30days">30 Days</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground">Status Added At</Label>
-                  <Select defaultValue="all">
-                    <SelectTrigger className="rounded-xl h-9 text-sm"><SelectValue placeholder="All Time" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Time</SelectItem>
-                      <SelectItem value="today">Today</SelectItem>
-                      <SelectItem value="7days">Last 7 Days</SelectItem>
-                      <SelectItem value="30days">Last 30 Days</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-semibold text-muted-foreground">Order Tag</Label>
+                  <Input placeholder="Tag..." className="rounded-lg h-7 text-xs" value={filterOrderTag} onChange={(e) => setFilterOrderTag(e.target.value)} />
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground">Note Added At</Label>
-                  <Select defaultValue="all">
-                    <SelectTrigger className="rounded-xl h-9 text-sm"><SelectValue placeholder="All Time" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Time</SelectItem>
-                      <SelectItem value="today">Today</SelectItem>
-                      <SelectItem value="7days">Last 7 Days</SelectItem>
-                      <SelectItem value="30days">Last 30 Days</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-semibold text-muted-foreground">URL / Website</Label>
+                  <Input placeholder="URL..." className="rounded-lg h-7 text-xs" value={filterUrl} onChange={(e) => setFilterUrl(e.target.value)} />
                 </div>
               </div>
 
-              {/* Row 2: Status, Order Source, Order Tag, Device */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground">Status</Label>
-                  <Input placeholder="Search status..." className="rounded-xl h-9 text-sm" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} />
+              {/* Row 2: Compact grid */}
+              <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-semibold text-muted-foreground">Status</Label>
+                  <Input placeholder="Status..." className="rounded-lg h-7 text-xs" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} />
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground">Order Source</Label>
-                  <Input placeholder="Search source..." className="rounded-xl h-9 text-sm" value={filterSource} onChange={(e) => setFilterSource(e.target.value)} list="source-suggestions" />
-                  <datalist id="source-suggestions">
-                    {uniqueSources.map((s) => <option key={s} value={s} />)}
-                  </datalist>
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-semibold text-muted-foreground">Source</Label>
+                  <Input placeholder="Source..." className="rounded-lg h-7 text-xs" value={filterSource} onChange={(e) => setFilterSource(e.target.value)} list="source-suggestions" />
+                  <datalist id="source-suggestions">{uniqueSources.map((s) => <option key={s} value={s} />)}</datalist>
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground">Order Tag</Label>
-                  <Input placeholder="Search tag..." className="rounded-xl h-9 text-sm" value={filterOrderTag} onChange={(e) => setFilterOrderTag(e.target.value)} />
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-semibold text-muted-foreground">Phone</Label>
+                  <Input placeholder="Phone..." className="rounded-lg h-7 text-xs" value={filterPhone} onChange={(e) => setFilterPhone(e.target.value)} />
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground">📱 Device</Label>
-                  <Select value={filterDeviceType} onValueChange={setFilterDeviceType}>
-                    <SelectTrigger className="rounded-xl h-9 text-sm"><SelectValue placeholder="All" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All</SelectItem>
-                      <SelectItem value="mobile">📱 Mobile</SelectItem>
-                      <SelectItem value="desktop">💻 Desktop</SelectItem>
-                      <SelectItem value="tablet">📟 Tablet</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-semibold text-muted-foreground">Address</Label>
+                  <Input placeholder="Address..." className="rounded-lg h-7 text-xs" value={filterAddress} onChange={(e) => setFilterAddress(e.target.value)} />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-semibold text-muted-foreground">Product</Label>
+                  <Input placeholder="Product..." className="rounded-lg h-7 text-xs" value={filterProductSearch} onChange={(e) => setFilterProductSearch(e.target.value)} />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-semibold text-muted-foreground">Notes</Label>
+                  <Input placeholder="Notes..." className="rounded-lg h-7 text-xs" value={filterNotes} onChange={(e) => setFilterNotes(e.target.value)} />
                 </div>
               </div>
 
-              {/* Row 3: Courier, Courier Status, Phone, Address */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground">Courier</Label>
+              {/* Row 3: Select dropdowns compact */}
+              <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-semibold text-muted-foreground">Courier</Label>
                   <Select value={filterCourierProvider} onValueChange={setFilterCourierProvider}>
-                    <SelectTrigger className="rounded-xl h-9 text-sm"><SelectValue placeholder="All" /></SelectTrigger>
+                    <SelectTrigger className="rounded-lg h-7 text-xs"><SelectValue placeholder="All" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All</SelectItem>
-                      <SelectItem value="no_courier">📦 Not in Courier</SelectItem>
-                      {courierProviders.map((cp: any) => (
-                        <SelectItem key={cp.id} value={cp.id}>{cp.name}</SelectItem>
-                      ))}
+                      <SelectItem value="no_courier">No Courier</SelectItem>
+                      {courierProviders.map((cp: any) => <SelectItem key={cp.id} value={cp.id}>{cp.name}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground">Courier Status</Label>
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-semibold text-muted-foreground">Courier Status</Label>
                   <Select value={filterCourierStatus} onValueChange={setFilterCourierStatus}>
-                    <SelectTrigger className="rounded-xl h-9 text-sm"><SelectValue placeholder="All" /></SelectTrigger>
+                    <SelectTrigger className="rounded-lg h-7 text-xs"><SelectValue placeholder="All" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All</SelectItem>
                       <SelectItem value="pending">Pending</SelectItem>
@@ -991,22 +1053,89 @@ const AdminOrders = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground">📞 Phone</Label>
-                  <Input placeholder="Search phone..." className="rounded-xl h-9 text-sm" value={filterPhone} onChange={(e) => setFilterPhone(e.target.value)} />
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-semibold text-muted-foreground">Category</Label>
+                  <Select value={filterCategory} onValueChange={setFilterCategory}>
+                    <SelectTrigger className="rounded-lg h-7 text-xs"><SelectValue placeholder="All" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      {categories.map((cat: any) => <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground">📍 Address</Label>
-                  <Input placeholder="Search address..." className="rounded-xl h-9 text-sm" value={filterAddress} onChange={(e) => setFilterAddress(e.target.value)} />
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-semibold text-muted-foreground">Payment</Label>
+                  <Select value={filterPaymentStatus} onValueChange={setFilterPaymentStatus}>
+                    <SelectTrigger className="rounded-lg h-7 text-xs"><SelectValue placeholder="All" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="cod">COD</SelectItem>
+                      <SelectItem value="paid">Paid</SelectItem>
+                      <SelectItem value="free_delivery">Free</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-semibold text-muted-foreground">Device</Label>
+                  <Select value={filterDeviceType} onValueChange={setFilterDeviceType}>
+                    <SelectTrigger className="rounded-lg h-7 text-xs"><SelectValue placeholder="All" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="mobile">Mobile</SelectItem>
+                      <SelectItem value="desktop">Desktop</SelectItem>
+                      <SelectItem value="tablet">Tablet</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-semibold text-muted-foreground">Sales Type</Label>
+                  <Select value={filterSalesType} onValueChange={setFilterSalesType}>
+                    <SelectTrigger className="rounded-lg h-7 text-xs"><SelectValue placeholder="All" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="api">API / Website</SelectItem>
+                      <SelectItem value="manual">Manual</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
-              {/* Row 4: Courier Charged, Select Product, Product Category, District */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground">Courier Charged</Label>
+              {/* Row 4: District, Thana, Zone, Courier Charged, Amount range */}
+              <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-semibold text-muted-foreground">District</Label>
+                  <Select value={filterDistrict} onValueChange={setFilterDistrict}>
+                    <SelectTrigger className="rounded-lg h-7 text-xs"><SelectValue placeholder="All" /></SelectTrigger>
+                    <SelectContent className="max-h-60">
+                      <SelectItem value="all">All Districts</SelectItem>
+                      {bdDistrictList.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-semibold text-muted-foreground">Thana</Label>
+                  <Select value={filterThana} onValueChange={setFilterThana}>
+                    <SelectTrigger className="rounded-lg h-7 text-xs"><SelectValue placeholder="All" /></SelectTrigger>
+                    <SelectContent className="max-h-60">
+                      <SelectItem value="all">All Thanas</SelectItem>
+                      {bdThanaList.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-semibold text-muted-foreground">Zone</Label>
+                  <Select value={filterZone} onValueChange={setFilterZone}>
+                    <SelectTrigger className="rounded-lg h-7 text-xs"><SelectValue placeholder="All" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Zones</SelectItem>
+                      {bdZoneList.map((z) => <SelectItem key={z} value={z}>{z}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-semibold text-muted-foreground">Delivery Charge</Label>
                   <Select value={filterCourierCharged} onValueChange={setFilterCourierCharged}>
-                    <SelectTrigger className="rounded-xl h-9 text-sm"><SelectValue placeholder="All" /></SelectTrigger>
+                    <SelectTrigger className="rounded-lg h-7 text-xs"><SelectValue placeholder="All" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All</SelectItem>
                       <SelectItem value="charged">Charged</SelectItem>
@@ -1014,104 +1143,161 @@ const AdminOrders = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground">Select Product</Label>
-                  <Input placeholder="Search product..." className="rounded-xl h-9 text-sm" value={filterProductSearch} onChange={(e) => setFilterProductSearch(e.target.value)} />
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-semibold text-muted-foreground">Amount Min</Label>
+                  <Input type="number" placeholder="0" className="rounded-lg h-7 text-xs" value={filterAmountMin} onChange={(e) => setFilterAmountMin(e.target.value)} />
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground">Product Category</Label>
-                  <Select value={filterCategory} onValueChange={setFilterCategory}>
-                    <SelectTrigger className="rounded-xl h-9 text-sm"><SelectValue placeholder="All" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Categories</SelectItem>
-                      {categories.map((cat: any) => (
-                        <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground">District</Label>
-                  <Input placeholder="Search district..." className="rounded-xl h-9 text-sm" value={filterDistrict} onChange={(e) => setFilterDistrict(e.target.value)} list="district-suggestions" />
-                  <datalist id="district-suggestions">
-                    {bdDistricts.map((d) => <option key={d} value={d} />)}
-                  </datalist>
-                </div>
-              </div>
-
-              {/* Row 5: Payment Status, Website/URL, Sales Type, Notes */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground">Payment Status</Label>
-                  <Select value={filterPaymentStatus} onValueChange={setFilterPaymentStatus}>
-                    <SelectTrigger className="rounded-xl h-9 text-sm"><SelectValue placeholder="All" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All</SelectItem>
-                      <SelectItem value="cod">💵 Cash on Delivery</SelectItem>
-                      <SelectItem value="paid">✅ Paid / Prepaid</SelectItem>
-                      <SelectItem value="free_delivery">🎁 Free Delivery</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground">Website / URL</Label>
-                  <Input placeholder="Search URL..." className="rounded-xl h-9 text-sm" value={filterUrl} onChange={(e) => setFilterUrl(e.target.value)} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground">Sales Type</Label>
-                  <Select value={filterSalesType} onValueChange={setFilterSalesType}>
-                    <SelectTrigger className="rounded-xl h-9 text-sm"><SelectValue placeholder="All" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All</SelectItem>
-                      <SelectItem value="api">🌐 API / Website</SelectItem>
-                      <SelectItem value="manual">📝 Manual / Panel</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground">🔍 Notes</Label>
-                  <Input placeholder="Search notes..." className="rounded-xl h-9 text-sm" value={filterNotes} onChange={(e) => setFilterNotes(e.target.value)} />
-                </div>
-              </div>
-
-              {/* Row 6: Amount Range */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground">Product Amount Min</Label>
-                  <Input type="number" placeholder="0" className="rounded-xl h-9 text-sm" value={filterAmountMin} onChange={(e) => setFilterAmountMin(e.target.value)} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground">Product Amount Max</Label>
-                  <Input type="number" placeholder="∞" className="rounded-xl h-9 text-sm" value={filterAmountMax} onChange={(e) => setFilterAmountMax(e.target.value)} />
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-semibold text-muted-foreground">Amount Max</Label>
+                  <Input type="number" placeholder="∞" className="rounded-lg h-7 text-xs" value={filterAmountMax} onChange={(e) => setFilterAmountMax(e.target.value)} />
                 </div>
               </div>
 
               {/* Bottom Action Bar */}
-              <div className="flex items-center gap-2 flex-wrap pt-3 border-t border-border/30">
+              <div className="flex items-center gap-1.5 flex-wrap pt-2 border-t border-border/30">
                 {activeFilterCount > 0 && (
-                  <Button size="sm" variant="destructive" className="gap-1.5 text-xs rounded-full h-8 px-3" onClick={clearAllFilters}>
-                    <X className="h-3 w-3" /> Clear Filter
+                  <Button size="sm" variant="destructive" className="gap-1 text-[10px] rounded-full h-6 px-2.5" onClick={clearAllFilters}>
+                    <X className="h-2.5 w-2.5" /> Clear
                   </Button>
                 )}
-                <Button size="sm" variant="outline" className="gap-1.5 text-xs rounded-full h-8 px-3 bg-emerald-500/10 text-emerald-700 border-emerald-200 hover:bg-emerald-500/20">
-                  <Package className="h-3 w-3" /> Order Items
+                <Button size="sm" variant="outline" className="gap-1 text-[10px] rounded-full h-6 px-2.5 bg-emerald-500/10 text-emerald-700 border-emerald-200 hover:bg-emerald-500/20" onClick={() => setOrderItemsModalOpen(true)}>
+                  <Package className="h-2.5 w-2.5" /> Order Items
                 </Button>
-                <Button size="sm" variant="outline" className="gap-1.5 text-xs rounded-full h-8 px-3 bg-primary/10 text-primary border-primary/20 hover:bg-primary/20">
-                  <Globe className="h-3 w-3" /> Order Sources
+                <Button size="sm" variant="outline" className="gap-1 text-[10px] rounded-full h-6 px-2.5 bg-primary/10 text-primary border-primary/20 hover:bg-primary/20" onClick={() => setOrderSourcesModalOpen(true)}>
+                  <Globe className="h-2.5 w-2.5" /> Order Sources
                 </Button>
-                <Button size="sm" variant="outline" className="gap-1.5 text-xs rounded-full h-8 px-3 bg-amber-500/10 text-amber-700 border-amber-200 hover:bg-amber-500/20" onClick={() => setCurrentView("incomplete")}>
-                  <AlertCircle className="h-3 w-3" /> Duplicate Orders
+                <Button size="sm" variant="outline" className="gap-1 text-[10px] rounded-full h-6 px-2.5 bg-amber-500/10 text-amber-700 border-amber-200 hover:bg-amber-500/20" onClick={() => setDuplicateOrdersModalOpen(true)}>
+                  <Copy className="h-2.5 w-2.5" /> Duplicate Orders
                 </Button>
-                <Button size="sm" variant="outline" className="gap-1.5 text-xs rounded-full h-8 px-3 bg-violet-500/10 text-violet-700 border-violet-200 hover:bg-violet-500/20">
-                  <Truck className="h-3 w-3" /> Courier Statuses
+                <Button size="sm" variant="outline" className="gap-1 text-[10px] rounded-full h-6 px-2.5 bg-violet-500/10 text-violet-700 border-violet-200 hover:bg-violet-500/20" onClick={() => setCourierStatusModalOpen(true)}>
+                  <Truck className="h-2.5 w-2.5" /> Courier Statuses
                 </Button>
-                <Badge variant="secondary" className="text-xs ml-auto">
-                  {filteredOrders.length} অর্ডার পাওয়া গেছে
+                <Badge variant="secondary" className="text-[10px] ml-auto h-5">
+                  {filteredOrders.length} অর্ডার
                 </Badge>
               </div>
             </Card>
           </CollapsibleContent>
         </Collapsible>
+
+        {/* Order Items Modal */}
+        <Dialog open={orderItemsModalOpen} onOpenChange={setOrderItemsModalOpen}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto rounded-2xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Package className="h-5 w-5 text-emerald-600" /> Order Items Summary
+                <Badge variant="secondary" className="ml-2">{orderItemsSummary.length} প্রোডাক্ট</Badge>
+              </DialogTitle>
+            </DialogHeader>
+            {orderItemsSummary.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground text-sm">কোনো আইটেম ডেটা পাওয়া যায়নি</div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-secondary/30">
+                    <TableHead className="text-xs font-bold">Product</TableHead>
+                    <TableHead className="text-xs font-bold text-center">Orders</TableHead>
+                    <TableHead className="text-xs font-bold text-center">Qty</TableHead>
+                    <TableHead className="text-xs font-bold text-right">Total (৳)</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {orderItemsSummary.map((item, idx) => (
+                    <TableRow key={idx}>
+                      <TableCell>
+                        <p className="text-sm font-medium">{item.name}</p>
+                        <p className="text-xs text-muted-foreground">{item.code}</p>
+                      </TableCell>
+                      <TableCell className="text-center text-sm font-semibold">{item.orderCount}</TableCell>
+                      <TableCell className="text-center text-sm">{item.totalQty}</TableCell>
+                      <TableCell className="text-right text-sm font-semibold text-primary">৳{item.totalAmount.toLocaleString()}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+            <div className="flex justify-between items-center pt-2 border-t border-border/40 text-sm">
+              <span className="text-muted-foreground">মোট প্রোডাক্ট: {orderItemsSummary.length}</span>
+              <span className="font-bold text-primary">মোট: ৳{orderItemsSummary.reduce((s, i) => s + i.totalAmount, 0).toLocaleString()}</span>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Order Sources Modal */}
+        <Dialog open={orderSourcesModalOpen} onOpenChange={setOrderSourcesModalOpen}>
+          <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto rounded-2xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Globe className="h-5 w-5 text-primary" /> Order Sources
+              </DialogTitle>
+            </DialogHeader>
+            {orderSourcesSummary.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground text-sm">কোনো সোর্স পাওয়া যায়নি</div>
+            ) : (
+              <div className="space-y-2">
+                {orderSourcesSummary.map(([source, data]) => (
+                  <div key={source} className="flex items-center justify-between p-3 rounded-xl bg-secondary/30 border border-border/40">
+                    <div>
+                      <p className="text-sm font-medium">{source}</p>
+                      <p className="text-xs text-muted-foreground">৳{data.totalAmount.toLocaleString()}</p>
+                    </div>
+                    <Badge variant="secondary" className="text-sm font-bold">{data.count}</Badge>
+                  </div>
+                ))}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Duplicate Orders Modal */}
+        <Dialog open={duplicateOrdersModalOpen} onOpenChange={setDuplicateOrdersModalOpen}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto rounded-2xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Copy className="h-5 w-5 text-amber-600" /> Duplicate Orders
+                <Badge variant="secondary" className="ml-2">{duplicateOrders.length} ডুপ্লিকেট গ্রুপ</Badge>
+              </DialogTitle>
+            </DialogHeader>
+            {duplicateOrders.length === 0 ? (
+              <div className="text-center py-8">
+                <CheckCircle2 className="h-10 w-10 text-emerald-500 mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground">কোনো ডুপ্লিকেট অর্ডার পাওয়া যায়নি! 🎉</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {duplicateOrders.map((group, idx) => (
+                  <Card key={idx} className="p-3 border-border/40">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Badge variant="outline" className="text-xs">{group.type}</Badge>
+                      <span className="text-sm font-semibold">{group.key}</span>
+                      <Badge variant="destructive" className="text-xs ml-auto">{group.orders.length} অর্ডার</Badge>
+                    </div>
+                    <div className="space-y-1">
+                      {group.orders.map((o) => (
+                        <div key={o.id} className="flex items-center justify-between text-xs p-2 rounded-lg bg-secondary/20">
+                          <span className="font-mono font-semibold">{o.order_number}</span>
+                          <span>{o.customer_name}</span>
+                          <span className="font-semibold">৳{Number(o.total_amount).toLocaleString()}</span>
+                          <span className={`px-1.5 py-0.5 rounded-full text-white text-[10px] ${getStatusColor(o.status)}`}>{getStatusLabel(o.status)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Courier Status Update Modal */}
+        <CourierStatusModal
+          open={courierStatusModalOpen}
+          onOpenChange={setCourierStatusModalOpen}
+          filteredOrders={filteredOrders}
+          courierByOrderId={courierByOrderId}
+          courierProviders={courierProviders}
+          updateStatus={updateStatus}
+        />
 
         {isLoading ? (
           <Card className="p-16 text-center border-border/40">
@@ -1332,6 +1518,100 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
               </span>
             </div>
           </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function CourierStatusModal({
+  open, onOpenChange, filteredOrders, courierByOrderId, courierProviders, updateStatus
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  filteredOrders: any[];
+  courierByOrderId: Record<string, { provider_id: string; status: string; submitted_at: string }>;
+  courierProviders: any[];
+  updateStatus: any;
+}) {
+  const providerNameMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    courierProviders.forEach((cp: any) => { map[cp.id] = cp.name; });
+    return map;
+  }, [courierProviders]);
+
+  // Find orders where courier status says delivered but order status is not delivered
+  const mismatchedOrders = useMemo(() => {
+    return filteredOrders.filter((o) => {
+      const co = courierByOrderId[o.id];
+      if (!co) return false;
+      // courier says delivered but order not delivered
+      if (co.status === "delivered" && o.status !== "delivered") return true;
+      // courier says returned but order not returned
+      if (co.status === "returned" && o.status !== "returned") return true;
+      // courier says cancelled but order still in_courier
+      if (co.status === "cancelled" && o.status === "in_courier") return true;
+      return false;
+    }).map((o) => ({
+      ...o,
+      courierStatus: courierByOrderId[o.id]?.status,
+      providerName: providerNameMap[courierByOrderId[o.id]?.provider_id] || "Unknown",
+    }));
+  }, [filteredOrders, courierByOrderId, providerNameMap]);
+
+  const handleBulkUpdate = () => {
+    mismatchedOrders.forEach((o) => {
+      const co = courierByOrderId[o.id];
+      if (!co) return;
+      let newStatus: OrderStatus | null = null;
+      if (co.status === "delivered") newStatus = "delivered";
+      else if (co.status === "returned") newStatus = "returned";
+      else if (co.status === "cancelled") newStatus = "cancelled";
+      if (newStatus && o.status !== newStatus) {
+        updateStatus.mutate({ id: o.id, status: newStatus });
+      }
+    });
+    onOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto rounded-2xl">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Truck className="h-5 w-5 text-violet-600" /> Courier Status Sync
+            <Badge variant="secondary" className="ml-2">{mismatchedOrders.length} mismatch</Badge>
+          </DialogTitle>
+        </DialogHeader>
+        {mismatchedOrders.length === 0 ? (
+          <div className="text-center py-8">
+            <CheckCircle2 className="h-10 w-10 text-emerald-500 mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground">সব অর্ডারের স্ট্যাটাস কুরিয়ারের সাথে সিঙ্ক আছে! ✅</p>
+          </div>
+        ) : (
+          <>
+            <p className="text-xs text-muted-foreground">নিচের অর্ডারগুলোতে কুরিয়ার স্ট্যাটাস ও অর্ডার স্ট্যাটাসে পার্থক্য আছে:</p>
+            <div className="space-y-1.5 max-h-[50vh] overflow-y-auto">
+              {mismatchedOrders.map((o) => (
+                <div key={o.id} className="flex items-center justify-between p-2.5 rounded-xl bg-secondary/30 border border-border/40 text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono font-semibold">{o.order_number}</span>
+                    <span className="text-muted-foreground">{o.customer_name}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-[10px]">{o.providerName}</Badge>
+                    <span className={`px-1.5 py-0.5 rounded-full text-white text-[10px] ${getStatusColor(o.status)}`}>{getStatusLabel(o.status)}</span>
+                    <span className="text-muted-foreground">→</span>
+                    <span className="px-1.5 py-0.5 rounded-full bg-emerald-500 text-white text-[10px]">{o.courierStatus}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <Button className="w-full rounded-xl" onClick={handleBulkUpdate} disabled={updateStatus.isPending}>
+              {updateStatus.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              সব স্ট্যাটাস আপডেট করো ({mismatchedOrders.length}টি)
+            </Button>
+          </>
         )}
       </DialogContent>
     </Dialog>
