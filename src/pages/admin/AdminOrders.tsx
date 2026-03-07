@@ -91,6 +91,7 @@ const AdminOrders = () => {
   const [currentView, setCurrentView] = useState<View>("orders");
   const [incompleteFilter, setIncompleteFilter] = useState("Today");
   const [activeIncompleteTab, setActiveIncompleteTab] = useState("Processing");
+  const [incompleteSourceFilter, setIncompleteSourceFilter] = useState<"all" | "ip_blocked" | "abandoned_form">("all");
   const [deliveryRatio, setDeliveryRatio] = useState([0]);
   const [searchQuery, setSearchQuery] = useState("");
   const [newOrderOpen, setNewOrderOpen] = useState(false);
