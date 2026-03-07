@@ -32,6 +32,7 @@ const emptyPage: Partial<LandingPage> = {
 };
 
 export default function AdminLandingPages() {
+  const navigate = useNavigate();
   const { data: pages, isLoading } = useLandingPages();
   const createMutation = useCreateLandingPage();
   const updateMutation = useUpdateLandingPage();
