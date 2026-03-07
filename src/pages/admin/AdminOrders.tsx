@@ -693,7 +693,29 @@ const AdminOrders = () => {
           </div>
         </Card>
 
-        {/* Orders Table or Empty State */}
+        {/* Date Filter */}
+        <div className="flex items-center gap-1 bg-card rounded-xl border border-border/60 p-1 w-fit">
+          {([
+            { key: "all" as OrderDateFilter, label: "সব সময়" },
+            { key: "today" as OrderDateFilter, label: "আজ" },
+            { key: "yesterday" as OrderDateFilter, label: "গতকাল" },
+            { key: "7days" as OrderDateFilter, label: "৭ দিন" },
+            { key: "30days" as OrderDateFilter, label: "৩০ দিন" },
+          ]).map((f) => (
+            <button
+              key={f.key}
+              onClick={() => setOrderDateFilter(f.key)}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                orderDateFilter === f.key
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+
         {isLoading ? (
           <Card className="p-16 text-center border-border/40">
             <Loader2 className="h-10 w-10 animate-spin text-muted-foreground mx-auto mb-4" />
