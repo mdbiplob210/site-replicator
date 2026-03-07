@@ -173,6 +173,11 @@ const AdminOrders = () => {
   const [notes, setNotes] = useState("");
   const [orderItems, setOrderItems] = useState<OrderItemInput[]>([]);
   const [productSearch, setProductSearch] = useState("");
+  
+  // Pathao city/zone/area auto-detect
+  const [pathaoCity, setPathaoCity] = useState("");
+  const [pathaoZone, setPathaoZone] = useState("");
+  const [pathaoArea, setPathaoArea] = useState("");
   const statusFilter = getStatusFromTab(activeTab);
   const queryClient = useQueryClient();
   const { data: orders = [], isLoading } = useOrders(statusFilter, orderDateFilter, customDateFrom, customDateTo);
