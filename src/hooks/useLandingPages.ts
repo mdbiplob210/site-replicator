@@ -7,6 +7,7 @@ export interface LandingPage {
   title: string;
   slug: string;
   html_content: string;
+  checkout_html: string | null;
   is_active: boolean;
   fb_pixel_id: string | null;
   tiktok_pixel_id: string | null;
