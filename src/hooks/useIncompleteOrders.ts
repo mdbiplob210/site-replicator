@@ -1,6 +1,27 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { startOfDay, subDays, startOfMonth, startOfYear } from "date-fns";
+
+export type IncompleteDateFilter = "today" | "yesterday" | "7days" | "30days" | "all";
+
+function getDateRange(filter: IncompleteDateFilter): { from: string | null; to: string | null } {
+  const now = new Date();
+  switch (filter) {
+    case "today":
+      return { from: startOfDay(now).toISOString(), to: null };
+    case "yesterday": {
+      const yd = subDays(now, 1);
+      return { from: startOfDay(yd).toISOString(), to: startOfDay(now).toISOString() };
+    }
+    case "7days":
+      return { from: startOfDay(subDays(now, 7)).toISOString(), to: null };
+    case "30days":
+      return { from: startOfDay(subDays(now, 30)).toISOString(), to: null };
+    default:
+      return { from: null, to: null };
+  }
+}
 
 export interface IncompleteOrder {
   id: string;
@@ -25,9 +46,9 @@ export interface IncompleteOrder {
   updated_at: string;
 }
 
-export function useIncompleteOrders(status?: string, sourceFilter?: "all" | "ip_blocked" | "abandoned_form") {
+export function useIncompleteOrders(status?: string, sourceFilter?: "all" | "ip_blocked" | "abandoned_form", dateFilter?: IncompleteDateFilter) {
   return useQuery({
-    queryKey: ["incomplete-orders", status, sourceFilter],
+    queryKey: ["incomplete-orders", status, sourceFilter, dateFilter],
     queryFn: async () => {
       let query = supabase
         .from("incomplete_orders" as any)
@@ -44,6 +65,10 @@ export function useIncompleteOrders(status?: string, sourceFilter?: "all" | "ip_
         query = query.neq("block_reason", "abandoned_form");
       }
 
+      const range = getDateRange(dateFilter || "all");
+      if (range.from) query = query.gte("created_at", range.from);
+      if (range.to) query = query.lt("created_at", range.to);
+
       const { data, error } = await query;
       if (error) throw error;
       return data as unknown as IncompleteOrder[];
@@ -51,9 +76,9 @@ export function useIncompleteOrders(status?: string, sourceFilter?: "all" | "ip_
   });
 }
 
-export function useIncompleteOrderCounts(sourceFilter?: "all" | "ip_blocked" | "abandoned_form") {
+export function useIncompleteOrderCounts(sourceFilter?: "all" | "ip_blocked" | "abandoned_form", dateFilter?: IncompleteDateFilter) {
   return useQuery({
-    queryKey: ["incomplete-order-counts", sourceFilter],
+    queryKey: ["incomplete-order-counts", sourceFilter, dateFilter],
     queryFn: async () => {
       let query = supabase
         .from("incomplete_orders" as any)
@@ -64,6 +89,10 @@ export function useIncompleteOrderCounts(sourceFilter?: "all" | "ip_blocked" | "
       } else if (sourceFilter === "ip_blocked") {
         query = query.neq("block_reason", "abandoned_form");
       }
+
+      const range = getDateRange(dateFilter || "all");
+      if (range.from) query = query.gte("created_at", range.from);
+      if (range.to) query = query.lt("created_at", range.to);
 
       const { data, error } = await query;
       if (error) throw error;

@@ -29,7 +29,7 @@ import {
 import {
   useIncompleteOrders, useIncompleteOrderCounts,
   useUpdateIncompleteOrderStatus, useDeleteIncompleteOrder,
-  useConvertIncompleteToOrder,
+  useConvertIncompleteToOrder, type IncompleteDateFilter,
 } from "@/hooks/useIncompleteOrders";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
 import { Constants } from "@/integrations/supabase/types";
@@ -92,6 +92,7 @@ const AdminOrders = () => {
   const [incompleteFilter, setIncompleteFilter] = useState("Today");
   const [activeIncompleteTab, setActiveIncompleteTab] = useState("Processing");
   const [incompleteSourceFilter, setIncompleteSourceFilter] = useState<"all" | "ip_blocked" | "abandoned_form">("all");
+  const [incompleteDateFilter, setIncompleteDateFilter] = useState<IncompleteDateFilter>("all");
   const [deliveryRatio, setDeliveryRatio] = useState([0]);
   const [searchQuery, setSearchQuery] = useState("");
   const [newOrderOpen, setNewOrderOpen] = useState(false);
@@ -123,8 +124,8 @@ const AdminOrders = () => {
     "Hold": "on_hold", "Cancelled": "cancelled", "Deleted": "deleted"
   };
   const incompleteStatusFilter = incompleteStatusMap[activeIncompleteTab] || "processing";
-  const { data: incompleteOrders = [], isLoading: incompleteLoading } = useIncompleteOrders(incompleteStatusFilter, incompleteSourceFilter);
-  const { data: incompleteCounts = {} } = useIncompleteOrderCounts(incompleteSourceFilter);
+  const { data: incompleteOrders = [], isLoading: incompleteLoading } = useIncompleteOrders(incompleteStatusFilter, incompleteSourceFilter, incompleteDateFilter);
+  const { data: incompleteCounts = {} } = useIncompleteOrderCounts(incompleteSourceFilter, incompleteDateFilter);
   const updateIncompleteStatus = useUpdateIncompleteOrderStatus();
   const deleteIncomplete = useDeleteIncompleteOrder();
   const convertIncomplete = useConvertIncompleteToOrder();
@@ -262,6 +263,29 @@ const AdminOrders = () => {
                 }`}
               >
                 <span>{f.icon}</span> {f.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Date filter */}
+          <div className="flex items-center gap-1 bg-card rounded-xl border border-border/60 p-1 w-fit">
+            {([
+              { key: "all" as IncompleteDateFilter, label: "সব সময়" },
+              { key: "today" as IncompleteDateFilter, label: "আজ" },
+              { key: "yesterday" as IncompleteDateFilter, label: "গতকাল" },
+              { key: "7days" as IncompleteDateFilter, label: "৭ দিন" },
+              { key: "30days" as IncompleteDateFilter, label: "৩০ দিন" },
+            ]).map((f) => (
+              <button
+                key={f.key}
+                onClick={() => setIncompleteDateFilter(f.key)}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                  incompleteDateFilter === f.key
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+                }`}
+              >
+                {f.label}
               </button>
             ))}
           </div>
