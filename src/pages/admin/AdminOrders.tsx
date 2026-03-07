@@ -279,14 +279,21 @@ const AdminOrders = () => {
   const deleteIncomplete = useDeleteIncompleteOrder();
   const convertIncomplete = useConvertIncompleteToOrder();
 
-  // Filter products for search
+  // Filter products for search — show top selling (by order count) when empty
   const filteredProducts = useMemo(() => {
-    if (!productSearch.trim()) return allProducts.slice(0, 10);
+    // Build a sales count map from allOrderItems
+    const salesMap: Record<string, number> = {};
+    allOrderItems.forEach((oi: any) => {
+      const key = oi.product_id || oi.product_name;
+      salesMap[key] = (salesMap[key] || 0) + 1;
+    });
+    const sorted = [...allProducts].sort((a: any, b: any) => (salesMap[b.id] || 0) - (salesMap[a.id] || 0));
+    if (!productSearch.trim()) return sorted.slice(0, 15);
     const q = productSearch.toLowerCase();
-    return allProducts.filter((p: any) =>
+    return sorted.filter((p: any) =>
       p.name.toLowerCase().includes(q) || p.product_code.toLowerCase().includes(q)
-    ).slice(0, 10);
-  }, [allProducts, productSearch]);
+    ).slice(0, 15);
+  }, [allProducts, productSearch, allOrderItems]);
 
   // Bangladesh districts list removed - using bdDistrictList const above
 
