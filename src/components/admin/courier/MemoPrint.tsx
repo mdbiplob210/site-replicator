@@ -152,11 +152,21 @@ export function MemoPrint({ order, courierOrder, courierProvider, orderItems }: 
             </>
           )}
 
+          {(order as any).courier_note && (
+            <>
+              <div className="divider" />
+              <div style={{ background: '#fff3cd', padding: '6px 8px', borderRadius: '4px', border: '1px solid #ffc107' }}>
+                <span className="label">কুরিয়ার নোট: </span>
+                <span>{(order as any).courier_note}</span>
+              </div>
+            </>
+          )}
+
           {order.notes && (
             <>
               <div className="divider" />
               <div>
-                <span className="label">নোট: </span>
+                <span className="label">স্টাফ নোট: </span>
                 <span>{order.notes}</span>
               </div>
             </>
