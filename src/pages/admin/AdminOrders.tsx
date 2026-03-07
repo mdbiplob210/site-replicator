@@ -73,6 +73,74 @@ const orderStatusSettings = [
   { label: "Incomplete", color: "bg-amber-400" },
 ];
 
+  // Export filtered orders to Excel
+  const handleExport = useCallback(() => {
+    if (filteredOrders.length === 0) {
+      toast.error("এক্সপোর্ট করার জন্য কোনো অর্ডার নেই!");
+      return;
+    }
+    const exportData = filteredOrders.map((o) => ({
+      "Order #": o.order_number,
+      "Customer": o.customer_name,
+      "Phone": o.customer_phone || "",
+      "Address": o.customer_address || "",
+      "Product Cost": Number(o.product_cost),
+      "Delivery": Number(o.delivery_charge),
+      "Discount": Number(o.discount),
+      "Total": Number(o.total_amount),
+      "Status": getStatusLabel(o.status),
+      "Source": o.source || "প্যানেল",
+      "Notes": o.notes || "",
+      "Date": format(new Date(o.created_at), "dd MMM yyyy, hh:mm a"),
+    }));
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Orders");
+    XLSX.writeFile(wb, `orders-${format(new Date(), "yyyy-MM-dd")}.xlsx`);
+    toast.success(`${filteredOrders.length}টি অর্ডার এক্সপোর্ট হয়েছে!`);
+  }, [filteredOrders]);
+
+  // Print filtered orders
+  const handlePrint = useCallback(() => {
+    if (filteredOrders.length === 0) {
+      toast.error("প্রিন্ট করার জন্য কোনো অর্ডার নেই!");
+      return;
+    }
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) return;
+    const rows = filteredOrders.map((o) => `
+      <tr>
+        <td style="padding:6px 10px;border:1px solid #ddd;font-family:monospace;font-weight:600">${o.order_number}</td>
+        <td style="padding:6px 10px;border:1px solid #ddd">${o.customer_name}</td>
+        <td style="padding:6px 10px;border:1px solid #ddd">${o.customer_phone || "—"}</td>
+        <td style="padding:6px 10px;border:1px solid #ddd">${o.customer_address || "—"}</td>
+        <td style="padding:6px 10px;border:1px solid #ddd;text-align:right">৳${Number(o.total_amount).toLocaleString()}</td>
+        <td style="padding:6px 10px;border:1px solid #ddd">${getStatusLabel(o.status)}</td>
+        <td style="padding:6px 10px;border:1px solid #ddd">${format(new Date(o.created_at), "dd MMM yyyy")}</td>
+      </tr>
+    `).join("");
+    printWindow.document.write(`
+      <html><head><title>Orders Print</title></head>
+      <body style="font-family:Arial,sans-serif;padding:20px">
+        <h2 style="margin-bottom:10px">Orders Report — ${format(new Date(), "dd MMM yyyy")}</h2>
+        <p style="color:#666;margin-bottom:15px">${filteredOrders.length}টি অর্ডার</p>
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead><tr style="background:#f5f5f5">
+            <th style="padding:8px 10px;border:1px solid #ddd;text-align:left">Order #</th>
+            <th style="padding:8px 10px;border:1px solid #ddd;text-align:left">Customer</th>
+            <th style="padding:8px 10px;border:1px solid #ddd;text-align:left">Phone</th>
+            <th style="padding:8px 10px;border:1px solid #ddd;text-align:left">Address</th>
+            <th style="padding:8px 10px;border:1px solid #ddd;text-align:right">Total</th>
+            <th style="padding:8px 10px;border:1px solid #ddd;text-align:left">Status</th>
+            <th style="padding:8px 10px;border:1px solid #ddd;text-align:left">Date</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </body></html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+  }, [filteredOrders]);
 
 const dateFilterOptions = [
   "Today", "Yesterday", "Last 7 Days", "Last 14 Days", "Last 30 Days", "Last Year", "Custom Range"
