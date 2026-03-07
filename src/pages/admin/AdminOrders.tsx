@@ -113,8 +113,8 @@ const AdminOrders = () => {
   const [orderItems, setOrderItems] = useState<OrderItemInput[]>([]);
   const [productSearch, setProductSearch] = useState("");
   const statusFilter = getStatusFromTab(activeTab);
-  const { data: orders = [], isLoading } = useOrders(statusFilter, orderDateFilter);
-  const { data: counts = {} } = useOrderCounts(orderDateFilter);
+  const { data: orders = [], isLoading } = useOrders(statusFilter, orderDateFilter, customDateFrom, customDateTo);
+  const { data: counts = {} } = useOrderCounts(orderDateFilter, customDateFrom, customDateTo);
   const createOrder = useCreateOrder();
   const updateStatus = useUpdateOrderStatus();
   const deleteOrder = useDeleteOrder();
