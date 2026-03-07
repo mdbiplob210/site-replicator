@@ -89,7 +89,6 @@ const App = () => (
           <Route path="/admin/analytics" element={<ProtectedAdminRoute><AdminAnalytics /></ProtectedAdminRoute>} />
           <Route path="/admin/meta-ads" element={<ProtectedAdminRoute><AdminMetaAds /></ProtectedAdminRoute>} />
           <Route path="/admin/api-keys" element={<ProtectedAdminRoute><AdminApiKeys /></ProtectedAdminRoute>} />
-          <Route path="/admin/api-keys" element={<ProtectedAdminRoute><AdminApiKeys /></ProtectedAdminRoute>} />
           <Route path="/admin/orders/backfill-items" element={<ProtectedAdminRoute><AdminBackfillOrderItems /></ProtectedAdminRoute>} />
           <Route path="/admin/automation" element={<ProtectedAdminRoute><AdminAutomation /></ProtectedAdminRoute>} />
           <Route path="/admin/backup" element={<ProtectedAdminRoute><AdminBackup /></ProtectedAdminRoute>} />
