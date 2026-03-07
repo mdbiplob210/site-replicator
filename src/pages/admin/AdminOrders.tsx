@@ -114,6 +114,15 @@ const AdminOrders = () => {
   const [filterDistrict, setFilterDistrict] = useState("");
   const [filterPaymentStatus, setFilterPaymentStatus] = useState("all");
   const [filterCourierProvider, setFilterCourierProvider] = useState("all");
+  const [filterCourierStatus, setFilterCourierStatus] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("");
+  const [filterProductSearch, setFilterProductSearch] = useState("");
+  const [filterCategory, setFilterCategory] = useState("all");
+  const [filterCourierCharged, setFilterCourierCharged] = useState("all");
+  const [filterNotes, setFilterNotes] = useState("");
+  const [filterUrl, setFilterUrl] = useState("");
+  const [filterOrderTag, setFilterOrderTag] = useState("");
+  const [filterSalesType, setFilterSalesType] = useState("all");
 
   // New order form state
   const [customerName, setCustomerName] = useState("");
