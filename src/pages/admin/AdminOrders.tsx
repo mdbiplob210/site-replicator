@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Calendar as CalendarWidget } from "@/components/ui/calendar";
@@ -109,6 +111,9 @@ const AdminOrders = () => {
   const [filterAmountMax, setFilterAmountMax] = useState("");
   const [filterDeviceType, setFilterDeviceType] = useState("all");
   const [filterAddress, setFilterAddress] = useState("");
+  const [filterDistrict, setFilterDistrict] = useState("");
+  const [filterPaymentStatus, setFilterPaymentStatus] = useState("all");
+  const [filterCourierProvider, setFilterCourierProvider] = useState("all");
 
   // New order form state
   const [customerName, setCustomerName] = useState("");
@@ -130,6 +135,35 @@ const AdminOrders = () => {
   const { data: nextOrderNumber = "ORD-00001" } = useNextOrderNumber();
   const { data: allProducts = [] } = usePublicProducts();
 
+  // Courier orders for filtering
+  const { data: courierOrders = [] } = useQuery({
+    queryKey: ["courier-orders-filter"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("courier_orders")
+        .select("order_id, courier_provider_id, courier_status");
+      if (error) throw error;
+      return data;
+    },
+  });
+  const { data: courierProviders = [] } = useQuery({
+    queryKey: ["courier-providers-filter"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("courier_providers")
+        .select("id, name, slug");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Build courier lookup maps
+  const courierByOrderId = useMemo(() => {
+    const map: Record<string, { provider_id: string; status: string }> = {};
+    courierOrders.forEach((co: any) => { map[co.order_id] = { provider_id: co.courier_provider_id, status: co.courier_status }; });
+    return map;
+  }, [courierOrders]);
+
   // Incomplete orders hooks
   const incompleteStatusMap: Record<string, string> = {
     "Processing": "processing", "Confirmed": "confirmed", "Converted": "converted",
@@ -150,6 +184,16 @@ const AdminOrders = () => {
       p.name.toLowerCase().includes(q) || p.product_code.toLowerCase().includes(q)
     ).slice(0, 10);
   }, [allProducts, productSearch]);
+
+  // Bangladesh districts for filtering
+  const bdDistricts = useMemo(() => [
+    "ঢাকা", "চট্টগ্রাম", "রাজশাহী", "খুলনা", "বরিশাল", "সিলেট", "রংপুর", "ময়মনসিংহ",
+    "কুমিল্লা", "গাজীপুর", "নারায়ণগঞ্জ", "টাঙ্গাইল", "কিশোরগঞ্জ", "মানিকগঞ্জ", "মুন্সীগঞ্জ",
+    "নরসিংদী", "ফরিদপুর", "গোপালগঞ্জ", "মাদারীপুর", "শরীয়তপুর", "রাজবাড়ী",
+    "Dhaka", "Chittagong", "Rajshahi", "Khulna", "Barisal", "Sylhet", "Rangpur", "Mymensingh",
+    "Comilla", "Gazipur", "Narayanganj", "Tangail", "Kishoreganj", "Manikganj",
+    "Cox's Bazar", "Bogra", "Jessore", "Dinajpur", "Pabna", "Noakhali", "Brahmanbaria"
+  ], []);
 
   // Filtered orders by search + advanced filters
   const filteredOrders = useMemo(() => {
@@ -186,11 +230,34 @@ const AdminOrders = () => {
       if (filterAddress) {
         if (!(o.customer_address && o.customer_address.toLowerCase().includes(filterAddress.toLowerCase()))) return false;
       }
+      // District filter
+      if (filterDistrict) {
+        if (!(o.customer_address && o.customer_address.toLowerCase().includes(filterDistrict.toLowerCase()))) return false;
+      }
+      // Payment status (based on delivery_charge vs total)
+      if (filterPaymentStatus !== "all") {
+        if (filterPaymentStatus === "paid" && Number(o.delivery_charge) > 0) return false;
+        if (filterPaymentStatus === "cod" && Number(o.delivery_charge) === 0) return false;
+        if (filterPaymentStatus === "free_delivery" && Number(o.delivery_charge) > 0) return false;
+      }
+      // Courier provider
+      if (filterCourierProvider !== "all") {
+        const co = courierByOrderId[o.id];
+        if (filterCourierProvider === "no_courier") {
+          if (co) return false;
+        } else {
+          if (!co || co.provider_id !== filterCourierProvider) return false;
+        }
+      }
       return true;
     });
-  }, [orders, searchQuery, filterSource, filterPhone, filterAmountMin, filterAmountMax, filterDeviceType, filterAddress]);
+  }, [orders, searchQuery, filterSource, filterPhone, filterAmountMin, filterAmountMax, filterDeviceType, filterAddress, filterDistrict, filterPaymentStatus, filterCourierProvider, courierByOrderId]);
 
-  const activeFilterCount = [filterSource, filterPhone, filterAmountMin, filterAmountMax, filterAddress].filter(Boolean).length + (filterDeviceType !== "all" ? 1 : 0) + (orderDateFilter !== "all" ? 1 : 0);
+  const activeFilterCount = [filterSource, filterPhone, filterAmountMin, filterAmountMax, filterAddress, filterDistrict].filter(Boolean).length
+    + (filterDeviceType !== "all" ? 1 : 0)
+    + (orderDateFilter !== "all" ? 1 : 0)
+    + (filterPaymentStatus !== "all" ? 1 : 0)
+    + (filterCourierProvider !== "all" ? 1 : 0);
 
   const clearAllFilters = () => {
     setFilterSource("");
@@ -199,6 +266,9 @@ const AdminOrders = () => {
     setFilterAmountMax("");
     setFilterDeviceType("all");
     setFilterAddress("");
+    setFilterDistrict("");
+    setFilterPaymentStatus("all");
+    setFilterCourierProvider("all");
     setOrderDateFilter("all");
     setCustomDateFrom(undefined);
     setCustomDateTo(undefined);
@@ -832,7 +902,47 @@ const AdminOrders = () => {
                 </div>
               </div>
 
-              {/* Bottom Action Bar */}
+              {/* Row 3: District, Payment Status, Courier Provider */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground">🏘️ জেলা / District</Label>
+                  <Input placeholder="জেলা সার্চ..." className="rounded-xl h-9 text-sm" value={filterDistrict} onChange={(e) => setFilterDistrict(e.target.value)} list="district-suggestions" />
+                  <datalist id="district-suggestions">
+                    {bdDistricts.map((d) => <option key={d} value={d} />)}
+                  </datalist>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground">💰 পেমেন্ট স্ট্যাটাস</Label>
+                  <Select value={filterPaymentStatus} onValueChange={setFilterPaymentStatus}>
+                    <SelectTrigger className="rounded-xl h-9 text-sm">
+                      <SelectValue placeholder="সব" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">সব</SelectItem>
+                      <SelectItem value="cod">💵 Cash on Delivery</SelectItem>
+                      <SelectItem value="paid">✅ Paid / Prepaid</SelectItem>
+                      <SelectItem value="free_delivery">🎁 Free Delivery</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground">🚚 কুরিয়ার প্রোভাইডার</Label>
+                  <Select value={filterCourierProvider} onValueChange={setFilterCourierProvider}>
+                    <SelectTrigger className="rounded-xl h-9 text-sm">
+                      <SelectValue placeholder="সব কুরিয়ার" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">সব কুরিয়ার</SelectItem>
+                      <SelectItem value="no_courier">📦 কুরিয়ারে নেই</SelectItem>
+                      {courierProviders.map((cp: any) => (
+                        <SelectItem key={cp.id} value={cp.id}>{cp.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+
               <div className="flex items-center justify-between pt-2 border-t border-border/30">
                 <div className="flex items-center gap-2">
                   {activeFilterCount > 0 && (
