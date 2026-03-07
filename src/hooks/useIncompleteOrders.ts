@@ -46,9 +46,9 @@ export interface IncompleteOrder {
   updated_at: string;
 }
 
-export function useIncompleteOrders(status?: string, sourceFilter?: "all" | "ip_blocked" | "abandoned_form") {
+export function useIncompleteOrders(status?: string, sourceFilter?: "all" | "ip_blocked" | "abandoned_form", dateFilter?: IncompleteDateFilter) {
   return useQuery({
-    queryKey: ["incomplete-orders", status, sourceFilter],
+    queryKey: ["incomplete-orders", status, sourceFilter, dateFilter],
     queryFn: async () => {
       let query = supabase
         .from("incomplete_orders" as any)
@@ -65,6 +65,10 @@ export function useIncompleteOrders(status?: string, sourceFilter?: "all" | "ip_
         query = query.neq("block_reason", "abandoned_form");
       }
 
+      const range = getDateRange(dateFilter || "all");
+      if (range.from) query = query.gte("created_at", range.from);
+      if (range.to) query = query.lt("created_at", range.to);
+
       const { data, error } = await query;
       if (error) throw error;
       return data as unknown as IncompleteOrder[];
@@ -72,9 +76,9 @@ export function useIncompleteOrders(status?: string, sourceFilter?: "all" | "ip_
   });
 }
 
-export function useIncompleteOrderCounts(sourceFilter?: "all" | "ip_blocked" | "abandoned_form") {
+export function useIncompleteOrderCounts(sourceFilter?: "all" | "ip_blocked" | "abandoned_form", dateFilter?: IncompleteDateFilter) {
   return useQuery({
-    queryKey: ["incomplete-order-counts", sourceFilter],
+    queryKey: ["incomplete-order-counts", sourceFilter, dateFilter],
     queryFn: async () => {
       let query = supabase
         .from("incomplete_orders" as any)
@@ -85,6 +89,10 @@ export function useIncompleteOrderCounts(sourceFilter?: "all" | "ip_blocked" | "
       } else if (sourceFilter === "ip_blocked") {
         query = query.neq("block_reason", "abandoned_form");
       }
+
+      const range = getDateRange(dateFilter || "all");
+      if (range.from) query = query.gte("created_at", range.from);
+      if (range.to) query = query.lt("created_at", range.to);
 
       const { data, error } = await query;
       if (error) throw error;
