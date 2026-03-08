@@ -80,6 +80,54 @@ export type Database = {
         }
         Relationships: []
       }
+      blocked_ips: {
+        Row: {
+          blocked_at: string
+          blocked_by: string | null
+          id: string
+          ip_address: string
+          reason: string | null
+        }
+        Insert: {
+          blocked_at?: string
+          blocked_by?: string | null
+          id?: string
+          ip_address: string
+          reason?: string | null
+        }
+        Update: {
+          blocked_at?: string
+          blocked_by?: string | null
+          id?: string
+          ip_address?: string
+          reason?: string | null
+        }
+        Relationships: []
+      }
+      blocked_phones: {
+        Row: {
+          blocked_at: string
+          blocked_by: string | null
+          id: string
+          phone_number: string
+          reason: string | null
+        }
+        Insert: {
+          blocked_at?: string
+          blocked_by?: string | null
+          id?: string
+          phone_number: string
+          reason?: string | null
+        }
+        Update: {
+          blocked_at?: string
+          blocked_by?: string | null
+          id?: string
+          phone_number?: string
+          reason?: string | null
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -312,6 +360,39 @@ export type Database = {
           label?: string
           notes?: string | null
           type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      fraud_settings: {
+        Row: {
+          block_popup_message: string
+          delivery_ratio_enabled: boolean
+          device_fingerprint_enabled: boolean
+          id: string
+          min_delivery_ratio: number
+          protection_enabled: boolean
+          repeat_block_duration: string
+          updated_at: string
+        }
+        Insert: {
+          block_popup_message?: string
+          delivery_ratio_enabled?: boolean
+          device_fingerprint_enabled?: boolean
+          id?: string
+          min_delivery_ratio?: number
+          protection_enabled?: boolean
+          repeat_block_duration?: string
+          updated_at?: string
+        }
+        Update: {
+          block_popup_message?: string
+          delivery_ratio_enabled?: boolean
+          device_fingerprint_enabled?: boolean
+          id?: string
+          min_delivery_ratio?: number
+          protection_enabled?: boolean
+          repeat_block_duration?: string
           updated_at?: string
         }
         Relationships: []
