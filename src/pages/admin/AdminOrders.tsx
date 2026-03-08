@@ -76,6 +76,13 @@ const orderStatusSettings = [
   { label: "Delete", color: "bg-red-600" },
   { label: "Incomplete", color: "bg-amber-400" },
 ];
+const CANCEL_REASONS = [
+  "কাস্টমারের কাছে টাকা নাই",
+  "কাস্টমারের পছন্দ হচ্ছে না",
+  "কাস্টমার নিতে চাচ্ছে না",
+  "ডেলিভারি এরিয়ার বাইরে",
+  "ভুল অর্ডার / ডুপ্লিকেট",
+];
 
 
 const dateFilterOptions = [
