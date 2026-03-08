@@ -547,6 +547,10 @@ export type Database = {
           checkout_html: string | null
           created_at: string
           custom_head_scripts: string | null
+          exit_popup_discount: number
+          exit_popup_enabled: boolean
+          exit_popup_message: string
+          exit_popup_timer: number
           fb_pixel_id: string | null
           gtm_id: string | null
           html_content: string
@@ -561,6 +565,10 @@ export type Database = {
           checkout_html?: string | null
           created_at?: string
           custom_head_scripts?: string | null
+          exit_popup_discount?: number
+          exit_popup_enabled?: boolean
+          exit_popup_message?: string
+          exit_popup_timer?: number
           fb_pixel_id?: string | null
           gtm_id?: string | null
           html_content?: string
@@ -575,6 +583,10 @@ export type Database = {
           checkout_html?: string | null
           created_at?: string
           custom_head_scripts?: string | null
+          exit_popup_discount?: number
+          exit_popup_enabled?: boolean
+          exit_popup_message?: string
+          exit_popup_timer?: number
           fb_pixel_id?: string | null
           gtm_id?: string | null
           html_content?: string
