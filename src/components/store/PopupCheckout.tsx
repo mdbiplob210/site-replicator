@@ -24,9 +24,11 @@ interface PopupCheckoutProps {
   item: CheckoutItem | null;
   open: boolean;
   onClose: () => void;
+  discount?: number;
+  onExitIntent?: () => void;
 }
 
-export function PopupCheckout({ item, open, onClose }: PopupCheckoutProps) {
+export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent }: PopupCheckoutProps) {
   const [form, setForm] = useState({ name: "", phone: "", address: "", notes: "" });
   const [submitting, setSubmitting] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
@@ -139,7 +141,8 @@ export function PopupCheckout({ item, open, onClose }: PopupCheckoutProps) {
         customer_address: form.address,
         notes: form.notes || null,
         total_amount: total,
-        product_cost: total,
+        product_cost: subtotal,
+        discount: discount,
         status: "processing",
         source: "website",
         device_info: /Mobi|Android/i.test(navigator.userAgent) ? "Mobile" : "Desktop",
@@ -231,7 +234,21 @@ export function PopupCheckout({ item, open, onClose }: PopupCheckoutProps) {
   };
 
   const handleClose = () => {
-    if (!orderSubmitted.current) saveAbandonedOrder();
+    if (!orderSubmitted.current) {
+      saveAbandonedOrder();
+      // Trigger exit intent discount if no order was placed
+      if (onExitIntent && discount === 0) {
+        onExitIntent();
+        return; // Don't close yet, let parent show discount banner
+      }
+    }
+    setForm({ name: "", phone: "", address: "", notes: "" });
+    setOrderComplete(false);
+    formInteracted.current = false;
+    onClose();
+  };
+
+  const handleForceClose = () => {
     setForm({ name: "", phone: "", address: "", notes: "" });
     setOrderComplete(false);
     formInteracted.current = false;
@@ -240,7 +257,8 @@ export function PopupCheckout({ item, open, onClose }: PopupCheckoutProps) {
 
   if (!open || !currentItem) return null;
 
-  const total = currentItem.price * qty;
+  const subtotal = currentItem.price * qty;
+  const total = Math.max(0, subtotal - discount);
 
   return (
     <div className="fixed inset-0 z-[999] flex items-end sm:items-center justify-center">
@@ -313,7 +331,12 @@ export function PopupCheckout({ item, open, onClose }: PopupCheckoutProps) {
 
               {/* Summary */}
               <div className="bg-gray-50 rounded-xl p-3 space-y-1.5 text-sm">
-                <div className="flex justify-between"><span className="text-gray-500">সাবটোটাল</span><span>৳{total}</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">সাবটোটাল</span><span>৳{subtotal}</span></div>
+                {discount > 0 && (
+                  <div className="flex justify-between text-red-500 font-semibold">
+                    <span>🎁 বিশেষ ছাড়</span><span>-৳{discount}</span>
+                  </div>
+                )}
                 <div className="flex justify-between"><span className="text-gray-500">ডেলিভারি চার্জ</span><span className="text-green-600">ফ্রি</span></div>
                 <div className="flex justify-between font-bold text-base border-t pt-1.5"><span>মোট</span><span className="text-green-600">৳{total}</span></div>
               </div>
