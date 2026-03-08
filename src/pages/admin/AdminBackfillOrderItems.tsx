@@ -158,7 +158,7 @@ export default function AdminBackfillOrderItems() {
             unit_price: cost,
             total_price: cost,
           };
-          const { error } = await supabase.from("order_items" as any).insert([row] as any);
+          const { error } = await supabase.from("order_items").insert([row]);
           if (!error) mapped++;
         }
       }
