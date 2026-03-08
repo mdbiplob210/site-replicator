@@ -82,7 +82,7 @@ export function AdminSidebar() {
               </div>
               <div>
                 <p className="text-sm font-bold text-white tracking-tight">Quick-shopbd</p>
-                <p className="text-[10px] text-sidebar-foreground/50 font-semibold tracking-[0.2em] uppercase">SOHOZ PRO v1.1</p>
+                <p className="text-[10px] text-sidebar-foreground/50 font-semibold tracking-[0.2em] uppercase">QUICK SHOP BD v1.1</p>
               </div>
             </div>
           ) : (

@@ -19,7 +19,7 @@ const Header = () => {
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
         <a href="#" className="flex items-center gap-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-lg">S</div>
-          <span className="text-xl font-bold text-foreground">SOHOZ PRO</span>
+          <span className="text-xl font-bold text-foreground">QUICK SHOP BD</span>
         </a>
 
         <nav className="hidden items-center gap-1 md:flex">

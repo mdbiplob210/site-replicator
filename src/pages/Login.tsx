@@ -503,7 +503,7 @@ const Login = () => {
               </p>
 
               <p className="mt-4 text-center text-[10px]" style={{ color: "rgba(255,255,255,0.25)" }}>
-                © 2026 SOHOZ PRO — Secure & Encrypted
+                © 2026 QUICK SHOP BD — Secure & Encrypted
               </p>
             </div>
           )}

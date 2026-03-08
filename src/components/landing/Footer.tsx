@@ -38,7 +38,7 @@ const Footer = () => {
           </div>
         </div>
         <div className="mt-8 border-t border-border pt-6 text-center text-sm text-muted-foreground">
-          © 2026 SOHOZ PRO — সকল অধিকার সংরক্ষিত
+          © 2026 QUICK SHOP BD — সকল অধিকার সংরক্ষিত
         </div>
       </div>
     </footer>
