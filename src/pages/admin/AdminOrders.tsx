@@ -1798,7 +1798,7 @@ const AdminOrders = () => {
                   const custStats = order.customer_phone ? customerStatsByPhone[order.customer_phone] : null;
                   const employeeName = assignmentByOrderId[order.id] || "";
                   return (
-                  <TableRow key={order.id} className="hover:bg-secondary/20 cursor-pointer group border-b border-border/20" onClick={() => setDetailOrderId(order.id)}>
+                  <TableRow key={order.id} className={cn("hover:bg-primary/5 cursor-pointer group border-l-[3px] transition-colors", idx % 2 === 0 ? "bg-background border-l-primary/40" : "bg-muted/20 border-l-transparent", selectedOrderIds.has(order.id) && "bg-primary/10 border-l-primary")} onClick={() => setDetailOrderId(order.id)}>
                     {/* Checkbox */}
                     <TableCell className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
                       <Checkbox checked={selectedOrderIds.has(order.id)} onCheckedChange={(checked) => {
