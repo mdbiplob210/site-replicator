@@ -239,7 +239,16 @@ const AdminOrders = () => {
   });
   const blockedPhoneSet = new Set(blockedPhones);
 
-  // Courier location hooks for new order form
+  // Fetch order sources
+  const { data: orderSources = [], refetch: refetchOrderSources } = useQuery({
+    queryKey: ["order-sources"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("order_sources" as any).select("*").eq("is_active", true).order("created_at", { ascending: true });
+      if (error) return [];
+      return data as any[];
+    },
+  });
+
   const { data: courierCities = [], isLoading: citiesLoading } = useCourierCities(selectedCourierId);
   const { data: courierZones = [], isLoading: zonesLoading } = useCourierZones(selectedCourierId, selectedCityId);
   const { data: courierAreas = [], isLoading: areasLoading } = useCourierAreas(selectedCourierId, selectedZoneId);
