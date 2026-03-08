@@ -546,7 +546,7 @@ const AdminOrders = () => {
     setFilterSource(""); setFilterPhone(""); setFilterAmountMin(""); setFilterAmountMax("");
     setFilterDeviceType("all"); setFilterAddress(""); setFilterDistrict("all"); setFilterThana("all"); setFilterZone("all");
     setFilterPaymentStatus("all"); setFilterCourierProvider("all"); setFilterCourierStatus("all");
-    setFilterStatus(""); setFilterProductSearch(""); setFilterCategory("all");
+    setFilterStatus(""); setFilterProductSearch(""); setFilterProductIds([]); setFilterProductInput(""); setFilterCategory("all");
     setFilterCourierCharged("all"); setFilterNotes(""); setFilterUrl("");
     setFilterOrderTag(""); setFilterSalesType("all");
     setOrderDateFilter("all"); setCustomDateFrom(undefined); setCustomDateTo(undefined);
