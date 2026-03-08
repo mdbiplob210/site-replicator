@@ -2101,7 +2101,7 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
     finally { setIsAddingNote(false); }
   };
 
-
+  const handleSaveChanges = async () => {
     if (!order || !orderId) return;
     setIsSaving(true);
     try {
