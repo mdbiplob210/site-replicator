@@ -41,6 +41,10 @@ const emptyPage: Partial<LandingPage> = {
   tiktok_pixel_id: "",
   gtm_id: "",
   custom_head_scripts: "",
+  exit_popup_enabled: false,
+  exit_popup_discount: 50,
+  exit_popup_timer: 300,
+  exit_popup_message: "এই ছাড়টি শুধু আপনার জন্য!",
 };
 
 export default function AdminLandingPages() {
