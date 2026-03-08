@@ -39,6 +39,36 @@ const CheckoutPage = () => {
     abandonedSaved.current = true;
     
     try {
+      // Upsert: if same phone exists in incomplete_orders (processing), update it instead of creating new
+      const phoneVal = form.phone?.trim();
+      if (phoneVal) {
+        const { data: existing } = await supabase
+          .from("incomplete_orders" as any)
+          .select("id")
+          .eq("customer_phone", phoneVal)
+          .eq("status", "processing")
+          .limit(1);
+        
+        if (existing && existing.length > 0) {
+          await supabase.from("incomplete_orders" as any).update({
+            customer_name: form.name || "Unknown",
+            customer_address: form.address || null,
+            product_name: item.name,
+            product_code: item.productCode || null,
+            quantity: item.qty,
+            unit_price: item.price,
+            total_amount: item.price * item.qty,
+            notes: form.notes || null,
+            block_reason: "abandoned_form",
+            landing_page_slug: "website-store",
+            device_info: /Mobi|Android/i.test(navigator.userAgent) ? "Mobile" : "Desktop",
+            user_agent: navigator.userAgent.substring(0, 200),
+            updated_at: new Date().toISOString(),
+          } as any).eq("id", (existing as any)[0].id);
+          return;
+        }
+      }
+      
       await supabase.from("incomplete_orders" as any).insert({
         customer_name: form.name || "Unknown",
         customer_phone: form.phone || null,
