@@ -2940,13 +2940,19 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                         )}
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-foreground truncate">{item.product_name}</p>
-                          <p className="text-xs text-muted-foreground">{item.product_code}</p>
+                          <p className="text-xs text-muted-foreground">{item.product_code} · ৳{Number(item.unit_price).toLocaleString()}</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-4 text-sm">
-                        <span className="text-muted-foreground">×{item.quantity}</span>
-                        <span className="text-muted-foreground">৳{Number(item.unit_price).toLocaleString()}</span>
+                      <div className="flex items-center gap-2 text-sm">
+                        <div className="flex items-center gap-1">
+                          <button onClick={() => updateDetailItemQty(item, item.quantity - 1)} className="h-7 w-7 rounded-lg border border-border flex items-center justify-center hover:bg-secondary text-foreground">−</button>
+                          <span className="w-8 text-center text-sm font-semibold text-foreground">{item.quantity}</span>
+                          <button onClick={() => updateDetailItemQty(item, item.quantity + 1)} className="h-7 w-7 rounded-lg border border-border flex items-center justify-center hover:bg-secondary text-foreground">+</button>
+                        </div>
                         <span className="font-semibold text-foreground w-20 text-right">৳{Number(item.total_price).toLocaleString()}</span>
+                        <button onClick={() => removeDetailItem(item)} className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-destructive/10 text-muted-foreground hover:text-destructive">
+                          <X className="h-3.5 w-3.5" />
+                        </button>
                       </div>
                     </div>
                     );
