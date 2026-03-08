@@ -846,7 +846,7 @@ const AdminOrders = () => {
         notes: notes || null,
         courier_note: courierNote || null,
         source: selectedOrderSource || "Panel",
-        status: "processing",
+        status: newOrderStatus as any,
       } as any,
       items: orderItems,
     }, {
