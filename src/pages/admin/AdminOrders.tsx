@@ -2469,7 +2469,8 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                             {log.action === "status_changed" && <>স্ট্যাটাস পরিবর্তন: <Badge variant="outline" className="text-[9px] h-4">{log.old_value}</Badge> → <Badge variant="secondary" className="text-[9px] h-4">{log.new_value}</Badge></>}
                             {log.action === "field_edited" && <>"{log.field_name}" পরিবর্তন করেছে</>}
                             {log.action === "note_added" && "নোট যোগ করেছে"}
-                            {!["created", "status_changed", "field_edited", "note_added"].includes(log.action) && log.action}
+                            {log.action === "quick_note" && "📝 নোট যোগ করেছে"}
+                            {!["created", "status_changed", "field_edited", "note_added", "quick_note"].includes(log.action) && log.action}
                           </p>
                           {log.details && <p className="text-muted-foreground mt-0.5">{log.details}</p>}
                           <p className="text-muted-foreground/60 mt-0.5">{format(new Date(log.created_at), "dd MMM yyyy, hh:mm a")}</p>
