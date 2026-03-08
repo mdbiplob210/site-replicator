@@ -1939,46 +1939,80 @@ const AdminOrders = () => {
                       <p className="text-[11px] text-muted-foreground mt-0.5">{format(new Date(order.created_at), "dd MMM yy")}</p>
                       <p className="text-[10px] text-muted-foreground">{format(new Date(order.created_at), "hh:mm a")}</p>
                     </TableCell>
-                    {/* CUSTOMER: name, phone, stats, address */}
-                    <TableCell className="px-3 py-3">
-                      <p className="font-semibold text-foreground text-sm">{order.customer_name}</p>
+                    {/* CUSTOMER: name, phone with call/copy/whatsapp, address */}
+                    <TableCell className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
+                      <p className="font-semibold text-foreground text-sm cursor-pointer" onClick={() => setDetailOrderId(order.id)}>{order.customer_name}</p>
                       {order.customer_phone && (
-                        <div className="flex items-center gap-2 mt-0.5">
+                        <div className="flex items-center gap-1 mt-0.5">
                           <span className="text-xs font-mono text-primary font-semibold">{order.customer_phone}</span>
+                          <a href={`tel:${order.customer_phone}`} className="h-5 w-5 rounded flex items-center justify-center hover:bg-emerald-500/10 text-emerald-600" title="কল করুন">
+                            <Phone className="h-3 w-3" />
+                          </a>
+                          <button onClick={() => { navigator.clipboard.writeText(order.customer_phone || ""); toast.success("নম্বর কপি হয়েছে!"); }} className="h-5 w-5 rounded flex items-center justify-center hover:bg-secondary text-muted-foreground" title="কপি">
+                            <Copy className="h-3 w-3" />
+                          </button>
+                          <a href={`https://wa.me/${(order.customer_phone || "").replace(/[^0-9]/g, "").replace(/^0/, "880")}`} target="_blank" rel="noopener noreferrer" className="h-5 w-5 rounded flex items-center justify-center hover:bg-emerald-500/10 text-emerald-600" title="WhatsApp">
+                            <MessageSquare className="h-3 w-3" />
+                          </a>
                           {custStats && custStats.total > 0 && (
-                            <span className="flex items-center gap-0.5 text-[11px] text-muted-foreground">
-                              <BarChart3 className="h-3 w-3" />
+                            <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground ml-1">
+                              <BarChart3 className="h-2.5 w-2.5" />
                               <span className="font-semibold">{custStats.total}</span>
                             </span>
                           )}
                         </div>
                       )}
                       {order.customer_address && (
-                        <p className="text-[11px] text-muted-foreground mt-0.5 truncate max-w-[200px]">{order.customer_address}</p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5 truncate max-w-[200px] cursor-pointer" onClick={() => setDetailOrderId(order.id)}>{order.customer_address}</p>
                       )}
                     </TableCell>
-                    {/* PRODUCTS */}
-                    <TableCell className="px-3 py-3 text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        <div className="h-8 w-8 rounded-lg bg-secondary/60 flex items-center justify-center">
-                          <Package className="h-4 w-4 text-muted-foreground/50" />
+                    {/* PRODUCTS: show item image + name */}
+                    <TableCell className="px-3 py-3">
+                      {items.length > 0 ? (
+                        <div className="space-y-1 max-w-[180px]">
+                          {items.slice(0, 2).map((item: any, i: number) => {
+                            const imgUrl = item.product_id ? productImageMap[item.product_id] : productImageMap[item.product_name];
+                            return (
+                              <div key={i} className="flex items-center gap-1.5">
+                                {imgUrl ? (
+                                  <img src={imgUrl} alt="" className="h-6 w-6 rounded object-cover shrink-0 border border-border/40" />
+                                ) : (
+                                  <div className="h-6 w-6 rounded bg-secondary/60 flex items-center justify-center shrink-0">
+                                    <Package className="h-3 w-3 text-muted-foreground/40" />
+                                  </div>
+                                )}
+                                <span className="text-[11px] text-foreground truncate">{item.product_name}</span>
+                              </div>
+                            );
+                          })}
+                          {items.length > 2 && (
+                            <span className="text-[10px] text-muted-foreground">+{items.length - 2} আরো</span>
+                          )}
                         </div>
-                        <span className="text-sm text-foreground">
-                          <span className="font-semibold">{items.length}</span>
-                          <br />
-                          <span className="text-[11px] text-muted-foreground">{items.length === 1 ? 'item' : 'items'}</span>
-                        </span>
-                      </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
                     </TableCell>
                     {/* AMOUNT */}
                     <TableCell className="px-3 py-3 text-center">
                       <span className="text-base font-bold text-foreground">৳{Number(order.total_amount).toLocaleString()}</span>
                     </TableCell>
-                    {/* PAYMENT */}
-                    <TableCell className="px-3 py-3 text-center">
-                      <Badge variant="outline" className="text-[11px] font-semibold border-orange-300 text-orange-600 bg-orange-50 dark:bg-orange-900/20 dark:border-orange-700 dark:text-orange-400">
-                        Unpaid
-                      </Badge>
+                    {/* PAYMENT: Paid/Unpaid toggle */}
+                    <TableCell className="px-3 py-3 text-center" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        onClick={() => handleTogglePaymentStatus(order.id, (order as any).payment_status || "unpaid")}
+                        className="inline-block"
+                      >
+                        {((order as any).payment_status || "unpaid") === "paid" ? (
+                          <Badge variant="outline" className="text-[11px] font-semibold border-emerald-300 text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-700 dark:text-emerald-400 cursor-pointer">
+                            ✅ Paid
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-[11px] font-semibold border-orange-300 text-orange-600 bg-orange-50 dark:bg-orange-900/20 dark:border-orange-700 dark:text-orange-400 cursor-pointer">
+                            Unpaid
+                          </Badge>
+                        )}
+                      </button>
                       <p className="text-[10px] text-muted-foreground mt-1">COD</p>
                     </TableCell>
                     {/* STATUS */}
@@ -2000,11 +2034,22 @@ const AdminOrders = () => {
                         </SelectContent>
                       </Select>
                     </TableCell>
-                    {/* COURIER */}
-                    <TableCell className="px-3 py-3 text-center text-sm text-muted-foreground">
-                      {courierInfo ? courierInfo.provider_name : "—"}
+                    {/* COURIER: logo + name */}
+                    <TableCell className="px-3 py-3 text-center" onClick={(e) => e.stopPropagation()}>
+                      {courierInfo ? (
+                        <div className="flex items-center justify-center gap-1.5">
+                          {courierInfo.logo_url ? (
+                            <img src={courierInfo.logo_url} alt="" className="h-5 w-5 rounded object-contain" />
+                          ) : (
+                            <Truck className="h-3.5 w-3.5 text-violet-500" />
+                          )}
+                          <span className="text-xs font-medium text-foreground">{courierInfo.provider_name}</span>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
                     </TableCell>
-                    {/* NOTE */}
+                    {/* NOTE: inline view + add */}
                     <TableCell className="px-3 py-3 text-center" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-center gap-1">
                         {order.notes ? (
@@ -2024,17 +2069,46 @@ const AdminOrders = () => {
                             <MessageSquare className="h-3.5 w-3.5" />
                           </span>
                         )}
-                        <button className="h-7 w-7 rounded-lg flex items-center justify-center bg-primary/10 hover:bg-primary/20 transition-colors text-primary" title="নোট যোগ করুন" onClick={() => setDetailOrderId(order.id)}>
-                          <Plus className="h-3.5 w-3.5" />
-                        </button>
+                        <Popover open={inlineNoteOrderId === order.id} onOpenChange={(open) => {
+                          if (open) { setInlineNoteOrderId(order.id); setInlineNoteText(order.notes || ""); }
+                          else { setInlineNoteOrderId(null); setInlineNoteText(""); }
+                        }}>
+                          <PopoverTrigger asChild>
+                            <button className="h-7 w-7 rounded-lg flex items-center justify-center bg-primary/10 hover:bg-primary/20 transition-colors text-primary" title="নোট যোগ/এডিট করুন">
+                              <Plus className="h-3.5 w-3.5" />
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-72 p-3 rounded-xl">
+                            <p className="text-xs font-semibold text-foreground mb-2">নোট লিখুন</p>
+                            <Textarea
+                              placeholder="এখানে নোট লিখুন..."
+                              rows={3}
+                              className="rounded-lg text-xs mb-2"
+                              value={inlineNoteText}
+                              onChange={(e) => setInlineNoteText(e.target.value)}
+                              autoFocus
+                            />
+                            <div className="flex gap-1.5">
+                              <Button size="sm" className="flex-1 h-7 text-xs rounded-lg" onClick={() => handleInlineNoteSave(order.id, inlineNoteText)}>
+                                সেভ করুন
+                              </Button>
+                              <Button size="sm" variant="outline" className="h-7 text-xs rounded-lg" onClick={() => { setInlineNoteOrderId(null); setInlineNoteText(""); }}>
+                                বাতিল
+                              </Button>
+                            </div>
+                          </PopoverContent>
+                        </Popover>
                       </div>
                     </TableCell>
                     {/* SOURCE */}
                     <TableCell className="px-3 py-3 text-center">
                       {order.source ? (
-                        <span className="text-xs text-muted-foreground bg-secondary/60 px-2 py-1 rounded-md font-medium">{order.source}</span>
+                        <Badge variant="secondary" className="text-[10px] font-medium">
+                          <Globe className="h-2.5 w-2.5 mr-1" />
+                          {order.source}
+                        </Badge>
                       ) : (
-                        <span className="text-xs text-muted-foreground">—</span>
+                        <span className="text-[10px] text-muted-foreground">প্যানেল</span>
                       )}
                     </TableCell>
                     {/* ACTIONS */}
