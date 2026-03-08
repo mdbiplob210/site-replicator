@@ -2503,6 +2503,7 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
       setEditCourierNote(order.courier_note || "");
       setEditDelivery(Number(order.delivery_charge));
       setEditDiscount(Number(order.discount));
+      setEditStatus(order.status || "");
     }
   }, [orderRef]);
 
