@@ -357,8 +357,11 @@ const AdminOrders = () => {
   }, [courierProviders]);
 
   const courierByOrderId = useMemo(() => {
-    const map: Record<string, { provider_id: string; status: string; submitted_at: string; tracking_id: string | null; consignment_id: string | null; provider_name: string }> = {};
-    courierOrders.forEach((co: any) => { map[co.order_id] = { provider_id: co.courier_provider_id, status: co.courier_status, submitted_at: co.submitted_at, tracking_id: co.tracking_id, consignment_id: co.consignment_id, provider_name: courierProviderNameMap[co.courier_provider_id] || "—" }; });
+    const map: Record<string, { provider_id: string; status: string; submitted_at: string; tracking_id: string | null; consignment_id: string | null; provider_name: string; logo_url: string | null }> = {};
+    courierOrders.forEach((co: any) => {
+      const info = courierProviderNameMap[co.courier_provider_id];
+      map[co.order_id] = { provider_id: co.courier_provider_id, status: co.courier_status, submitted_at: co.submitted_at, tracking_id: co.tracking_id, consignment_id: co.consignment_id, provider_name: info?.name || "—", logo_url: info?.logo_url || null };
+    });
     return map;
   }, [courierOrders, courierProviderNameMap]);
 
