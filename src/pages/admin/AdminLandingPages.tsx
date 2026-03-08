@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { Layers, Plus, Search, Edit, Trash2, ExternalLink, Copy, BarChart3 } from "lucide-react";
+import { Layers, Plus, Search, Edit, Trash2, ExternalLink, Copy, BarChart3, Upload, Image, X, GripVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +12,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   useLandingPages,
   useCreateLandingPage,
@@ -19,6 +21,15 @@ import {
   useDeleteLandingPage,
   LandingPage,
 } from "@/hooks/useLandingPages";
+
+type LandingPageImage = {
+  id: string;
+  landing_page_id: string;
+  image_url: string;
+  file_name: string;
+  sort_order: number;
+  created_at: string;
+};
 
 const emptyPage: Partial<LandingPage> = {
   title: "",
@@ -34,6 +45,7 @@ const emptyPage: Partial<LandingPage> = {
 
 export default function AdminLandingPages() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { data: pages, isLoading } = useLandingPages();
   const createMutation = useCreateLandingPage();
   const updateMutation = useUpdateLandingPage();
@@ -43,6 +55,73 @@ export default function AdminLandingPages() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPage, setEditingPage] = useState<Partial<LandingPage> | null>(null);
   const [form, setForm] = useState<Partial<LandingPage>>(emptyPage);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch images for the editing page
+  const { data: pageImages } = useQuery({
+    queryKey: ["landing-page-images", editingPage?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("landing_page_images" as any)
+        .select("*")
+        .eq("landing_page_id", editingPage!.id!)
+        .order("sort_order", { ascending: true });
+      if (error) throw error;
+      return data as unknown as LandingPageImage[];
+    },
+    enabled: !!editingPage?.id,
+  });
+
+  const handleImageUpload = async (files: FileList | null) => {
+    if (!files || !editingPage?.id) return;
+    setUploading(true);
+    try {
+      const currentMax = pageImages?.length ? Math.max(...pageImages.map(i => i.sort_order)) : -1;
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const ext = file.name.split(".").pop();
+        const path = `${editingPage.id}/${Date.now()}-${i}.${ext}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("landing-page-images")
+          .upload(path, file, { upsert: true });
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabase.storage
+          .from("landing-page-images")
+          .getPublicUrl(path);
+
+        await supabase.from("landing_page_images" as any).insert({
+          landing_page_id: editingPage.id,
+          image_url: urlData.publicUrl,
+          file_name: file.name,
+          sort_order: currentMax + 1 + i,
+        } as any);
+      }
+      queryClient.invalidateQueries({ queryKey: ["landing-page-images", editingPage.id] });
+      toast.success(`${files.length}টি ছবি আপলোড হয়েছে!`);
+    } catch (err: any) {
+      toast.error("ছবি আপলোড ব্যর্থ: " + err.message);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDeleteImage = async (img: LandingPageImage) => {
+    try {
+      // Extract path from URL
+      const urlParts = img.image_url.split("/landing-page-images/");
+      if (urlParts[1]) {
+        await supabase.storage.from("landing-page-images").remove([urlParts[1]]);
+      }
+      await supabase.from("landing_page_images" as any).delete().eq("id", img.id);
+      queryClient.invalidateQueries({ queryKey: ["landing-page-images", editingPage?.id] });
+      toast.success("ছবি ডিলিট হয়েছে!");
+    } catch (err: any) {
+      toast.error("ডিলিট ব্যর্থ: " + err.message);
+    }
+  };
 
   const filtered = pages?.filter(
     (p) =>
@@ -194,9 +273,10 @@ export default function AdminLandingPages() {
           </DialogHeader>
 
           <Tabs defaultValue="landing" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="landing">Landing Page</TabsTrigger>
               <TabsTrigger value="checkout">Checkout Page</TabsTrigger>
+              <TabsTrigger value="images">ছবি</TabsTrigger>
               <TabsTrigger value="tracking">ট্র্যাকিং</TabsTrigger>
               <TabsTrigger value="settings">সেটিংস</TabsTrigger>
             </TabsList>
@@ -284,6 +364,91 @@ export default function AdminLandingPages() {
               {!form.checkout_html && (
                 <div className="bg-muted/30 border border-dashed rounded-lg p-6 text-center">
                   <p className="text-sm text-muted-foreground">Checkout HTML না দিলে শুধু Landing Page কাজ করবে</p>
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="images" className="space-y-4 mt-4">
+              {!editingPage?.id ? (
+                <div className="bg-muted/30 border border-dashed rounded-lg p-8 text-center">
+                  <Image className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
+                  <p className="text-sm text-muted-foreground">প্রথমে পেজটি সেভ করুন, তারপর ছবি আপলোড করতে পারবেন</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {/* Upload Area */}
+                  <div
+                    className="border-2 border-dashed rounded-xl p-6 text-center cursor-pointer hover:border-primary/40 hover:bg-muted/30 transition-colors"
+                    onClick={() => fileInputRef.current?.click()}
+                    onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                    onDrop={(e) => { e.preventDefault(); e.stopPropagation(); handleImageUpload(e.dataTransfer.files); }}
+                  >
+                    <Upload className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
+                    <p className="text-sm font-medium text-foreground">ছবি আপলোড করুন</p>
+                    <p className="text-xs text-muted-foreground mt-1">ক্লিক করুন বা ড্র্যাগ করে ছেড়ে দিন • একসাথে একাধিক ছবি আপলোড করা যাবে</p>
+                    {uploading && <p className="text-xs text-primary mt-2">আপলোড হচ্ছে...</p>}
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleImageUpload(e.target.files)}
+                    />
+                  </div>
+
+                  {/* Image Grid */}
+                  {pageImages && pageImages.length > 0 ? (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-sm">আপলোড করা ছবি ({pageImages.length}টি)</Label>
+                      </div>
+                      <div className="grid grid-cols-3 gap-3">
+                        {pageImages.map((img) => (
+                          <div key={img.id} className="group relative border rounded-lg overflow-hidden bg-muted/30">
+                            <img
+                              src={img.image_url}
+                              alt={img.file_name}
+                              className="w-full h-32 object-cover"
+                            />
+                            <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                              <Button
+                                size="icon"
+                                variant="destructive"
+                                className="h-8 w-8 rounded-full"
+                                onClick={() => handleDeleteImage(img)}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                            <div className="p-1.5 flex items-center justify-between">
+                              <p className="text-[10px] text-muted-foreground truncate flex-1">{img.file_name}</p>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-5 w-5 shrink-0"
+                                onClick={() => {
+                                  navigator.clipboard.writeText(img.image_url);
+                                  toast.success("Image URL কপি হয়েছে!");
+                                }}
+                              >
+                                <Copy className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="bg-muted/50 border rounded-lg p-3 mt-3">
+                        <p className="text-xs font-semibold text-foreground mb-1">🖼️ HTML এ ছবি ব্যবহার করুন:</p>
+                        <p className="text-[11px] text-muted-foreground">প্রতিটি ছবির Copy বাটনে ক্লিক করে URL কপি করুন এবং আপনার HTML এ এভাবে ব্যবহার করুন:</p>
+                        <div className="bg-background border rounded p-2 mt-1 font-mono text-[11px] text-primary">
+                          {`<img src="IMAGE_URL_HERE" alt="ছবি" />`}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground text-center py-4">এখনো কোনো ছবি আপলোড করা হয়নি</p>
+                  )}
                 </div>
               )}
             </TabsContent>

@@ -426,6 +426,41 @@ export type Database = {
           },
         ]
       }
+      landing_page_images: {
+        Row: {
+          created_at: string
+          file_name: string
+          id: string
+          image_url: string
+          landing_page_id: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          file_name?: string
+          id?: string
+          image_url: string
+          landing_page_id: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          id?: string
+          image_url?: string
+          landing_page_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "landing_page_images_landing_page_id_fkey"
+            columns: ["landing_page_id"]
+            isOneToOne: false
+            referencedRelation: "landing_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       landing_pages: {
         Row: {
           checkout_html: string | null
