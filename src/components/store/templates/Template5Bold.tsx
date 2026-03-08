@@ -20,7 +20,7 @@ const Template5Bold = () => {
             <Link to="/" className="hover:text-white transition">About</Link>
           </div>
           <div className="flex items-center gap-3">
-            <Link to="/store/cart" className="flex items-center gap-2 bg-lime-400 text-zinc-900 px-4 py-2 rounded-full font-bold text-sm hover:bg-lime-300 transition">
+            <Link to="/checkout" className="flex items-center gap-2 bg-lime-400 text-zinc-900 px-4 py-2 rounded-full font-bold text-sm hover:bg-lime-300 transition">
               <ShoppingBag className="h-4 w-4" /> Cart
             </Link>
             <button className="md:hidden p-2"><Menu className="h-5 w-5" /></button>
