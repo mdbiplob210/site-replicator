@@ -2858,8 +2858,8 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
 
             {/* Address */}
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold">Address</Label>
-              <Textarea className="rounded-xl" rows={2} value={editAddress} onChange={(e) => setEditAddress(e.target.value)} />
+              <Label className="text-xs font-semibold text-muted-foreground">ঠিকানা</Label>
+              <Textarea className="rounded-xl text-sm" rows={2} value={editAddress} onChange={(e) => setEditAddress(e.target.value)} />
             </div>
 
             {/* City/Zone/Area Manual Select */}
