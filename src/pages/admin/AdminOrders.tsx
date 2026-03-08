@@ -2114,15 +2114,33 @@ const AdminOrders = () => {
                     {/* ACTIONS */}
                     <TableCell className="px-3 py-3 text-right" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-end gap-1">
-                        <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-secondary/60 transition-colors text-muted-foreground hover:text-foreground" title="Activity Log" onClick={() => setDetailOrderId(order.id)}>
-                          <History className="h-3.5 w-3.5" />
-                        </button>
+                        {/* Activity Log Popover */}
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-secondary/60 transition-colors text-muted-foreground hover:text-foreground" title="Activity Log">
+                              <History className="h-3.5 w-3.5" />
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-80 p-0 rounded-xl max-h-[300px] overflow-y-auto" side="left">
+                            <ActivityLogPopover orderId={order.id} />
+                          </PopoverContent>
+                        </Popover>
+                        {/* Edit */}
                         <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-secondary/60 transition-colors text-muted-foreground hover:text-foreground" title="Edit" onClick={() => setDetailOrderId(order.id)}>
                           <Pencil className="h-3.5 w-3.5" />
                         </button>
-                        <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-secondary/60 transition-colors text-muted-foreground hover:text-foreground" title="Block" onClick={() => { /* future */ }}>
+                        {/* Block Customer */}
+                        <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-red-500/10 transition-colors text-muted-foreground hover:text-red-500" title="Block Customer" onClick={async () => {
+                          if (!order.customer_phone) { toast.error("ফোন নম্বর নেই!"); return; }
+                          if (!confirm(`${order.customer_phone} নম্বরটি ব্লক করবেন? এই নম্বর থেকে আর অর্ডার আসবে না।`)) return;
+                          const { error } = await supabase.from("blocked_phones").insert({ phone_number: order.customer_phone, reason: `Blocked from order ${order.order_number}`, blocked_by: user?.id || null } as any);
+                          if (error) { toast.error("ব্লক ব্যর্থ: " + error.message); return; }
+                          logActivity(order.id, "customer_blocked", "phone", undefined, order.customer_phone, "কাস্টমার ব্লক করা হয়েছে");
+                          toast.success(`${order.customer_phone} ব্লক হয়েছে!`);
+                        }}>
                           <Ban className="h-3.5 w-3.5" />
                         </button>
+                        {/* Delete */}
                         <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-destructive/10 transition-colors text-muted-foreground hover:text-destructive" title="Delete" onClick={() => { if (confirm("অর্ডারটি ডিলিট করবেন?")) deleteOrder.mutate(order.id); }}>
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
