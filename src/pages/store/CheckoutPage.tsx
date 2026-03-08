@@ -212,10 +212,27 @@ const CheckoutPage = () => {
         } as any);
       }
 
+      // Track Purchase event
+      trackPurchase({
+        value: total,
+        orderId: orderNumber,
+        contentName: item.name,
+        contentId: item.productCode || item.productId,
+        qty: item.qty,
+        customerPhone: form.phone,
+        customerName: form.name,
+      });
+
+      // Store order info for success page
+      sessionStorage.setItem("last_order", JSON.stringify({
+        orderNumber, total, name: item.name, qty: item.qty,
+        productCode: item.productCode || item.productId,
+        customerPhone: form.phone, customerName: form.name,
+      }));
+
       sessionStorage.removeItem("checkout_item");
       toast.success("অর্ডার সফল হয়েছে! 🎉");
       navigate("/order-success");
-    } catch (err: any) {
       orderSubmitted.current = false;
       toast.error(err.message);
     } finally {
