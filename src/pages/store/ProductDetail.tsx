@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ShoppingBag, ArrowLeft, Minus, Plus, Truck, Shield, RotateCcw, Star, Phone, MessageCircle } from "lucide-react";
 import { useTracking, useEngagementTracking } from "@/hooks/useTracking";
 import { PopupCheckout } from "@/components/store/PopupCheckout";
+import { ExitDiscountBanner } from "@/components/store/ExitDiscountBanner";
 import { OptimizedImage } from "@/components/ui/optimized-image";
 
 const ProductDetail = () => {
