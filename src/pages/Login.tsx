@@ -21,10 +21,10 @@ const Login = () => {
   const { toast } = useToast();
   const { user, isAdmin, loading: authLoading } = useAuth();
 
-  // Redirect if already logged in
+  // Redirect if already logged in as admin
   useEffect(() => {
-    if (!authLoading && user) {
-      navigate(isAdmin ? "/admin" : "/", { replace: true });
+    if (!authLoading && user && isAdmin) {
+      navigate("/admin", { replace: true });
     }
   }, [user, isAdmin, authLoading, navigate]);
 
