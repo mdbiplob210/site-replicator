@@ -655,9 +655,17 @@ const AdminOrders = () => {
       } as any,
       items: orderItems,
     }, {
-      onSuccess: (data: any) => {
+      onSuccess: async (data: any) => {
         if (data?.id) {
           logActivity(data.id, "created", undefined, undefined, undefined, `Order ${nextOrderNumber} created by ${user?.email || "Admin"}`);
+          // Create courier_orders entry if courier selected
+          if (selectedCourierId) {
+            await supabase.from("courier_orders").insert({
+              order_id: data.id,
+              courier_provider_id: selectedCourierId,
+              courier_status: "pending",
+            } as any);
+          }
         }
         setNewOrderOpen(false);
         resetForm();
