@@ -2489,6 +2489,11 @@ const AdminOrders = () => {
                             ))}
                           </SelectContent>
                         </Select>
+                        {order.status === "cancelled" && (order as any).cancel_reason && (
+                          <p className="text-[10px] text-destructive truncate max-w-[110px]" title={(order as any).cancel_reason}>
+                            {(order as any).cancel_reason}
+                          </p>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center justify-between text-[11px] text-muted-foreground">
