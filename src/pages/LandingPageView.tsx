@@ -351,7 +351,151 @@ ttq.page();
 </script>
 `;
 
-    const allScripts = richTrackingHelper + trackingScripts + conversionScript + analyticsScript;
+    // Exit Intent Popup
+    const exitIntentScript = `
+<!-- Exit Intent Popup -->
+<style>
+#exit-overlay{display:none;position:fixed;inset:0;z-index:99999;align-items:center;justify-content:center;background:rgba(0,0,0,.7);backdrop-filter:blur(4px)}
+#exit-overlay.show{display:flex}
+#exit-box{position:relative;width:90%;max-width:380px;animation:exitZoom .3s ease}
+@keyframes exitZoom{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
+#exit-close{position:absolute;top:-12px;right:-12px;width:32px;height:32px;border-radius:50%;background:#fff;border:none;box-shadow:0 2px 8px rgba(0,0,0,.2);cursor:pointer;font-size:18px;font-weight:bold;color:#666;z-index:1;display:flex;align-items:center;justify-content:center}
+#exit-inner{border-radius:22px;overflow:hidden;background:#fff;box-shadow:0 25px 50px rgba(0,0,0,.25)}
+#exit-header{background:linear-gradient(135deg,#ef4444,#f97316);color:#fff;text-align:center;padding:10px 16px}
+#exit-header p{margin:0;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+#exit-body{padding:24px;text-align:center}
+#exit-timer{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:16px}
+.timer-box{background:#111;color:#fff;border-radius:8px;padding:8px 12px;min-width:56px;text-align:center}
+.timer-box span{font-size:24px;font-weight:900;font-variant-numeric:tabular-nums;display:block}
+.timer-box small{font-size:9px;color:#999;text-transform:uppercase}
+.timer-sep{font-size:24px;font-weight:900;color:#111;animation:pulse 1s infinite}
+#exit-badge{display:inline-block;width:96px;height:96px;border-radius:50%;background:linear-gradient(135deg,#facc15,#f97316);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;box-shadow:0 8px 24px rgba(249,115,22,.3);position:relative}
+#exit-badge .amt{color:#fff;font-size:28px;font-weight:900;line-height:1}
+#exit-badge .lbl{color:#fff;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px}
+#exit-badge .gift{position:absolute;top:-4px;right:-4px;width:28px;height:28px;background:#ef4444;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;animation:bounce 1s infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+#exit-body h3{font-size:20px;font-weight:900;color:#111;margin:0 0 4px}
+#exit-body .sub{font-size:14px;color:#888;margin:0 0 4px}
+#exit-body .price{font-size:24px;font-weight:900;color:#ef4444;margin:0 0 12px}
+#exit-warn{background:#fefce8;border:1px solid #fde68a;border-radius:12px;padding:10px;margin-bottom:16px}
+#exit-warn p{margin:0;font-size:12px;color:#a16207;font-weight:600}
+#exit-accept{width:100%;padding:14px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 8px 24px rgba(34,197,94,.3);transition:all .2s}
+#exit-accept:hover{transform:scale(1.02);box-shadow:0 12px 32px rgba(34,197,94,.4)}
+#exit-accept:active{transform:scale(.97)}
+#exit-reject{display:block;margin:8px auto 0;background:none;border:none;color:#bbb;font-size:12px;cursor:pointer}
+#exit-reject:hover{color:#888}
+</style>
+<div id="exit-overlay">
+  <div id="exit-box">
+    <button id="exit-close" onclick="closeExitPopup()">✕</button>
+    <div id="exit-inner">
+      <div id="exit-header"><p>⚡ বিশেষ অফার — শুধুমাত্র আপনার জন্য! ⚡</p></div>
+      <div id="exit-body">
+        <div id="exit-timer">
+          <div class="timer-box"><span id="exit-min">05</span><small>মিনিট</small></div>
+          <span class="timer-sep">:</span>
+          <div class="timer-box"><span id="exit-sec">00</span><small>সেকেন্ড</small></div>
+        </div>
+        <div id="exit-badge"><div><span class="amt">৳50</span><span class="lbl">ছাড়!</span></div><div class="gift">🎁</div></div>
+        <h3>এই ছাড়টি শুধু আপনার জন্য!</h3>
+        <p class="sub">আজকেই অর্ডার করুন এবং পান</p>
+        <p class="price">৳50 টাকা ছাড়!</p>
+        <div id="exit-warn"><p>⏰ এই অফার <span id="exit-time-text">5 মিনিটে</span> শেষ হবে!</p></div>
+        <button id="exit-accept" onclick="acceptExitOffer()">🎉 ৳50 ছাড়ে অর্ডার করুন</button>
+        <button id="exit-reject" onclick="closeExitPopup()">না, ছাড় লাগবে না</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  var shown = false;
+  var dismissed = sessionStorage.getItem('_exit_dismissed');
+  var timeLeft = 300;
+  var timerInterval = null;
+
+  function updateTimer(){
+    var m = Math.floor(timeLeft/60), s = timeLeft%60;
+    var minEl = document.getElementById('exit-min');
+    var secEl = document.getElementById('exit-sec');
+    var txtEl = document.getElementById('exit-time-text');
+    if(minEl) minEl.textContent = String(m).padStart(2,'0');
+    if(secEl) secEl.textContent = String(s).padStart(2,'0');
+    if(txtEl) txtEl.textContent = m>0 ? m+' মিনিট '+s+' সেকেন্ডে' : s+' সেকেন্ডে';
+    timeLeft--;
+    if(timeLeft<0){ clearInterval(timerInterval); closeExitPopup(); }
+  }
+
+  function showExitPopup(){
+    if(shown || dismissed) return;
+    shown = true;
+    var ov = document.getElementById('exit-overlay');
+    if(ov) ov.classList.add('show');
+    timerInterval = setInterval(updateTimer, 1000);
+    updateTimer();
+    // Track exit intent event
+    if(typeof fbq==='function'){
+      var eid = window._lpTrack ? window._lpTrack.generateEventId() : '';
+      fbq('trackCustom','ExitIntentShown',{page:window.location.href},{eventID:eid});
+    }
+    if(typeof ttq!=='undefined'&&ttq.track) ttq.track('ViewContent',{content_name:'ExitIntentPopup'});
+  }
+
+  window.closeExitPopup = function(){
+    var ov = document.getElementById('exit-overlay');
+    if(ov) ov.classList.remove('show');
+    if(timerInterval) clearInterval(timerInterval);
+    sessionStorage.setItem('_exit_dismissed','1');
+  };
+
+  window.acceptExitOffer = function(){
+    sessionStorage.setItem('_exit_discount','50');
+    sessionStorage.setItem('_exit_dismissed','1');
+    if(typeof fbq==='function'){
+      var eid = window._lpTrack ? window._lpTrack.generateEventId() : '';
+      fbq('trackCustom','ExitOfferAccepted',{value:50,currency:'BDT'},{eventID:eid});
+    }
+    var ov = document.getElementById('exit-overlay');
+    if(ov) ov.classList.remove('show');
+    if(timerInterval) clearInterval(timerInterval);
+    // Scroll to checkout/order form
+    var form = document.querySelector('form, [data-checkout], #checkout, #order-form, .checkout, .order-form');
+    if(form) form.scrollIntoView({behavior:'smooth',block:'center'});
+    // Try to apply discount to any visible price/total field
+    var discountField = document.querySelector('[name="discount"], [data-discount], #discount');
+    if(discountField) discountField.value = '50';
+  };
+
+  // Desktop: mouse leaves viewport from top
+  document.addEventListener('mouseout',function(e){
+    if(e.clientY<=0 && !e.relatedTarget && !e.toElement) showExitPopup();
+  });
+
+  // Mobile: back button / visibility change
+  document.addEventListener('visibilitychange',function(){
+    if(document.visibilityState==='hidden') showExitPopup();
+  });
+
+  // Mobile: scroll up rapidly (indicates intent to leave)
+  var lastScroll=0, scrollUpCount=0;
+  window.addEventListener('scroll',function(){
+    var st=window.pageYOffset||document.documentElement.scrollTop;
+    if(st<lastScroll && lastScroll-st>100){ scrollUpCount++; if(scrollUpCount>=3) showExitPopup(); }
+    else scrollUpCount=0;
+    lastScroll=st;
+  },{passive:true});
+
+  // Don't show within first 5 seconds
+  var originalShow = showExitPopup;
+  var canShow = false;
+  setTimeout(function(){ canShow=true; },5000);
+  showExitPopup = function(){ if(canShow) originalShow(); };
+})();
+</script>
+`;
+
+    const allScripts = richTrackingHelper + trackingScripts + conversionScript + analyticsScript + exitIntentScript;
 
     if (page.html_content.includes("</head>")) {
       return page.html_content.replace("</head>", `${allScripts}</head>`);
