@@ -1677,8 +1677,15 @@ const AdminOrders = () => {
                 </div>
                 <div className="space-y-1">
                   <Label className="text-[10px] font-semibold text-muted-foreground">Source</Label>
-                  <Input placeholder="Source..." className="rounded-lg h-7 text-xs" value={filterSource} onChange={(e) => setFilterSource(e.target.value)} list="source-suggestions" />
-                  <datalist id="source-suggestions">{uniqueSources.map((s) => <option key={s} value={s} />)}</datalist>
+                  <Select value={filterSource || "all"} onValueChange={(v) => setFilterSource(v === "all" ? "" : v)}>
+                    <SelectTrigger className="rounded-lg h-7 text-xs"><SelectValue placeholder="All" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      {orderSources.map((src: any) => (
+                        <SelectItem key={src.id} value={src.name}>{src.icon} {src.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-1">
                   <Label className="text-[10px] font-semibold text-muted-foreground">Phone</Label>
