@@ -35,10 +35,10 @@ const Template1Classic = () => {
           </Link>
 
           <nav className="hidden md:flex items-center gap-8 text-[13px] font-semibold uppercase tracking-widest text-gray-500">
-            <Link to="/store" className="hover:text-[#0f3460] transition-colors duration-200">Home</Link>
-            <Link to="/store" className="hover:text-[#0f3460] transition-colors duration-200">Shop</Link>
-            <Link to="/store" className="hover:text-[#0f3460] transition-colors duration-200">New</Link>
-            <Link to="/store" className="hover:text-[#0f3460] transition-colors duration-200">Contact</Link>
+            <Link to="/" className="hover:text-[#0f3460] transition-colors duration-200">Home</Link>
+            <Link to="/" className="hover:text-[#0f3460] transition-colors duration-200">Shop</Link>
+            <Link to="/" className="hover:text-[#0f3460] transition-colors duration-200">New</Link>
+            <Link to="/" className="hover:text-[#0f3460] transition-colors duration-200">Contact</Link>
           </nav>
 
           <div className="flex items-center gap-2">
