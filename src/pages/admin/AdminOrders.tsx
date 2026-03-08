@@ -1640,7 +1640,57 @@ const AdminOrders = () => {
           </div>
         </Card>
 
-        {/* Bulk Actions Bar */}
+        {/* Cancel Reason Filter for Cancelled tab */}
+        {activeTab === "Cancelled" && (
+          <Card className="p-3 border-border/40 shadow-sm">
+            <div className="flex items-center gap-3 flex-wrap">
+              <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><Filter className="h-3.5 w-3.5" /> ক্যান্সেল কারণ:</span>
+              <button
+                onClick={() => setCancelReasonFilter("all")}
+                className={cn("px-3 py-1.5 rounded-lg text-xs font-medium transition-all", cancelReasonFilter === "all" ? "bg-primary text-primary-foreground shadow-sm" : "bg-secondary/50 text-muted-foreground hover:bg-secondary")}
+              >
+                সব ({filteredOrders.length})
+              </button>
+              {CANCEL_REASONS.map((reason) => {
+                const count = filteredOrders.filter((o: any) => o.cancel_reason === reason).length;
+                return (
+                  <button
+                    key={reason}
+                    onClick={() => setCancelReasonFilter(reason)}
+                    className={cn("px-3 py-1.5 rounded-lg text-xs font-medium transition-all", cancelReasonFilter === reason ? "bg-destructive text-destructive-foreground shadow-sm" : "bg-secondary/50 text-muted-foreground hover:bg-secondary")}
+                  >
+                    {reason} ({count})
+                  </button>
+                );
+              })}
+              {(() => {
+                const otherCount = filteredOrders.filter((o: any) => o.cancel_reason && !CANCEL_REASONS.includes(o.cancel_reason)).length;
+                const noReasonCount = filteredOrders.filter((o: any) => !o.cancel_reason).length;
+                return (
+                  <>
+                    {otherCount > 0 && (
+                      <button
+                        onClick={() => setCancelReasonFilter("others")}
+                        className={cn("px-3 py-1.5 rounded-lg text-xs font-medium transition-all", cancelReasonFilter === "others" ? "bg-destructive text-destructive-foreground shadow-sm" : "bg-secondary/50 text-muted-foreground hover:bg-secondary")}
+                      >
+                        অন্যান্য ({otherCount})
+                      </button>
+                    )}
+                    {noReasonCount > 0 && (
+                      <button
+                        onClick={() => setCancelReasonFilter("no_reason")}
+                        className={cn("px-3 py-1.5 rounded-lg text-xs font-medium transition-all", cancelReasonFilter === "no_reason" ? "bg-muted text-foreground shadow-sm" : "bg-secondary/50 text-muted-foreground hover:bg-secondary")}
+                      >
+                        কারণ নেই ({noReasonCount})
+                      </button>
+                    )}
+                  </>
+                );
+              })()}
+            </div>
+          </Card>
+        )}
+
         {selectedOrderIds.size > 0 && (
           <Card className="p-3 border-primary/30 bg-primary/5 shadow-sm flex items-center gap-3 flex-wrap">
             <div className="flex items-center gap-2">
