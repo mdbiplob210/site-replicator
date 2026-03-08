@@ -44,6 +44,7 @@ import StorePage from "./pages/store/StorePage";
 import ProductDetail from "./pages/store/ProductDetail";
 import CheckoutPage from "./pages/store/CheckoutPage";
 import OrderSuccess from "./pages/store/OrderSuccess";
+import { TrackingInitializer } from "./components/TrackingInitializer";
 
 const queryClient = new QueryClient();
 
