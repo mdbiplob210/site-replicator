@@ -17,6 +17,21 @@ const ProductDetail = () => {
   useEngagementTracking(); // Track scroll depth & time on page
   const viewTracked = useState(false);
 
+  // Track ViewContent when product loads
+  useEffect(() => {
+    if (product && !viewTracked[0]) {
+      viewTracked[1](true);
+      trackViewContent({
+        id: product.id,
+        name: product.name,
+        price: product.selling_price,
+        category: (product.categories as any)?.name || "",
+        productCode: product.product_code,
+        image: product.main_image_url || "",
+      });
+    }
+  }, [product, trackViewContent, viewTracked]);
+
   if (isLoading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   if (!product) return <div className="min-h-screen flex items-center justify-center">Product not found</div>;
 
@@ -24,6 +39,16 @@ const ProductDetail = () => {
   const bgClass = isDark ? "bg-gray-950 text-white" : template === "5" ? "bg-zinc-100 text-zinc-900" : "bg-white text-gray-900";
 
   const handleOrder = () => {
+    // Track AddToCart event
+    trackAddToCart({
+      id: product.id,
+      name: product.name,
+      price: product.selling_price,
+      qty,
+      productCode: product.product_code,
+      category: (product.categories as any)?.name || "",
+    });
+
     const orderData = { productId: product.id, name: product.name, price: product.selling_price, qty, image: product.main_image_url, productCode: product.product_code };
     sessionStorage.setItem("checkout_item", JSON.stringify(orderData));
     navigate("/checkout");

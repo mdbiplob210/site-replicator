@@ -1,18 +1,25 @@
-import { useEffect } from "react";
-import { useTracking, useEngagementTracking } from "@/hooks/useTracking";
+import { useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
+import { useTracking } from "@/hooks/useTracking";
 
 /**
- * TrackingInitializer - Place in App.tsx to auto-initialize all tracking scripts
- * and fire PageView on every route change.
+ * TrackingInitializer - Placed inside BrowserRouter in App.tsx
+ * Auto-initializes all tracking scripts and fires PageView on every route change.
  */
 export function TrackingInitializer() {
   const { trackPageView, isReady } = useTracking();
+  const location = useLocation();
+  const lastPath = useRef("");
 
   useEffect(() => {
-    if (isReady) {
-      trackPageView(document.title);
+    if (!isReady) return;
+    // Only fire if path actually changed
+    if (location.pathname !== lastPath.current) {
+      lastPath.current = location.pathname;
+      // Small delay to let page title update
+      setTimeout(() => trackPageView(document.title), 100);
     }
-  }, [isReady, trackPageView]);
+  }, [isReady, location.pathname, trackPageView]);
 
   return null;
 }
