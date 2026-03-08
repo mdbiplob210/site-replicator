@@ -316,7 +316,13 @@ const ProductDetail = () => {
       </div>
 
       {showDiscountBanner && (
-        <ExitDiscountBanner onAccept={handleAcceptDiscount} onReject={handleRejectDiscount} />
+        <ExitDiscountBanner
+          onAccept={handleAcceptDiscount}
+          onReject={handleRejectDiscount}
+          discountAmount={exitDiscount}
+          timerSeconds={exitTimer}
+          message={exitMessage}
+        />
       )}
 
       {/* Popup Checkout */}
