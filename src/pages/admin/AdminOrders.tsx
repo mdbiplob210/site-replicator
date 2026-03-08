@@ -1982,21 +1982,28 @@ const AdminOrders = () => {
                     </TableCell>
                     {/* NOTE */}
                     <TableCell className="px-3 py-3 text-center" onClick={(e) => e.stopPropagation()}>
-                      {order.notes ? (
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <button className="text-xs text-primary hover:underline font-medium">View note</button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-64 p-3 rounded-xl text-xs">
-                            <p className="font-semibold text-foreground mb-1 text-[11px]">Staff Note</p>
-                            <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed">{order.notes}</p>
-                          </PopoverContent>
-                        </Popover>
-                      ) : (
-                        <button className="text-xs text-muted-foreground hover:text-primary transition-colors" onClick={() => setDetailOrderId(order.id)}>
-                          Add<br/>note
+                      <div className="flex items-center justify-center gap-1">
+                        {order.notes ? (
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <button className="h-7 w-7 rounded-lg flex items-center justify-center bg-primary/10 hover:bg-primary/20 transition-colors text-primary" title="নোট দেখুন">
+                                <MessageSquare className="h-3.5 w-3.5" />
+                              </button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-64 p-3 rounded-xl text-xs">
+                              <p className="font-semibold text-foreground mb-1 text-[11px]">Staff Note</p>
+                              <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed">{order.notes}</p>
+                            </PopoverContent>
+                          </Popover>
+                        ) : (
+                          <span className="h-7 w-7 rounded-lg flex items-center justify-center bg-muted/40 text-muted-foreground/40">
+                            <MessageSquare className="h-3.5 w-3.5" />
+                          </span>
+                        )}
+                        <button className="h-7 w-7 rounded-lg flex items-center justify-center bg-primary/10 hover:bg-primary/20 transition-colors text-primary" title="নোট যোগ করুন" onClick={() => setDetailOrderId(order.id)}>
+                          <Plus className="h-3.5 w-3.5" />
                         </button>
-                      )}
+                      </div>
                     </TableCell>
                     {/* SOURCE */}
                     <TableCell className="px-3 py-3 text-center">
