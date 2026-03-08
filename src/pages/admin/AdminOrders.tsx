@@ -2114,15 +2114,33 @@ const AdminOrders = () => {
                     {/* ACTIONS */}
                     <TableCell className="px-3 py-3 text-right" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-end gap-1">
-                        <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-secondary/60 transition-colors text-muted-foreground hover:text-foreground" title="Activity Log" onClick={() => setDetailOrderId(order.id)}>
-                          <History className="h-3.5 w-3.5" />
-                        </button>
+                        {/* Activity Log Popover */}
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-secondary/60 transition-colors text-muted-foreground hover:text-foreground" title="Activity Log">
+                              <History className="h-3.5 w-3.5" />
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-80 p-0 rounded-xl max-h-[300px] overflow-y-auto" side="left">
+                            <ActivityLogPopover orderId={order.id} />
+                          </PopoverContent>
+                        </Popover>
+                        {/* Edit */}
                         <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-secondary/60 transition-colors text-muted-foreground hover:text-foreground" title="Edit" onClick={() => setDetailOrderId(order.id)}>
                           <Pencil className="h-3.5 w-3.5" />
                         </button>
-                        <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-secondary/60 transition-colors text-muted-foreground hover:text-foreground" title="Block" onClick={() => { /* future */ }}>
+                        {/* Block Customer */}
+                        <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-red-500/10 transition-colors text-muted-foreground hover:text-red-500" title="Block Customer" onClick={async () => {
+                          if (!order.customer_phone) { toast.error("ফোন নম্বর নেই!"); return; }
+                          if (!confirm(`${order.customer_phone} নম্বরটি ব্লক করবেন? এই নম্বর থেকে আর অর্ডার আসবে না।`)) return;
+                          const { error } = await supabase.from("blocked_phones").insert({ phone_number: order.customer_phone, reason: `Blocked from order ${order.order_number}`, blocked_by: user?.id || null } as any);
+                          if (error) { toast.error("ব্লক ব্যর্থ: " + error.message); return; }
+                          logActivity(order.id, "customer_blocked", "phone", undefined, order.customer_phone, "কাস্টমার ব্লক করা হয়েছে");
+                          toast.success(`${order.customer_phone} ব্লক হয়েছে!`);
+                        }}>
                           <Ban className="h-3.5 w-3.5" />
                         </button>
+                        {/* Delete */}
                         <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-destructive/10 transition-colors text-muted-foreground hover:text-destructive" title="Delete" onClick={() => { if (confirm("অর্ডারটি ডিলিট করবেন?")) deleteOrder.mutate(order.id); }}>
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
@@ -3163,5 +3181,54 @@ function IncompleteOrderCard({ io, activeIncompleteTab, convertIncomplete, delet
         </div>
       </div>
     </Card>
+  );
+}
+
+// Activity Log Popover Content
+function ActivityLogPopover({ orderId }: { orderId: string }) {
+  const { data: logs = [], isLoading } = useQuery({
+    queryKey: ["activity-log-popover", orderId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("order_activity_logs")
+        .select("*")
+        .eq("order_id", orderId)
+        .order("created_at", { ascending: false })
+        .limit(10);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!orderId,
+  });
+
+  if (isLoading) {
+    return <div className="p-4 text-center"><Loader2 className="h-4 w-4 animate-spin mx-auto text-muted-foreground" /></div>;
+  }
+
+  if (logs.length === 0) {
+    return <div className="p-4 text-center text-xs text-muted-foreground">কোনো activity নেই</div>;
+  }
+
+  return (
+    <div className="divide-y divide-border/30">
+      <div className="px-3 py-2 bg-secondary/30">
+        <p className="text-xs font-semibold text-foreground flex items-center gap-1.5"><Activity className="h-3 w-3" /> Activity Log</p>
+      </div>
+      {logs.map((log: any) => (
+        <div key={log.id} className="px-3 py-2 text-[11px] space-y-0.5">
+          <div className="flex items-center justify-between">
+            <span className="font-semibold text-foreground">{log.action === "status_changed" ? "স্ট্যাটাস চেঞ্জ" : log.action === "created" ? "তৈরি" : log.action === "note_updated" ? "নোট" : log.action === "customer_blocked" ? "ব্লক" : log.action}</span>
+            <span className="text-muted-foreground">{format(new Date(log.created_at), "dd MMM, hh:mm a")}</span>
+          </div>
+          {log.old_value && log.new_value && (
+            <p className="text-muted-foreground">
+              <span className="line-through text-red-400">{log.old_value}</span> → <span className="text-emerald-600 font-medium">{log.new_value}</span>
+            </p>
+          )}
+          {log.details && <p className="text-muted-foreground">{log.details}</p>}
+          {log.user_name && <p className="text-muted-foreground/60">{log.user_name}</p>}
+        </div>
+      ))}
+    </div>
   );
 }
