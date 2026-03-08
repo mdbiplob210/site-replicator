@@ -152,6 +152,9 @@ const AdminOrders = () => {
   const [bulkCourierId, setBulkCourierId] = useState("");
   const [inlineNoteOrderId, setInlineNoteOrderId] = useState<string | null>(null);
   const [inlineNoteText, setInlineNoteText] = useState("");
+  const [selectedOrderSource, setSelectedOrderSource] = useState("");
+  const [newSourceName, setNewSourceName] = useState("");
+  const [newSourceIcon, setNewSourceIcon] = useState("📦");
   
   // Cancel reason dialog
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
@@ -236,7 +239,16 @@ const AdminOrders = () => {
   });
   const blockedPhoneSet = new Set(blockedPhones);
 
-  // Courier location hooks for new order form
+  // Fetch order sources
+  const { data: orderSources = [], refetch: refetchOrderSources } = useQuery({
+    queryKey: ["order-sources"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("order_sources" as any).select("*").eq("is_active", true).order("created_at", { ascending: true });
+      if (error) return [];
+      return data as any[];
+    },
+  });
+
   const { data: courierCities = [], isLoading: citiesLoading } = useCourierCities(selectedCourierId);
   const { data: courierZones = [], isLoading: zonesLoading } = useCourierZones(selectedCourierId, selectedCityId);
   const { data: courierAreas = [], isLoading: areasLoading } = useCourierAreas(selectedCourierId, selectedZoneId);
@@ -832,6 +844,7 @@ const AdminOrders = () => {
         product_cost: computedProductCost,
         notes: notes || null,
         courier_note: courierNote || null,
+        source: selectedOrderSource || "Panel",
         status: "processing",
       } as any,
       items: orderItems,
@@ -1098,21 +1111,79 @@ const AdminOrders = () => {
               <Key className="h-4 w-4 text-amber-500" /> API Keys
             </Button>
 
-            {/* Settings Dialog */}
+            {/* Order Settings Dialog */}
             <Dialog>
               <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2 rounded-xl border-border/60 shadow-sm hover:shadow"><Settings className="h-4 w-4" /> Settings</Button>
+                <Button variant="outline" size="sm" className="gap-2 rounded-xl border-border/60 shadow-sm hover:shadow"><Settings className="h-4 w-4" /> Order Settings</Button>
               </DialogTrigger>
-              <DialogContent className="max-w-lg rounded-2xl">
-                <DialogHeader><DialogTitle className="flex items-center gap-2 text-lg"><div className="p-2 rounded-xl bg-secondary"><Settings className="h-5 w-5 text-muted-foreground" /></div>Order Status Settings</DialogTitle></DialogHeader>
-                <div className="grid grid-cols-2 gap-2.5">
-                  {orderStatusSettings.map((s) => (
-                    <label key={s.label} className="flex items-center gap-3 p-3 rounded-xl border border-border/40 hover:bg-secondary/30 cursor-pointer transition-all">
-                      <Checkbox defaultChecked /><span className={`h-2.5 w-2.5 rounded-full ${s.color}`} /><span className="text-sm font-medium">{s.label}</span>
-                    </label>
-                  ))}
+              <DialogContent className="max-w-lg rounded-2xl max-h-[85vh] overflow-y-auto">
+                <DialogHeader><DialogTitle className="flex items-center gap-2 text-lg"><div className="p-2 rounded-xl bg-secondary"><Settings className="h-5 w-5 text-muted-foreground" /></div>Order Settings</DialogTitle></DialogHeader>
+                
+                {/* Order Status Settings */}
+                <div className="space-y-3">
+                  <h3 className="text-sm font-semibold text-foreground">Order Status</h3>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    {orderStatusSettings.map((s) => (
+                      <label key={s.label} className="flex items-center gap-3 p-3 rounded-xl border border-border/40 hover:bg-secondary/30 cursor-pointer transition-all">
+                        <Checkbox defaultChecked /><span className={`h-2.5 w-2.5 rounded-full ${s.color}`} /><span className="text-sm font-medium">{s.label}</span>
+                      </label>
+                    ))}
+                  </div>
                 </div>
-                <Button className="w-full mt-4 rounded-xl shadow-sm">Save Settings</Button>
+
+                {/* Order Sources Management */}
+                <div className="space-y-3 border-t border-border/40 pt-4">
+                  <h3 className="text-sm font-semibold text-foreground flex items-center gap-2"><Globe className="h-4 w-4" /> Order Sources</h3>
+                  <div className="space-y-2">
+                    {orderSources.map((src: any) => (
+                      <div key={src.id} className="flex items-center justify-between p-2.5 rounded-xl border border-border/40 bg-secondary/20">
+                        <div className="flex items-center gap-2">
+                          <span className="text-base">{src.icon}</span>
+                          <span className="text-sm font-medium">{src.name}</span>
+                          {src.is_system && <Badge variant="secondary" className="text-[10px] h-4 px-1.5">System</Badge>}
+                        </div>
+                        {!src.is_system && (
+                          <button className="h-6 w-6 rounded-md flex items-center justify-center hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors" onClick={async () => {
+                            if (!confirm(`"${src.name}" সোর্স ডিলিট করবেন?`)) return;
+                            await supabase.from("order_sources" as any).delete().eq("id", src.id);
+                            refetchOrderSources();
+                            toast.success("সোর্স ডিলিট হয়েছে!");
+                          }}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  {/* Add new source */}
+                  <div className="flex gap-2 items-end">
+                    <div className="flex-1 space-y-1">
+                      <Label className="text-xs">New Source Name</Label>
+                      <Input placeholder="e.g. Facebook, Instagram..." className="rounded-xl h-9 text-sm" value={newSourceName} onChange={(e) => setNewSourceName(e.target.value)} />
+                    </div>
+                    <Select value={newSourceIcon} onValueChange={setNewSourceIcon}>
+                      <SelectTrigger className="w-16 h-9 rounded-xl"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {["📦", "📞", "💬", "📱", "🌐", "🔗", "📧", "🏪", "📣", "🎯"].map(icon => (
+                          <SelectItem key={icon} value={icon}>{icon}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button size="sm" className="h-9 rounded-xl" disabled={!newSourceName.trim()} onClick={async () => {
+                      const slug = newSourceName.trim().toLowerCase().replace(/\s+/g, '_');
+                      const { error } = await supabase.from("order_sources" as any).insert({ name: newSourceName.trim(), slug, icon: newSourceIcon, is_system: false } as any);
+                      if (error) { toast.error("সোর্স তৈরি ব্যর্থ: " + error.message); return; }
+                      setNewSourceName("");
+                      setNewSourceIcon("📦");
+                      refetchOrderSources();
+                      toast.success("নতুন সোর্স তৈরি হয়েছে!");
+                    }}>
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                <Button className="w-full mt-2 rounded-xl shadow-sm">Save Settings</Button>
               </DialogContent>
             </Dialog>
 
@@ -1395,6 +1466,20 @@ const AdminOrders = () => {
                       <Label className="text-xs font-semibold flex items-center gap-1"><Truck className="h-3 w-3" /> Courier Note</Label>
                       <Textarea placeholder="Courier/packing note (memo তে প্রিন্ট হবে)..." rows={2} className="rounded-xl text-xs" value={courierNote} onChange={(e) => setCourierNote(e.target.value)} />
                     </div>
+                  </div>
+                  {/* Order Source */}
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold flex items-center gap-1"><Globe className="h-3 w-3" /> Order Source</Label>
+                    <Select value={selectedOrderSource} onValueChange={setSelectedOrderSource}>
+                      <SelectTrigger className="rounded-xl h-9 text-sm"><SelectValue placeholder="Select source..." /></SelectTrigger>
+                      <SelectContent>
+                        {orderSources.filter((s: any) => !s.is_system || s.slug !== 'api').map((src: any) => (
+                          <SelectItem key={src.id} value={src.name}>
+                            <span className="flex items-center gap-2">{src.icon} {src.name}</span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <Button className="w-full rounded-xl shadow-sm" onClick={handleCreateOrder} disabled={createOrder.isPending || !customerName.trim()}>
                     {createOrder.isPending ? <><Loader2 className="h-4 w-4 animate-spin" /> Creating...</> : <><Plus className="h-4 w-4" /> Create Order</>}
