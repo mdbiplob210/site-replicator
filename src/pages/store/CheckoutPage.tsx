@@ -177,6 +177,8 @@ const CheckoutPage = () => {
     }
     setSubmitting(true);
     orderSubmitted.current = true;
+    // Track AddPaymentInfo
+    trackAddPaymentInfo({ value: item.price * item.qty });
     try {
       const orderNumber = `ORD-${Date.now().toString(36).toUpperCase()}`;
       const total = item.price * item.qty;
