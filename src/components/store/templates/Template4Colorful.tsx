@@ -21,7 +21,7 @@ const Template4Colorful = () => {
             <Link to="/" className="hover:text-violet-500 transition">🛍️ Shop</Link>
             <Link to="/" className="hover:text-indigo-500 transition">💬 Contact</Link>
           </div>
-          <Link to="/store/cart" className="relative p-2 rounded-full bg-rose-50 hover:bg-rose-100 transition">
+          <Link to="/checkout" className="relative p-2 rounded-full bg-rose-50 hover:bg-rose-100 transition">
             <ShoppingBag className="h-5 w-5 text-rose-500" />
           </Link>
         </div>
