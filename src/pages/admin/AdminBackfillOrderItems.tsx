@@ -45,11 +45,11 @@ export default function AdminBackfillOrderItems() {
     queryKey: ["backfill_item_counts"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("order_items" as any)
+        .from("order_items")
         .select("order_id");
       if (error) throw error;
       const counts: Record<string, number> = {};
-      for (const row of (data || []) as any[]) {
+      for (const row of (data || [])) {
         counts[row.order_id] = (counts[row.order_id] || 0) + 1;
       }
       return counts;
