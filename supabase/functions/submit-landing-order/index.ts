@@ -11,6 +11,32 @@ function getDurationHours(duration: string): number {
   return map[duration] || 24;
 }
 
+// Find existing incomplete order by IP+slug first, then by phone — prevents duplicates when phone changes
+async function findExistingIncomplete(supabase: any, clientIp: string, slug: string | null, phone: string): Promise<string | null> {
+  // 1. Try matching by IP + slug (same session, even if phone changed)
+  if (clientIp && clientIp !== "unknown") {
+    const { data: byIp } = await supabase
+      .from("incomplete_orders")
+      .select("id")
+      .eq("client_ip", clientIp)
+      .eq("status", "processing")
+      .order("updated_at", { ascending: false })
+      .limit(1);
+    if (byIp && byIp.length > 0) return byIp[0].id;
+  }
+  // 2. Fallback: match by phone
+  if (phone) {
+    const { data: byPhone } = await supabase
+      .from("incomplete_orders")
+      .select("id")
+      .eq("customer_phone", phone)
+      .eq("status", "processing")
+      .limit(1);
+    if (byPhone && byPhone.length > 0) return byPhone[0].id;
+  }
+  return null;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -92,14 +118,7 @@ Deno.serve(async (req) => {
       .limit(1);
 
     if (phoneBlocked && phoneBlocked.length > 0) {
-      // Upsert: update existing incomplete order by phone if exists
-      const { data: existingIncomplete } = await supabase
-        .from("incomplete_orders")
-        .select("id")
-        .eq("customer_phone", customer_phone)
-        .eq("status", "processing")
-        .limit(1);
-
+      // Upsert: find existing incomplete order by IP+slug first, then phone
       const incompleteData = {
         customer_name, customer_phone, customer_address: customer_address || null,
         product_name: product_name || null, product_code: product_code || null,
@@ -111,8 +130,9 @@ Deno.serve(async (req) => {
         updated_at: new Date().toISOString(),
       };
 
-      if (existingIncomplete && existingIncomplete.length > 0) {
-        await supabase.from("incomplete_orders").update(incompleteData).eq("id", existingIncomplete[0].id);
+      const existingId = await findExistingIncomplete(supabase, clientIp, landing_page_slug, customer_phone);
+      if (existingId) {
+        await supabase.from("incomplete_orders").update(incompleteData).eq("id", existingId);
       } else {
         await supabase.from("incomplete_orders").insert(incompleteData);
       }
@@ -140,10 +160,9 @@ Deno.serve(async (req) => {
           block_reason: `স্থায়ীভাবে ব্লক করা IP: ${clientIp}`,
           status: "processing", updated_at: new Date().toISOString(),
         };
-        // Upsert by phone
-        const { data: exInc } = await supabase.from("incomplete_orders").select("id").eq("customer_phone", customer_phone).eq("status", "processing").limit(1);
-        if (exInc && exInc.length > 0) {
-          await supabase.from("incomplete_orders").update(incData).eq("id", exInc[0].id);
+        const existingId = await findExistingIncomplete(supabase, clientIp, landing_page_slug, customer_phone);
+        if (existingId) {
+          await supabase.from("incomplete_orders").update(incData).eq("id", existingId);
         } else {
           await supabase.from("incomplete_orders").insert(incData);
         }
@@ -204,9 +223,9 @@ Deno.serve(async (req) => {
           client_ip: clientIp, user_agent: userAgent, device_info: deviceInfo,
           block_reason: blockReason, status: "processing", updated_at: new Date().toISOString(),
         };
-        const { data: exInc2 } = await supabase.from("incomplete_orders").select("id").eq("customer_phone", customer_phone).eq("status", "processing").limit(1);
-        if (exInc2 && exInc2.length > 0) {
-          await supabase.from("incomplete_orders").update(incData2).eq("id", exInc2[0].id);
+        const existingId2 = await findExistingIncomplete(supabase, clientIp, landing_page_slug, customer_phone);
+        if (existingId2) {
+          await supabase.from("incomplete_orders").update(incData2).eq("id", existingId2);
         } else {
           await supabase.from("incomplete_orders").insert(incData2);
         }
@@ -238,9 +257,9 @@ Deno.serve(async (req) => {
             block_reason: `ডেলিভারি রেশিও কম (${ratio}% < ${minDeliveryRatio}%)`,
             status: "processing", updated_at: new Date().toISOString(),
           };
-          const { data: exInc3 } = await supabase.from("incomplete_orders").select("id").eq("customer_phone", customer_phone).eq("status", "processing").limit(1);
-          if (exInc3 && exInc3.length > 0) {
-            await supabase.from("incomplete_orders").update(incData3).eq("id", exInc3[0].id);
+          const existingId3 = await findExistingIncomplete(supabase, clientIp, landing_page_slug, customer_phone);
+          if (existingId3) {
+            await supabase.from("incomplete_orders").update(incData3).eq("id", existingId3);
           } else {
             await supabase.from("incomplete_orders").insert(incData3);
           }
