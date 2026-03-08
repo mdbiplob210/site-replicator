@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 
 type LocationItem = { id: string | number; name: string };
 
@@ -16,19 +15,13 @@ async function fetchCourierLocations(
   if (cityId) params.set("city_id", String(cityId));
   if (zoneId) params.set("zone_id", String(zoneId));
 
-  const { data, error } = await supabase.functions.invoke("courier-locations", {
-    method: "GET",
-    headers: {},
-    body: undefined,
-  });
-
-  // supabase.functions.invoke doesn't support GET params well, use fetch directly
   const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
   const url = `https://${projectId}.supabase.co/functions/v1/courier-locations?${params.toString()}`;
 
   const resp = await fetch(url, {
     headers: {
       Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+      apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
     },
   });
 
