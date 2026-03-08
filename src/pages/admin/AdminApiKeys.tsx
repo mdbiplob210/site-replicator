@@ -205,8 +205,8 @@ X-API-Key: your_api_key_here
     }
   ]
 }`}</pre>
-            <div className="bg-blue-500/10 border border-blue-500/30 p-3 rounded text-xs space-y-1">
-              <p className="font-semibold text-blue-600">💡 অটো প্রোডাক্ট তৈরি:</p>
+            <div className="bg-accent/50 border border-accent p-3 rounded text-xs space-y-1">
+              <p className="font-semibold text-accent-foreground">💡 অটো প্রোডাক্ট তৈরি:</p>
               <p>• <code>product_code</code> বা <code>product_name</code> দিয়ে প্রোডাক্ট খোঁজা হয়</p>
               <p>• না পেলে অটোমেটিক নতুন প্রোডাক্ট তৈরি হয় (ছবি, প্রাইস সহ)</p>
               <p>• <code>image_url</code> দিলে প্রোডাক্টের মেইন ইমেজ হিসেবে সেভ হয়</p>
