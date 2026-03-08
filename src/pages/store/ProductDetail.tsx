@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useProduct } from "@/hooks/usePublicProducts";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { Button } from "@/components/ui/button";
 import { ShoppingBag, ArrowLeft, Minus, Plus, Truck, Shield, RotateCcw } from "lucide-react";
+import { useTracking, useEngagementTracking } from "@/hooks/useTracking";
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -12,6 +13,9 @@ const ProductDetail = () => {
   const navigate = useNavigate();
   const [qty, setQty] = useState(1);
   const template = settings?.active_template || "1";
+  const { trackViewContent, trackAddToCart } = useTracking();
+  useEngagementTracking(); // Track scroll depth & time on page
+  const viewTracked = useState(false);
 
   if (isLoading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   if (!product) return <div className="min-h-screen flex items-center justify-center">Product not found</div>;
