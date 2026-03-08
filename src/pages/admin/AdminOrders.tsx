@@ -2301,6 +2301,11 @@ const AdminOrders = () => {
                           ))}
                         </SelectContent>
                       </Select>
+                      {order.status === "cancelled" && (order as any).cancel_reason && (
+                        <p className="text-[10px] text-destructive mt-1 truncate max-w-[130px]" title={(order as any).cancel_reason}>
+                          {(order as any).cancel_reason}
+                        </p>
+                      )}
                     </TableCell>
                     {/* COURIER: logo + name */}
                     <TableCell className="px-3 py-3 text-center" onClick={(e) => e.stopPropagation()}>
