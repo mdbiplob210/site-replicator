@@ -31,6 +31,15 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Validate pixel_id against server-side allowlist
+    const allowedPixelId = Deno.env.get("FB_PIXEL_ID");
+    if (allowedPixelId && pixel_id !== allowedPixelId) {
+      return new Response(
+        JSON.stringify({ error: "Invalid pixel_id" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const accessToken = Deno.env.get("FB_ACCESS_TOKEN");
     if (!accessToken) {
       return new Response(
