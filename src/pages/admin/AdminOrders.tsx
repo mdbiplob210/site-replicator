@@ -215,6 +215,11 @@ const AdminOrders = () => {
   const { data: nextOrderNumber = "ORD-00001" } = useNextOrderNumber();
   const { data: allProducts = [] } = usePublicProducts();
 
+  // Courier location hooks for new order form
+  const { data: courierCities = [], isLoading: citiesLoading } = useCourierCities(selectedCourierId);
+  const { data: courierZones = [], isLoading: zonesLoading } = useCourierZones(selectedCourierId, selectedCityId);
+  const { data: courierAreas = [], isLoading: areasLoading } = useCourierAreas(selectedCourierId, selectedZoneId);
+
   // Refresh all order data
   const handleRefresh = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ["orders"] });
