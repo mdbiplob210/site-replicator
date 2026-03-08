@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { ShoppingBag, Search, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 
 const Template2Dark = () => {
   const { data: products = [], isLoading } = usePublicProducts();
