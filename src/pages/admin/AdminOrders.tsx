@@ -1694,8 +1694,50 @@ const AdminOrders = () => {
                 );
               })()}
             </div>
-          </Card>
+           </Card>
         )}
+
+        {/* Cancel Reason Chart */}
+        {activeTab === "Cancelled" && (() => {
+          const allCancelled = orders.filter((o: any) => o.status === "cancelled");
+          if (allCancelled.length === 0) return null;
+          const reasonCounts: Record<string, number> = {};
+          allCancelled.forEach((o: any) => {
+            const reason = o.cancel_reason || "কারণ উল্লেখ নেই";
+            reasonCounts[reason] = (reasonCounts[reason] || 0) + 1;
+          });
+          const sortedReasons = Object.entries(reasonCounts).sort((a, b) => b[1] - a[1]);
+          const maxCount = Math.max(...sortedReasons.map(([, c]) => c));
+          const colors = ["bg-red-500", "bg-orange-500", "bg-yellow-500", "bg-blue-500", "bg-violet-500", "bg-cyan-500", "bg-emerald-500", "bg-pink-500"];
+          return (
+            <Card className="p-4 border-border/40 shadow-sm space-y-3">
+              <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                <BarChart3 className="h-4 w-4 text-destructive" />
+                ক্যান্সেল কারণ বিশ্লেষণ
+                <Badge variant="secondary" className="text-[10px]">{allCancelled.length}টি ক্যান্সেল</Badge>
+              </h3>
+              <div className="space-y-2.5">
+                {sortedReasons.map(([reason, count], idx) => {
+                  const pct = Math.round((count / allCancelled.length) * 100);
+                  return (
+                    <div key={reason} className="space-y-1">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-medium text-foreground truncate max-w-[60%]">{reason}</span>
+                        <span className="text-muted-foreground font-semibold">{count}টি ({pct}%)</span>
+                      </div>
+                      <div className="h-3 rounded-full bg-secondary/40 overflow-hidden">
+                        <div
+                          className={cn("h-full rounded-full transition-all duration-500", colors[idx % colors.length])}
+                          style={{ width: `${(count / maxCount) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </Card>
+          );
+        })()}
 
         {selectedOrderIds.size > 0 && (
           <Card className="p-3 border-primary/30 bg-primary/5 shadow-sm flex items-center gap-3 flex-wrap">
