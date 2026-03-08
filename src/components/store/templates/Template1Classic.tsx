@@ -247,7 +247,7 @@ const Template1Classic = () => {
                   <Link to={`/product/${p.id}`} className="block relative">
                     <div className="aspect-square overflow-hidden bg-gray-50">
                       {p.main_image_url ? (
-                        <img src={p.main_image_url} alt={p.name} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" loading="lazy" />
+                        <OptimizedImage src={p.main_image_url} alt={p.name} width={400} quality={80} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <ShoppingBag className="h-10 w-10 text-gray-200" />
