@@ -278,6 +278,18 @@ const AdminOrders = () => {
     },
   });
 
+  // Build product image lookup from allProducts
+  const productImageMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    allProducts.forEach((p: any) => {
+      if (p.main_image_url) {
+        map[p.id] = p.main_image_url;
+        map[p.name] = p.main_image_url;
+      }
+    });
+    return map;
+  }, [allProducts]);
+
   // Build lookup maps
   const courierByOrderId = useMemo(() => {
     const map: Record<string, { provider_id: string; status: string; submitted_at: string }> = {};
