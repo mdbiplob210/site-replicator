@@ -31,7 +31,7 @@ export default function AdminMainTemplate() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <a href="/store" target="_blank" rel="noreferrer">
+            <a href="/" target="_blank" rel="noreferrer">
               <Button variant="outline" className="gap-2">
                 <Globe className="h-4 w-4" /> Open Public Store
               </Button>
