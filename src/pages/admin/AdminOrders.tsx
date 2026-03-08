@@ -85,10 +85,6 @@ const CANCEL_REASONS = [
   "ভুল অর্ডার / ডুপ্লিকেট",
 ];
 
-  // Courier location hooks for new order form
-  const { data: courierCities = [], isLoading: citiesLoading } = useCourierCities(selectedCourierId);
-  const { data: courierZones = [], isLoading: zonesLoading } = useCourierZones(selectedCourierId, selectedCityId);
-  const { data: courierAreas = [], isLoading: areasLoading } = useCourierAreas(selectedCourierId, selectedZoneId);
 
 const dateFilterOptions = [
   "Today", "Yesterday", "Last 7 Days", "Last 14 Days", "Last 30 Days", "Last Year", "Custom Range"
