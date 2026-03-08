@@ -21,7 +21,7 @@ const Template2Dark = () => {
           </div>
           <div className="flex items-center gap-3">
             <button className="p-2 rounded-full hover:bg-gray-800"><Search className="h-5 w-5" /></button>
-            <Link to="/store/cart" className="p-2 rounded-full hover:bg-gray-800">
+            <Link to="/checkout" className="p-2 rounded-full hover:bg-gray-800">
               <ShoppingBag className="h-5 w-5" />
             </Link>
           </div>
