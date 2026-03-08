@@ -2589,7 +2589,7 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
   const handleStatusChange = async (newStatus: string) => {
     if (!orderId || !order || newStatus === order.status) return;
     try {
-      const { error } = await supabase.from("orders").update({ status: newStatus }).eq("id", orderId);
+      const { error } = await supabase.from("orders").update({ status: newStatus as any }).eq("id", orderId);
       if (error) throw error;
       await logActivity("status_changed", "status", order.status, newStatus, `স্ট্যাটাস পরিবর্তন: ${getStatusLabel(order.status as any)} → ${getStatusLabel(newStatus as any)}`);
       queryClient.invalidateQueries({ queryKey: ["orders"] });
