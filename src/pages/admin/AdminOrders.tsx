@@ -2099,6 +2099,38 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
   const [detailProductSearch, setDetailProductSearch] = useState("");
   const [detailProductFocused, setDetailProductFocused] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Courier selection for edit
+  const [editCourierId, setEditCourierId] = useState<string | null>(null);
+  const [editCourierCityId, setEditCourierCityId] = useState<string | null>(null);
+  const [editCourierZoneId, setEditCourierZoneId] = useState<string | null>(null);
+  const [editCourierAreaId, setEditCourierAreaId] = useState<string | null>(null);
+
+  // Courier providers
+  const { data: editCourierProviders = [] } = useQuery({
+    queryKey: ["courier-providers-filter"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("courier_providers").select("id, name, slug, is_active");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Existing courier order for this order
+  const { data: existingCourierOrder } = useQuery({
+    queryKey: ["courier-order-detail", orderId],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("courier_orders").select("*").eq("order_id", orderId!).order("submitted_at", { ascending: false }).limit(1);
+      if (error) throw error;
+      return data?.[0] || null;
+    },
+    enabled: !!orderId,
+  });
+
+  // Courier location hooks
+  const { data: editCourierCities = [], isLoading: editCitiesLoading } = useCourierCities(editCourierId);
+  const { data: editCourierZones = [], isLoading: editZonesLoading } = useCourierZones(editCourierId, editCourierCityId);
+  const { data: editCourierAreas = [], isLoading: editAreasLoading } = useCourierAreas(editCourierId, editCourierZoneId);
   const [quickNote, setQuickNote] = useState("");
   const [isAddingNote, setIsAddingNote] = useState(false);
   const [logFilterUser, setLogFilterUser] = useState("all");
