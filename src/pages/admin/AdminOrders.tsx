@@ -1769,8 +1769,8 @@ const AdminOrders = () => {
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/60 border-b-2 border-border/60">
-                  <TableHead className="font-bold text-[11px] px-2 py-2 whitespace-nowrap">Status</TableHead>
-                  <TableHead className="font-bold text-[11px] px-1 py-2 w-8">
+                  <TableHead className="font-bold text-[10px] px-1.5 py-1.5 whitespace-nowrap">Status</TableHead>
+                  <TableHead className="font-bold text-[10px] px-1 py-1.5 w-7">
                     <Checkbox 
                       checked={selectedOrderIds.size === filteredOrders.length && filteredOrders.length > 0}
                       onCheckedChange={(checked) => {
@@ -1779,14 +1779,14 @@ const AdminOrders = () => {
                       }}
                     />
                   </TableHead>
-                  <TableHead className="font-bold text-[11px] px-1 py-2 w-10">Notes</TableHead>
-                  <TableHead className="font-bold text-[11px] px-2 py-2">Invoice ID</TableHead>
-                  <TableHead className="font-bold text-[11px] px-2 py-2">Name & Number</TableHead>
-                  <TableHead className="font-bold text-[11px] px-2 py-2">Date</TableHead>
-                  <TableHead className="font-bold text-[11px] px-2 py-2">Address</TableHead>
-                  <TableHead className="font-bold text-[11px] px-2 py-2">Courier</TableHead>
-                  <TableHead className="font-bold text-[11px] px-2 py-2">Summary</TableHead>
-                  <TableHead className="font-bold text-[11px] px-2 py-2">Employee</TableHead>
+                  <TableHead className="font-bold text-[10px] px-1 py-1.5 w-7">N</TableHead>
+                  <TableHead className="font-bold text-[10px] px-1.5 py-1.5">Invoice</TableHead>
+                  <TableHead className="font-bold text-[10px] px-1.5 py-1.5">Customer</TableHead>
+                  <TableHead className="font-bold text-[10px] px-1.5 py-1.5">Date</TableHead>
+                  <TableHead className="font-bold text-[10px] px-1.5 py-1.5">Address</TableHead>
+                  <TableHead className="font-bold text-[10px] px-1.5 py-1.5">Courier</TableHead>
+                  <TableHead className="font-bold text-[10px] px-1.5 py-1.5">Summary</TableHead>
+                  <TableHead className="font-bold text-[10px] px-1.5 py-1.5">Emp</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -1798,12 +1798,13 @@ const AdminOrders = () => {
                   const employeeName = assignmentByOrderId[order.id] || "";
                   const due = Number(order.total_amount) - Number(order.discount);
                   return (
-                  <TableRow key={order.id} className="hover:bg-secondary/20 cursor-pointer group border-b border-border/30 align-top" onClick={() => setDetailOrderId(order.id)}>
+                  <TableRow key={order.id} className="hover:bg-secondary/20 cursor-pointer group border-b border-border/20 align-top" onClick={() => setDetailOrderId(order.id)}>
                     {/* Status + SL */}
-                    <TableCell className="px-2 py-2 align-top">
-                      <div className="flex flex-col items-start gap-0.5">
+                    <TableCell className="px-1.5 py-1 align-top">
+                      <div className="flex items-center gap-1">
+                        <span className="text-[9px] text-muted-foreground font-medium shrink-0">{idx + 1}.</span>
                         <Select value={order.status} onValueChange={(value) => handleStatusChange(order.id, value, order.status)}>
-                          <SelectTrigger className="w-[90px] h-5 rounded text-[10px] border-0 px-1.5 font-semibold" onClick={(e) => e.stopPropagation()}
+                          <SelectTrigger className="w-[85px] h-5 rounded text-[9px] border-0 px-1 font-semibold" onClick={(e) => e.stopPropagation()}
                             style={{ backgroundColor: order.status === 'processing' ? '#0ea5e9' : order.status === 'confirmed' ? '#059669' : order.status === 'cancelled' ? '#ef4444' : order.status === 'delivered' ? '#10b981' : order.status === 'in_courier' ? '#8b5cf6' : order.status === 'on_hold' ? '#eab308' : order.status === 'returned' ? '#f97316' : '#6b7280', color: 'white' }}>
                             <SelectValue />
                           </SelectTrigger>
@@ -1818,12 +1819,11 @@ const AdminOrders = () => {
                             ))}
                           </SelectContent>
                         </Select>
-                        <span className="text-[9px] text-muted-foreground font-medium">sl: {idx + 1}</span>
                       </div>
                     </TableCell>
 
                     {/* Select */}
-                    <TableCell className="px-1 py-2 align-top" onClick={(e) => e.stopPropagation()}>
+                    <TableCell className="px-1 py-1 align-top" onClick={(e) => e.stopPropagation()}>
                       <Checkbox 
                         checked={selectedOrderIds.has(order.id)} 
                         onCheckedChange={(checked) => {
@@ -1835,13 +1835,13 @@ const AdminOrders = () => {
                     </TableCell>
 
                     {/* Notes */}
-                    <TableCell className="px-1 py-2 align-top" onClick={(e) => e.stopPropagation()}>
+                    <TableCell className="px-1 py-1 align-top" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center gap-0.5">
                         {order.notes ? (
                           <Popover>
                             <PopoverTrigger asChild>
-                              <button className="h-6 w-6 rounded flex items-center justify-center bg-emerald-100 dark:bg-emerald-900/30 hover:bg-emerald-200 transition-colors" title={order.notes}>
-                                <MessageSquare className="h-3 w-3 text-emerald-600" />
+                              <button className="h-5 w-5 rounded flex items-center justify-center bg-emerald-100 dark:bg-emerald-900/30 hover:bg-emerald-200 transition-colors" title={order.notes}>
+                                <MessageSquare className="h-2.5 w-2.5 text-emerald-600" />
                               </button>
                             </PopoverTrigger>
                             <PopoverContent className="w-64 p-3 rounded-xl text-xs">
@@ -1850,131 +1850,129 @@ const AdminOrders = () => {
                             </PopoverContent>
                           </Popover>
                         ) : (
-                          <button className="h-6 w-6 rounded flex items-center justify-center bg-secondary/40 hover:bg-secondary transition-colors" onClick={() => setDetailOrderId(order.id)}>
-                            <Plus className="h-3 w-3 text-muted-foreground" />
+                          <button className="h-5 w-5 rounded flex items-center justify-center bg-secondary/40 hover:bg-secondary transition-colors" onClick={() => setDetailOrderId(order.id)}>
+                            <Plus className="h-2.5 w-2.5 text-muted-foreground" />
                           </button>
                         )}
                       </div>
                     </TableCell>
 
                     {/* Invoice ID + Products */}
-                    <TableCell className="px-2 py-2 align-top min-w-[200px]">
-                      <p className="font-mono text-xs font-bold text-primary">#{order.order_number.replace(/^ORD-0*/, '')}</p>
+                    <TableCell className="px-1.5 py-1 align-top min-w-[180px]">
+                      <p className="font-mono text-[11px] font-bold text-primary leading-none">#{order.order_number.replace(/^ORD-0*/, '')}</p>
                       {items.length > 0 ? (
-                        <ul className="mt-0.5 space-y-0">
+                        <ul className="mt-0.5">
                           {items.slice(0, 3).map((item: any, i: number) => (
-                            <li key={i} className="text-[10px] text-muted-foreground leading-tight">
-                              • {item.quantity || 1} x {item.product_name}
+                            <li key={i} className="text-[9px] text-muted-foreground leading-[1.3]">
+                              • {item.quantity || 1}x {item.product_name}
                               {(() => {
                                 const product = allProducts.find((p: any) => p.id === item.product_id || p.name === item.product_name);
                                 return product ? ` - ${Number(product.selling_price).toLocaleString()}Tk` : '';
                               })()}
                             </li>
                           ))}
-                          {items.length > 3 && <li className="text-[9px] text-muted-foreground">+{items.length - 3} আরো</li>}
+                          {items.length > 3 && <li className="text-[8px] text-muted-foreground">+{items.length - 3} আরো</li>}
                         </ul>
                       ) : null}
                     </TableCell>
 
                     {/* Name & Number */}
-                    <TableCell className="px-2 py-2 align-top min-w-[180px]">
-                      <div className="space-y-1">
+                    <TableCell className="px-1.5 py-1 align-top min-w-[160px]">
+                      <div className="space-y-0.5">
                         <div className="flex items-center gap-1">
-                          <span className="text-xs font-semibold text-foreground">{order.customer_name}</span>
+                          <span className="text-[11px] font-semibold text-foreground leading-none">{order.customer_name}</span>
                           <button className="opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => {
                             e.stopPropagation();
                             navigator.clipboard.writeText(order.customer_name);
                             toast.success("নাম কপি!");
                           }}>
-                            <Copy className="h-2.5 w-2.5 text-muted-foreground" />
+                            <Copy className="h-2 w-2 text-muted-foreground" />
                           </button>
                         </div>
                         {order.customer_phone && (
-                          <div className="flex items-center gap-1">
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono font-semibold bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300">
+                          <div className="flex items-center gap-0.5">
+                            <span className="inline-flex items-center px-1.5 py-0 rounded text-[10px] font-mono font-semibold bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300">
                               {order.customer_phone}
                             </span>
-                            <a href={`https://wa.me/${order.customer_phone.replace(/^0/, '88')}`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="h-5 w-5 rounded-full bg-emerald-500 flex items-center justify-center hover:bg-emerald-600 transition-colors">
-                              <svg className="h-3 w-3 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.832-1.438A9.955 9.955 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/></svg>
+                            <a href={`https://wa.me/${order.customer_phone.replace(/^0/, '88')}`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="h-4 w-4 rounded-full bg-emerald-500 flex items-center justify-center hover:bg-emerald-600 transition-colors">
+                              <svg className="h-2.5 w-2.5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.832-1.438A9.955 9.955 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/></svg>
                             </a>
-                            <a href={`tel:${order.customer_phone}`} onClick={(e) => e.stopPropagation()} className="h-5 w-5 rounded-full bg-violet-500 flex items-center justify-center hover:bg-violet-600 transition-colors">
-                              <Phone className="h-2.5 w-2.5 text-white" />
+                            <a href={`tel:${order.customer_phone}`} onClick={(e) => e.stopPropagation()} className="h-4 w-4 rounded-full bg-violet-500 flex items-center justify-center hover:bg-violet-600 transition-colors">
+                              <Phone className="h-2 w-2 text-white" />
                             </a>
-                            <button onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(order.customer_phone!); toast.success("কপি!"); }} className="h-5 w-5 rounded-full bg-rose-500 flex items-center justify-center hover:bg-rose-600 transition-colors">
-                              <Copy className="h-2.5 w-2.5 text-white" />
+                            <button onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(order.customer_phone!); toast.success("কপি!"); }} className="h-4 w-4 rounded-full bg-rose-500 flex items-center justify-center hover:bg-rose-600 transition-colors">
+                              <Copy className="h-2 w-2 text-white" />
                             </button>
                           </div>
                         )}
-                        <div className="text-[9px] text-muted-foreground">Source: {order.source || "Landing Page"}</div>
+                        <div className="text-[8px] text-muted-foreground leading-none">{order.source || "Landing Page"}</div>
                       </div>
                     </TableCell>
 
                     {/* Date */}
-                    <TableCell className="px-2 py-2 align-top text-[10px] text-muted-foreground min-w-[140px]">
-                      <div className="space-y-0.5">
-                        <p>C:{format(new Date(order.created_at), "dd/MM/yyyy")} - {format(new Date(order.created_at), "hh:mma")}</p>
-                        <p>U:{format(new Date(order.updated_at), "dd/MM/yyyy")} - {format(new Date(order.updated_at), "hh:mma")}</p>
-                        {employeeName && <p className="font-semibold text-foreground">By: {employeeName.split(' ')[0]?.toUpperCase()}</p>}
+                    <TableCell className="px-1.5 py-1 align-top text-[9px] text-muted-foreground min-w-[120px]">
+                      <div>
+                        <p className="leading-[1.3]">C:{format(new Date(order.created_at), "dd/MM/yy")} {format(new Date(order.created_at), "hh:mma")}</p>
+                        <p className="leading-[1.3]">U:{format(new Date(order.updated_at), "dd/MM/yy")} {format(new Date(order.updated_at), "hh:mma")}</p>
+                        {employeeName && <p className="font-semibold text-foreground leading-[1.3]">By: {employeeName.split(' ')[0]?.toUpperCase()}</p>}
                       </div>
                     </TableCell>
 
                     {/* Address */}
-                    <TableCell className="px-2 py-2 align-top max-w-[140px]">
-                      <div className="flex items-start gap-1">
-                        <span className="text-[10px] text-muted-foreground leading-tight line-clamp-2">{order.customer_address || "—"}</span>
+                    <TableCell className="px-1.5 py-1 align-top max-w-[120px]">
+                      <div className="flex items-start gap-0.5">
+                        <span className="text-[9px] text-muted-foreground leading-tight line-clamp-2">{order.customer_address || "—"}</span>
                         {order.customer_address && (
-                          <button className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity mt-0.5" onClick={(e) => {
+                          <button className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => {
                             e.stopPropagation();
                             navigator.clipboard.writeText(order.customer_address!);
                             toast.success("ঠিকানা কপি!");
                           }}>
-                            <Copy className="h-2.5 w-2.5 text-muted-foreground" />
+                            <Copy className="h-2 w-2 text-muted-foreground" />
                           </button>
                         )}
                       </div>
                     </TableCell>
 
                     {/* Courier - Customer delivery history */}
-                    <TableCell className="px-2 py-2 align-top min-w-[160px]">
+                    <TableCell className="px-1.5 py-1 align-top min-w-[140px]">
                       {custStats ? (
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2 text-[10px]">
-                            <span className="text-muted-foreground">To: <strong className="text-foreground">{custStats.total}</strong></span>
-                            <span className="text-muted-foreground">Co: <strong className="text-foreground">{custStats.confirmed}</strong></span>
-                            {custStats.isNew && <span className="px-1.5 py-0 rounded text-[9px] font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">New</span>}
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-1.5 text-[9px]">
+                            <span className="text-muted-foreground">To:<strong className="text-foreground">{custStats.total}</strong></span>
+                            <span className="text-muted-foreground">Co:<strong className="text-foreground">{custStats.confirmed}</strong></span>
+                            {custStats.isNew && <span className="px-1 rounded text-[8px] font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">New</span>}
                           </div>
                           {custStats.total > 1 && (
                             <>
-                              <div className="w-full h-3 rounded-full overflow-hidden flex" style={{ backgroundColor: '#ef4444' }}>
-                                <div className="h-full rounded-l-full flex items-center justify-center text-[8px] font-bold text-white" style={{ width: `${successRate}%`, backgroundColor: '#22c55e', minWidth: successRate > 0 ? '20px' : '0' }}>
-                                  {successRate > 15 ? `${successRate.toFixed(1)}%` : ''}
+                              <div className="w-full h-2.5 rounded-full overflow-hidden flex" style={{ backgroundColor: '#ef4444' }}>
+                                <div className="h-full rounded-l-full flex items-center justify-center text-[7px] font-bold text-white" style={{ width: `${successRate}%`, backgroundColor: '#22c55e', minWidth: successRate > 0 ? '16px' : '0' }}>
+                                  {successRate > 15 ? `${successRate.toFixed(0)}%` : ''}
                                 </div>
                               </div>
-                              <div className="flex items-center gap-2 text-[9px]">
-                                <span className="text-muted-foreground">To: <strong>{custStats.total}</strong></span>
-                                <span className="text-emerald-600">Su: <strong>{custStats.success}</strong></span>
-                                <span className="text-destructive">Fa: <strong>{custStats.failed}</strong></span>
+                              <div className="flex items-center gap-1.5 text-[8px]">
+                                <span className="text-emerald-600">Su:<strong>{custStats.success}</strong></span>
+                                <span className="text-destructive">Fa:<strong>{custStats.failed}</strong></span>
                               </div>
                             </>
                           )}
                         </div>
                       ) : (
-                        <span className="text-[10px] text-muted-foreground/40">—</span>
+                        <span className="text-[9px] text-muted-foreground/40">—</span>
                       )}
                     </TableCell>
 
                     {/* Summary */}
-                    <TableCell className="px-2 py-2 align-top text-[10px] min-w-[100px]">
-                      <div className="space-y-0">
-                        <p className="text-foreground">Total: {Number(order.total_amount).toLocaleString()}</p>
-                        <p className="text-destructive font-semibold">Less: {Number(order.discount).toFixed(2)}</p>
-                        <p className="text-foreground">Paid: 0.00</p>
-                        <p className="text-foreground">Due: {due.toFixed(2)}</p>
+                    <TableCell className="px-1.5 py-1 align-top text-[9px] min-w-[85px]">
+                      <div>
+                        <p className="text-foreground leading-[1.4]">Total: {Number(order.total_amount).toLocaleString()}</p>
+                        <p className="text-destructive font-semibold leading-[1.4]">Less: {Number(order.discount).toFixed(0)}</p>
+                        <p className="text-foreground leading-[1.4]">Due: {due.toFixed(0)}</p>
                       </div>
                     </TableCell>
 
                     {/* Employee */}
-                    <TableCell className="px-2 py-2 align-top text-[10px] font-semibold text-foreground">
+                    <TableCell className="px-1.5 py-1 align-top text-[9px] font-semibold text-foreground">
                       {employeeName ? employeeName.split(' ')[0]?.toUpperCase() : "—"}
                     </TableCell>
                   </TableRow>
@@ -2099,6 +2097,38 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
   const [detailProductSearch, setDetailProductSearch] = useState("");
   const [detailProductFocused, setDetailProductFocused] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Courier selection for edit
+  const [editCourierId, setEditCourierId] = useState<string | null>(null);
+  const [editCourierCityId, setEditCourierCityId] = useState<string | null>(null);
+  const [editCourierZoneId, setEditCourierZoneId] = useState<string | null>(null);
+  const [editCourierAreaId, setEditCourierAreaId] = useState<string | null>(null);
+
+  // Courier providers
+  const { data: editCourierProviders = [] } = useQuery({
+    queryKey: ["courier-providers-filter"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("courier_providers").select("id, name, slug, is_active");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Existing courier order for this order
+  const { data: existingCourierOrder } = useQuery({
+    queryKey: ["courier-order-detail", orderId],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("courier_orders").select("*").eq("order_id", orderId!).order("submitted_at", { ascending: false }).limit(1);
+      if (error) throw error;
+      return data?.[0] || null;
+    },
+    enabled: !!orderId,
+  });
+
+  // Courier location hooks
+  const { data: editCourierCities = [], isLoading: editCitiesLoading } = useCourierCities(editCourierId);
+  const { data: editCourierZones = [], isLoading: editZonesLoading } = useCourierZones(editCourierId, editCourierCityId);
+  const { data: editCourierAreas = [], isLoading: editAreasLoading } = useCourierAreas(editCourierId, editCourierZoneId);
   const [quickNote, setQuickNote] = useState("");
   const [isAddingNote, setIsAddingNote] = useState(false);
   const [logFilterUser, setLogFilterUser] = useState("all");
@@ -2118,6 +2148,18 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
       setEditDiscount(Number(order.discount));
     }
   }, [orderRef]);
+
+  // Populate courier when existing courier order loads
+  useMemo(() => {
+    if (existingCourierOrder) {
+      setEditCourierId(existingCourierOrder.courier_provider_id || null);
+    } else {
+      setEditCourierId(null);
+    }
+    setEditCourierCityId(null);
+    setEditCourierZoneId(null);
+    setEditCourierAreaId(null);
+  }, [existingCourierOrder?.id, orderRef]);
 
   // Auto-detect location from address
   const detectedLoc = useMemo(() => {
@@ -2214,6 +2256,19 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
       if (editDelivery !== Number(order.delivery_charge)) { changes.delivery_charge = editDelivery; await logActivity("field_edited", "delivery_charge", String(order.delivery_charge), String(editDelivery)); }
       if (editDiscount !== Number(order.discount)) { changes.discount = editDiscount; await logActivity("field_edited", "discount", String(order.discount), String(editDiscount)); }
 
+      // Save courier selection
+      const courierChanged = editCourierId !== (existingCourierOrder?.courier_provider_id || null);
+      if (courierChanged && editCourierId) {
+        if (existingCourierOrder) {
+          await supabase.from("courier_orders").update({ courier_provider_id: editCourierId } as any).eq("id", existingCourierOrder.id);
+        } else {
+          await supabase.from("courier_orders").insert({ order_id: orderId, courier_provider_id: editCourierId, courier_status: "pending" } as any);
+        }
+        await logActivity("field_edited", "courier", existingCourierOrder?.courier_provider_id || "none", editCourierId);
+        queryClient.invalidateQueries({ queryKey: ["courier-orders-filter"] });
+        queryClient.invalidateQueries({ queryKey: ["courier-order-detail", orderId] });
+      }
+
       if (Object.keys(changes).length > 0) {
         // Recalculate total if delivery/discount changed
         if (changes.delivery_charge !== undefined || changes.discount !== undefined) {
@@ -2226,6 +2281,9 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
         queryClient.invalidateQueries({ queryKey: ["order-counts"] });
         queryClient.invalidateQueries({ queryKey: ["order-activity-logs", orderId] });
         toast.success("অর্ডার আপডেট হয়েছে!");
+        onClose();
+      } else if (courierChanged) {
+        toast.success("কুরিয়ার আপডেট হয়েছে!");
         onClose();
       } else {
         onClose();
@@ -2339,7 +2397,90 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
               </div>
             </div>
 
-            {/* Order Items + Add Product */}
+            {/* Courier Selection for Edit */}
+            <div className="space-y-2">
+              <Label className="text-xs font-semibold flex items-center gap-1.5">
+                <Truck className="h-3.5 w-3.5 text-violet-500" /> কুরিয়ার সিলেক্ট করুন
+              </Label>
+              <Select value={editCourierId || ""} onValueChange={(v) => {
+                setEditCourierId(v || null);
+                setEditCourierCityId(null);
+                setEditCourierZoneId(null);
+                setEditCourierAreaId(null);
+              }}>
+                <SelectTrigger className="rounded-xl h-9 text-sm">
+                  <SelectValue placeholder="কুরিয়ার সিলেক্ট করুন" />
+                </SelectTrigger>
+                <SelectContent>
+                  {editCourierProviders.filter((cp: any) => cp.is_active !== false).map((cp: any) => (
+                    <SelectItem key={cp.id} value={cp.id}>
+                      <div className="flex items-center gap-2">
+                        <Truck className="h-3.5 w-3.5" /> {cp.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {editCourierId && (
+                <Badge variant="outline" className="text-xs gap-1">
+                  <Truck className="h-3 w-3" />
+                  {editCourierProviders.find((cp: any) => cp.id === editCourierId)?.name || ""}
+                </Badge>
+              )}
+            </div>
+
+            {/* City/Zone/Area from Courier API for Edit */}
+            {editCourierId && (
+              <div className="grid grid-cols-3 gap-2">
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-semibold text-muted-foreground">City</Label>
+                  <Select value={editCourierCityId || ""} onValueChange={(v) => {
+                    setEditCourierCityId(v || null);
+                    setEditCourierZoneId(null);
+                    setEditCourierAreaId(null);
+                  }}>
+                    <SelectTrigger className="rounded-lg h-8 text-xs">
+                      <SelectValue placeholder={editCitiesLoading ? "লোড হচ্ছে..." : "City সিলেক্ট করুন"} />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-60">
+                      {editCourierCities.map((c: any) => (
+                        <SelectItem key={String(c.id)} value={String(c.id)}>{c.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-semibold text-muted-foreground">Zone</Label>
+                  <Select value={editCourierZoneId || ""} onValueChange={(v) => {
+                    setEditCourierZoneId(v || null);
+                    setEditCourierAreaId(null);
+                  }} disabled={!editCourierCityId}>
+                    <SelectTrigger className="rounded-lg h-8 text-xs">
+                      <SelectValue placeholder={editZonesLoading ? "লোড হচ্ছে..." : "Zone সিলেক্ট করুন"} />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-60">
+                      {editCourierZones.map((z: any) => (
+                        <SelectItem key={String(z.id)} value={String(z.id)}>{z.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-semibold text-muted-foreground">Area/Thana</Label>
+                  <Select value={editCourierAreaId || ""} onValueChange={setEditCourierAreaId} disabled={!editCourierZoneId}>
+                    <SelectTrigger className="rounded-lg h-8 text-xs">
+                      <SelectValue placeholder={editAreasLoading ? "লোড হচ্ছে..." : "Area সিলেক্ট করুন"} />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-60">
+                      {editCourierAreas.map((a: any) => (
+                        <SelectItem key={String(a.id)} value={String(a.id)}>{a.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
+
             <div className="space-y-3">
               <Label className="text-xs font-semibold">প্রোডাক্ট যোগ করুন</Label>
               <div className="relative">
