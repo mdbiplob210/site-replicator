@@ -279,6 +279,30 @@ const AdminOrders = () => {
     },
   });
 
+  // Order assignments for employee column
+  const { data: orderAssignments = [] } = useQuery({
+    queryKey: ["order-assignments-list"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("order_assignments")
+        .select("order_id, assigned_to, status");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Profiles for employee names
+  const { data: profilesList = [] } = useQuery({
+    queryKey: ["profiles-list"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("user_id, full_name");
+      if (error) throw error;
+      return data;
+    },
+  });
+
   // Build product image lookup from allProducts
   const productImageMap = useMemo(() => {
     const map: Record<string, string> = {};
