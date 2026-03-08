@@ -86,6 +86,8 @@ export const getStatusColor = (status: OrderStatus): string => {
     in_courier: "bg-violet-500",
     delivered: "bg-emerald-500",
     returned: "bg-red-400",
+    pending_return: "bg-orange-500",
+    hand_delivery: "bg-cyan-500",
   };
   return colors[status] || "bg-muted";
 };
