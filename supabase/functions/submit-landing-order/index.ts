@@ -92,7 +92,15 @@ Deno.serve(async (req) => {
       .limit(1);
 
     if (phoneBlocked && phoneBlocked.length > 0) {
-      await supabase.from("incomplete_orders").insert({
+      // Upsert: update existing incomplete order by phone if exists
+      const { data: existingIncomplete } = await supabase
+        .from("incomplete_orders")
+        .select("id")
+        .eq("customer_phone", customer_phone)
+        .eq("status", "processing")
+        .limit(1);
+
+      const incompleteData = {
         customer_name, customer_phone, customer_address: customer_address || null,
         product_name: product_name || null, product_code: product_code || null,
         quantity, unit_price, total_amount: totalAmount, delivery_charge, discount,
@@ -100,7 +108,14 @@ Deno.serve(async (req) => {
         client_ip: clientIp, user_agent: userAgent, device_info: deviceInfo,
         block_reason: `স্থায়ীভাবে ব্লক করা নম্বর: ${customer_phone}`,
         status: "processing",
-      });
+        updated_at: new Date().toISOString(),
+      };
+
+      if (existingIncomplete && existingIncomplete.length > 0) {
+        await supabase.from("incomplete_orders").update(incompleteData).eq("id", existingIncomplete[0].id);
+      } else {
+        await supabase.from("incomplete_orders").insert(incompleteData);
+      }
       return new Response(
         JSON.stringify({ success: false, blocked: true, error: blockPopupMessage }),
         { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
