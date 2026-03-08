@@ -2261,11 +2261,24 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {items.map((item: any) => (
+                  {items.map((item: any) => {
+                    const imgUrl = item.product_id 
+                      ? allProducts.find((p: any) => p.id === item.product_id)?.main_image_url 
+                      : allProducts.find((p: any) => p.name === item.product_name)?.main_image_url;
+                    return (
                     <div key={item.id} className="flex items-center justify-between p-2.5 rounded-xl bg-secondary/30 border border-border/40">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground truncate">{item.product_name}</p>
-                        <p className="text-xs text-muted-foreground">{item.product_code}</p>
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        {imgUrl ? (
+                          <img src={imgUrl} alt="" className="h-10 w-10 rounded-lg object-cover border border-border/40 flex-shrink-0" />
+                        ) : (
+                          <div className="h-10 w-10 rounded-lg bg-secondary/60 flex items-center justify-center flex-shrink-0">
+                            <Package className="h-4 w-4 text-muted-foreground/40" />
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">{item.product_name}</p>
+                          <p className="text-xs text-muted-foreground">{item.product_code}</p>
+                        </div>
                       </div>
                       <div className="flex items-center gap-4 text-sm">
                         <span className="text-muted-foreground">×{item.quantity}</span>
@@ -2273,7 +2286,8 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                         <span className="font-semibold text-foreground w-20 text-right">৳{Number(item.total_price).toLocaleString()}</span>
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                   <div className="flex justify-between items-center pt-2 border-t border-border/40">
                     <span className="text-xs text-muted-foreground">{items.length}টি আইটেম</span>
                     <span className="text-sm font-bold text-primary">৳{itemsTotal.toLocaleString()}</span>
