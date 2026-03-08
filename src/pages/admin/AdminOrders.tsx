@@ -834,8 +834,15 @@ const AdminOrders = () => {
 
   const handleCreateOrder = () => {
     if (!customerName.trim()) return;
+    if (newOrderStatus === "cancelled" && !newOrderCancelReason && !newOrderCancelCustom.trim()) {
+      toast.error("ক্যান্সেল কারণ সিলেক্ট করুন!");
+      return;
+    }
     const computedProductCost = orderItems.length > 0 ? itemsTotal : productCost;
     const computedTotal = totalAmount || (computedProductCost + deliveryCharge - discount);
+    const finalCancelReason = newOrderStatus === "cancelled" 
+      ? (newOrderCancelReason === "others" ? newOrderCancelCustom : newOrderCancelReason) 
+      : null;
     createOrder.mutate({
       order: {
         order_number: nextOrderNumber,
@@ -850,6 +857,7 @@ const AdminOrders = () => {
         courier_note: courierNote || null,
         source: selectedOrderSource || "Panel",
         status: newOrderStatus as any,
+        cancel_reason: finalCancelReason,
       } as any,
       items: orderItems,
     }, {
