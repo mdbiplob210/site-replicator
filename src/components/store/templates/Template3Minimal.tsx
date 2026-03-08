@@ -34,7 +34,7 @@ const Template3Minimal = () => {
         <p className="text-stone-500 mb-10 max-w-md mx-auto text-sm leading-relaxed">
           সৌন্দর্য এবং গুণমানের সমন্বয়ে তৈরি আমাদের কিউরেটেড কালেকশন
         </p>
-        <Link to="/store" className="inline-flex items-center gap-2 text-xs tracking-[0.2em] uppercase text-stone-700 hover:text-stone-900 border-b border-stone-300 pb-1 transition">
+        <Link to="/" className="inline-flex items-center gap-2 text-xs tracking-[0.2em] uppercase text-stone-700 hover:text-stone-900 border-b border-stone-300 pb-1 transition">
           View Collection <ArrowRight className="h-3 w-3" />
         </Link>
       </section>
