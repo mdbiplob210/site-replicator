@@ -2383,7 +2383,90 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
               </div>
             </div>
 
-            {/* Order Items + Add Product */}
+            {/* Courier Selection for Edit */}
+            <div className="space-y-2">
+              <Label className="text-xs font-semibold flex items-center gap-1.5">
+                <Truck className="h-3.5 w-3.5 text-violet-500" /> কুরিয়ার সিলেক্ট করুন
+              </Label>
+              <Select value={editCourierId || ""} onValueChange={(v) => {
+                setEditCourierId(v || null);
+                setEditCourierCityId(null);
+                setEditCourierZoneId(null);
+                setEditCourierAreaId(null);
+              }}>
+                <SelectTrigger className="rounded-xl h-9 text-sm">
+                  <SelectValue placeholder="কুরিয়ার সিলেক্ট করুন" />
+                </SelectTrigger>
+                <SelectContent>
+                  {editCourierProviders.filter((cp: any) => cp.is_active !== false).map((cp: any) => (
+                    <SelectItem key={cp.id} value={cp.id}>
+                      <div className="flex items-center gap-2">
+                        <Truck className="h-3.5 w-3.5" /> {cp.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {editCourierId && (
+                <Badge variant="outline" className="text-xs gap-1">
+                  <Truck className="h-3 w-3" />
+                  {editCourierProviders.find((cp: any) => cp.id === editCourierId)?.name || ""}
+                </Badge>
+              )}
+            </div>
+
+            {/* City/Zone/Area from Courier API for Edit */}
+            {editCourierId && (
+              <div className="grid grid-cols-3 gap-2">
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-semibold text-muted-foreground">City</Label>
+                  <Select value={editCourierCityId || ""} onValueChange={(v) => {
+                    setEditCourierCityId(v || null);
+                    setEditCourierZoneId(null);
+                    setEditCourierAreaId(null);
+                  }}>
+                    <SelectTrigger className="rounded-lg h-8 text-xs">
+                      <SelectValue placeholder={editCitiesLoading ? "লোড হচ্ছে..." : "City সিলেক্ট করুন"} />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-60">
+                      {editCourierCities.map((c: any) => (
+                        <SelectItem key={String(c.id)} value={String(c.id)}>{c.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-semibold text-muted-foreground">Zone</Label>
+                  <Select value={editCourierZoneId || ""} onValueChange={(v) => {
+                    setEditCourierZoneId(v || null);
+                    setEditCourierAreaId(null);
+                  }} disabled={!editCourierCityId}>
+                    <SelectTrigger className="rounded-lg h-8 text-xs">
+                      <SelectValue placeholder={editZonesLoading ? "লোড হচ্ছে..." : "Zone সিলেক্ট করুন"} />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-60">
+                      {editCourierZones.map((z: any) => (
+                        <SelectItem key={String(z.id)} value={String(z.id)}>{z.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-semibold text-muted-foreground">Area/Thana</Label>
+                  <Select value={editCourierAreaId || ""} onValueChange={setEditCourierAreaId} disabled={!editCourierZoneId}>
+                    <SelectTrigger className="rounded-lg h-8 text-xs">
+                      <SelectValue placeholder={editAreasLoading ? "লোড হচ্ছে..." : "Area সিলেক্ট করুন"} />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-60">
+                      {editCourierAreas.map((a: any) => (
+                        <SelectItem key={String(a.id)} value={String(a.id)}>{a.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
+
             <div className="space-y-3">
               <Label className="text-xs font-semibold">প্রোডাক্ট যোগ করুন</Label>
               <div className="relative">
