@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { ShoppingBag, Sparkles, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 
 const Template4Colorful = () => {
   const { data: products = [], isLoading } = usePublicProducts();
