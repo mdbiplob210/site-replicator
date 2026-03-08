@@ -127,9 +127,11 @@ export function PopupCheckout({ item, open, onClose }: PopupCheckoutProps) {
 
     try {
       const orderNumber = `ORD-${Date.now().toString(36).toUpperCase()}`;
+      const orderId = crypto.randomUUID();
       const total = currentItem.price * qty;
 
-      const { data: orderData, error } = await supabase.from("orders").insert({
+      const { error } = await supabase.from("orders").insert({
+        id: orderId,
         order_number: orderNumber,
         customer_name: form.name,
         customer_phone: form.phone,
@@ -141,23 +143,21 @@ export function PopupCheckout({ item, open, onClose }: PopupCheckoutProps) {
         source: "website",
         device_info: /Mobi|Android/i.test(navigator.userAgent) ? "Mobile" : "Desktop",
         user_agent: navigator.userAgent.substring(0, 200),
-      } as any).select().single();
+      } as any);
       if (error) throw error;
 
-      if (orderData) {
-        await supabase.from("order_items").insert({
-          order_id: orderData.id,
-          product_id: currentItem.productId || null,
-          product_name: currentItem.name,
-          product_code: currentItem.productCode || "",
-          quantity: qty,
-          unit_price: currentItem.price,
-          total_price: total,
-        } as any);
+      await supabase.from("order_items").insert({
+        order_id: orderId,
+        product_id: currentItem.productId || null,
+        product_name: currentItem.name,
+        product_code: currentItem.productCode || "",
+        quantity: qty,
+        unit_price: currentItem.price,
+        total_price: total,
+      } as any);
 
-        setCompletedOrderId(orderData.id);
-        setCompletedOrderNumber(orderNumber);
-      }
+      setCompletedOrderId(orderId);
+      setCompletedOrderNumber(orderNumber);
 
       trackPurchase({
         value: total,
