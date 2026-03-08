@@ -1,11 +1,46 @@
 import { Link } from "react-router-dom";
-import { ShoppingBag, Sparkles, Heart } from "lucide-react";
+import { ShoppingBag, Sparkles, Heart, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
 import { OptimizedImage } from "@/components/ui/optimized-image";
+import { useState } from "react";
+import { useTracking } from "@/hooks/useTracking";
+import { PopupCheckout } from "@/components/store/PopupCheckout";
+import { ExitDiscountBanner } from "@/components/store/ExitDiscountBanner";
 
 const Template4Colorful = () => {
   const { data: products = [], isLoading } = usePublicProducts();
+  const { trackAddToCart } = useTracking();
+
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [checkoutItem, setCheckoutItem] = useState<any>(null);
+  const [appliedDiscount, setAppliedDiscount] = useState(() => {
+    const saved = localStorage.getItem("exit_discount_amount");
+    return saved ? Number(saved) : 0;
+  });
+  const [showDiscountBanner, setShowDiscountBanner] = useState(false);
+
+  const handleOrder = (product: any) => {
+    trackAddToCart({ id: product.id, name: product.name, price: product.selling_price, qty: 1, productCode: product.product_code });
+    setCheckoutItem({ productId: product.id, name: product.name, price: product.selling_price, qty: 1, image: product.main_image_url, productCode: product.product_code, categoryId: product.category_id });
+    setCheckoutOpen(true);
+  };
+
+  const handleExitIntent = () => {
+    if (appliedDiscount >= 50) return;
+    setCheckoutOpen(false);
+    setShowDiscountBanner(true);
+  };
+
+  const handleAcceptDiscount = () => {
+    const d = Math.min(appliedDiscount + 50, 50);
+    setAppliedDiscount(d);
+    localStorage.setItem("exit_discount_amount", String(d));
+    setShowDiscountBanner(false);
+    setCheckoutOpen(true);
+  };
+
+  const handleRejectDiscount = () => setShowDiscountBanner(false);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-rose-50 via-white to-violet-50">
@@ -13,9 +48,7 @@ const Template4Colorful = () => {
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-rose-100">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link to="/" className="text-2xl font-extrabold">
-            <span className="bg-gradient-to-r from-rose-500 via-violet-500 to-indigo-500 bg-clip-text text-transparent">
-              SOHOZ
-            </span>
+            <span className="bg-gradient-to-r from-rose-500 via-violet-500 to-indigo-500 bg-clip-text text-transparent">SOHOZ</span>
           </Link>
           <div className="hidden md:flex items-center gap-6 text-sm font-semibold text-gray-600">
             <Link to="/" className="hover:text-rose-500 transition">🏠 Home</Link>
@@ -37,15 +70,10 @@ const Template4Colorful = () => {
             <Sparkles className="h-4 w-4" /> ✨ নতুন কালেকশন এসেছে!
           </div>
           <h1 className="text-5xl md:text-6xl font-black mb-6">
-            <span className="bg-gradient-to-r from-rose-600 via-violet-600 to-indigo-600 bg-clip-text text-transparent">
-              আপনার স্টাইল,
-            </span>
-            <br />
-            <span className="text-gray-900">আপনার পছন্দ</span>
+            <span className="bg-gradient-to-r from-rose-600 via-violet-600 to-indigo-600 bg-clip-text text-transparent">আপনার স্টাইল,</span>
+            <br /><span className="text-gray-900">আপনার পছন্দ</span>
           </h1>
-          <p className="text-gray-500 text-lg mb-8 max-w-lg mx-auto">
-            প্রিমিয়াম প্রোডাক্ট সেরা দামে, দ্রুত ডেলিভারি সারাদেশে
-          </p>
+          <p className="text-gray-500 text-lg mb-8 max-w-lg mx-auto">প্রিমিয়াম প্রোডাক্ট সেরা দামে, দ্রুত ডেলিভারি সারাদেশে</p>
           <Button size="lg" className="bg-gradient-to-r from-rose-500 to-violet-500 hover:from-rose-600 hover:to-violet-600 text-white font-bold px-10 rounded-full shadow-lg shadow-rose-200">
             🛍️ Shop Now
           </Button>
@@ -63,39 +91,45 @@ const Template4Colorful = () => {
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
             {products.map((p) => (
-              <Link key={p.id} to={`/product/${p.id}`} className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-rose-50">
-                <div className="aspect-square bg-gray-50 relative overflow-hidden">
-                  {p.main_image_url ? (
-                    <OptimizedImage src={p.main_image_url} alt={p.name} width={400} quality={80} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-rose-200">
-                      <ShoppingBag className="h-12 w-12" />
+              <div key={p.id} className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-rose-50">
+                <Link to={`/product/${p.id}`}>
+                  <div className="aspect-square bg-gray-50 relative overflow-hidden">
+                    {p.main_image_url ? (
+                      <OptimizedImage src={p.main_image_url} alt={p.name} width={400} quality={80} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-rose-200"><ShoppingBag className="h-12 w-12" /></div>
+                    )}
+                    <button className="absolute top-3 right-3 p-2 bg-white/80 rounded-full opacity-0 group-hover:opacity-100 transition">
+                      <Heart className="h-4 w-4 text-rose-500" />
+                    </button>
+                  </div>
+                  <div className="p-4 pb-2">
+                    <h3 className="font-bold text-gray-900 truncate text-sm">{p.name}</h3>
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="font-extrabold bg-gradient-to-r from-rose-500 to-violet-500 bg-clip-text text-transparent">৳{p.selling_price}</span>
+                      {p.original_price > p.selling_price && (
+                        <span className="text-xs text-gray-400 line-through">৳{p.original_price}</span>
+                      )}
                     </div>
-                  )}
-                  <button className="absolute top-3 right-3 p-2 bg-white/80 rounded-full opacity-0 group-hover:opacity-100 transition">
-                    <Heart className="h-4 w-4 text-rose-500" />
+                  </div>
+                </Link>
+                <div className="px-4 pb-4">
+                  <button onClick={() => handleOrder(p)} className="w-full py-2 bg-gradient-to-r from-rose-500 to-violet-500 hover:from-rose-600 hover:to-violet-600 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition">
+                    <ShoppingCart className="h-4 w-4" /> অর্ডার করুন
                   </button>
                 </div>
-                <div className="p-4">
-                  <h3 className="font-bold text-gray-900 truncate text-sm">{p.name}</h3>
-                  <div className="flex items-center gap-2 mt-2">
-                    <span className="font-extrabold bg-gradient-to-r from-rose-500 to-violet-500 bg-clip-text text-transparent">৳{p.selling_price}</span>
-                    {p.original_price > p.selling_price && (
-                      <span className="text-xs text-gray-400 line-through">৳{p.original_price}</span>
-                    )}
-                  </div>
-                </div>
-              </Link>
+              </div>
             ))}
           </div>
         )}
       </section>
 
       <footer className="bg-white border-t border-rose-100 py-10">
-        <div className="max-w-7xl mx-auto px-4 text-center text-sm text-gray-400">
-          © 2026 SOHOZ — Made with ❤️
-        </div>
+        <div className="max-w-7xl mx-auto px-4 text-center text-sm text-gray-400">© 2026 SOHOZ — Made with ❤️</div>
       </footer>
+
+      {showDiscountBanner && <ExitDiscountBanner onAccept={handleAcceptDiscount} onReject={handleRejectDiscount} />}
+      <PopupCheckout item={checkoutItem} open={checkoutOpen} onClose={() => setCheckoutOpen(false)} discount={appliedDiscount} onExitIntent={handleExitIntent} />
     </div>
   );
 };

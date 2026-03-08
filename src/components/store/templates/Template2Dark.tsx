@@ -1,11 +1,46 @@
 import { Link } from "react-router-dom";
-import { ShoppingBag, Search, Zap } from "lucide-react";
+import { ShoppingBag, Search, Zap, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
 import { OptimizedImage } from "@/components/ui/optimized-image";
+import { useState } from "react";
+import { useTracking } from "@/hooks/useTracking";
+import { PopupCheckout } from "@/components/store/PopupCheckout";
+import { ExitDiscountBanner } from "@/components/store/ExitDiscountBanner";
 
 const Template2Dark = () => {
   const { data: products = [], isLoading } = usePublicProducts();
+  const { trackAddToCart } = useTracking();
+
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [checkoutItem, setCheckoutItem] = useState<any>(null);
+  const [appliedDiscount, setAppliedDiscount] = useState(() => {
+    const saved = localStorage.getItem("exit_discount_amount");
+    return saved ? Number(saved) : 0;
+  });
+  const [showDiscountBanner, setShowDiscountBanner] = useState(false);
+
+  const handleOrder = (product: any) => {
+    trackAddToCart({ id: product.id, name: product.name, price: product.selling_price, qty: 1, productCode: product.product_code });
+    setCheckoutItem({ productId: product.id, name: product.name, price: product.selling_price, qty: 1, image: product.main_image_url, productCode: product.product_code, categoryId: product.category_id });
+    setCheckoutOpen(true);
+  };
+
+  const handleExitIntent = () => {
+    if (appliedDiscount >= 50) return;
+    setCheckoutOpen(false);
+    setShowDiscountBanner(true);
+  };
+
+  const handleAcceptDiscount = () => {
+    const d = Math.min(appliedDiscount + 50, 50);
+    setAppliedDiscount(d);
+    localStorage.setItem("exit_discount_amount", String(d));
+    setShowDiscountBanner(false);
+    setCheckoutOpen(true);
+  };
+
+  const handleRejectDiscount = () => setShowDiscountBanner(false);
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100">
@@ -58,24 +93,29 @@ const Template2Dark = () => {
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
             {products.map((p) => (
-              <Link key={p.id} to={`/product/${p.id}`} className="group">
-                <div className="aspect-square bg-gray-900 rounded-xl overflow-hidden mb-3 border border-gray-800 group-hover:border-amber-500/50 transition">
-                  {p.main_image_url ? (
-                    <OptimizedImage src={p.main_image_url} alt={p.name} width={400} quality={80} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-700">
-                      <ShoppingBag className="h-12 w-12" />
-                    </div>
-                  )}
-                </div>
-                <h3 className="font-bold text-white truncate">{p.name}</h3>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-amber-400 font-bold">৳{p.selling_price}</span>
-                  {p.original_price > p.selling_price && (
-                    <span className="text-sm text-gray-600 line-through">৳{p.original_price}</span>
-                  )}
-                </div>
-              </Link>
+              <div key={p.id} className="group">
+                <Link to={`/product/${p.id}`}>
+                  <div className="aspect-square bg-gray-900 rounded-xl overflow-hidden mb-3 border border-gray-800 group-hover:border-amber-500/50 transition">
+                    {p.main_image_url ? (
+                      <OptimizedImage src={p.main_image_url} alt={p.name} width={400} quality={80} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-700">
+                        <ShoppingBag className="h-12 w-12" />
+                      </div>
+                    )}
+                  </div>
+                  <h3 className="font-bold text-white truncate">{p.name}</h3>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-amber-400 font-bold">৳{p.selling_price}</span>
+                    {p.original_price > p.selling_price && (
+                      <span className="text-sm text-gray-600 line-through">৳{p.original_price}</span>
+                    )}
+                  </div>
+                </Link>
+                <button onClick={() => handleOrder(p)} className="w-full mt-2 py-2 bg-amber-500 hover:bg-amber-600 text-gray-950 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition">
+                  <ShoppingCart className="h-4 w-4" /> অর্ডার করুন
+                </button>
+              </div>
             ))}
           </div>
         )}
@@ -86,6 +126,9 @@ const Template2Dark = () => {
           © 2026 SOHOZ STORE
         </div>
       </footer>
+
+      {showDiscountBanner && <ExitDiscountBanner onAccept={handleAcceptDiscount} onReject={handleRejectDiscount} />}
+      <PopupCheckout item={checkoutItem} open={checkoutOpen} onClose={() => setCheckoutOpen(false)} discount={appliedDiscount} onExitIntent={handleExitIntent} />
     </div>
   );
 };
