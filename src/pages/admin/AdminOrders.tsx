@@ -1850,6 +1850,15 @@ const AdminOrders = () => {
                       </Select>
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">{format(new Date(order.created_at), "dd MMM yyyy")}</TableCell>
+                    <TableCell>
+                      {order.notes ? (
+                        <p className="text-xs text-muted-foreground truncate max-w-[120px]" title={order.notes}>
+                          {order.notes}
+                        </p>
+                      ) : (
+                        <span className="text-xs text-muted-foreground/40">—</span>
+                      )}
+                    </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center gap-1 justify-end">
                         {order.status === "hand_delivery" && (
