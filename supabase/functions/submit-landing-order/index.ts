@@ -6,6 +6,11 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+function getDurationHours(duration: string): number {
+  const map: Record<string, number> = { "1h": 1, "6h": 6, "12h": 12, "24h": 24 };
+  return map[duration] || 24;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -25,6 +30,7 @@ Deno.serve(async (req) => {
       discount = 0,
       notes,
       landing_page_slug,
+      device_fingerprint,
     } = body;
 
     if (!customer_name || !customer_phone) {
@@ -43,8 +49,7 @@ Deno.serve(async (req) => {
                      req.headers.get("cf-connecting-ip") ||
                      req.headers.get("x-real-ip") || "unknown";
     const userAgent = req.headers.get("user-agent") || "";
-    
-    // Parse device info from user agent
+
     let deviceInfo = "Unknown Device";
     if (userAgent) {
       const isMobile = /Mobile|Android|iPhone|iPad/i.test(userAgent);
@@ -54,87 +59,168 @@ Deno.serve(async (req) => {
       else if (/iPhone|iPad|Mac/i.test(userAgent)) os = "iOS/macOS";
       else if (/Windows/i.test(userAgent)) os = "Windows";
       else if (/Linux/i.test(userAgent)) os = "Linux";
-      
       let browser = "Unknown Browser";
       if (/Chrome/i.test(userAgent) && !/Edg/i.test(userAgent)) browser = "Chrome";
       else if (/Firefox/i.test(userAgent)) browser = "Firefox";
       else if (/Safari/i.test(userAgent) && !/Chrome/i.test(userAgent)) browser = "Safari";
       else if (/Edg/i.test(userAgent)) browser = "Edge";
-      
       deviceInfo = `${isMobile ? (isTablet ? "Tablet" : "Mobile") : "Desktop"} | ${os} | ${browser}`;
     }
 
     const totalProductCost = unit_price * quantity;
     const totalAmount = totalProductCost + delivery_charge - discount;
 
-    // Check 24-hour IP block: has this IP placed an order in last 24 hours?
-    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    
-    const { data: recentOrders } = await supabase
-      .from("orders")
-      .select("id, order_number, created_at, customer_phone")
-      .eq("client_ip", clientIp)
-      .gte("created_at", twentyFourHoursAgo)
-      .order("created_at", { ascending: false })
+    // ═══ Load fraud settings ═══
+    const { data: fraudSettings } = await supabase
+      .from("fraud_settings")
+      .select("*")
+      .limit(1)
+      .single();
+
+    const protectionEnabled = fraudSettings?.protection_enabled || false;
+    const blockDuration = fraudSettings?.repeat_block_duration || "24h";
+    const deviceFingerprintEnabled = fraudSettings?.device_fingerprint_enabled || false;
+    const deliveryRatioEnabled = fraudSettings?.delivery_ratio_enabled || false;
+    const minDeliveryRatio = fraudSettings?.min_delivery_ratio || 0;
+    const blockPopupMessage = fraudSettings?.block_popup_message || "আপনি ইতিমধ্যে একটি অর্ডার করেছেন। কিছুক্ষণ পর আবার চেষ্টা করুন।";
+
+    // ═══ Check permanent phone block ═══
+    const { data: phoneBlocked } = await supabase
+      .from("blocked_phones")
+      .select("id")
+      .eq("phone_number", customer_phone)
       .limit(1);
 
-    // Also check by phone number in last 24h
-    const { data: recentPhoneOrders } = await supabase
-      .from("orders")
-      .select("id, order_number, created_at, client_ip")
-      .eq("customer_phone", customer_phone)
-      .gte("created_at", twentyFourHoursAgo)
-      .order("created_at", { ascending: false })
-      .limit(1);
-
-    const isIpBlocked = recentOrders && recentOrders.length > 0;
-    const isPhoneBlocked = recentPhoneOrders && recentPhoneOrders.length > 0;
-
-    if (isIpBlocked || isPhoneBlocked) {
-      // Store as incomplete order
-      let blockReason = "";
-      if (isIpBlocked && isPhoneBlocked) {
-        blockReason = `IP ও ফোন নম্বর ২৪ ঘণ্টার মধ্যে আগেই অর্ডার করেছে (IP: ${clientIp}, Phone: ${customer_phone})`;
-      } else if (isIpBlocked) {
-        blockReason = `একই IP (${clientIp}) থেকে ২৪ ঘণ্টার মধ্যে আগেই অর্ডার হয়েছে`;
-      } else {
-        blockReason = `একই ফোন নম্বর (${customer_phone}) থেকে ২৪ ঘণ্টার মধ্যে আগেই অর্ডার হয়েছে`;
-      }
-
+    if (phoneBlocked && phoneBlocked.length > 0) {
       await supabase.from("incomplete_orders").insert({
-        customer_name,
-        customer_phone,
-        customer_address: customer_address || null,
-        product_name: product_name || null,
-        product_code: product_code || null,
-        quantity,
-        unit_price,
-        total_amount: totalAmount,
-        delivery_charge,
-        discount,
-        notes: notes || null,
-        landing_page_slug: landing_page_slug || null,
-        client_ip: clientIp,
-        user_agent: userAgent,
-        device_info: deviceInfo,
-        block_reason: blockReason,
+        customer_name, customer_phone, customer_address: customer_address || null,
+        product_name: product_name || null, product_code: product_code || null,
+        quantity, unit_price, total_amount: totalAmount, delivery_charge, discount,
+        notes: notes || null, landing_page_slug: landing_page_slug || null,
+        client_ip: clientIp, user_agent: userAgent, device_info: deviceInfo,
+        block_reason: `স্থায়ীভাবে ব্লক করা নম্বর: ${customer_phone}`,
         status: "processing",
       });
-
       return new Response(
-        JSON.stringify({
-          success: false,
-          blocked: true,
-          error: "আপনি ইতিমধ্যে একটি অর্ডার করেছেন। ২৪ ঘণ্টা পর আবার অর্ডার করতে পারবেন।",
-        }),
+        JSON.stringify({ success: false, blocked: true, error: blockPopupMessage }),
         { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Generate order number
+    // ═══ Check permanent IP block ═══
+    if (clientIp !== "unknown") {
+      const { data: ipBlocked } = await supabase
+        .from("blocked_ips")
+        .select("id")
+        .eq("ip_address", clientIp)
+        .limit(1);
+
+      if (ipBlocked && ipBlocked.length > 0) {
+        await supabase.from("incomplete_orders").insert({
+          customer_name, customer_phone, customer_address: customer_address || null,
+          product_name: product_name || null, product_code: product_code || null,
+          quantity, unit_price, total_amount: totalAmount, delivery_charge, discount,
+          notes: notes || null, landing_page_slug: landing_page_slug || null,
+          client_ip: clientIp, user_agent: userAgent, device_info: deviceInfo,
+          block_reason: `স্থায়ীভাবে ব্লক করা IP: ${clientIp}`,
+          status: "processing",
+        });
+        return new Response(
+          JSON.stringify({ success: false, blocked: true, error: blockPopupMessage }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
+    // ═══ Protection mode checks (only if enabled) ═══
+    if (protectionEnabled && blockDuration !== "off") {
+      const hours = getDurationHours(blockDuration);
+      const windowAgo = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
+
+      // Check by phone
+      const { data: recentPhoneOrders } = await supabase
+        .from("orders")
+        .select("id, order_number, created_at")
+        .eq("customer_phone", customer_phone)
+        .gte("created_at", windowAgo)
+        .limit(1);
+
+      // Check by IP
+      const { data: recentIpOrders } = await supabase
+        .from("orders")
+        .select("id, order_number, created_at")
+        .eq("client_ip", clientIp)
+        .gte("created_at", windowAgo)
+        .limit(1);
+
+      // Check by device fingerprint
+      let deviceBlocked = false;
+      if (deviceFingerprintEnabled && device_fingerprint) {
+        const { data: deviceOrders } = await supabase
+          .from("orders")
+          .select("id")
+          .eq("device_info", deviceInfo)
+          .gte("created_at", windowAgo)
+          .limit(1);
+        deviceBlocked = !!(deviceOrders && deviceOrders.length > 0);
+      }
+
+      const isPhoneBlocked = recentPhoneOrders && recentPhoneOrders.length > 0;
+      const isIpBlocked = recentIpOrders && recentIpOrders.length > 0;
+
+      if (isPhoneBlocked || isIpBlocked || deviceBlocked) {
+        let blockReason = "";
+        if (isPhoneBlocked) blockReason = `একই ফোন (${customer_phone}) থেকে ${hours}ঘণ্টার মধ্যে আগেই অর্ডার হয়েছে`;
+        else if (isIpBlocked) blockReason = `একই IP (${clientIp}) থেকে ${hours}ঘণ্টার মধ্যে আগেই অর্ডার হয়েছে`;
+        else blockReason = `একই ডিভাইস থেকে ${hours}ঘণ্টার মধ্যে আগেই অর্ডার হয়েছে`;
+
+        await supabase.from("incomplete_orders").insert({
+          customer_name, customer_phone, customer_address: customer_address || null,
+          product_name: product_name || null, product_code: product_code || null,
+          quantity, unit_price, total_amount: totalAmount, delivery_charge, discount,
+          notes: notes || null, landing_page_slug: landing_page_slug || null,
+          client_ip: clientIp, user_agent: userAgent, device_info: deviceInfo,
+          block_reason: blockReason, status: "processing",
+        });
+
+        return new Response(
+          JSON.stringify({ success: false, blocked: true, error: blockPopupMessage }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
+    // ═══ Delivery ratio check ═══
+    if (protectionEnabled && deliveryRatioEnabled && minDeliveryRatio > 0) {
+      const { data: customerOrders } = await supabase
+        .from("orders")
+        .select("id, status")
+        .eq("customer_phone", customer_phone);
+
+      if (customerOrders && customerOrders.length >= 3) {
+        const delivered = customerOrders.filter(o => o.status === "delivered").length;
+        const ratio = Math.round((delivered / customerOrders.length) * 100);
+        if (ratio < minDeliveryRatio) {
+          await supabase.from("incomplete_orders").insert({
+            customer_name, customer_phone, customer_address: customer_address || null,
+            product_name: product_name || null, product_code: product_code || null,
+            quantity, unit_price, total_amount: totalAmount, delivery_charge, discount,
+            notes: notes || null, landing_page_slug: landing_page_slug || null,
+            client_ip: clientIp, user_agent: userAgent, device_info: deviceInfo,
+            block_reason: `ডেলিভারি রেশিও কম (${ratio}% < ${minDeliveryRatio}%)`,
+            status: "processing",
+          });
+          return new Response(
+            JSON.stringify({ success: false, blocked: true, error: blockPopupMessage }),
+            { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+      }
+    }
+
+    // ═══ All checks passed - create order ═══
     const orderNumber = `LP-${Date.now().toString(36).toUpperCase()}`;
 
-    // Insert order with tracking info
     const { data: order, error: orderError } = await supabase
       .from("orders")
       .insert({
@@ -146,9 +232,7 @@ Deno.serve(async (req) => {
         delivery_charge,
         discount,
         total_amount: totalAmount,
-        notes: notes
-          ? `[LP: ${landing_page_slug || "unknown"}] ${notes}`
-          : `[LP: ${landing_page_slug || "unknown"}]`,
+        notes: notes ? `[LP: ${landing_page_slug || "unknown"}] ${notes}` : `[LP: ${landing_page_slug || "unknown"}]`,
         status: "processing",
         client_ip: clientIp,
         user_agent: userAgent,
@@ -159,7 +243,6 @@ Deno.serve(async (req) => {
 
     if (orderError) throw orderError;
 
-    // Insert order item
     if (product_name && order) {
       await supabase.from("order_items").insert({
         order_id: order.id,
@@ -171,14 +254,12 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Track conversion event
     if (landing_page_slug) {
       const { data: lp } = await supabase
         .from("landing_pages")
         .select("id")
         .eq("slug", landing_page_slug)
         .single();
-
       if (lp) {
         await supabase.from("landing_page_events").insert({
           landing_page_id: lp.id,
