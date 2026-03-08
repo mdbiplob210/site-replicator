@@ -1555,6 +1555,30 @@ const AdminOrders = () => {
                         </button>
                       ))}
                     </div>
+                    {newOrderStatus === "cancelled" && (
+                      <div className="space-y-2 p-3 rounded-xl border border-destructive/30 bg-destructive/5">
+                        <Label className="text-xs font-semibold text-destructive flex items-center gap-1"><XCircle className="h-3.5 w-3.5" /> ক্যান্সেল কারণ</Label>
+                        {CANCEL_REASONS.map((reason) => (
+                          <label key={reason} className={cn(
+                            "flex items-center gap-2 p-2 rounded-lg border cursor-pointer text-xs transition-all",
+                            newOrderCancelReason === reason ? "border-destructive bg-destructive/10" : "border-border/40 hover:bg-secondary/30"
+                          )}>
+                            <input type="radio" name="new_cancel_reason" className="accent-destructive" checked={newOrderCancelReason === reason} onChange={() => setNewOrderCancelReason(reason)} />
+                            {reason}
+                          </label>
+                        ))}
+                        <label className={cn(
+                          "flex items-center gap-2 p-2 rounded-lg border cursor-pointer text-xs transition-all",
+                          newOrderCancelReason === "others" ? "border-destructive bg-destructive/10" : "border-border/40 hover:bg-secondary/30"
+                        )}>
+                          <input type="radio" name="new_cancel_reason" className="accent-destructive" checked={newOrderCancelReason === "others"} onChange={() => setNewOrderCancelReason("others")} />
+                          Others (নিজে লিখুন)
+                        </label>
+                        {newOrderCancelReason === "others" && (
+                          <Textarea placeholder="ক্যান্সেলের কারণ লিখুন..." className="rounded-lg text-xs" rows={2} value={newOrderCancelCustom} onChange={(e) => setNewOrderCancelCustom(e.target.value)} />
+                        )}
+                      </div>
+                    )}
                   </div>
                   <Button className="w-full rounded-xl shadow-sm" onClick={handleCreateOrder} disabled={createOrder.isPending || !customerName.trim()}>
                     {createOrder.isPending ? <><Loader2 className="h-4 w-4 animate-spin" /> Creating...</> : <><Plus className="h-4 w-4" /> Create Order</>}
