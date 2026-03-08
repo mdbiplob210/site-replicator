@@ -23,7 +23,7 @@ const DashboardPreview = () => {
             <div className="h-3 w-3 rounded-full bg-destructive" />
             <div className="h-3 w-3 rounded-full bg-yellow-400" />
             <div className="h-3 w-3 rounded-full bg-green-400" />
-            <span className="ml-2 text-sm text-muted-foreground">SOHOZ PRO Dashboard</span>
+            <span className="ml-2 text-sm text-muted-foreground">QUICK SHOP BD Dashboard</span>
           </div>
 
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">

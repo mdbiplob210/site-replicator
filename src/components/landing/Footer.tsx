@@ -6,7 +6,7 @@ const Footer = () => {
           <div>
             <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold">S</div>
-              <span className="text-lg font-bold text-foreground">SOHOZ PRO</span>
+              <span className="text-lg font-bold text-foreground">QUICK SHOP BD</span>
             </div>
             <p className="mt-3 text-sm text-muted-foreground">
               বাংলাদেশের প্রথম AI-পাওয়ার্ড ই-কমার্স ম্যানেজমেন্ট প্ল্যাটফর্ম।
@@ -38,7 +38,7 @@ const Footer = () => {
           </div>
         </div>
         <div className="mt-8 border-t border-border pt-6 text-center text-sm text-muted-foreground">
-          © 2026 SOHOZ PRO — সকল অধিকার সংরক্ষিত
+          © 2026 QUICK SHOP BD — সকল অধিকার সংরক্ষিত
         </div>
       </div>
     </footer>

@@ -19,7 +19,7 @@ const WhyChoose = () => {
     <section className="bg-gradient-to-br from-primary/5 via-background to-accent/20 py-20 sm:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center">
-          <h2 className="text-3xl font-bold text-foreground sm:text-4xl">কেন SOHOZ PRO?</h2>
+          <h2 className="text-3xl font-bold text-foreground sm:text-4xl">কেন QUICK SHOP BD?</h2>
           <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
             বাংলাদেশের সেরা ই-কমার্স ম্যানেজমেন্ট প্ল্যাটফর্ম বেছে নেওয়ার ৮টি কারণ
           </p>

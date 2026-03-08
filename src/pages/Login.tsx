@@ -186,7 +186,7 @@ const Login = () => {
       setPortalOpen(true);
       setShakePortal(true);
       setTimeout(() => setShakePortal(false), 600);
-      toast({ title: "🎉 পোর্টাল খুলেছে!", description: "এখন প্রবেশ করুন SOHOZ PRO তে!" });
+      toast({ title: "🎉 পোর্টাল খুলেছে!", description: "এখন প্রবেশ করুন QUICK SHOP BD তে!" });
     }
   };
 
@@ -370,9 +370,9 @@ const Login = () => {
                     color: "#0a0a1e",
                     boxShadow: "0 0 30px rgba(78,205,196,0.4)",
                   }}>
-                  S
+                  Q
                 </div>
-                <h1 className="text-2xl font-bold" style={{ color: "#fff" }}>SOHOZ PRO</h1>
+                <h1 className="text-2xl font-bold" style={{ color: "#fff" }}>QUICK SHOP BD</h1>
                 <p className="mt-1 flex items-center justify-center gap-1 text-sm" style={{ color: "rgba(78,205,196,0.8)" }}>
                   <Star className="h-3 w-3" />
                   {isSignUp ? "নতুন অ্যাকাউন্ট তৈরি করুন" : "পোর্টালে প্রবেশ করুন"}
@@ -503,7 +503,7 @@ const Login = () => {
               </p>
 
               <p className="mt-4 text-center text-[10px]" style={{ color: "rgba(255,255,255,0.25)" }}>
-                © 2026 SOHOZ PRO — Secure & Encrypted
+                © 2026 QUICK SHOP BD — Secure & Encrypted
               </p>
             </div>
           )}
