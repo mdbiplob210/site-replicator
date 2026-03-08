@@ -15,9 +15,9 @@ const Template2Dark = () => {
             SOHOZ<span className="text-amber-400">.</span>
           </Link>
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-400">
-            <Link to="/store" className="hover:text-white transition">Home</Link>
-            <Link to="/store" className="hover:text-white transition">Collection</Link>
-            <Link to="/store" className="hover:text-white transition">Contact</Link>
+            <Link to="/" className="hover:text-white transition">Home</Link>
+            <Link to="/" className="hover:text-white transition">Collection</Link>
+            <Link to="/" className="hover:text-white transition">Contact</Link>
           </div>
           <div className="flex items-center gap-3">
             <button className="p-2 rounded-full hover:bg-gray-800"><Search className="h-5 w-5" /></button>
