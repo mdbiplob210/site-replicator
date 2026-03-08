@@ -186,7 +186,7 @@ const Login = () => {
       setPortalOpen(true);
       setShakePortal(true);
       setTimeout(() => setShakePortal(false), 600);
-      toast({ title: "🎉 পোর্টাল খুলেছে!", description: "এখন প্রবেশ করুন SOHOZ PRO তে!" });
+      toast({ title: "🎉 পোর্টাল খুলেছে!", description: "এখন প্রবেশ করুন QUICK SHOP BD তে!" });
     }
   };
 
