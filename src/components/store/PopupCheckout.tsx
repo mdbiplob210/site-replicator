@@ -28,7 +28,7 @@ interface PopupCheckoutProps {
   onExitIntent?: () => void;
 }
 
-export function PopupCheckout({ item, open, onClose }: PopupCheckoutProps) {
+export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent }: PopupCheckoutProps) {
   const [form, setForm] = useState({ name: "", phone: "", address: "", notes: "" });
   const [submitting, setSubmitting] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
