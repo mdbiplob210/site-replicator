@@ -229,15 +229,21 @@ Deno.serve(async (req) => {
         const delivered = customerOrders.filter(o => o.status === "delivered").length;
         const ratio = Math.round((delivered / customerOrders.length) * 100);
         if (ratio < minDeliveryRatio) {
-          await supabase.from("incomplete_orders").insert({
+          const incData3 = {
             customer_name, customer_phone, customer_address: customer_address || null,
             product_name: product_name || null, product_code: product_code || null,
             quantity, unit_price, total_amount: totalAmount, delivery_charge, discount,
             notes: notes || null, landing_page_slug: landing_page_slug || null,
             client_ip: clientIp, user_agent: userAgent, device_info: deviceInfo,
             block_reason: `ডেলিভারি রেশিও কম (${ratio}% < ${minDeliveryRatio}%)`,
-            status: "processing",
-          });
+            status: "processing", updated_at: new Date().toISOString(),
+          };
+          const { data: exInc3 } = await supabase.from("incomplete_orders").select("id").eq("customer_phone", customer_phone).eq("status", "processing").limit(1);
+          if (exInc3 && exInc3.length > 0) {
+            await supabase.from("incomplete_orders").update(incData3).eq("id", exInc3[0].id);
+          } else {
+            await supabase.from("incomplete_orders").insert(incData3);
+          }
           return new Response(
             JSON.stringify({ success: false, blocked: true, error: blockPopupMessage }),
             { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
