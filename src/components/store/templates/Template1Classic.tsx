@@ -282,7 +282,7 @@ const Template1Classic = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
             <div className="col-span-2 md:col-span-1">
-              <Link to="/store" className="inline-block mb-4">
+              <Link to="/" className="inline-block mb-4">
                 <span className="text-xl font-black text-white">SOHOZ</span>
                 <span className="text-xl font-black text-[#e94560]">STORE</span>
               </Link>
