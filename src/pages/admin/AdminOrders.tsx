@@ -1516,7 +1516,6 @@ const AdminOrders = () => {
                     </Select>
                   </div>
                   {/* Order Status */}
-                  {/* Order Status */}
                   <div className="space-y-2">
                     <Label className="text-sm font-semibold flex items-center gap-1.5"><Activity className="h-4 w-4 text-primary" /> অর্ডার স্ট্যাটাস</Label>
                     <div className="grid grid-cols-4 gap-2">
