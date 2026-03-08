@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { ShoppingBag, ArrowLeft, Check, Package, CreditCard, MapPin, Phone, User } from "lucide-react";
+import { useTracking } from "@/hooks/useTracking";
 
 interface CheckoutItem {
   productId: string; name: string; price: number; qty: number; image: string | null;
