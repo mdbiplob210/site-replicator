@@ -71,6 +71,23 @@ const ProductDetail = () => {
     setCheckoutOpen(true);
   };
 
+  const handleExitIntent = () => {
+    if (discountUsed) return;
+    setCheckoutOpen(false);
+    setShowDiscountBanner(true);
+  };
+
+  const handleAcceptDiscount = () => {
+    setDiscountUsed(true);
+    setAppliedDiscount(50);
+    setShowDiscountBanner(false);
+    setCheckoutOpen(true);
+  };
+
+  const handleRejectDiscount = () => {
+    setShowDiscountBanner(false);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Top bar */}
