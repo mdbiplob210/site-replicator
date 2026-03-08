@@ -3216,7 +3216,49 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                   </button>
                 ))}
               </div>
-            </div>
+              </div>
+              {/* Show existing cancel reason */}
+              {order.status === "cancelled" && (order as any).cancel_reason && (
+                <div className="p-3 rounded-xl border border-destructive/30 bg-destructive/5">
+                  <p className="text-xs font-semibold text-destructive flex items-center gap-1 mb-1"><XCircle className="h-3.5 w-3.5" /> ক্যান্সেল কারণ</p>
+                  <p className="text-sm text-foreground">{(order as any).cancel_reason}</p>
+                </div>
+              )}
+
+              {/* Detail Cancel Reason Dialog */}
+              <Dialog open={detailCancelDialogOpen} onOpenChange={setDetailCancelDialogOpen}>
+                <DialogContent className="max-w-md rounded-2xl">
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                      <XCircle className="h-5 w-5 text-destructive" /> ক্যান্সেল কারণ সিলেক্ট করুন
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-3">
+                    {CANCEL_REASONS.map((reason) => (
+                      <label key={reason} className={cn(
+                        "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all",
+                        detailCancelReason === reason ? "border-primary bg-primary/5" : "border-border/40 hover:bg-secondary/30"
+                      )}>
+                        <input type="radio" name="detail_cancel_reason" className="accent-primary" checked={detailCancelReason === reason} onChange={() => setDetailCancelReason(reason)} />
+                        <span className="text-sm font-medium">{reason}</span>
+                      </label>
+                    ))}
+                    <label className={cn(
+                      "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all",
+                      detailCancelReason === "others" ? "border-primary bg-primary/5" : "border-border/40 hover:bg-secondary/30"
+                    )}>
+                      <input type="radio" name="detail_cancel_reason" className="accent-primary" checked={detailCancelReason === "others"} onChange={() => setDetailCancelReason("others")} />
+                      <span className="text-sm font-medium">Others (নিজে লিখুন)</span>
+                    </label>
+                    {detailCancelReason === "others" && (
+                      <Textarea placeholder="ক্যান্সেলের কারণ লিখুন..." className="rounded-xl" value={detailCancelCustom} onChange={(e) => setDetailCancelCustom(e.target.value)} rows={2} />
+                    )}
+                    <Button className="w-full rounded-xl" variant="destructive" onClick={confirmDetailCancel} disabled={!detailCancelReason || (detailCancelReason === "others" && !detailCancelCustom.trim())}>
+                      ক্যান্সেল নিশ্চিত করুন
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
 
             {/* Save Button */}
             <Button className="w-full rounded-xl shadow-sm" onClick={handleSaveChanges} disabled={isSaving}>
