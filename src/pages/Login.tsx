@@ -370,7 +370,7 @@ const Login = () => {
                     color: "#0a0a1e",
                     boxShadow: "0 0 30px rgba(78,205,196,0.4)",
                   }}>
-                  S
+                  Q
                 </div>
                 <h1 className="text-2xl font-bold" style={{ color: "#fff" }}>QUICK SHOP BD</h1>
                 <p className="mt-1 flex items-center justify-center gap-1 text-sm" style={{ color: "rgba(78,205,196,0.8)" }}>
