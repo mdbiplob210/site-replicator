@@ -95,7 +95,7 @@ const ProductDetail = () => {
           {/* Image */}
           <div className="relative aspect-square sm:aspect-[4/3] max-h-[500px] overflow-hidden bg-gray-50">
             {product.main_image_url ? (
-              <img src={product.main_image_url} alt={product.name} className="w-full h-full object-contain" />
+              <OptimizedImage src={product.main_image_url} alt={product.name} width={800} quality={85} eager className="w-full h-full object-contain" />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
                 <ShoppingBag className="h-20 w-20 text-gray-200" />

@@ -360,7 +360,7 @@ export function PopupCheckout({ item, open, onClose }: PopupCheckoutProps) {
                       <div key={p.id} className="border rounded-xl overflow-hidden bg-white">
                         <div className="aspect-square bg-gray-50 relative">
                           {p.main_image_url ? (
-                            <img src={p.main_image_url} alt={p.name} className="w-full h-full object-cover" />
+                            <OptimizedImage src={p.main_image_url} alt={p.name} width={200} quality={75} className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
                               <ShoppingBag className="h-6 w-6 text-gray-200" />
