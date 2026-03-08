@@ -368,6 +368,91 @@ export default function AdminLandingPages() {
               )}
             </TabsContent>
 
+            <TabsContent value="images" className="space-y-4 mt-4">
+              {!editingPage?.id ? (
+                <div className="bg-muted/30 border border-dashed rounded-lg p-8 text-center">
+                  <Image className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
+                  <p className="text-sm text-muted-foreground">প্রথমে পেজটি সেভ করুন, তারপর ছবি আপলোড করতে পারবেন</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {/* Upload Area */}
+                  <div
+                    className="border-2 border-dashed rounded-xl p-6 text-center cursor-pointer hover:border-primary/40 hover:bg-muted/30 transition-colors"
+                    onClick={() => fileInputRef.current?.click()}
+                    onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                    onDrop={(e) => { e.preventDefault(); e.stopPropagation(); handleImageUpload(e.dataTransfer.files); }}
+                  >
+                    <Upload className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
+                    <p className="text-sm font-medium text-foreground">ছবি আপলোড করুন</p>
+                    <p className="text-xs text-muted-foreground mt-1">ক্লিক করুন বা ড্র্যাগ করে ছেড়ে দিন • একসাথে একাধিক ছবি আপলোড করা যাবে</p>
+                    {uploading && <p className="text-xs text-primary mt-2">আপলোড হচ্ছে...</p>}
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleImageUpload(e.target.files)}
+                    />
+                  </div>
+
+                  {/* Image Grid */}
+                  {pageImages && pageImages.length > 0 ? (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-sm">আপলোড করা ছবি ({pageImages.length}টি)</Label>
+                      </div>
+                      <div className="grid grid-cols-3 gap-3">
+                        {pageImages.map((img) => (
+                          <div key={img.id} className="group relative border rounded-lg overflow-hidden bg-muted/30">
+                            <img
+                              src={img.image_url}
+                              alt={img.file_name}
+                              className="w-full h-32 object-cover"
+                            />
+                            <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                              <Button
+                                size="icon"
+                                variant="destructive"
+                                className="h-8 w-8 rounded-full"
+                                onClick={() => handleDeleteImage(img)}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                            <div className="p-1.5 flex items-center justify-between">
+                              <p className="text-[10px] text-muted-foreground truncate flex-1">{img.file_name}</p>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-5 w-5 shrink-0"
+                                onClick={() => {
+                                  navigator.clipboard.writeText(img.image_url);
+                                  toast.success("Image URL কপি হয়েছে!");
+                                }}
+                              >
+                                <Copy className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="bg-muted/50 border rounded-lg p-3 mt-3">
+                        <p className="text-xs font-semibold text-foreground mb-1">🖼️ HTML এ ছবি ব্যবহার করুন:</p>
+                        <p className="text-[11px] text-muted-foreground">প্রতিটি ছবির Copy বাটনে ক্লিক করে URL কপি করুন এবং আপনার HTML এ এভাবে ব্যবহার করুন:</p>
+                        <div className="bg-background border rounded p-2 mt-1 font-mono text-[11px] text-primary">
+                          {`<img src="IMAGE_URL_HERE" alt="ছবি" />`}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground text-center py-4">এখনো কোনো ছবি আপলোড করা হয়নি</p>
+                  )}
+                </div>
+              )}
+            </TabsContent>
+
             <TabsContent value="tracking" className="space-y-4 mt-4">
               <Card>
                 <CardHeader><CardTitle className="text-base">Facebook Pixel</CardTitle></CardHeader>
