@@ -153,6 +153,7 @@ const AdminOrders = () => {
   const [inlineNoteOrderId, setInlineNoteOrderId] = useState<string | null>(null);
   const [inlineNoteText, setInlineNoteText] = useState("");
   const [selectedOrderSource, setSelectedOrderSource] = useState("");
+  const [newOrderStatus, setNewOrderStatus] = useState<string>("processing");
   const [newSourceName, setNewSourceName] = useState("");
   const [newSourceIcon, setNewSourceIcon] = useState("📦");
   
@@ -845,7 +846,7 @@ const AdminOrders = () => {
         notes: notes || null,
         courier_note: courierNote || null,
         source: selectedOrderSource || "Panel",
-        status: "processing",
+        status: newOrderStatus as any,
       } as any,
       items: orderItems,
     }, {
@@ -883,6 +884,7 @@ const AdminOrders = () => {
     setSelectedCityId(null);
     setSelectedZoneId(null);
     setSelectedAreaId(null);
+    setNewOrderStatus("processing");
   };
 
   // Old orders lookup by phone
@@ -1476,6 +1478,23 @@ const AdminOrders = () => {
                         {orderSources.filter((s: any) => !s.is_system || s.slug !== 'api').map((src: any) => (
                           <SelectItem key={src.id} value={src.name}>
                             <span className="flex items-center gap-2">{src.icon} {src.name}</span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {/* Order Status */}
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold flex items-center gap-1"><Activity className="h-3 w-3" /> Order Status</Label>
+                    <Select value={newOrderStatus} onValueChange={setNewOrderStatus}>
+                      <SelectTrigger className="rounded-xl h-9 text-sm"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {Constants.public.Enums.order_status.map((s) => (
+                          <SelectItem key={s} value={s}>
+                            <div className="flex items-center gap-2">
+                              <div className={cn("h-2.5 w-2.5 rounded-full", getStatusColor(s))} />
+                              {getStatusLabel(s)}
+                            </div>
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -2487,8 +2506,7 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
   const { data: editCourierCities = [], isLoading: editCitiesLoading } = useCourierCities(editCourierId);
   const { data: editCourierZones = [], isLoading: editZonesLoading } = useCourierZones(editCourierId, editCourierCityId);
   const { data: editCourierAreas = [], isLoading: editAreasLoading } = useCourierAreas(editCourierId, editCourierZoneId);
-  const [quickNote, setQuickNote] = useState("");
-  const [isAddingNote, setIsAddingNote] = useState(false);
+  const [editStatus, setEditStatus] = useState<string>("");
   const [logFilterUser, setLogFilterUser] = useState("all");
   const [logFilterAction, setLogFilterAction] = useState("all");
   const [logFilterDate, setLogFilterDate] = useState<Date | undefined>();
@@ -2504,6 +2522,7 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
       setEditCourierNote(order.courier_note || "");
       setEditDelivery(Number(order.delivery_charge));
       setEditDiscount(Number(order.discount));
+      setEditStatus(order.status || "");
     }
   }, [orderRef]);
 
@@ -2586,19 +2605,17 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
     } catch (e) { console.error(e); }
   };
 
-  const handleAddQuickNote = async () => {
-    if (!orderId || !quickNote.trim()) return;
-    setIsAddingNote(true);
+  const handleStatusChange = async (newStatus: string) => {
+    if (!orderId || !order || newStatus === order.status) return;
     try {
-      await supabase.from("order_activity_logs" as any).insert({
-        order_id: orderId, user_id: user?.id || null, user_name: user?.email || "System",
-        action: "quick_note", field_name: "note", old_value: null, new_value: quickNote.trim(), details: quickNote.trim(),
-      } as any);
-      setQuickNote("");
+      const { error } = await supabase.from("orders").update({ status: newStatus as any }).eq("id", orderId);
+      if (error) throw error;
+      await logActivity("status_changed", "status", order.status, newStatus, `স্ট্যাটাস পরিবর্তন: ${getStatusLabel(order.status as any)} → ${getStatusLabel(newStatus as any)}`);
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      queryClient.invalidateQueries({ queryKey: ["order-counts"] });
       queryClient.invalidateQueries({ queryKey: ["order-activity-logs", orderId] });
-      toast.success("নোট যোগ হয়েছে!");
-    } catch (e: any) { toast.error("নোট যোগ করতে ব্যর্থ"); }
-    finally { setIsAddingNote(false); }
+      toast.success("স্ট্যাটাস আপডেট হয়েছে!");
+    } catch (e: any) { toast.error(e.message); }
   };
 
   const handleSaveChanges = async () => {
@@ -3040,53 +3057,26 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
               </div>
             </div>
 
-            {/* Quick Note Add */}
-            <div className="space-y-2 p-3 rounded-xl border border-amber-200 dark:border-amber-800/50 bg-amber-50/50 dark:bg-amber-900/10">
-              <Label className="text-xs font-semibold flex items-center gap-1.5 text-amber-700 dark:text-amber-400">
-                <MessageSquare className="h-3.5 w-3.5" /> দ্রুত নোট যোগ করুন
+            {/* Status Change */}
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold flex items-center gap-1.5">
+                <Activity className="h-3.5 w-3.5" /> স্ট্যাটাস পরিবর্তন
               </Label>
-              <div className="flex gap-2">
-                <Input
-                  placeholder="নোট লিখুন..."
-                  className="rounded-xl text-xs flex-1"
-                  value={quickNote}
-                  onChange={(e) => setQuickNote(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && quickNote.trim()) {
-                      handleAddQuickNote();
-                    }
-                  }}
-                />
-                <Button
-                  size="sm"
-                  className="rounded-xl text-xs px-4"
-                  disabled={!quickNote.trim() || isAddingNote}
-                  onClick={handleAddQuickNote}
-                >
-                  {isAddingNote ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
-                  যোগ করুন
-                </Button>
-              </div>
-              {/* Recent notes from activity logs */}
-              {(() => {
-                const noteEntries = activityLogs.filter((l: any) => l.action === "note_added" || l.action === "quick_note");
-                if (noteEntries.length === 0) return null;
-                return (
-                  <div className="mt-2 space-y-1 max-h-32 overflow-y-auto">
-                    {noteEntries.map((log: any) => (
-                      <div key={log.id} className="flex items-start gap-2 p-2 rounded-lg bg-background/80 border border-border/30 text-xs">
-                        <MessageSquare className="h-3 w-3 text-amber-500 mt-0.5 flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-foreground">{log.details || log.new_value || "নোট"}</p>
-                          <p className="text-muted-foreground/60 text-[10px] mt-0.5">
-                            {log.user_name} — {format(new Date(log.created_at), "dd MMM yyyy, hh:mm a")}
-                          </p>
-                        </div>
+              <Select value={order.status} onValueChange={handleStatusChange}>
+                <SelectTrigger className="rounded-xl h-9 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Constants.public.Enums.order_status.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      <div className="flex items-center gap-2">
+                        <div className={cn("h-2.5 w-2.5 rounded-full", getStatusColor(s))} />
+                        {getStatusLabel(s)}
                       </div>
-                    ))}
-                  </div>
-                );
-              })()}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Save Button */}
