@@ -11,7 +11,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminRoles from "./pages/admin/AdminRoles";
 import AdminSettings from "./pages/admin/AdminSettings";
-import AdminScreenshots from "./pages/admin/AdminScreenshots";
+
 import AdminOrders from "./pages/admin/AdminOrders";
 import AdminComingSoon from "./pages/admin/AdminComingSoon";
 import AdminBackup from "./pages/admin/AdminBackup";
