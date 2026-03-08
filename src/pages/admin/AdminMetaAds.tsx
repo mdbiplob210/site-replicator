@@ -14,7 +14,7 @@ import { useAdSpends } from "@/hooks/useAdSpends";
 import { useSiteSettings, useUpdateSiteSetting } from "@/hooks/useSiteSettings";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import * as XLSX from "xlsx";
+import * as XLSX from "@datalens-tech/xlsx";
 import { ProductAdSpendTable } from "@/components/admin/meta-ads/ProductAdSpendTable";
 import { CampaignBreakdown } from "@/components/admin/meta-ads/CampaignBreakdown";
 import { ManualCampaignEntry } from "@/components/admin/meta-ads/ManualCampaignEntry";
