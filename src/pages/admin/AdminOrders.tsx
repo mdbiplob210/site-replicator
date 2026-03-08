@@ -500,7 +500,13 @@ const AdminOrders = () => {
         const sl = getStatusLabel(o.status).toLowerCase();
         if (!sl.includes(filterStatus.toLowerCase()) && !o.status.includes(filterStatus.toLowerCase())) return false;
       }
-      if (filterProductSearch) {
+      if (filterProductIds.length > 0) {
+        const items = orderItemsByOrderId[o.id] || [];
+        const itemProductIds = items.map((i: any) => i.product_id).filter(Boolean);
+        const itemNames = items.map((i: any) => i.product_name?.toLowerCase());
+        const selectedProducts = (allProducts || []).filter((p: any) => filterProductIds.includes(p.id));
+        if (!selectedProducts.some((sp: any) => itemProductIds.includes(sp.id) || itemNames.includes(sp.name?.toLowerCase()))) return false;
+      } else if (filterProductSearch) {
         const items = orderItemsByOrderId[o.id] || [];
         const q = filterProductSearch.toLowerCase();
         if (!items.some((i: any) => i.product_name.toLowerCase().includes(q) || i.product_code.toLowerCase().includes(q))) return false;
