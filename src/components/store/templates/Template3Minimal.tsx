@@ -10,7 +10,7 @@ const Template3Minimal = () => {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-stone-50/95 backdrop-blur">
         <div className="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between">
-          <Link to="/store" className="text-xl font-normal tracking-[0.3em] uppercase text-stone-800">
+          <Link to="/" className="text-xl font-normal tracking-[0.3em] uppercase text-stone-800">
             Sohoz
           </Link>
           <div className="hidden md:flex items-center gap-10 text-xs tracking-[0.2em] uppercase text-stone-500">
