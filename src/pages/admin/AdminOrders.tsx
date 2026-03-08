@@ -2433,7 +2433,7 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                       <SelectTrigger className="rounded-lg h-6 text-[10px] w-auto min-w-[90px]"><SelectValue placeholder="Action" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">সব Action</SelectItem>
-                        {uniqueActions.map((a) => <SelectItem key={a} value={a}>{a === "created" ? "তৈরি" : a === "status_changed" ? "স্ট্যাটাস" : a === "field_edited" ? "এডিট" : a === "note_added" ? "নোট" : a}</SelectItem>)}
+                        {uniqueActions.map((a) => <SelectItem key={a} value={a}>{a === "created" ? "তৈরি" : a === "status_changed" ? "স্ট্যাটাস" : a === "field_edited" ? "এডিট" : a === "note_added" ? "নোট" : a === "quick_note" ? "📝 নোট" : a}</SelectItem>)}
                       </SelectContent>
                     </Select>
                     <Popover>
