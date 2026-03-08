@@ -2558,3 +2558,122 @@ function CourierStatusModal({
     </Dialog>
   );
 }
+
+function IncompleteOrderCard({ io, activeIncompleteTab, convertIncomplete, deleteIncomplete }: {
+  io: any; activeIncompleteTab: string; convertIncomplete: any; deleteIncomplete: any;
+}) {
+  const [noteInput, setNoteInput] = useState("");
+  const [isSavingNote, setIsSavingNote] = useState(false);
+  const queryClient = useQueryClient();
+
+  const handleSaveNote = async () => {
+    if (!noteInput.trim()) return;
+    setIsSavingNote(true);
+    try {
+      const existingNotes = io.notes || "";
+      const timestamp = format(new Date(), "dd MMM yyyy, hh:mm a");
+      const newNotes = existingNotes
+        ? `${existingNotes}\n[${timestamp}] ${noteInput.trim()}`
+        : `[${timestamp}] ${noteInput.trim()}`;
+      
+      const { error } = await supabase.from("incomplete_orders" as any)
+        .update({ notes: newNotes, updated_at: new Date().toISOString() } as any)
+        .eq("id", io.id);
+      if (error) throw error;
+      setNoteInput("");
+      queryClient.invalidateQueries({ queryKey: ["incomplete-orders"] });
+      toast.success("নোট যোগ হয়েছে!");
+    } catch (e: any) {
+      toast.error("নোট যোগ করতে ব্যর্থ");
+    } finally {
+      setIsSavingNote(false);
+    }
+  };
+
+  return (
+    <Card className="p-4 border-border/40">
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1 min-w-0 space-y-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-bold text-foreground">{io.customer_name}</span>
+            {io.block_reason === "abandoned_form" ? (
+              <Badge variant="secondary" className="text-xs bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">📝 Abandoned</Badge>
+            ) : (
+              <Badge variant="destructive" className="text-xs">🚫 IP Blocked</Badge>
+            )}
+            {io.landing_page_slug && <Badge variant="outline" className="text-xs">LP: {io.landing_page_slug}</Badge>}
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1.5">
+              <span><span className="font-medium">ফোন:</span> {io.customer_phone || "N/A"}</span>
+              {io.customer_phone && (
+                <a href={`tel:${io.customer_phone}`} onClick={(e) => e.stopPropagation()}>
+                  <Button variant="ghost" size="icon" className="h-5 w-5 rounded text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 p-0">
+                    <Phone className="h-3 w-3" />
+                  </Button>
+                </a>
+              )}
+            </div>
+            <div><span className="font-medium">IP:</span> {io.client_ip || "N/A"}</div>
+            <div><span className="font-medium">ডিভাইস:</span> {io.device_info || "N/A"}</div>
+            <div><span className="font-medium">মোট:</span> ৳{io.total_amount}</div>
+          </div>
+          {io.product_name && (
+            <p className="text-xs text-muted-foreground">
+              <span className="font-medium">প্রোডাক্ট:</span> {io.product_name} {io.product_code ? `(${io.product_code})` : ""} × {io.quantity}
+            </p>
+          )}
+          <p className="text-xs text-destructive/80 bg-destructive/5 rounded px-2 py-1 inline-block">
+            🚫 {io.block_reason}
+          </p>
+          <p className="text-xs text-muted-foreground">{format(new Date(io.created_at), "dd MMM yyyy, hh:mm a")}</p>
+
+          {/* Notes display */}
+          {io.notes && (
+            <div className="p-2 rounded-lg bg-amber-50/50 dark:bg-amber-900/10 border border-amber-200/50 dark:border-amber-800/30">
+              <p className="text-xs font-semibold text-amber-700 dark:text-amber-400 flex items-center gap-1 mb-1">
+                <MessageSquare className="h-3 w-3" /> নোট
+              </p>
+              <div className="text-xs text-foreground/80 whitespace-pre-line max-h-20 overflow-y-auto">
+                {io.notes}
+              </div>
+            </div>
+          )}
+
+          {/* Quick note input */}
+          <div className="flex gap-1.5 items-center">
+            <Input
+              placeholder="নোট লিখুন..."
+              className="rounded-lg h-7 text-xs flex-1"
+              value={noteInput}
+              onChange={(e) => setNoteInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter" && noteInput.trim()) handleSaveNote(); }}
+            />
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 text-xs px-2.5 rounded-lg gap-1"
+              disabled={!noteInput.trim() || isSavingNote}
+              onClick={handleSaveNote}
+            >
+              {isSavingNote ? <Loader2 className="h-3 w-3 animate-spin" /> : <Plus className="h-3 w-3" />}
+              নোট
+            </Button>
+          </div>
+        </div>
+        <div className="flex items-center gap-1.5 shrink-0">
+          {activeIncompleteTab !== "Converted" && (
+            <Button size="sm" variant="outline" className="gap-1 text-xs" onClick={() => convertIncomplete.mutate(io)}>
+              <GitMerge className="h-3 w-3" /> অর্ডারে কনভার্ট
+            </Button>
+          )}
+          <Button size="sm" variant="ghost" className="text-destructive" onClick={() => {
+            if (confirm("ডিলিট করতে চান?")) deleteIncomplete.mutate(io.id);
+          }}>
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      </div>
+    </Card>
+  );
+}
