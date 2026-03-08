@@ -148,6 +148,8 @@ const AdminOrders = () => {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [selectedOrderIds, setSelectedOrderIds] = useState<Set<string>>(new Set());
   const [productSearchFocused, setProductSearchFocused] = useState(false);
+  const [bulkStatusValue, setBulkStatusValue] = useState("");
+  const [bulkCourierId, setBulkCourierId] = useState("");
   
   // Cancel reason dialog
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
@@ -727,6 +729,56 @@ const AdminOrders = () => {
       logActivity(o.id, "status_changed", "status", "Confirmed", "In Courier");
     });
     toast.success(`${confirmedWithCourier.length}টি অর্ডার In Courier-এ পাঠানো হয়েছে!`);
+  };
+
+  // Bulk status change
+  const handleBulkStatusChange = (newStatus: string) => {
+    if (selectedOrderIds.size === 0) return;
+    if (newStatus === "cancelled") {
+      // For cancel, apply directly without reason dialog for bulk
+      selectedOrderIds.forEach(id => {
+        updateStatus.mutate({ id, status: newStatus as OrderStatus });
+        logActivity(id, "status_changed", "status", "", "Cancelled", "বাল্ক ক্যান্সেল");
+      });
+    } else {
+      selectedOrderIds.forEach(id => {
+        const order = filteredOrders.find(o => o.id === id);
+        updateStatus.mutate({ id, status: newStatus as OrderStatus });
+        logActivity(id, "status_changed", "status", order ? getStatusLabel(order.status) : "", getStatusLabel(newStatus as OrderStatus), "বাল্ক স্ট্যাটাস চেঞ্জ");
+      });
+    }
+    toast.success(`${selectedOrderIds.size}টি অর্ডারের স্ট্যাটাস আপডেট হয়েছে!`);
+    setSelectedOrderIds(new Set());
+    setBulkStatusValue("");
+  };
+
+  // Bulk delete
+  const handleBulkDelete = () => {
+    if (selectedOrderIds.size === 0) return;
+    if (!confirm(`${selectedOrderIds.size}টি অর্ডার ডিলিট করবেন? এটি undo করা যাবে না!`)) return;
+    selectedOrderIds.forEach(id => {
+      deleteOrder.mutate(id);
+    });
+    toast.success(`${selectedOrderIds.size}টি অর্ডার ডিলিট হয়েছে!`);
+    setSelectedOrderIds(new Set());
+  };
+
+  // Bulk courier assign
+  const handleBulkCourierAssign = async (courierId: string) => {
+    if (selectedOrderIds.size === 0 || !courierId) return;
+    let count = 0;
+    for (const orderId of selectedOrderIds) {
+      const { error } = await supabase.from("courier_orders").upsert({
+        order_id: orderId,
+        courier_provider_id: courierId,
+        courier_status: "pending",
+      } as any, { onConflict: "order_id" });
+      if (!error) count++;
+    }
+    queryClient.invalidateQueries({ queryKey: ["courier-orders-filter"] });
+    toast.success(`${count}টি অর্ডারে কুরিয়ার অ্যাসাইন হয়েছে!`);
+    setSelectedOrderIds(new Set());
+    setBulkCourierId("");
   };
 
   const handleCreateOrder = () => {
@@ -1368,6 +1420,56 @@ const AdminOrders = () => {
             <Button variant="outline" size="sm" className="gap-1.5 h-9 rounded-xl border-border/60" onClick={handlePrint}><Printer className="h-4 w-4" /> Print</Button>
           </div>
         </Card>
+
+        {/* Bulk Actions Bar */}
+        {selectedOrderIds.size > 0 && (
+          <Card className="p-3 border-primary/30 bg-primary/5 shadow-sm flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-2">
+              <Checkbox checked={true} onCheckedChange={() => setSelectedOrderIds(new Set())} />
+              <span className="text-sm font-semibold text-foreground">{selectedOrderIds.size}টি অর্ডার সিলেক্টেড</span>
+            </div>
+            <div className="h-5 w-px bg-border/60" />
+            {/* Bulk Status Change */}
+            <Select value={bulkStatusValue} onValueChange={(v) => { setBulkStatusValue(v); handleBulkStatusChange(v); }}>
+              <SelectTrigger className="w-[150px] h-8 rounded-xl text-xs font-semibold border-border/60">
+                <SelectValue placeholder="স্ট্যাটাস চেঞ্জ" />
+              </SelectTrigger>
+              <SelectContent>
+                {Constants.public.Enums.order_status.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    <div className="flex items-center gap-2">
+                      <span className={`h-2 w-2 rounded-full ${getStatusColor(s as OrderStatus)}`} />
+                      {getStatusLabel(s as OrderStatus)}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {/* Bulk Courier Assign */}
+            <Select value={bulkCourierId} onValueChange={(v) => { setBulkCourierId(v); handleBulkCourierAssign(v); }}>
+              <SelectTrigger className="w-[160px] h-8 rounded-xl text-xs font-semibold border-border/60">
+                <Truck className="h-3.5 w-3.5 mr-1" />
+                <SelectValue placeholder="কুরিয়ার অ্যাসাইন" />
+              </SelectTrigger>
+              <SelectContent>
+                {courierProviders.map((cp: any) => (
+                  <SelectItem key={cp.id} value={cp.id}>
+                    <div className="flex items-center gap-2">
+                      <Truck className="h-3 w-3" /> {cp.name}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {/* Bulk Delete */}
+            <Button variant="destructive" size="sm" className="gap-1.5 h-8 rounded-xl text-xs" onClick={handleBulkDelete}>
+              <Trash2 className="h-3.5 w-3.5" /> ডিলিট
+            </Button>
+            <Button variant="ghost" size="sm" className="h-8 rounded-xl text-xs text-muted-foreground ml-auto" onClick={() => setSelectedOrderIds(new Set())}>
+              <X className="h-3.5 w-3.5 mr-1" /> বাতিল
+            </Button>
+          </Card>
+        )}
 
         {/* Advanced Filter Panel */}
         <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
