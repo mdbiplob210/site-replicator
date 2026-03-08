@@ -52,10 +52,12 @@ const statusTabs = [
   { label: "Confirmed", color: "bg-emerald-600", icon: CheckCircle2 },
   { label: "In Courier", color: "bg-violet-500", icon: Truck },
   { label: "Delivered", color: "bg-emerald-500", icon: CheckCircle2 },
-  { label: "Cancelled", color: "bg-red-500", icon: XCircle },
   { label: "Hold", color: "bg-yellow-500", icon: PauseCircle },
   { label: "Ship Later", color: "bg-teal-500", icon: Clock },
+  { label: "Pending Return", color: "bg-orange-500", icon: RotateCcw },
   { label: "Return", color: "bg-red-400", icon: ArrowLeft },
+  { label: "Cancelled", color: "bg-red-500", icon: XCircle },
+  { label: "Hand Delivery", color: "bg-cyan-500", icon: Hand },
 ];
 
 const orderStatusSettings = [
