@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { ShoppingBag, Search, Star, Truck, ShieldCheck, RotateCcw, ChevronRight, Minus, Plus, ShoppingCart, Menu, X, Phone, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 import { useState, useMemo } from "react";
 import { useTracking } from "@/hooks/useTracking";
 import { PopupCheckout } from "@/components/store/PopupCheckout";
