@@ -1,317 +1,385 @@
-import { Link } from "react-router-dom";
-import { ShoppingBag, Search, Heart, Star, Truck, ShieldCheck, RotateCcw, ChevronRight, Sparkles } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { ShoppingBag, Search, Star, Truck, ShieldCheck, RotateCcw, ChevronRight, Minus, Plus, ShoppingCart, Menu, X, Phone, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useTracking } from "@/hooks/useTracking";
+import { PopupCheckout } from "@/components/store/PopupCheckout";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 const Template1Classic = () => {
   const { data: products = [], isLoading } = usePublicProducts();
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const { data: settings } = useSiteSettings();
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
+  const [mobileMenu, setMobileMenu] = useState(false);
+  const { trackAddToCart, trackViewContent } = useTracking();
+
+  // Popup checkout state
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [checkoutItem, setCheckoutItem] = useState<any>(null);
+
+  // Categories from products
+  const categories = useMemo(() => {
+    const cats = new Map<string, string>();
+    products.forEach(p => {
+      if (p.category_id && (p as any).categories?.name) {
+        cats.set(p.category_id, (p as any).categories.name);
+      }
+    });
+    return Array.from(cats.entries()).map(([id, name]) => ({ id, name }));
+  }, [products]);
+
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  const filteredProducts = useMemo(() => {
+    let filtered = products;
+    if (selectedCategory) {
+      filtered = filtered.filter(p => p.category_id === selectedCategory);
+    }
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      filtered = filtered.filter(p => p.name.toLowerCase().includes(q) || p.product_code.toLowerCase().includes(q));
+    }
+    return filtered;
+  }, [products, selectedCategory, searchQuery]);
 
   const getDiscount = (original: number, selling: number) => {
     if (original <= selling) return 0;
     return Math.round(((original - selling) / original) * 100);
   };
 
+  const handleOrder = (product: any) => {
+    trackAddToCart({
+      id: product.id,
+      name: product.name,
+      price: product.selling_price,
+      qty: 1,
+      productCode: product.product_code,
+      category: (product as any).categories?.name || "",
+    });
+    setCheckoutItem({
+      productId: product.id,
+      name: product.name,
+      price: product.selling_price,
+      qty: 1,
+      image: product.main_image_url,
+      productCode: product.product_code,
+      categoryId: product.category_id,
+    });
+    setCheckoutOpen(true);
+  };
+
+  const whatsappNumber = settings?.whatsapp_number || "";
+  const phoneNumber = settings?.phone_number || "";
+
   return (
-    <div className="min-h-screen bg-[#FAFAFA] font-[Inter]">
-      {/* Announcement Bar */}
-      <div className="bg-gradient-to-r from-[#1a1a2e] via-[#16213e] to-[#0f3460] text-white text-center py-2.5 text-sm tracking-wide">
-        <span className="inline-flex items-center gap-2">
-          <Sparkles className="h-3.5 w-3.5 text-amber-400" />
-          সারা বাংলাদেশে ফ্রি ডেলিভারি — ৳১৫০০+ অর্ডারে
-          <Sparkles className="h-3.5 w-3.5 text-amber-400" />
-        </span>
+    <div className="min-h-screen bg-gray-50">
+      {/* Top announcement bar */}
+      <div className="bg-gradient-to-r from-green-600 to-green-700 text-white text-center py-2 text-xs sm:text-sm font-medium overflow-hidden">
+        <div className="animate-marquee whitespace-nowrap inline-block">
+          🚚 সারা দেশে ক্যাশ অন ডেলিভারি (৪৮ থেকে ৭২ ঘণ্টার মধ্যে নিশ্চিত ডেলিভারি) হটলাইনঃ {phoneNumber || "01XXXXXXXXX"} &nbsp;&nbsp;&nbsp;
+          🚚 সারা দেশে ক্যাশ অন ডেলিভারি (৪৮ থেকে ৭২ ঘণ্টার মধ্যে নিশ্চিত ডেলিভারি) হটলাইনঃ {phoneNumber || "01XXXXXXXXX"}
+        </div>
       </div>
 
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-1">
-            <span className="text-2xl font-black tracking-tighter bg-gradient-to-r from-[#0f3460] to-[#533483] bg-clip-text text-transparent">
-              SOHOZ
-            </span>
-            <span className="text-2xl font-black tracking-tighter text-[#e94560]">STORE</span>
+      <header className="sticky top-0 z-50 bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+          {/* Mobile menu button */}
+          <button onClick={() => setMobileMenu(!mobileMenu)} className="lg:hidden p-2">
+            {mobileMenu ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-1 flex-shrink-0">
+            <span className="text-xl sm:text-2xl font-black text-green-600">QUICK SHOP</span>
+            <span className="text-xl sm:text-2xl font-black text-gray-800">BD</span>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-8 text-[13px] font-semibold uppercase tracking-widest text-gray-500">
-            <Link to="/" className="hover:text-[#0f3460] transition-colors duration-200">Home</Link>
-            <Link to="/" className="hover:text-[#0f3460] transition-colors duration-200">Shop</Link>
-            <Link to="/" className="hover:text-[#0f3460] transition-colors duration-200">New</Link>
-            <Link to="/" className="hover:text-[#0f3460] transition-colors duration-200">Contact</Link>
-          </nav>
+          {/* Desktop Search */}
+          <div className="hidden lg:flex flex-1 max-w-md mx-4">
+            <div className="relative w-full">
+              <input
+                type="text"
+                placeholder="প্রোডাক্ট খুঁজুন খোঁজ..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="w-full h-10 pl-4 pr-10 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-500"
+              />
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            </div>
+          </div>
 
+          {/* Right actions */}
           <div className="flex items-center gap-2">
-            <button className="p-2.5 rounded-full hover:bg-gray-100 transition-colors">
-              <Search className="h-[18px] w-[18px] text-gray-600" />
+            <button onClick={() => setShowSearch(!showSearch)} className="lg:hidden p-2 rounded-full hover:bg-gray-100">
+              <Search className="h-5 w-5 text-gray-600" />
             </button>
-            <button className="p-2.5 rounded-full hover:bg-gray-100 transition-colors relative">
-              <Heart className="h-[18px] w-[18px] text-gray-600" />
-            </button>
-            <Link to="/checkout" className="p-2.5 rounded-full hover:bg-gray-100 transition-colors relative">
-              <ShoppingBag className="h-[18px] w-[18px] text-gray-600" />
-              <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-[#e94560] text-[10px] font-bold text-white flex items-center justify-center">0</span>
+            <Link to="/checkout" className="p-2 rounded-full hover:bg-gray-100 relative">
+              <ShoppingCart className="h-5 w-5 text-gray-600" />
+              <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-green-600 text-[10px] font-bold text-white flex items-center justify-center">0</span>
             </Link>
           </div>
         </div>
+
+        {/* Mobile Search */}
+        {showSearch && (
+          <div className="lg:hidden px-4 pb-3">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="প্রোডাক্ট খুঁজুন..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="w-full h-10 pl-4 pr-10 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-500"
+                autoFocus
+              />
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            </div>
+          </div>
+        )}
+
+        {/* Mobile Menu */}
+        {mobileMenu && (
+          <div className="lg:hidden border-t bg-white px-4 py-3 space-y-2">
+            <button onClick={() => { setSelectedCategory(null); setMobileMenu(false); }} className="block w-full text-left py-2 text-sm font-medium hover:text-green-600">সব প্রোডাক্ট</button>
+            {categories.map(c => (
+              <button key={c.id} onClick={() => { setSelectedCategory(c.id); setMobileMenu(false); }} className="block w-full text-left py-2 text-sm hover:text-green-600">{c.name}</button>
+            ))}
+          </div>
+        )}
       </header>
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0f3460]/[0.03] via-transparent to-[#e94560]/[0.03]" />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 lg:py-32">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-6">
-              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#e94560]/10 text-[#e94560] text-xs font-bold uppercase tracking-wider">
-                <Sparkles className="h-3 w-3" /> নতুন কালেকশন ২০২৬
-              </span>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black leading-[1.1] tracking-tight text-[#1a1a2e]">
-                আপনার স্টাইল,{" "}
-                <span className="bg-gradient-to-r from-[#e94560] to-[#533483] bg-clip-text text-transparent">
-                  আপনার পছন্দ
-                </span>
-              </h1>
-              <p className="text-gray-500 text-lg max-w-md leading-relaxed">
-                প্রিমিয়াম কোয়ালিটির প্রোডাক্ট, সাশ্রয়ী মূল্যে। এখনই অর্ডার করুন এবং পান বিশেষ ডিসকাউন্ট!
-              </p>
-              <div className="flex flex-wrap gap-3 pt-2">
-                <Button
-                  size="lg"
-                  className="bg-[#1a1a2e] hover:bg-[#16213e] text-white rounded-full px-8 h-12 text-sm font-semibold shadow-lg shadow-[#1a1a2e]/20 transition-all hover:shadow-xl hover:shadow-[#1a1a2e]/30 hover:-translate-y-0.5"
-                >
-                  শপিং শুরু করুন
-                  <ChevronRight className="ml-1 h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="rounded-full px-8 h-12 text-sm font-semibold border-gray-300 hover:border-[#1a1a2e] hover:bg-[#1a1a2e] hover:text-white transition-all"
-                >
-                  অফার দেখুন
-                </Button>
-              </div>
-            </div>
-
-            {/* Hero visual - floating product cards */}
-            <div className="relative hidden lg:block">
-              <div className="absolute -top-8 -right-8 w-72 h-72 bg-[#e94560]/10 rounded-full blur-3xl" />
-              <div className="absolute -bottom-12 -left-8 w-56 h-56 bg-[#533483]/10 rounded-full blur-3xl" />
-              <div className="relative grid grid-cols-2 gap-4">
-                {products.slice(0, 4).map((p, i) => (
-                  <div
-                    key={p.id}
-                    className={`rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500 bg-white ${
-                      i === 1 ? "translate-y-6" : i === 2 ? "-translate-y-6" : ""
-                    }`}
-                  >
-                    <div className="aspect-square">
-                      {p.main_image_url ? (
-                        <img src={p.main_image_url} alt={p.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                          <ShoppingBag className="h-8 w-8 text-gray-300" />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Trust Badges */}
-      <section className="border-y border-gray-100 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {[
-              { icon: Truck, title: "ফ্রি ডেলিভারি", desc: "৳১৫০০+ অর্ডারে" },
-              { icon: ShieldCheck, title: "১০০% অরিজিনাল", desc: "গ্যারান্টিড কোয়ালিটি" },
-              { icon: RotateCcw, title: "ইজি রিটার্ন", desc: "৭ দিনের মধ্যে" },
-              { icon: Star, title: "৫০০০+ রিভিউ", desc: "সন্তুষ্ট কাস্টমার" },
-            ].map((b) => (
-              <div key={b.title} className="flex items-center gap-3">
-                <div className="flex-shrink-0 h-11 w-11 rounded-xl bg-gradient-to-br from-[#0f3460]/10 to-[#533483]/10 flex items-center justify-center">
-                  <b.icon className="h-5 w-5 text-[#0f3460]" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-[#1a1a2e]">{b.title}</p>
-                  <p className="text-xs text-gray-400">{b.desc}</p>
-                </div>
-              </div>
+      {/* Categories horizontal scroll */}
+      {categories.length > 0 && (
+        <div className="bg-white border-b">
+          <div className="max-w-7xl mx-auto px-4 py-2 flex gap-2 overflow-x-auto no-scrollbar">
+            <button
+              onClick={() => setSelectedCategory(null)}
+              className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold transition ${
+                !selectedCategory ? "bg-green-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }`}
+            >
+              সব দেখুন
+            </button>
+            {categories.map(c => (
+              <button
+                key={c.id}
+                onClick={() => setSelectedCategory(c.id)}
+                className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold transition ${
+                  selectedCategory === c.id ? "bg-green-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                {c.name}
+              </button>
             ))}
           </div>
         </div>
-      </section>
+      )}
+
+      {/* Trust badges */}
+      <div className="bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4 py-3 grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            { icon: Truck, label: "ফ্রি ডেলিভারি", sub: "৳১৫০০+ অর্ডারে" },
+            { icon: ShieldCheck, label: "১০০% অরিজিনাল", sub: "গ্যারান্টিড" },
+            { icon: RotateCcw, label: "ইজি রিটার্ন", sub: "৭ দিনে" },
+            { icon: Star, label: "সন্তুষ্ট কাস্টমার", sub: "৫০০০+" },
+          ].map(b => (
+            <div key={b.label} className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
+                <b.icon className="h-4 w-4 text-green-600" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-gray-800">{b.label}</p>
+                <p className="text-[10px] text-gray-400">{b.sub}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Section title */}
+      <div className="max-w-7xl mx-auto px-4 pt-6 pb-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg sm:text-xl font-bold text-gray-800">
+              {selectedCategory ? categories.find(c => c.id === selectedCategory)?.name : "হয়তো আপনি এই পণ্যগুলিও পছন্দ করবেন"}
+            </h2>
+            <p className="text-xs text-gray-400">আমাদের আরও পণ্য রয়েছে, আপনি চাইলে সেগুলোও দেখতে পারেন</p>
+          </div>
+          {selectedCategory && (
+            <button onClick={() => setSelectedCategory(null)} className="flex items-center gap-1 text-green-600 text-sm font-semibold hover:underline">
+              সব দেখুন <ChevronRight className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+      </div>
 
       {/* Products Grid */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
-        <div className="text-center mb-12">
-          <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#e94560]">আমাদের কালেকশন</span>
-          <h2 className="text-3xl md:text-4xl font-black text-[#1a1a2e] mt-2">জনপ্রিয় প্রোডাক্টস</h2>
-          <p className="text-gray-400 mt-3 max-w-md mx-auto">সেরা কোয়ালিটি প্রোডাক্ট, সেরা দামে</p>
-        </div>
-
+      <section className="max-w-7xl mx-auto px-4 pb-16">
         {isLoading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
             {[...Array(8)].map((_, i) => (
-              <div key={i} className="animate-pulse">
-                <div className="aspect-square bg-gray-200 rounded-2xl" />
-                <div className="mt-3 h-4 bg-gray-200 rounded w-3/4" />
-                <div className="mt-2 h-4 bg-gray-200 rounded w-1/2" />
+              <div key={i} className="animate-pulse bg-white rounded-xl p-3">
+                <div className="aspect-square bg-gray-200 rounded-lg" />
+                <div className="mt-3 h-3 bg-gray-200 rounded w-3/4" />
+                <div className="mt-2 h-3 bg-gray-200 rounded w-1/2" />
               </div>
             ))}
           </div>
-        ) : products.length === 0 ? (
+        ) : filteredProducts.length === 0 ? (
           <div className="text-center py-20">
             <ShoppingBag className="h-16 w-16 text-gray-200 mx-auto mb-4" />
             <p className="text-gray-400 text-lg">কোনো প্রোডাক্ট পাওয়া যায়নি</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-            {products.map((p) => {
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+            {filteredProducts.map((p) => {
               const discount = getDiscount(p.original_price, p.selling_price);
+              const discountAmount = p.original_price - p.selling_price;
               return (
-                <Link
-                  key={p.id}
-                  to={`/product/${p.id}`}
-                  className="group relative"
-                  onMouseEnter={() => setHoveredId(p.id)}
-                  onMouseLeave={() => setHoveredId(null)}
-                >
-                  <div className="relative rounded-2xl overflow-hidden bg-white shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-all duration-500">
-                    {/* Discount Badge */}
-                    {discount > 0 && (
-                      <div className="absolute top-3 left-3 z-10 px-2.5 py-1 rounded-full bg-[#e94560] text-white text-[10px] font-bold tracking-wide shadow-lg shadow-[#e94560]/30">
-                        -{discount}%
-                      </div>
-                    )}
-
-                    {/* Wishlist */}
-                    <button
-                      className="absolute top-3 right-3 z-10 h-8 w-8 rounded-full bg-white/90 backdrop-blur flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-[#e94560] hover:text-white"
-                      onClick={(e) => e.preventDefault()}
-                    >
-                      <Heart className="h-3.5 w-3.5" />
-                    </button>
-
-                    {/* Image */}
-                    <div className="aspect-[4/5] overflow-hidden">
+                <div key={p.id} className="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                  {/* Image */}
+                  <Link to={`/product/${p.id}`} className="block relative">
+                    <div className="aspect-square overflow-hidden bg-gray-50">
                       {p.main_image_url ? (
-                        <img
-                          src={p.main_image_url}
-                          alt={p.name}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
-                        />
+                        <img src={p.main_image_url} alt={p.name} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" loading="lazy" />
                       ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-50 flex items-center justify-center">
+                        <div className="w-full h-full flex items-center justify-center">
                           <ShoppingBag className="h-10 w-10 text-gray-200" />
                         </div>
                       )}
                     </div>
+                    {/* Discount badge - circular like reference */}
+                    {discount > 0 && (
+                      <div className="absolute top-2 right-2 w-12 h-12 rounded-full border-2 border-dashed border-red-400 bg-white flex flex-col items-center justify-center">
+                        <span className="text-red-500 font-bold text-[10px] leading-none">{discountAmount}</span>
+                        <span className="text-red-500 font-bold text-[9px] leading-none">টাকা</span>
+                        <span className="text-red-500 font-bold text-[9px] leading-none">ছাড়</span>
+                      </div>
+                    )}
+                  </Link>
 
-                    {/* Quick Add */}
-                    <div
-                      className={`absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/50 to-transparent transition-all duration-300 ${
-                        hoveredId === p.id ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
-                      }`}
-                    >
-                      <button className="w-full py-2.5 bg-white rounded-xl text-[#1a1a2e] text-xs font-bold uppercase tracking-wider hover:bg-[#1a1a2e] hover:text-white transition-colors shadow-lg">
-                        এখনই কিনুন
-                      </button>
-                    </div>
-                  </div>
+                  {/* Divider */}
+                  <div className="h-px bg-gray-100 mx-3" />
 
                   {/* Info */}
-                  <div className="mt-3 px-1">
-                    {p.categories?.name && (
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-0.5">
-                        {p.categories.name}
-                      </p>
-                    )}
-                    <h3 className="text-sm font-bold text-[#1a1a2e] truncate group-hover:text-[#e94560] transition-colors">
-                      {p.name}
-                    </h3>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-[15px] font-black text-[#1a1a2e]">৳{p.selling_price.toLocaleString()}</span>
+                  <div className="p-3">
+                    <Link to={`/product/${p.id}`}>
+                      <h3 className="text-sm font-semibold text-gray-800 truncate hover:text-green-600 transition">{p.name}</h3>
+                    </Link>
+
+                    {/* Rating */}
+                    <div className="flex items-center gap-1 mt-1">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className={`h-3 w-3 ${i < 4 ? "fill-amber-400 text-amber-400" : "fill-amber-200 text-amber-200"}`} />
+                      ))}
+                      <span className="text-[10px] text-gray-400 ml-0.5">(0)</span>
+                    </div>
+
+                    {/* Price */}
+                    <div className="flex items-center gap-2 mt-1.5">
+                      <span className="text-green-600 font-bold text-base">৳{p.selling_price} টাকা</span>
                       {discount > 0 && (
-                        <span className="text-xs text-gray-400 line-through">৳{p.original_price.toLocaleString()}</span>
+                        <span className="text-xs text-gray-400 line-through">৳{p.original_price} টাকা</span>
                       )}
                     </div>
-                    {/* Rating Stars */}
-                    <div className="flex items-center gap-1 mt-1.5">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />
-                      ))}
-                      <span className="text-[10px] text-gray-400 ml-1">(120+)</span>
-                    </div>
                   </div>
-                </Link>
+
+                  {/* Action buttons */}
+                  <div className="px-3 pb-3 space-y-2">
+                    <button
+                      onClick={() => handleOrder(p)}
+                      className="w-full py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition"
+                    >
+                      <ShoppingCart className="h-4 w-4" /> অর্ডার করুন
+                    </button>
+                    <button
+                      onClick={() => navigate(`/product/${p.id}`)}
+                      className="w-full py-2 border border-green-600 text-green-600 hover:bg-green-50 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition"
+                    >
+                      <ShoppingBag className="h-4 w-4" /> বিস্তারিত দেখুন
+                    </button>
+                  </div>
+                </div>
               );
             })}
           </div>
         )}
       </section>
 
-      {/* CTA Banner */}
-      <section className="mx-4 sm:mx-6 lg:mx-auto max-w-7xl mb-16">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#1a1a2e] via-[#16213e] to-[#0f3460] p-8 md:p-14">
-          <div className="absolute top-0 right-0 w-80 h-80 bg-[#e94560]/20 rounded-full blur-[100px]" />
-          <div className="absolute bottom-0 left-0 w-60 h-60 bg-[#533483]/30 rounded-full blur-[80px]" />
-          <div className="relative z-10 text-center max-w-2xl mx-auto">
-            <h3 className="text-2xl md:text-4xl font-black text-white mb-3">
-              স্পেশাল ডিসকাউন্ট পান! 🎉
-            </h3>
-            <p className="text-gray-300 mb-6 text-sm md:text-base">
-              এখনই অর্ডার করুন এবং পান ৳২০০ পর্যন্ত ইনস্ট্যান্ট ডিসকাউন্ট। সীমিত সময়ের অফার!
-            </p>
-            <Button
-              size="lg"
-              className="bg-[#e94560] hover:bg-[#d63851] text-white rounded-full px-10 h-12 text-sm font-bold shadow-lg shadow-[#e94560]/30 hover:shadow-xl hover:shadow-[#e94560]/40 transition-all hover:-translate-y-0.5"
+      {/* Contact floating buttons - WhatsApp & Phone */}
+      {(whatsappNumber || phoneNumber) && (
+        <div className="fixed bottom-20 right-4 z-40 flex flex-col gap-2">
+          {whatsappNumber && (
+            <a
+              href={`https://wa.me/${whatsappNumber}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-12 h-12 rounded-full bg-green-500 text-white flex items-center justify-center shadow-lg hover:bg-green-600 transition"
             >
-              অফার দেখুন
-              <ChevronRight className="ml-1 h-4 w-4" />
-            </Button>
-          </div>
+              <MessageCircle className="h-5 w-5" />
+            </a>
+          )}
+          {phoneNumber && (
+            <a
+              href={`tel:${phoneNumber}`}
+              className="w-12 h-12 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-lg hover:bg-blue-600 transition"
+            >
+              <Phone className="h-5 w-5" />
+            </a>
+          )}
         </div>
-      </section>
+      )}
 
       {/* Footer */}
-      <footer className="bg-[#1a1a2e] text-gray-400">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
+      <footer className="bg-gray-800 text-gray-300">
+        <div className="max-w-7xl mx-auto px-4 py-10">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
             <div className="col-span-2 md:col-span-1">
-              <Link to="/" className="inline-block mb-4">
-                <span className="text-xl font-black text-white">SOHOZ</span>
-                <span className="text-xl font-black text-[#e94560]">STORE</span>
-              </Link>
-              <p className="text-sm text-gray-500 leading-relaxed">
-                বাংলাদেশের সেরা অনলাইন শপিং ডেস্টিনেশন। প্রিমিয়াম কোয়ালিটি, সাশ্রয়ী দাম।
-              </p>
+              <span className="text-lg font-black text-green-400">QUICK SHOP</span>
+              <span className="text-lg font-black text-white"> BD</span>
+              <p className="text-xs text-gray-400 mt-2 leading-relaxed">বাংলাদেশের সেরা অনলাইন শপিং ডেস্টিনেশন।</p>
             </div>
             {[
-              { title: "কুইক লিংকস", links: ["হোম", "শপ", "অফার", "যোগাযোগ"] },
-              { title: "সাহায্য", links: ["ডেলিভারি তথ্য", "রিটার্ন পলিসি", "প্রাইভেসি পলিসি", "FAQ"] },
-              { title: "যোগাযোগ", links: ["ফোন: 01XXXXXXXXX", "ইমেইল: info@sohoz.store", "ঢাকা, বাংলাদেশ"] },
-            ].map((col) => (
+              { title: "কুইক লিংকস", links: ["হোম", "সব প্রোডাক্ট", "অফার", "যোগাযোগ"] },
+              { title: "সাহায্য", links: ["ডেলিভারি তথ্য", "রিটার্ন পলিসি", "প্রাইভেসি পলিসি"] },
+              { title: "যোগাযোগ", links: [`ফোন: ${phoneNumber || "01XXXXXXXXX"}`, "ঢাকা, বাংলাদেশ"] },
+            ].map(col => (
               <div key={col.title}>
-                <h4 className="text-sm font-bold text-white mb-3 uppercase tracking-wider">{col.title}</h4>
-                <ul className="space-y-2">
-                  {col.links.map((link) => (
-                    <li key={link}>
-                      <span className="text-sm hover:text-white transition-colors cursor-pointer">{link}</span>
-                    </li>
+                <h4 className="text-xs font-bold text-white mb-2 uppercase tracking-wider">{col.title}</h4>
+                <ul className="space-y-1.5">
+                  {col.links.map(link => (
+                    <li key={link}><span className="text-xs hover:text-white transition cursor-pointer">{link}</span></li>
                   ))}
                 </ul>
               </div>
             ))}
           </div>
-          <div className="border-t border-white/10 pt-6 text-center text-xs text-gray-500">
-            © 2026 SOHOZ STORE — All rights reserved
+          <div className="border-t border-white/10 pt-4 text-center text-xs text-gray-500">
+            © 2026 QUICK SHOP BD — All rights reserved
           </div>
         </div>
       </footer>
+
+      {/* Popup Checkout */}
+      <PopupCheckout item={checkoutItem} open={checkoutOpen} onClose={() => setCheckoutOpen(false)} />
+
+      {/* Marquee animation */}
+      <style>{`
+        @keyframes marquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .animate-marquee {
+          animation: marquee 20s linear infinite;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
     </div>
   );
 };
