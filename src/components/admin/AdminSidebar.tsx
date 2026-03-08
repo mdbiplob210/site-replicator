@@ -2,7 +2,7 @@ import { useState } from "react";
 import {
   LayoutDashboard, ShoppingCart, Package, Globe, FileText, Wallet,
   Lightbulb, ListChecks, BarChart3, Megaphone, Zap, Database,
-  Users, HeadphonesIcon, Sparkles, CreditCard, LogOut, ChevronDown, Camera,
+  Users, HeadphonesIcon, Sparkles, CreditCard, LogOut, ChevronDown,
   Layout, ShoppingBag, Gift, Grid3X3, Heart, Layers, CreditCard as PaymentIcon,
   File, Settings, PieChart
 } from "lucide-react";
