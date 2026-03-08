@@ -60,7 +60,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
+        <TrackingRoutes />
           <Route path="/" element={<StorePage />} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/checkout" element={<CheckoutPage />} />
