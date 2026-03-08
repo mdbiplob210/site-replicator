@@ -1865,6 +1865,9 @@ const AdminOrders = () => {
                             ডেলিভারি সম্পন্ন
                           </Button>
                         )}
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20" title="নোট যোগ করুন" onClick={(e) => { e.stopPropagation(); setDetailOrderId(order.id); }}>
+                          <MessageSquare className="h-4 w-4" />
+                        </Button>
                         <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-primary hover:bg-primary/10" title="Activity Log" onClick={(e) => { e.stopPropagation(); setDetailOrderId(order.id); }}>
                           <Activity className="h-4 w-4" />
                         </Button>
