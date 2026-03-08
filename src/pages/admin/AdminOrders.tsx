@@ -1467,6 +1467,20 @@ const AdminOrders = () => {
                       <Textarea placeholder="Courier/packing note (memo তে প্রিন্ট হবে)..." rows={2} className="rounded-xl text-xs" value={courierNote} onChange={(e) => setCourierNote(e.target.value)} />
                     </div>
                   </div>
+                  {/* Order Source */}
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold flex items-center gap-1"><Globe className="h-3 w-3" /> Order Source</Label>
+                    <Select value={selectedOrderSource} onValueChange={setSelectedOrderSource}>
+                      <SelectTrigger className="rounded-xl h-9 text-sm"><SelectValue placeholder="Select source..." /></SelectTrigger>
+                      <SelectContent>
+                        {orderSources.filter((s: any) => !s.is_system || s.slug !== 'api').map((src: any) => (
+                          <SelectItem key={src.id} value={src.name}>
+                            <span className="flex items-center gap-2">{src.icon} {src.name}</span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <Button className="w-full rounded-xl shadow-sm" onClick={handleCreateOrder} disabled={createOrder.isPending || !customerName.trim()}>
                     {createOrder.isPending ? <><Loader2 className="h-4 w-4 animate-spin" /> Creating...</> : <><Plus className="h-4 w-4" /> Create Order</>}
                   </Button>
