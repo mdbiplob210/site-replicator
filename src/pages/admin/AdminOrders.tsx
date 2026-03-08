@@ -2258,6 +2258,19 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
       if (editDelivery !== Number(order.delivery_charge)) { changes.delivery_charge = editDelivery; await logActivity("field_edited", "delivery_charge", String(order.delivery_charge), String(editDelivery)); }
       if (editDiscount !== Number(order.discount)) { changes.discount = editDiscount; await logActivity("field_edited", "discount", String(order.discount), String(editDiscount)); }
 
+      // Save courier selection
+      const courierChanged = editCourierId !== (existingCourierOrder?.courier_provider_id || null);
+      if (courierChanged && editCourierId) {
+        if (existingCourierOrder) {
+          await supabase.from("courier_orders").update({ courier_provider_id: editCourierId } as any).eq("id", existingCourierOrder.id);
+        } else {
+          await supabase.from("courier_orders").insert({ order_id: orderId, courier_provider_id: editCourierId, courier_status: "pending" } as any);
+        }
+        await logActivity("field_edited", "courier", existingCourierOrder?.courier_provider_id || "none", editCourierId);
+        queryClient.invalidateQueries({ queryKey: ["courier-orders-filter"] });
+        queryClient.invalidateQueries({ queryKey: ["courier-order-detail", orderId] });
+      }
+
       if (Object.keys(changes).length > 0) {
         // Recalculate total if delivery/discount changed
         if (changes.delivery_charge !== undefined || changes.discount !== undefined) {
@@ -2270,6 +2283,9 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
         queryClient.invalidateQueries({ queryKey: ["order-counts"] });
         queryClient.invalidateQueries({ queryKey: ["order-activity-logs", orderId] });
         toast.success("অর্ডার আপডেট হয়েছে!");
+        onClose();
+      } else if (courierChanged) {
+        toast.success("কুরিয়ার আপডেট হয়েছে!");
         onClose();
       } else {
         onClose();
