@@ -175,7 +175,7 @@ const Template1Classic = () => {
               return (
                 <Link
                   key={p.id}
-                  to={`/store/product/${p.id}`}
+                  to={`/product/${p.id}`}
                   className="group relative"
                   onMouseEnter={() => setHoveredId(p.id)}
                   onMouseLeave={() => setHoveredId(null)}
