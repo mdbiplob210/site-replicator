@@ -599,8 +599,22 @@ const AdminOrders = () => {
       setHoldDialogOpen(true);
       return;
     }
+    // Hand delivery → delivered confirmation
+    if (oldStatus === "hand_delivery" && newStatus === "delivered") {
+      setHandDeliveryOrderId(orderId);
+      setHandDeliveryDialogOpen(true);
+      return;
+    }
     updateStatus.mutate({ id: orderId, status: newStatus as OrderStatus });
     logActivity(orderId, "status_changed", "status", getStatusLabel(oldStatus as OrderStatus), getStatusLabel(newStatus as OrderStatus));
+  };
+
+  const confirmHandDelivery = () => {
+    if (!handDeliveryOrderId) return;
+    updateStatus.mutate({ id: handDeliveryOrderId, status: "delivered" as OrderStatus });
+    logActivity(handDeliveryOrderId, "status_changed", "status", "Hand Delivery", "Delivered", "হ্যান্ড ডেলিভারি সম্পন্ন");
+    setHandDeliveryDialogOpen(false);
+    setHandDeliveryOrderId(null);
   };
 
   const confirmCancel = async () => {
