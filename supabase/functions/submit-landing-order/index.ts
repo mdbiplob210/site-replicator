@@ -131,15 +131,22 @@ Deno.serve(async (req) => {
         .limit(1);
 
       if (ipBlocked && ipBlocked.length > 0) {
-        await supabase.from("incomplete_orders").insert({
+        const incData = {
           customer_name, customer_phone, customer_address: customer_address || null,
           product_name: product_name || null, product_code: product_code || null,
           quantity, unit_price, total_amount: totalAmount, delivery_charge, discount,
           notes: notes || null, landing_page_slug: landing_page_slug || null,
           client_ip: clientIp, user_agent: userAgent, device_info: deviceInfo,
           block_reason: `স্থায়ীভাবে ব্লক করা IP: ${clientIp}`,
-          status: "processing",
-        });
+          status: "processing", updated_at: new Date().toISOString(),
+        };
+        // Upsert by phone
+        const { data: exInc } = await supabase.from("incomplete_orders").select("id").eq("customer_phone", customer_phone).eq("status", "processing").limit(1);
+        if (exInc && exInc.length > 0) {
+          await supabase.from("incomplete_orders").update(incData).eq("id", exInc[0].id);
+        } else {
+          await supabase.from("incomplete_orders").insert(incData);
+        }
         return new Response(
           JSON.stringify({ success: false, blocked: true, error: blockPopupMessage }),
           { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
