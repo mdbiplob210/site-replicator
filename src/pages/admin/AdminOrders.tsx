@@ -1744,14 +1744,14 @@ const AdminOrders = () => {
                   </Select>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-[10px] font-semibold text-muted-foreground">Payment</Label>
+                   <Label className="text-[10px] font-semibold text-muted-foreground">Payment</Label>
                   <Select value={filterPaymentStatus} onValueChange={setFilterPaymentStatus}>
                     <SelectTrigger className="rounded-lg h-7 text-xs"><SelectValue placeholder="All" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All</SelectItem>
-                      <SelectItem value="cod">COD</SelectItem>
-                      <SelectItem value="paid">Paid</SelectItem>
-                      <SelectItem value="free_delivery">Free</SelectItem>
+                      <SelectItem value="paid">✅ Paid</SelectItem>
+                      <SelectItem value="unpaid">💰 Unpaid</SelectItem>
+                      <SelectItem value="free_delivery">🆓 Free Delivery</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
