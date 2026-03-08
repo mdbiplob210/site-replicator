@@ -27,7 +27,7 @@ const Template1Classic = () => {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <Link to="/store" className="flex items-center gap-1">
+          <Link to="/" className="flex items-center gap-1">
             <span className="text-2xl font-black tracking-tighter bg-gradient-to-r from-[#0f3460] to-[#533483] bg-clip-text text-transparent">
               SOHOZ
             </span>
