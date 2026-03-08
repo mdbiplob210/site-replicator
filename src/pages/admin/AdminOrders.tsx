@@ -2814,16 +2814,22 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
         </DialogHeader>
 
         {order && (
-          <div className="space-y-5">
+          <div className="space-y-6">
             {/* Customer Info - Editable */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label className="text-xs font-semibold">Customer Name</Label>
-                <Input className="rounded-xl" value={editName} onChange={(e) => setEditName(e.target.value)} />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs font-semibold">Phone</Label>
-                <Input className="rounded-xl" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} />
+            <div className="p-4 rounded-2xl bg-secondary/20 border border-border/40 space-y-4">
+              <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                <div className="h-6 w-6 rounded-lg bg-primary/10 flex items-center justify-center"><Phone className="h-3.5 w-3.5 text-primary" /></div>
+                কাস্টমার তথ্য
+              </h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground">কাস্টমারের নাম</Label>
+                  <Input className="rounded-xl h-10 text-sm" value={editName} onChange={(e) => setEditName(e.target.value)} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground">ফোন নম্বর</Label>
+                  <Input className="rounded-xl h-10 text-sm" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} />
+                </div>
               </div>
             </div>
 
