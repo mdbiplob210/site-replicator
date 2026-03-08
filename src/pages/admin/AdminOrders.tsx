@@ -2924,11 +2924,14 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                   {editCourierProviders.find((cp: any) => cp.id === editCourierId)?.name || ""}
                 </Badge>
               )}
-            </div>
 
-            {/* City/Zone/Area from Courier API for Edit */}
-            {editCourierId && (
-              <div className="grid grid-cols-3 gap-2">
+              {/* City/Zone/Area from Courier API for Edit */}
+              {editCourierId && (
+                <div className="p-3 rounded-xl bg-background border border-border/30 space-y-3">
+                  <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+                    📍 {editCourierProviders.find((cp: any) => cp.id === editCourierId)?.name} এরিয়া সিলেক্ট
+                  </p>
+                  <div className="grid grid-cols-3 gap-2">
                 <div className="space-y-1">
                   <Label className="text-[10px] font-semibold text-muted-foreground">City</Label>
                   <Select value={editCourierCityId || ""} onValueChange={(v) => {
