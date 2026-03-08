@@ -887,6 +887,13 @@ export type Database = {
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       order_sources: {
@@ -1101,18 +1108,21 @@ export type Database = {
       site_settings: {
         Row: {
           id: string
+          is_public: boolean
           key: string
           updated_at: string
           value: string
         }
         Insert: {
           id?: string
+          is_public?: boolean
           key: string
           updated_at?: string
           value: string
         }
         Update: {
           id?: string
+          is_public?: boolean
           key?: string
           updated_at?: string
           value?: string
@@ -1139,7 +1149,74 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      products_public: {
+        Row: {
+          additional_images: string[] | null
+          allow_out_of_stock_orders: boolean | null
+          category_id: string | null
+          created_at: string | null
+          detailed_description: string | null
+          free_delivery: boolean | null
+          id: string | null
+          main_image_url: string | null
+          name: string | null
+          original_price: number | null
+          product_code: string | null
+          selling_price: number | null
+          short_description: string | null
+          status: string | null
+          stock_quantity: number | null
+          updated_at: string | null
+          youtube_url: string | null
+        }
+        Insert: {
+          additional_images?: string[] | null
+          allow_out_of_stock_orders?: boolean | null
+          category_id?: string | null
+          created_at?: string | null
+          detailed_description?: string | null
+          free_delivery?: boolean | null
+          id?: string | null
+          main_image_url?: string | null
+          name?: string | null
+          original_price?: number | null
+          product_code?: string | null
+          selling_price?: number | null
+          short_description?: string | null
+          status?: string | null
+          stock_quantity?: number | null
+          updated_at?: string | null
+          youtube_url?: string | null
+        }
+        Update: {
+          additional_images?: string[] | null
+          allow_out_of_stock_orders?: boolean | null
+          category_id?: string | null
+          created_at?: string | null
+          detailed_description?: string | null
+          free_delivery?: boolean | null
+          id?: string | null
+          main_image_url?: string | null
+          name?: string | null
+          original_price?: number | null
+          product_code?: string | null
+          selling_price?: number | null
+          short_description?: string | null
+          status?: string | null
+          stock_quantity?: number | null
+          updated_at?: string | null
+          youtube_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       has_permission: {
