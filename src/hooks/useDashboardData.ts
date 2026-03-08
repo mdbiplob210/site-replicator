@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { startOfDay, endOfDay, startOfWeek, startOfMonth, subDays } from "date-fns";
+import { startOfDay, endOfDay, startOfWeek, startOfMonth, subDays, format, eachDayOfInterval, parseISO } from "date-fns";
 
 type TimeFilter = "Today" | "Yesterday" | "This Week" | "This Month";
 
@@ -263,4 +263,44 @@ export function useDashboardData(filter: TimeFilter) {
       sourceBreakdown,
     },
   };
+}
+
+export function useSalesTrend() {
+  const now = new Date();
+  const from30 = subDays(now, 29);
+
+  return useQuery({
+    queryKey: ["sales-trend-30d"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("orders")
+        .select("created_at, total_amount, status")
+        .gte("created_at", startOfDay(from30).toISOString())
+        .lte("created_at", endOfDay(now).toISOString());
+      if (error) throw error;
+
+      const days = eachDayOfInterval({ start: startOfDay(from30), end: startOfDay(now) });
+      const dayMap = new Map<string, { orders: number; revenue: number }>();
+      for (const d of days) {
+        dayMap.set(format(d, "yyyy-MM-dd"), { orders: 0, revenue: 0 });
+      }
+
+      for (const o of data || []) {
+        const key = format(parseISO(o.created_at), "yyyy-MM-dd");
+        const entry = dayMap.get(key);
+        if (entry) {
+          entry.orders++;
+          if (!["cancelled", "returned"].includes(o.status)) {
+            entry.revenue += Number(o.total_amount);
+          }
+        }
+      }
+
+      return days.map((d) => {
+        const key = format(d, "yyyy-MM-dd");
+        const entry = dayMap.get(key)!;
+        return { date: format(d, "dd MMM"), orders: entry.orders, revenue: entry.revenue };
+      });
+    },
+  });
 }

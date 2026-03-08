@@ -8,7 +8,8 @@ import {
   PiggyBank, Receipt, Loader2, BarChart3, CreditCard, Undo2,
   Hand, ShoppingBag, Hash
 } from "lucide-react";
-import { useDashboardData } from "@/hooks/useDashboardData";
+import { useDashboardData, useSalesTrend } from "@/hooks/useDashboardData";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from "recharts";
 
 const timeFilters = ["Today", "Yesterday", "This Week", "This Month"] as const;
 
@@ -17,6 +18,7 @@ const fmt = (n: number) => `৳${n.toLocaleString("en-BD")}`;
 const AdminDashboard = () => {
   const [activeFilter, setActiveFilter] = useState<typeof timeFilters[number]>("Today");
   const { isLoading, orderStats, shippingStats, profitStats, financeStats, salesDetails } = useDashboardData(activeFilter);
+  const { data: salesTrend } = useSalesTrend();
 
   const orderCards = [
     { label: "TOTAL ORDERS", value: String(orderStats.totalOrders), sub: "Orders", change: `(${fmt(orderStats.totalAmount)})`, icon: ShoppingCart, color: "text-foreground", bgGradient: "from-slate-100 to-slate-50", iconColor: "text-slate-500" },
@@ -192,6 +194,66 @@ const AdminDashboard = () => {
                 </Card>
               ))}
             </div>
+
+            {/* Sales Trend Chart */}
+            {salesTrend && salesTrend.length > 0 && (
+              <Card className="p-5 border-border/30">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2.5 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 shadow-lg shadow-emerald-500/20">
+                    <TrendingUp className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-bold text-foreground">Sales Trend (Last 30 Days)</h2>
+                    <p className="text-xs text-muted-foreground">Daily orders & revenue</p>
+                  </div>
+                </div>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={salesTrend} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(187, 85%, 53%)" stopOpacity={0.3} />
+                          <stop offset="95%" stopColor="hsl(187, 85%, 53%)" stopOpacity={0} />
+                        </linearGradient>
+                        <linearGradient id="colorOrders" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(210, 100%, 50%)" stopOpacity={0.3} />
+                          <stop offset="95%" stopColor="hsl(210, 100%, 50%)" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-border/30" />
+                      <XAxis dataKey="date" tick={{ fontSize: 10 }} className="text-muted-foreground" interval="preserveStartEnd" />
+                      <YAxis yAxisId="left" tick={{ fontSize: 10 }} className="text-muted-foreground" />
+                      <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} className="text-muted-foreground" />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "hsl(var(--card))",
+                          border: "1px solid hsl(var(--border))",
+                          borderRadius: "12px",
+                          fontSize: "12px",
+                          boxShadow: "0 8px 30px -10px rgba(0,0,0,0.15)",
+                        }}
+                        formatter={(value: number, name: string) => [
+                          name === "revenue" ? `৳${value.toLocaleString("en-BD")}` : value,
+                          name === "revenue" ? "Revenue" : "Orders",
+                        ]}
+                      />
+                      <Area yAxisId="right" type="monotone" dataKey="revenue" stroke="hsl(187, 85%, 53%)" fill="url(#colorRevenue)" strokeWidth={2} dot={false} />
+                      <Area yAxisId="left" type="monotone" dataKey="orders" stroke="hsl(210, 100%, 50%)" fill="url(#colorOrders)" strokeWidth={2} dot={false} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="flex items-center justify-center gap-6 mt-3">
+                  <div className="flex items-center gap-2">
+                    <div className="h-2.5 w-2.5 rounded-full bg-[hsl(210,100%,50%)]" />
+                    <span className="text-xs text-muted-foreground font-medium">Orders</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="h-2.5 w-2.5 rounded-full bg-[hsl(187,85%,53%)]" />
+                    <span className="text-xs text-muted-foreground font-medium">Revenue</span>
+                  </div>
+                </div>
+              </Card>
+            )}
 
             {/* Top Products & Hourly Orders */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
