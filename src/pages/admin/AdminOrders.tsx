@@ -2198,7 +2198,7 @@ const AdminOrders = () => {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {Constants.public.Enums.order_status.map((s) => (
+                          {(["processing", "confirmed", "on_hold", "hand_delivery", "cancelled"] as const).map((s) => (
                             <SelectItem key={s} value={s}>
                               <div className="flex items-center gap-2">
                                 <span className={`h-2 w-2 rounded-full ${getStatusColor(s as OrderStatus)}`} />
