@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { Layers, Plus, Search, Edit, Trash2, ExternalLink, Copy, BarChart3 } from "lucide-react";
+import { Layers, Plus, Search, Edit, Trash2, ExternalLink, Copy, BarChart3, Upload, Image, X, GripVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +12,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   useLandingPages,
   useCreateLandingPage,
@@ -19,6 +21,15 @@ import {
   useDeleteLandingPage,
   LandingPage,
 } from "@/hooks/useLandingPages";
+
+type LandingPageImage = {
+  id: string;
+  landing_page_id: string;
+  image_url: string;
+  file_name: string;
+  sort_order: number;
+  created_at: string;
+};
 
 const emptyPage: Partial<LandingPage> = {
   title: "",
