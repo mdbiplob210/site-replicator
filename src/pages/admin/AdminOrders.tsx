@@ -2714,6 +2714,19 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
     } catch (e: any) { toast.error(e.message); }
   };
 
+  const updateDetailItemPrice = async (item: any, newPrice: number) => {
+    if (!orderId || newPrice < 0) return;
+    try {
+      const newTotal = item.quantity * newPrice;
+      const { error } = await supabase.from("order_items").update({ unit_price: newPrice, total_price: newTotal }).eq("id", item.id);
+      if (error) throw error;
+      await logActivity("field_edited", "order_items", `৳${item.unit_price}`, `৳${newPrice}`, `${item.product_name} ইউনিট প্রাইস পরিবর্তন`);
+      queryClient.invalidateQueries({ queryKey: ["order-items", orderId] });
+      queryClient.invalidateQueries({ queryKey: ["all-order-items-filter"] });
+      await recalcOrderTotals();
+    } catch (e: any) { toast.error(e.message); }
+  };
+
   const removeDetailItem = async (item: any) => {
     if (!orderId) return;
     try {
@@ -2957,7 +2970,20 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                         )}
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-foreground truncate">{item.product_name}</p>
-                          <p className="text-xs text-muted-foreground">{item.product_code} · ৳{Number(item.unit_price).toLocaleString()}</p>
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <span>{item.product_code} ·</span>
+                            <span>৳</span>
+                            <input
+                              type="number"
+                              defaultValue={Number(item.unit_price)}
+                              className="w-16 bg-transparent border-b border-dashed border-muted-foreground/40 hover:border-primary focus:border-primary focus:outline-none text-xs font-medium text-foreground"
+                              onBlur={(e) => {
+                                const val = Number(e.target.value);
+                                if (val !== Number(item.unit_price) && val >= 0) updateDetailItemPrice(item, val);
+                              }}
+                              onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
+                            />
+                          </div>
                         </div>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
