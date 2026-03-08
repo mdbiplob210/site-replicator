@@ -1871,6 +1871,30 @@ const AdminOrders = () => {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Hand Delivery Confirmation Dialog */}
+        <Dialog open={handDeliveryDialogOpen} onOpenChange={setHandDeliveryDialogOpen}>
+          <DialogContent className="max-w-sm rounded-2xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <CheckCircle2 className="h-5 w-5 text-emerald-500" /> হ্যান্ড ডেলিভারি সম্পন্ন
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                আপনি কি নিশ্চিত যে এই অর্ডারটি হ্যান্ড ডেলিভারি সম্পন্ন হয়েছে? এটি <strong>Delivered</strong> স্ট্যাটাসে চলে যাবে।
+              </p>
+              <div className="flex gap-2">
+                <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setHandDeliveryDialogOpen(false)}>
+                  বাতিল
+                </Button>
+                <Button className="flex-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5" onClick={confirmHandDelivery}>
+                  <CheckCircle2 className="h-4 w-4" /> নিশ্চিত করুন
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </AdminLayout>
   );
