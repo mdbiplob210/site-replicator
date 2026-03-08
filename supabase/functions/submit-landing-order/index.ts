@@ -196,14 +196,20 @@ Deno.serve(async (req) => {
         else if (isIpBlocked) blockReason = `একই IP (${clientIp}) থেকে ${hours}ঘণ্টার মধ্যে আগেই অর্ডার হয়েছে`;
         else blockReason = `একই ডিভাইস থেকে ${hours}ঘণ্টার মধ্যে আগেই অর্ডার হয়েছে`;
 
-        await supabase.from("incomplete_orders").insert({
+        const incData2 = {
           customer_name, customer_phone, customer_address: customer_address || null,
           product_name: product_name || null, product_code: product_code || null,
           quantity, unit_price, total_amount: totalAmount, delivery_charge, discount,
           notes: notes || null, landing_page_slug: landing_page_slug || null,
           client_ip: clientIp, user_agent: userAgent, device_info: deviceInfo,
-          block_reason: blockReason, status: "processing",
-        });
+          block_reason: blockReason, status: "processing", updated_at: new Date().toISOString(),
+        };
+        const { data: exInc2 } = await supabase.from("incomplete_orders").select("id").eq("customer_phone", customer_phone).eq("status", "processing").limit(1);
+        if (exInc2 && exInc2.length > 0) {
+          await supabase.from("incomplete_orders").update(incData2).eq("id", exInc2[0].id);
+        } else {
+          await supabase.from("incomplete_orders").insert(incData2);
+        }
 
         return new Response(
           JSON.stringify({ success: false, blocked: true, error: blockPopupMessage }),
