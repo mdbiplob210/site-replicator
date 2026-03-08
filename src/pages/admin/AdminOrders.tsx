@@ -844,6 +844,7 @@ const AdminOrders = () => {
         product_cost: computedProductCost,
         notes: notes || null,
         courier_note: courierNote || null,
+        source: selectedOrderSource || "Panel",
         status: "processing",
       } as any,
       items: orderItems,
