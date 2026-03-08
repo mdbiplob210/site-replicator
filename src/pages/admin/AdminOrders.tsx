@@ -1769,8 +1769,8 @@ const AdminOrders = () => {
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/60 border-b-2 border-border/60">
-                  <TableHead className="font-bold text-[11px] px-2 py-2 whitespace-nowrap">Status</TableHead>
-                  <TableHead className="font-bold text-[11px] px-1 py-2 w-8">
+                  <TableHead className="font-bold text-[10px] px-1.5 py-1.5 whitespace-nowrap">Status</TableHead>
+                  <TableHead className="font-bold text-[10px] px-1 py-1.5 w-7">
                     <Checkbox 
                       checked={selectedOrderIds.size === filteredOrders.length && filteredOrders.length > 0}
                       onCheckedChange={(checked) => {
@@ -1779,14 +1779,14 @@ const AdminOrders = () => {
                       }}
                     />
                   </TableHead>
-                  <TableHead className="font-bold text-[11px] px-1 py-2 w-10">Notes</TableHead>
-                  <TableHead className="font-bold text-[11px] px-2 py-2">Invoice ID</TableHead>
-                  <TableHead className="font-bold text-[11px] px-2 py-2">Name & Number</TableHead>
-                  <TableHead className="font-bold text-[11px] px-2 py-2">Date</TableHead>
-                  <TableHead className="font-bold text-[11px] px-2 py-2">Address</TableHead>
-                  <TableHead className="font-bold text-[11px] px-2 py-2">Courier</TableHead>
-                  <TableHead className="font-bold text-[11px] px-2 py-2">Summary</TableHead>
-                  <TableHead className="font-bold text-[11px] px-2 py-2">Employee</TableHead>
+                  <TableHead className="font-bold text-[10px] px-1 py-1.5 w-7">N</TableHead>
+                  <TableHead className="font-bold text-[10px] px-1.5 py-1.5">Invoice</TableHead>
+                  <TableHead className="font-bold text-[10px] px-1.5 py-1.5">Customer</TableHead>
+                  <TableHead className="font-bold text-[10px] px-1.5 py-1.5">Date</TableHead>
+                  <TableHead className="font-bold text-[10px] px-1.5 py-1.5">Address</TableHead>
+                  <TableHead className="font-bold text-[10px] px-1.5 py-1.5">Courier</TableHead>
+                  <TableHead className="font-bold text-[10px] px-1.5 py-1.5">Summary</TableHead>
+                  <TableHead className="font-bold text-[10px] px-1.5 py-1.5">Emp</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
