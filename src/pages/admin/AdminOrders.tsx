@@ -45,7 +45,7 @@ import { FakeOrderDetection } from "@/components/admin/fraud/FakeOrderDetection"
 import { useCourierCities, useCourierZones, useCourierAreas } from "@/hooks/useCourierLocations";
 import { ApiKeysView } from "@/components/admin/api/ApiKeysView";
 import { Constants } from "@/integrations/supabase/types";
-import * as XLSX from "xlsx";
+import * as XLSX from "@datalens-tech/xlsx";
 import { toast } from "sonner";
 
 const statusTabs = [
