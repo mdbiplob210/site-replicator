@@ -2587,6 +2587,9 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
   const { data: editCourierZones = [], isLoading: editZonesLoading } = useCourierZones(editCourierId, editCourierCityId);
   const { data: editCourierAreas = [], isLoading: editAreasLoading } = useCourierAreas(editCourierId, editCourierZoneId);
   const [editStatus, setEditStatus] = useState<string>("");
+  const [detailCancelDialogOpen, setDetailCancelDialogOpen] = useState(false);
+  const [detailCancelReason, setDetailCancelReason] = useState("");
+  const [detailCancelCustom, setDetailCancelCustom] = useState("");
   const [logFilterUser, setLogFilterUser] = useState("all");
   const [logFilterAction, setLogFilterAction] = useState("all");
   const [logFilterDate, setLogFilterDate] = useState<Date | undefined>();
