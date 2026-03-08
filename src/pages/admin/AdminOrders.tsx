@@ -1798,12 +1798,13 @@ const AdminOrders = () => {
                   const employeeName = assignmentByOrderId[order.id] || "";
                   const due = Number(order.total_amount) - Number(order.discount);
                   return (
-                  <TableRow key={order.id} className="hover:bg-secondary/20 cursor-pointer group border-b border-border/30 align-top" onClick={() => setDetailOrderId(order.id)}>
+                  <TableRow key={order.id} className="hover:bg-secondary/20 cursor-pointer group border-b border-border/20 align-top" onClick={() => setDetailOrderId(order.id)}>
                     {/* Status + SL */}
-                    <TableCell className="px-2 py-2 align-top">
-                      <div className="flex flex-col items-start gap-0.5">
+                    <TableCell className="px-1.5 py-1 align-top">
+                      <div className="flex items-center gap-1">
+                        <span className="text-[9px] text-muted-foreground font-medium shrink-0">{idx + 1}.</span>
                         <Select value={order.status} onValueChange={(value) => handleStatusChange(order.id, value, order.status)}>
-                          <SelectTrigger className="w-[90px] h-5 rounded text-[10px] border-0 px-1.5 font-semibold" onClick={(e) => e.stopPropagation()}
+                          <SelectTrigger className="w-[85px] h-5 rounded text-[9px] border-0 px-1 font-semibold" onClick={(e) => e.stopPropagation()}
                             style={{ backgroundColor: order.status === 'processing' ? '#0ea5e9' : order.status === 'confirmed' ? '#059669' : order.status === 'cancelled' ? '#ef4444' : order.status === 'delivered' ? '#10b981' : order.status === 'in_courier' ? '#8b5cf6' : order.status === 'on_hold' ? '#eab308' : order.status === 'returned' ? '#f97316' : '#6b7280', color: 'white' }}>
                             <SelectValue />
                           </SelectTrigger>
@@ -1818,7 +1819,6 @@ const AdminOrders = () => {
                             ))}
                           </SelectContent>
                         </Select>
-                        <span className="text-[9px] text-muted-foreground font-medium">sl: {idx + 1}</span>
                       </div>
                     </TableCell>
 
