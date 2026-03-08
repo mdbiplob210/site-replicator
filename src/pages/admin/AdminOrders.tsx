@@ -666,6 +666,25 @@ const AdminOrders = () => {
     } catch (e) { console.error("Activity log error:", e); }
   };
 
+  const handleInlineNoteSave = async (orderId: string, noteText: string) => {
+    const { error } = await supabase.from("orders").update({ notes: noteText } as any).eq("id", orderId);
+    if (error) { toast.error("নোট সেভ ব্যর্থ"); return; }
+    queryClient.invalidateQueries({ queryKey: ["orders"] });
+    logActivity(orderId, "note_updated", "notes", undefined, noteText, "ইনলাইন নোট আপডেট");
+    toast.success("নোট সেভ হয়েছে!");
+    setInlineNoteOrderId(null);
+    setInlineNoteText("");
+  };
+
+  const handleTogglePaymentStatus = async (orderId: string, currentStatus: string) => {
+    const newStatus = currentStatus === "paid" ? "unpaid" : "paid";
+    const { error } = await supabase.from("orders").update({ payment_status: newStatus } as any).eq("id", orderId);
+    if (error) { toast.error("পেমেন্ট স্ট্যাটাস আপডেট ব্যর্থ"); return; }
+    queryClient.invalidateQueries({ queryKey: ["orders"] });
+    logActivity(orderId, "payment_status_changed", "payment_status", currentStatus, newStatus);
+    toast.success(`পেমেন্ট স্ট্যাটাস: ${newStatus === "paid" ? "Paid" : "Unpaid"}`);
+  };
+
   // Handle status change with cancel/hold interception
   const handleStatusChange = (orderId: string, newStatus: string, oldStatus: string) => {
     if (newStatus === "cancelled") {
