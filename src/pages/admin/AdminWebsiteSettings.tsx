@@ -86,11 +86,68 @@ export default function AdminWebsiteSettings() {
 
 /* ===================== General Tab ===================== */
 function GeneralTab() {
+  const { data: settings = {}, isLoading } = useSiteSettings();
+  const updateSetting = useUpdateSiteSetting();
+  const [siteName, setSiteName] = useState("");
+  const [siteUrl, setSiteUrl] = useState("");
+  const [tagline, setTagline] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [insideDhaka, setInsideDhaka] = useState("0");
+  const [outsideDhaka, setOutsideDhaka] = useState("0");
+  const [freeDeliveryAbove, setFreeDeliveryAbove] = useState("");
+  const [facebookUrl, setFacebookUrl] = useState("");
+  const [instagramUrl, setInstagramUrl] = useState("");
+  const [customDomain, setCustomDomain] = useState("");
+  const [loaded, setLoaded] = useState(false);
+
+  // Load saved values
+  if (!loaded && !isLoading && settings) {
+    setSiteName(settings["site_name"] || "");
+    setSiteUrl(settings["site_url"] || "");
+    setTagline(settings["tagline"] || "");
+    setContactPhone(settings["phone_number"] || "");
+    setContactEmail(settings["contact_email"] || "");
+    setInsideDhaka(settings["delivery_inside_dhaka"] || "0");
+    setOutsideDhaka(settings["delivery_outside_dhaka"] || "0");
+    setFreeDeliveryAbove(settings["free_delivery_above"] || "");
+    setFacebookUrl(settings["facebook_url"] || "");
+    setInstagramUrl(settings["instagram_url"] || "");
+    setCustomDomain(settings["custom_domain"] || "");
+    setLoaded(true);
+  }
+
+  const handleSave = async () => {
+    const updates = [
+      { key: "site_name", value: siteName },
+      { key: "site_url", value: siteUrl },
+      { key: "tagline", value: tagline },
+      { key: "phone_number", value: contactPhone },
+      { key: "contact_email", value: contactEmail },
+      { key: "delivery_inside_dhaka", value: insideDhaka },
+      { key: "delivery_outside_dhaka", value: outsideDhaka },
+      { key: "free_delivery_above", value: freeDeliveryAbove },
+      { key: "facebook_url", value: facebookUrl },
+      { key: "instagram_url", value: instagramUrl },
+      { key: "custom_domain", value: customDomain },
+    ];
+    
+    for (const { key, value } of updates) {
+      await updateSetting.mutateAsync({ key, value });
+    }
+    toast.success("সেটিংস সেভ হয়েছে!");
+  };
+
   return (
     <div className="space-y-5">
-      <div>
-        <h2 className="text-lg font-bold text-foreground">Website Settings</h2>
-        <p className="text-sm text-muted-foreground">Configure your storefront details</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-bold text-foreground">Website Settings</h2>
+          <p className="text-sm text-muted-foreground">Configure your storefront details</p>
+        </div>
+        <Button onClick={handleSave} disabled={updateSetting.isPending} className="gap-2">
+          <Save className="h-4 w-4" /> {updateSetting.isPending ? "সেভ হচ্ছে..." : "সেভ করুন"}
+        </Button>
       </div>
 
       <div className="grid grid-cols-5 gap-6">
@@ -112,28 +169,61 @@ function GeneralTab() {
             </div>
           </div>
 
-          {/* Store Name */}
+          {/* Site Name */}
           <div>
-            <label className="text-sm font-medium text-foreground">Store Name</label>
-            <Input className="mt-1.5" defaultValue="Quick-shopbd" />
+            <label className="text-sm font-medium text-foreground">Site Name <span className="text-destructive">*</span></label>
+            <p className="text-xs text-muted-foreground">Product Feed এ ব্যবহার হবে</p>
+            <Input 
+              className="mt-1.5" 
+              placeholder="Your Store Name"
+              value={siteName}
+              onChange={(e) => setSiteName(e.target.value)}
+            />
+          </div>
+
+          {/* Site URL */}
+          <div>
+            <label className="text-sm font-medium text-foreground">Site URL <span className="text-destructive">*</span></label>
+            <p className="text-xs text-muted-foreground">Product Feed এ প্রোডাক্ট লিংক তৈরিতে ব্যবহার হবে (যেমন: https://yourstore.com)</p>
+            <Input 
+              className="mt-1.5" 
+              placeholder="https://yourstore.com"
+              value={siteUrl}
+              onChange={(e) => setSiteUrl(e.target.value)}
+            />
           </div>
 
           {/* Tagline */}
           <div>
             <label className="text-sm font-medium text-foreground">Tagline</label>
-            <Input className="mt-1.5" defaultValue="Welcome to our store" />
+            <Input 
+              className="mt-1.5" 
+              placeholder="Welcome to our store"
+              value={tagline}
+              onChange={(e) => setTagline(e.target.value)}
+            />
           </div>
 
           {/* Contact Phone */}
           <div>
             <label className="text-sm font-medium text-foreground">Contact Phone</label>
-            <Input className="mt-1.5" placeholder="+880..." />
+            <Input 
+              className="mt-1.5" 
+              placeholder="+880..."
+              value={contactPhone}
+              onChange={(e) => setContactPhone(e.target.value)}
+            />
           </div>
 
           {/* Contact Email */}
           <div>
             <label className="text-sm font-medium text-foreground">Contact Email</label>
-            <Input className="mt-1.5" placeholder="support@store.com" />
+            <Input 
+              className="mt-1.5" 
+              placeholder="support@store.com"
+              value={contactEmail}
+              onChange={(e) => setContactEmail(e.target.value)}
+            />
           </div>
         </div>
 
@@ -145,27 +235,50 @@ function GeneralTab() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium text-foreground">ঢাকার ভিতরে (৳)</label>
-                <Input className="mt-1.5" defaultValue="0" />
+                <Input 
+                  className="mt-1.5" 
+                  value={insideDhaka}
+                  onChange={(e) => setInsideDhaka(e.target.value)}
+                />
               </div>
               <div>
                 <label className="text-sm font-medium text-foreground">ঢাকার বাইরে (৳)</label>
-                <Input className="mt-1.5" defaultValue="0" />
+                <Input 
+                  className="mt-1.5" 
+                  value={outsideDhaka}
+                  onChange={(e) => setOutsideDhaka(e.target.value)}
+                />
               </div>
             </div>
 
             <div>
               <label className="text-sm font-medium text-foreground">Free Delivery Above (৳)</label>
-              <Input className="mt-1.5" placeholder="Leave empty to disable" />
+              <Input 
+                className="mt-1.5" 
+                placeholder="Leave empty to disable"
+                value={freeDeliveryAbove}
+                onChange={(e) => setFreeDeliveryAbove(e.target.value)}
+              />
             </div>
 
             <div>
               <label className="text-sm font-medium text-foreground">Facebook Page URL</label>
-              <Input className="mt-1.5" placeholder="https://facebook.com/..." />
+              <Input 
+                className="mt-1.5" 
+                placeholder="https://facebook.com/..."
+                value={facebookUrl}
+                onChange={(e) => setFacebookUrl(e.target.value)}
+              />
             </div>
 
             <div>
               <label className="text-sm font-medium text-foreground">Instagram URL</label>
-              <Input className="mt-1.5" placeholder="https://instagram.com/..." />
+              <Input 
+                className="mt-1.5" 
+                placeholder="https://instagram.com/..."
+                value={instagramUrl}
+                onChange={(e) => setInstagramUrl(e.target.value)}
+              />
             </div>
           </div>
         </div>
@@ -180,7 +293,12 @@ function GeneralTab() {
         <p className="text-sm text-muted-foreground">Connect your own domain so customers can visit your store at your branded URL. Orders placed through your domain will appear in your Orders dashboard.</p>
         <div>
           <label className="text-sm font-medium text-foreground">Domain Name</label>
-          <Input className="mt-1.5" placeholder="store.yourdomain.com" />
+          <Input 
+            className="mt-1.5" 
+            placeholder="store.yourdomain.com"
+            value={customDomain}
+            onChange={(e) => setCustomDomain(e.target.value)}
+          />
         </div>
       </div>
 
@@ -192,8 +310,11 @@ function GeneralTab() {
         </div>
         <p className="text-sm text-muted-foreground">Share this link with your customers to visit your storefront.</p>
         <div className="flex items-center gap-2 bg-secondary/30 rounded-xl px-4 py-3">
-          <code className="text-sm text-foreground flex-1">https://sohozpro.com/store/quick-shopbd-fwzl</code>
-          <Button variant="ghost" size="icon" className="h-8 w-8"><Link className="h-4 w-4" /></Button>
+          <code className="text-sm text-foreground flex-1">{siteUrl || "https://yourstore.com"}</code>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => {
+            navigator.clipboard.writeText(siteUrl);
+            toast.success("কপি হয়েছে!");
+          }}><Link className="h-4 w-4" /></Button>
         </div>
         <p className="text-xs text-destructive flex items-center gap-1">
           <Info className="h-3.5 w-3.5" /> Your store is not published yet. Enable "Publish Website" below to make it live.
