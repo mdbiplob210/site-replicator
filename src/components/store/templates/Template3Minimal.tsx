@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { ShoppingBag, ArrowRight } from "lucide-react";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 
 const Template3Minimal = () => {
   const { data: products = [], isLoading } = usePublicProducts();
