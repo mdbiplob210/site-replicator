@@ -1,7 +1,7 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedAdminRoute } from "@/components/admin/ProtectedAdminRoute";
 import Landing from "./pages/Landing";
@@ -44,6 +44,7 @@ import StorePage from "./pages/store/StorePage";
 import ProductDetail from "./pages/store/ProductDetail";
 import CheckoutPage from "./pages/store/CheckoutPage";
 import OrderSuccess from "./pages/store/OrderSuccess";
+import { TrackingInitializer } from "./components/TrackingInitializer";
 
 const queryClient = new QueryClient();
 
@@ -59,6 +60,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <TrackingInitializer />
         <Routes>
           <Route path="/" element={<StorePage />} />
           <Route path="/product/:id" element={<ProductDetail />} />
@@ -74,7 +76,6 @@ const App = () => (
           <Route path="/admin/users" element={<ProtectedAdminRoute><AdminUsers /></ProtectedAdminRoute>} />
           <Route path="/admin/roles" element={<ProtectedAdminRoute><AdminRoles /></ProtectedAdminRoute>} />
           <Route path="/admin/settings" element={<ProtectedAdminRoute><AdminSettings /></ProtectedAdminRoute>} />
-          
           <Route path="/admin/products" element={<ProtectedAdminRoute><AdminProducts /></ProtectedAdminRoute>} />
           <Route path="/admin/website" element={<ProtectedAdminRoute><AdminMainTemplate /></ProtectedAdminRoute>} />
           <Route path="/admin/website/main-template" element={<ProtectedAdminRoute><AdminMainTemplate /></ProtectedAdminRoute>} />
@@ -93,7 +94,6 @@ const App = () => (
           <Route path="/admin/tasks" element={<ProtectedAdminRoute><AdminTasks /></ProtectedAdminRoute>} />
           <Route path="/admin/analytics" element={<ProtectedAdminRoute><AdminAnalytics /></ProtectedAdminRoute>} />
           <Route path="/admin/meta-ads" element={<ProtectedAdminRoute><AdminMetaAds /></ProtectedAdminRoute>} />
-          
           <Route path="/admin/orders/backfill-items" element={<ProtectedAdminRoute><AdminBackfillOrderItems /></ProtectedAdminRoute>} />
           <Route path="/admin/api-keys" element={<ProtectedAdminRoute><AdminApiKeys /></ProtectedAdminRoute>} />
           <Route path="/admin/courier" element={<ProtectedAdminRoute><AdminCourier /></ProtectedAdminRoute>} />

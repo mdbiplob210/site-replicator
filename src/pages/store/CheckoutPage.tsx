@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { ShoppingBag, ArrowLeft, Check, Package, CreditCard, MapPin, Phone, User } from "lucide-react";
+import { useTracking } from "@/hooks/useTracking";
 
 interface CheckoutItem {
   productId: string; name: string; price: number; qty: number; image: string | null;
@@ -25,11 +26,26 @@ const CheckoutPage = () => {
   const formInteracted = useRef(false);
   const abandonedSaved = useRef(false);
   const orderSubmitted = useRef(false);
+  const { trackInitiateCheckout, trackAddPaymentInfo, trackPurchase } = useTracking();
+  const initiateTracked = useRef(false);
 
   useEffect(() => {
     const raw = sessionStorage.getItem("checkout_item");
-    if (raw) setItem(JSON.parse(raw));
-  }, []);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      setItem(parsed);
+      // Track InitiateCheckout
+      if (!initiateTracked.current && parsed) {
+        initiateTracked.current = true;
+        trackInitiateCheckout({
+          value: parsed.price * parsed.qty,
+          contentName: parsed.name,
+          contentId: parsed.productCode || parsed.productId,
+          qty: parsed.qty,
+        });
+      }
+    }
+  }, [trackInitiateCheckout]);
 
   // Track abandoned form - save when user leaves page
   const saveAbandonedOrder = useCallback(async () => {
@@ -161,6 +177,8 @@ const CheckoutPage = () => {
     }
     setSubmitting(true);
     orderSubmitted.current = true;
+    // Track AddPaymentInfo
+    trackAddPaymentInfo({ value: item.price * item.qty });
     try {
       const orderNumber = `ORD-${Date.now().toString(36).toUpperCase()}`;
       const total = item.price * item.qty;
@@ -193,6 +211,24 @@ const CheckoutPage = () => {
           total_price: total,
         } as any);
       }
+
+      // Track Purchase event
+      trackPurchase({
+        value: total,
+        orderId: orderNumber,
+        contentName: item.name,
+        contentId: item.productCode || item.productId,
+        qty: item.qty,
+        customerPhone: form.phone,
+        customerName: form.name,
+      });
+
+      // Store order info for success page
+      sessionStorage.setItem("last_order", JSON.stringify({
+        orderNumber, total, name: item.name, qty: item.qty,
+        productCode: item.productCode || item.productId,
+        customerPhone: form.phone, customerName: form.name,
+      }));
 
       sessionStorage.removeItem("checkout_item");
       toast.success("অর্ডার সফল হয়েছে! 🎉");
