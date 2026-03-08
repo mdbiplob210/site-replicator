@@ -92,14 +92,7 @@ Deno.serve(async (req) => {
       .limit(1);
 
     if (phoneBlocked && phoneBlocked.length > 0) {
-      // Upsert: update existing incomplete order by phone if exists
-      const { data: existingIncomplete } = await supabase
-        .from("incomplete_orders")
-        .select("id")
-        .eq("customer_phone", customer_phone)
-        .eq("status", "processing")
-        .limit(1);
-
+      // Upsert: find existing incomplete order by IP+slug first, then phone
       const incompleteData = {
         customer_name, customer_phone, customer_address: customer_address || null,
         product_name: product_name || null, product_code: product_code || null,
@@ -111,8 +104,9 @@ Deno.serve(async (req) => {
         updated_at: new Date().toISOString(),
       };
 
-      if (existingIncomplete && existingIncomplete.length > 0) {
-        await supabase.from("incomplete_orders").update(incompleteData).eq("id", existingIncomplete[0].id);
+      const existingId = await findExistingIncomplete(supabase, clientIp, landing_page_slug, customer_phone);
+      if (existingId) {
+        await supabase.from("incomplete_orders").update(incompleteData).eq("id", existingId);
       } else {
         await supabase.from("incomplete_orders").insert(incompleteData);
       }
