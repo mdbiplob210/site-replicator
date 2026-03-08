@@ -8,7 +8,8 @@ import {
   PiggyBank, Receipt, Loader2, BarChart3, CreditCard, Undo2,
   Hand, ShoppingBag, Hash
 } from "lucide-react";
-import { useDashboardData } from "@/hooks/useDashboardData";
+import { useDashboardData, useSalesTrend } from "@/hooks/useDashboardData";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from "recharts";
 
 const timeFilters = ["Today", "Yesterday", "This Week", "This Month"] as const;
 
