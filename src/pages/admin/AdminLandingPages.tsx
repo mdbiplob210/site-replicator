@@ -41,6 +41,10 @@ const emptyPage: Partial<LandingPage> = {
   tiktok_pixel_id: "",
   gtm_id: "",
   custom_head_scripts: "",
+  exit_popup_enabled: false,
+  exit_popup_discount: 50,
+  exit_popup_timer: 300,
+  exit_popup_message: "এই ছাড়টি শুধু আপনার জন্য!",
 };
 
 export default function AdminLandingPages() {
@@ -147,6 +151,10 @@ export default function AdminLandingPages() {
       tiktok_pixel_id: page.tiktok_pixel_id || "",
       gtm_id: page.gtm_id || "",
       custom_head_scripts: page.custom_head_scripts || "",
+      exit_popup_enabled: page.exit_popup_enabled ?? false,
+      exit_popup_discount: page.exit_popup_discount ?? 50,
+      exit_popup_timer: page.exit_popup_timer ?? 300,
+      exit_popup_message: page.exit_popup_message || "এই ছাড়টি শুধু আপনার জন্য!",
     });
     setDialogOpen(true);
   };
@@ -490,6 +498,57 @@ export default function AdminLandingPages() {
                 </div>
                 <Switch checked={form.is_active ?? true} onCheckedChange={(v) => setForm({ ...form, is_active: v })} />
               </div>
+
+              {/* Exit Intent Popup Settings */}
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-base">🎯 Exit Intent Popup</CardTitle>
+                    <Switch
+                      checked={form.exit_popup_enabled ?? false}
+                      onCheckedChange={(v) => setForm({ ...form, exit_popup_enabled: v })}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">ভিজিটর পেজ ছেড়ে যাওয়ার সময় ডিসকাউন্ট অফার দেখাবে</p>
+                </CardHeader>
+                {(form.exit_popup_enabled) && (
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>ডিসকাউন্ট পরিমাণ (৳)</Label>
+                        <Input
+                          type="number"
+                          min={0}
+                          value={form.exit_popup_discount ?? 50}
+                          onChange={(e) => setForm({ ...form, exit_popup_discount: Number(e.target.value) })}
+                          placeholder="50"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>টাইমার (সেকেন্ড)</Label>
+                        <Input
+                          type="number"
+                          min={30}
+                          max={3600}
+                          value={form.exit_popup_timer ?? 300}
+                          onChange={(e) => setForm({ ...form, exit_popup_timer: Number(e.target.value) })}
+                          placeholder="300"
+                        />
+                        <p className="text-[11px] text-muted-foreground">{Math.floor((form.exit_popup_timer || 300) / 60)} মিনিট {(form.exit_popup_timer || 300) % 60} সেকেন্ড</p>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>পপআপ মেসেজ</Label>
+                      <Input
+                        value={form.exit_popup_message || ""}
+                        onChange={(e) => setForm({ ...form, exit_popup_message: e.target.value })}
+                        placeholder="এই ছাড়টি শুধু আপনার জন্য!"
+                      />
+                    </div>
+                  </CardContent>
+                )}
+              </Card>
+
               {editingPage && (
                 <div className="p-4 border rounded-lg space-y-2">
                   <Label>পেজ URLs</Label>
