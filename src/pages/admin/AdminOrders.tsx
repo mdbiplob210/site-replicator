@@ -1600,7 +1600,7 @@ const AdminOrders = () => {
           {statusTabs.map((tab) => (
             <button
               key={tab.label}
-              onClick={() => setActiveTab(tab.label)}
+              onClick={() => { setActiveTab(tab.label); setCancelReasonFilter("all"); }}
               className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium whitespace-nowrap transition-all duration-200 ${
                 activeTab === tab.label
                   ? `${tab.color} text-white shadow-lg`
