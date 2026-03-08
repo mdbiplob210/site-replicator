@@ -1599,7 +1599,17 @@ const AdminOrders = () => {
                 <SlidersHorizontal className="h-4 w-4 text-primary" />
                 <span className="font-semibold">ফিল্টারিং</span>
                 {activeFilterCount > 0 && (
-                  <Badge className="h-5 min-w-[20px] px-1.5 text-[10px] font-bold">{activeFilterCount}</Badge>
+                  <Badge className="h-5 min-w-[20px] px-1.5 text-[10px] font-bold">{activeFilterCount} ফিল্টার</Badge>
+                )}
+                {activeFilterCount > 0 && (
+                  <Badge variant="secondary" className="h-5 px-1.5 text-[10px] font-bold">
+                    {filteredOrders.length}/{orders.length} অর্ডার
+                  </Badge>
+                )}
+                {activeFilterCount > 0 && filteredOrders.length > 0 && (
+                  <Badge variant="outline" className="h-5 px-1.5 text-[10px] font-medium">
+                    ৳{filteredOrders.reduce((s, o) => s + Number(o.total_amount), 0).toLocaleString()}
+                  </Badge>
                 )}
               </div>
               <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform duration-200", filtersOpen && "rotate-180")} />
