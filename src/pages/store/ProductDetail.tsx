@@ -74,14 +74,15 @@ const ProductDetail = () => {
   };
 
   const handleExitIntent = () => {
-    if (discountUsed) return;
+    if (appliedDiscount >= 50) return; // Max ৳50 already applied
     setCheckoutOpen(false);
     setShowDiscountBanner(true);
   };
 
   const handleAcceptDiscount = () => {
-    setDiscountUsed(true);
-    setAppliedDiscount(50);
+    const newDiscount = Math.min(appliedDiscount + 50, 50); // Cap at 50
+    setAppliedDiscount(newDiscount);
+    localStorage.setItem("exit_discount_amount", String(newDiscount));
     setShowDiscountBanner(false);
     setCheckoutOpen(true);
   };
