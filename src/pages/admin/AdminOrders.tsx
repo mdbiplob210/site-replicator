@@ -1741,7 +1741,7 @@ const AdminOrders = () => {
                   <TableHead className="font-bold text-xs">Customer</TableHead>
                   <TableHead className="font-bold text-xs">Phone</TableHead>
                   <TableHead className="font-bold text-xs">Amount</TableHead>
-                  <TableHead className="font-bold text-xs">Source</TableHead>
+                  <TableHead className="font-bold text-xs">Product</TableHead>
                   <TableHead className="font-bold text-xs">Status</TableHead>
                   <TableHead className="font-bold text-xs">Date</TableHead>
                   <TableHead className="font-bold text-xs text-right">Actions</TableHead>
@@ -1785,13 +1785,19 @@ const AdminOrders = () => {
                     </TableCell>
                     <TableCell className="font-semibold text-sm">৳{Number(order.total_amount).toLocaleString()}</TableCell>
                     <TableCell>
-                      {order.source ? (
-                        <Badge variant="outline" className="text-xs gap-1">
-                          <Globe className="h-3 w-3" />
-                          {order.source}
-                        </Badge>
+                      {orderItemsByOrderId[order.id]?.length > 0 ? (
+                        <div className="space-y-0.5">
+                          {orderItemsByOrderId[order.id].slice(0, 2).map((oi: any, idx: number) => (
+                            <p key={idx} className="text-xs text-foreground truncate max-w-[160px]">
+                              {oi.product_name} {oi.product_code ? <span className="text-muted-foreground">({oi.product_code})</span> : ""}
+                            </p>
+                          ))}
+                          {orderItemsByOrderId[order.id].length > 2 && (
+                            <p className="text-[10px] text-muted-foreground">+{orderItemsByOrderId[order.id].length - 2} আরো</p>
+                          )}
+                        </div>
                       ) : (
-                        <span className="text-xs text-muted-foreground">প্যানেল</span>
+                        <span className="text-xs text-muted-foreground">—</span>
                       )}
                     </TableCell>
                     <TableCell>
