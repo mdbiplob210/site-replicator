@@ -24,6 +24,8 @@ interface PopupCheckoutProps {
   item: CheckoutItem | null;
   open: boolean;
   onClose: () => void;
+  discount?: number;
+  onExitIntent?: () => void;
 }
 
 export function PopupCheckout({ item, open, onClose }: PopupCheckoutProps) {
