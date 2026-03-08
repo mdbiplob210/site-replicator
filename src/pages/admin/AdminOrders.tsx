@@ -2151,6 +2151,18 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
     }
   }, [orderRef]);
 
+  // Populate courier when existing courier order loads
+  useMemo(() => {
+    if (existingCourierOrder) {
+      setEditCourierId(existingCourierOrder.courier_provider_id || null);
+    } else {
+      setEditCourierId(null);
+    }
+    setEditCourierCityId(null);
+    setEditCourierZoneId(null);
+    setEditCourierAreaId(null);
+  }, [existingCourierOrder?.id, orderRef]);
+
   // Auto-detect location from address
   const detectedLoc = useMemo(() => {
     const addr = editAddress.toLowerCase();
