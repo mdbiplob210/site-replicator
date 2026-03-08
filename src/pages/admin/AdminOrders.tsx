@@ -159,6 +159,10 @@ const AdminOrders = () => {
   const [holdOrderId, setHoldOrderId] = useState<string | null>(null);
   const [holdUntilDate, setHoldUntilDate] = useState<Date | undefined>();
 
+  // Hand delivery confirmation dialog
+  const [handDeliveryDialogOpen, setHandDeliveryDialogOpen] = useState(false);
+  const [handDeliveryOrderId, setHandDeliveryOrderId] = useState<string | null>(null);
+
   // Modal states for action buttons
   const [orderItemsModalOpen, setOrderItemsModalOpen] = useState(false);
   const [orderSourcesModalOpen, setOrderSourcesModalOpen] = useState(false);
