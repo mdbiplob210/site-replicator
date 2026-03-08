@@ -2978,8 +2978,10 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                     </SelectContent>
                   </Select>
                 </div>
+                </div>
               </div>
-            )}
+              )}
+            </div>
 
             <div className="space-y-3">
               <Label className="text-xs font-semibold">প্রোডাক্ট যোগ করুন</Label>
