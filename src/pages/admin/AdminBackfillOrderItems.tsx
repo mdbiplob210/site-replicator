@@ -123,7 +123,7 @@ export default function AdminBackfillOrderItems() {
         unit_price: item.unit_price,
         total_price: item.total_price,
       }));
-      const { error } = await supabase.from("order_items" as any).insert(rows as any);
+      const { error } = await supabase.from("order_items").insert(rows);
       if (error) throw error;
     },
     onSuccess: () => {
