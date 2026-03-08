@@ -2127,6 +2127,7 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
         queryClient.invalidateQueries({ queryKey: ["order-activity-logs", orderId] });
         toast.success("অর্ডার আপডেট হয়েছে!");
         onClose();
+      }
     } catch (e: any) {
       toast.error("আপডেট ব্যর্থ: " + e.message);
     } finally {
