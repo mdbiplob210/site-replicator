@@ -11,6 +11,32 @@ function getDurationHours(duration: string): number {
   return map[duration] || 24;
 }
 
+// Find existing incomplete order by IP+slug first, then by phone — prevents duplicates when phone changes
+async function findExistingIncomplete(supabase: any, clientIp: string, slug: string | null, phone: string): Promise<string | null> {
+  // 1. Try matching by IP + slug (same session, even if phone changed)
+  if (clientIp && clientIp !== "unknown") {
+    const { data: byIp } = await supabase
+      .from("incomplete_orders")
+      .select("id")
+      .eq("client_ip", clientIp)
+      .eq("status", "processing")
+      .order("updated_at", { ascending: false })
+      .limit(1);
+    if (byIp && byIp.length > 0) return byIp[0].id;
+  }
+  // 2. Fallback: match by phone
+  if (phone) {
+    const { data: byPhone } = await supabase
+      .from("incomplete_orders")
+      .select("id")
+      .eq("customer_phone", phone)
+      .eq("status", "processing")
+      .limit(1);
+    if (byPhone && byPhone.length > 0) return byPhone[0].id;
+  }
+  return null;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
