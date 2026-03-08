@@ -2656,16 +2656,57 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
   const addProductToDetailOrder = async (product: any) => {
     if (!orderId) return;
     try {
-      const { error } = await supabase.from("order_items").insert({
-        order_id: orderId, product_id: product.id, product_name: product.name,
-        product_code: product.product_code, quantity: 1, unit_price: Number(product.selling_price), total_price: Number(product.selling_price),
-      });
-      if (error) throw error;
-      await logActivity("field_edited", "order_items", undefined, undefined, `প্রোডাক্ট যোগ করা হয়েছে: ${product.name}`);
+      // Check if product already exists in order items — merge by incrementing qty
+      const existingItem = items.find((i: any) => i.product_id === product.id || (i.product_name === product.name && i.product_code === product.product_code));
+      if (existingItem) {
+        const newQty = (existingItem.quantity || 1) + 1;
+        const newTotal = newQty * Number(existingItem.unit_price);
+        const { error } = await supabase.from("order_items").update({ quantity: newQty, total_price: newTotal }).eq("id", existingItem.id);
+        if (error) throw error;
+        await logActivity("field_edited", "order_items", `${existingItem.quantity}`, `${newQty}`, `${product.name} কোয়ান্টিটি বাড়ানো হয়েছে`);
+      } else {
+        const { error } = await supabase.from("order_items").insert({
+          order_id: orderId, product_id: product.id, product_name: product.name,
+          product_code: product.product_code, quantity: 1, unit_price: Number(product.selling_price), total_price: Number(product.selling_price),
+        });
+        if (error) throw error;
+        await logActivity("field_edited", "order_items", undefined, undefined, `প্রোডাক্ট যোগ করা হয়েছে: ${product.name}`);
+      }
       queryClient.invalidateQueries({ queryKey: ["order-items", orderId] });
       queryClient.invalidateQueries({ queryKey: ["all-order-items-filter"] });
       setDetailProductSearch("");
-      toast.success("প্রোডাক্ট যোগ হয়েছে!");
+      setDetailProductFocused(false);
+      toast.success(existingItem ? "কোয়ান্টিটি বাড়ানো হয়েছে!" : "প্রোডাক্ট যোগ হয়েছে!");
+    } catch (e: any) { toast.error(e.message); }
+  };
+
+  const updateDetailItemQty = async (item: any, newQty: number) => {
+    if (!orderId) return;
+    try {
+      if (newQty <= 0) {
+        const { error } = await supabase.from("order_items").delete().eq("id", item.id);
+        if (error) throw error;
+        await logActivity("field_edited", "order_items", undefined, undefined, `${item.product_name} রিমুভ করা হয়েছে`);
+        toast.success("আইটেম রিমুভ হয়েছে!");
+      } else {
+        const newTotal = newQty * Number(item.unit_price);
+        const { error } = await supabase.from("order_items").update({ quantity: newQty, total_price: newTotal }).eq("id", item.id);
+        if (error) throw error;
+      }
+      queryClient.invalidateQueries({ queryKey: ["order-items", orderId] });
+      queryClient.invalidateQueries({ queryKey: ["all-order-items-filter"] });
+    } catch (e: any) { toast.error(e.message); }
+  };
+
+  const removeDetailItem = async (item: any) => {
+    if (!orderId) return;
+    try {
+      const { error } = await supabase.from("order_items").delete().eq("id", item.id);
+      if (error) throw error;
+      await logActivity("field_edited", "order_items", undefined, undefined, `${item.product_name} রিমুভ করা হয়েছে`);
+      queryClient.invalidateQueries({ queryKey: ["order-items", orderId] });
+      queryClient.invalidateQueries({ queryKey: ["all-order-items-filter"] });
+      toast.success("আইটেম রিমুভ হয়েছে!");
     } catch (e: any) { toast.error(e.message); }
   };
 
