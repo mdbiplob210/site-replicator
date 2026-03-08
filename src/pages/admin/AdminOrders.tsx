@@ -153,6 +153,7 @@ const AdminOrders = () => {
   const [inlineNoteOrderId, setInlineNoteOrderId] = useState<string | null>(null);
   const [inlineNoteText, setInlineNoteText] = useState("");
   const [selectedOrderSource, setSelectedOrderSource] = useState("");
+  const [newOrderStatus, setNewOrderStatus] = useState<string>("processing");
   const [newSourceName, setNewSourceName] = useState("");
   const [newSourceIcon, setNewSourceIcon] = useState("📦");
   
