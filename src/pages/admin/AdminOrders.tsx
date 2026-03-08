@@ -146,6 +146,7 @@ const AdminOrders = () => {
   const [newOrderOpen, setNewOrderOpen] = useState(false);
   const [detailOrderId, setDetailOrderId] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [selectedOrderIds, setSelectedOrderIds] = useState<Set<string>>(new Set());
   const [productSearchFocused, setProductSearchFocused] = useState(false);
   
   // Cancel reason dialog
