@@ -16,6 +16,7 @@ import { toast } from "sonner";
 const ALL_PERMISSIONS = [
   { value: "orders:create", label: "অর্ডার তৈরি" },
   { value: "orders:read", label: "অর্ডার দেখা" },
+  { value: "orders:update", label: "অর্ডার আপডেট" },
   { value: "incomplete_orders:create", label: "ইনকমপ্লিট অর্ডার তৈরি" },
   { value: "incomplete_orders:read", label: "ইনকমপ্লিট অর্ডার দেখা" },
 ];
@@ -162,6 +163,16 @@ function ApiDocumentation({ apiBaseUrl }: { apiBaseUrl: string }) {
   Content-Type: application/json`}</pre>
           </div>
 
+          <div className="bg-muted/50 p-4 rounded-lg space-y-2">
+            <h3 className="font-bold text-lg">🛡️ ফিচার সমূহ</h3>
+            <ul className="text-sm space-y-1 list-disc list-inside">
+              <li><strong>ডুপ্লিকেট প্রটেকশন:</strong> একই ফোন/IP থেকে ১-৪৮ ঘণ্টার মধ্যে রিপিট অর্ডার অটো-ব্লক</li>
+              <li><strong>অটো প্রোডাক্ট তৈরি:</strong> নতুন প্রোডাক্ট কোড/নাম পেলে অটোমেটিক প্রোডাক্ট তৈরি হয় (ছবি ও প্রাইস সহ)</li>
+              <li><strong>ডিভাইস ট্র্যাকিং:</strong> IP, Browser, OS, Device টাইপ অটো ডিটেক্ট</li>
+              <li><strong>অর্ডার স্ট্যাটাস আপডেট:</strong> PATCH মেথডে স্ট্যাটাস পরিবর্তন</li>
+            </ul>
+          </div>
+
           <div className="bg-muted/50 p-4 rounded-lg space-y-3">
             <h3 className="font-bold text-lg">📦 POST — অর্ডার তৈরি করুন</h3>
             <p className="text-sm">Permission: <code className="bg-background px-1 rounded">orders:create</code></p>
@@ -179,16 +190,28 @@ X-API-Key: your_api_key_here
   "discount": 0,
   "total_amount": 560,
   "notes": "ফ্রাজাইল পণ্য",
+  "source": "my-website",
+  "duplicate_window_hours": 24,
   "items": [
     {
       "product_name": "স্মার্ট ওয়াচ",
       "product_code": "SW-001",
       "quantity": 1,
       "unit_price": 500,
-      "total_price": 500
+      "total_price": 500,
+      "image_url": "https://oldsite.com/images/smart-watch.jpg",
+      "original_price": 800,
+      "purchase_price": 300
     }
   ]
 }`}</pre>
+            <div className="bg-accent/50 border border-accent p-3 rounded text-xs space-y-1">
+              <p className="font-semibold text-accent-foreground">💡 অটো প্রোডাক্ট তৈরি:</p>
+              <p>• <code>product_code</code> বা <code>product_name</code> দিয়ে প্রোডাক্ট খোঁজা হয়</p>
+              <p>• না পেলে অটোমেটিক নতুন প্রোডাক্ট তৈরি হয় (ছবি, প্রাইস সহ)</p>
+              <p>• <code>image_url</code> দিলে প্রোডাক্টের মেইন ইমেজ হিসেবে সেভ হয়</p>
+              <p>• <code>duplicate_window_hours</code> দিয়ে ডুপ্লিকেট চেক উইন্ডো সেট করুন (ডিফল্ট: ২৪ ঘণ্টা)</p>
+            </div>
           </div>
 
           <div className="bg-muted/50 p-4 rounded-lg space-y-3">
@@ -215,32 +238,89 @@ X-API-Key: your_api_key_here
           </div>
 
           <div className="bg-muted/50 p-4 rounded-lg space-y-3">
-            <h3 className="font-bold text-lg">📋 GET — অর্ডার লিস্ট দেখুন</h3>
-            <pre className="bg-background p-3 rounded border text-xs overflow-x-auto">{`GET ${apiBaseUrl}?type=orders&limit=50&status=processing
+            <h3 className="font-bold text-lg">🔄 PATCH — অর্ডার স্ট্যাটাস আপডেট</h3>
+            <p className="text-sm">Permission: <code className="bg-background px-1 rounded">orders:update</code></p>
+            <pre className="bg-background p-3 rounded border text-xs overflow-x-auto">{`PATCH ${apiBaseUrl}
+Content-Type: application/json
 X-API-Key: your_api_key_here
 
+{
+  "order_id": "uuid-here",
+  "status": "confirmed",
+  "notes": "ফোনে কনফার্ম করা হয়েছে",
+  "customer_address": "আপডেট ঠিকানা"
+}`}</pre>
+            <p className="text-xs text-muted-foreground">সম্ভাব্য স্ট্যাটাস: <code>processing</code>, <code>confirmed</code>, <code>cancelled</code>, <code>on_hold</code>, <code>ship_later</code>, <code>in_courier</code>, <code>delivered</code>, <code>returned</code></p>
+          </div>
+
+          <div className="bg-muted/50 p-4 rounded-lg space-y-3">
+            <h3 className="font-bold text-lg">📋 GET — অর্ডার লিস্ট দেখুন</h3>
+            <p className="text-sm">Permission: <code className="bg-background px-1 rounded">orders:read</code> / <code className="bg-background px-1 rounded">incomplete_orders:read</code></p>
+            <pre className="bg-background p-3 rounded border text-xs overflow-x-auto">{`GET ${apiBaseUrl}?type=orders&limit=50&offset=0&status=processing
+GET ${apiBaseUrl}?type=orders&since=2024-01-01T00:00:00Z&phone=01700000000
 GET ${apiBaseUrl}?type=incomplete_orders&limit=50
 X-API-Key: your_api_key_here`}</pre>
+            <p className="text-xs text-muted-foreground">Query প্যারামিটার: <code>type</code>, <code>limit</code> (max 500), <code>offset</code>, <code>status</code>, <code>since</code> (ISO date), <code>phone</code></p>
           </div>
 
           <div className="bg-muted/50 p-4 rounded-lg space-y-3">
             <h3 className="font-bold text-lg">✅ সফল রেসপন্স</h3>
-            <pre className="bg-background p-3 rounded border text-xs overflow-x-auto">{`{
+            <pre className="bg-background p-3 rounded border text-xs overflow-x-auto">{`// POST সফল (201)
+{
   "success": true,
   "data": { ... },
   "order_number": "ORD-00042",
-  "message": "Order created successfully"
+  "order_id": "uuid",
+  "message": "Order created successfully",
+  "tracking": {
+    "ip": "103.x.x.x",
+    "device": "Mobile | Android 13 | Chrome",
+    "source": "my-website"
+  }
+}
+
+// GET সফল (200)
+{
+  "success": true,
+  "data": [...],
+  "total": 150,
+  "returned": 50,
+  "limit": 50,
+  "offset": 0
+}`}</pre>
+          </div>
+
+          <div className="bg-muted/50 p-4 rounded-lg space-y-3">
+            <h3 className="font-bold text-lg">🚫 ডুপ্লিকেট ব্লক রেসপন্স (429)</h3>
+            <pre className="bg-background p-3 rounded border text-xs overflow-x-auto">{`{
+  "success": false,
+  "blocked": true,
+  "duplicate": true,
+  "reason": "একই ফোন থেকে 24ঘণ্টার মধ্যে আগেই অর্ডার হয়েছে",
+  "incomplete_order_id": "uuid",
+  "message": "ডুপ্লিকেট অর্ডার সনাক্ত হয়েছে।",
+  "tracking": { "ip": "103.x.x.x", "device": "..." }
 }`}</pre>
           </div>
 
           <div className="bg-muted/50 p-4 rounded-lg space-y-3">
             <h3 className="font-bold text-lg">❌ Error রেসপন্স</h3>
-            <pre className="bg-background p-3 rounded border text-xs overflow-x-auto">{`// 401 - Missing API Key
+            <pre className="bg-background p-3 rounded border text-xs overflow-x-auto">{`// 400 - Missing fields
+{ "error": "customer_name is required" }
+{ "error": "order_id and status are required" }
+
+// 401 - Missing API Key
 { "error": "Missing X-API-Key header" }
 
 // 403 - Invalid key or no permission
 { "error": "Invalid or inactive API key" }
 { "error": "Permission denied: orders:create" }
+
+// 429 - Duplicate order blocked
+{ "blocked": true, "duplicate": true, ... }
+
+// 405 - Wrong method
+{ "error": "Method not allowed. Use GET, POST, or PATCH." }
 
 // 500 - Server error
 { "error": "Internal error" }`}</pre>
@@ -248,12 +328,11 @@ X-API-Key: your_api_key_here`}</pre>
 
           <div className="bg-muted/50 p-4 rounded-lg space-y-3">
             <h3 className="font-bold text-lg">🔧 Laravel উদাহরণ</h3>
-            <pre className="bg-background p-3 rounded border text-xs overflow-x-auto">{`// Laravel Controller Example
-use Illuminate\\Support\\Facades\\Http;
+            <pre className="bg-background p-3 rounded border text-xs overflow-x-auto">{`use Illuminate\\Support\\Facades\\Http;
 
+// অর্ডার তৈরি (প্রোডাক্ট ছবি সহ)
 $response = Http::withHeaders([
     'X-API-Key' => env('ORDER_PANEL_API_KEY'),
-    'Content-Type' => 'application/json',
 ])->post('${apiBaseUrl}', [
     'type' => 'order',
     'customer_name' => $request->name,
@@ -261,6 +340,7 @@ $response = Http::withHeaders([
     'customer_address' => $request->address,
     'total_amount' => $request->total,
     'delivery_charge' => 60,
+    'source' => 'laravel-site',
     'items' => [
         [
             'product_name' => $product->name,
@@ -268,19 +348,30 @@ $response = Http::withHeaders([
             'quantity' => $request->qty,
             'unit_price' => $product->price,
             'total_price' => $product->price * $request->qty,
+            'image_url' => $product->image_url,
+            'original_price' => $product->regular_price,
+            'purchase_price' => $product->cost_price,
         ]
     ]
 ]);
 
 if ($response->successful()) {
     $orderNumber = $response->json('order_number');
-    // Success!
-}`}</pre>
+}
+
+// স্ট্যাটাস আপডেট
+Http::withHeaders([
+    'X-API-Key' => env('ORDER_PANEL_API_KEY'),
+])->patch('${apiBaseUrl}', [
+    'order_id' => $orderId,
+    'status' => 'confirmed',
+]);`}</pre>
           </div>
 
           <div className="bg-muted/50 p-4 rounded-lg space-y-3">
             <h3 className="font-bold text-lg">🌐 JavaScript/Fetch উদাহরণ</h3>
-            <pre className="bg-background p-3 rounded border text-xs overflow-x-auto">{`const response = await fetch('${apiBaseUrl}', {
+            <pre className="bg-background p-3 rounded border text-xs overflow-x-auto">{`// অর্ডার তৈরি
+const response = await fetch('${apiBaseUrl}', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -299,12 +390,18 @@ if ($response->successful()) {
       quantity: 1,
       unit_price: 500,
       total_price: 500,
+      image_url: 'https://example.com/product.jpg',
     }]
   })
 });
-
 const result = await response.json();
-console.log(result.order_number);`}</pre>
+
+// ডুপ্লিকেট চেক
+if (result.blocked) {
+  console.log('ডুপ্লিকেট:', result.reason);
+} else {
+  console.log('অর্ডার নম্বর:', result.order_number);
+}`}</pre>
           </div>
 
           <div className="bg-muted/50 p-4 rounded-lg space-y-3">
@@ -322,11 +419,25 @@ curl_setopt_array($ch, [
         'customer_name' => 'রহিম',
         'customer_phone' => '01700000000',
         'total_amount' => 560,
-        'items' => [['product_name' => 'Item', 'quantity' => 1, 'unit_price' => 500, 'total_price' => 500]]
+        'delivery_charge' => 60,
+        'items' => [[
+            'product_name' => 'Item',
+            'product_code' => 'ITM-01',
+            'quantity' => 1,
+            'unit_price' => 500,
+            'total_price' => 500,
+            'image_url' => 'https://example.com/item.jpg',
+        ]]
     ]),
 ]);
 $response = curl_exec($ch);
-$data = json_decode($response, true);`}</pre>
+$data = json_decode($response, true);
+
+if ($data['blocked'] ?? false) {
+    echo "ডুপ্লিকেট: " . $data['reason'];
+} else {
+    echo "অর্ডার: " . $data['order_number'];
+}`}</pre>
           </div>
 
         </CardContent>
