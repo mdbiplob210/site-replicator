@@ -103,7 +103,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { data: publicUrl } = supabase.storage.from('screenshots').getPublicUrl(fileName);
+    const { data: signedUrlData, error: signedError } = await supabase.storage.from('screenshots').createSignedUrl(fileName, 86400); // 24h
+    const imageUrl = signedUrlData?.signedUrl || '';
 
     // Save metadata
     const { data: record, error: dbError } = await supabase
