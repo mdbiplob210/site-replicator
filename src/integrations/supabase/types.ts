@@ -905,6 +905,7 @@ export type Database = {
           id: string
           notes: string | null
           order_number: string
+          payment_status: string
           product_cost: number
           source: string | null
           status: Database["public"]["Enums"]["order_status"]
@@ -927,6 +928,7 @@ export type Database = {
           id?: string
           notes?: string | null
           order_number: string
+          payment_status?: string
           product_cost?: number
           source?: string | null
           status?: Database["public"]["Enums"]["order_status"]
@@ -949,6 +951,7 @@ export type Database = {
           id?: string
           notes?: string | null
           order_number?: string
+          payment_status?: string
           product_cost?: number
           source?: string | null
           status?: Database["public"]["Enums"]["order_status"]
