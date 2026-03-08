@@ -21,6 +21,9 @@ const ProductDetail = () => {
   // Popup checkout
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [checkoutItem, setCheckoutItem] = useState<any>(null);
+  const [appliedDiscount, setAppliedDiscount] = useState(0);
+  const [showDiscountBanner, setShowDiscountBanner] = useState(false);
+  const [discountUsed, setDiscountUsed] = useState(false);
 
   useEffect(() => {
     if (product && !viewTracked[0]) {
