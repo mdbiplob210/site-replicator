@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { startOfDay, endOfDay, startOfWeek, startOfMonth, subDays } from "date-fns";
+import { startOfDay, endOfDay, startOfWeek, startOfMonth, subDays, format, eachDayOfInterval, parseISO } from "date-fns";
 
 type TimeFilter = "Today" | "Yesterday" | "This Week" | "This Month";
 
