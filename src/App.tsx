@@ -60,7 +60,8 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <TrackingRoutes />
+        <TrackingInitializer />
+        <Routes>
           <Route path="/" element={<StorePage />} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/checkout" element={<CheckoutPage />} />
@@ -75,7 +76,6 @@ const App = () => (
           <Route path="/admin/users" element={<ProtectedAdminRoute><AdminUsers /></ProtectedAdminRoute>} />
           <Route path="/admin/roles" element={<ProtectedAdminRoute><AdminRoles /></ProtectedAdminRoute>} />
           <Route path="/admin/settings" element={<ProtectedAdminRoute><AdminSettings /></ProtectedAdminRoute>} />
-          
           <Route path="/admin/products" element={<ProtectedAdminRoute><AdminProducts /></ProtectedAdminRoute>} />
           <Route path="/admin/website" element={<ProtectedAdminRoute><AdminMainTemplate /></ProtectedAdminRoute>} />
           <Route path="/admin/website/main-template" element={<ProtectedAdminRoute><AdminMainTemplate /></ProtectedAdminRoute>} />
@@ -94,7 +94,6 @@ const App = () => (
           <Route path="/admin/tasks" element={<ProtectedAdminRoute><AdminTasks /></ProtectedAdminRoute>} />
           <Route path="/admin/analytics" element={<ProtectedAdminRoute><AdminAnalytics /></ProtectedAdminRoute>} />
           <Route path="/admin/meta-ads" element={<ProtectedAdminRoute><AdminMetaAds /></ProtectedAdminRoute>} />
-          
           <Route path="/admin/orders/backfill-items" element={<ProtectedAdminRoute><AdminBackfillOrderItems /></ProtectedAdminRoute>} />
           <Route path="/admin/api-keys" element={<ProtectedAdminRoute><AdminApiKeys /></ProtectedAdminRoute>} />
           <Route path="/admin/courier" element={<ProtectedAdminRoute><AdminCourier /></ProtectedAdminRoute>} />
@@ -106,6 +105,7 @@ const App = () => (
           <Route path="/lp/:slug" element={<LandingPageView />} />
           <Route path="/lp/:slug/checkout" element={<LandingPageCheckout />} />
           <Route path="*" element={<NotFound />} />
+        </Routes>
       </BrowserRouter>
     </AuthProvider>
   </QueryClientProvider>
