@@ -196,7 +196,7 @@ const CheckoutPage = () => {
 
       sessionStorage.removeItem("checkout_item");
       toast.success("অর্ডার সফল হয়েছে! 🎉");
-      navigate("/store/order-success");
+      navigate("/order-success");
     } catch (err: any) {
       orderSubmitted.current = false;
       toast.error(err.message);
