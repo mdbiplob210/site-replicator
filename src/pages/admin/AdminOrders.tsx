@@ -196,6 +196,9 @@ const AdminOrders = () => {
   const [filterCourierStatus, setFilterCourierStatus] = useState("all");
   const [filterStatus, setFilterStatus] = useState("");
   const [filterProductSearch, setFilterProductSearch] = useState("");
+  const [filterProductIds, setFilterProductIds] = useState<string[]>([]);
+  const [filterProductInput, setFilterProductInput] = useState("");
+  const [filterProductFocused, setFilterProductFocused] = useState(false);
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterCourierCharged, setFilterCourierCharged] = useState("all");
   const [filterNotes, setFilterNotes] = useState("");
