@@ -138,6 +138,17 @@ const AdminOrders = () => {
   const [detailOrderId, setDetailOrderId] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [productSearchFocused, setProductSearchFocused] = useState(false);
+  
+  // Cancel reason dialog
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [cancelOrderId, setCancelOrderId] = useState<string | null>(null);
+  const [cancelReason, setCancelReason] = useState("");
+  const [cancelCustomReason, setCancelCustomReason] = useState("");
+  
+  // Hold date dialog
+  const [holdDialogOpen, setHoldDialogOpen] = useState(false);
+  const [holdOrderId, setHoldOrderId] = useState<string | null>(null);
+  const [holdUntilDate, setHoldUntilDate] = useState<Date | undefined>();
 
   // Modal states for action buttons
   const [orderItemsModalOpen, setOrderItemsModalOpen] = useState(false);
