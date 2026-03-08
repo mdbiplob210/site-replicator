@@ -21,7 +21,7 @@ export function useProduct(id: string) {
     queryKey: ["product", id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("products")
+        .from("products_public" as any)
         .select("*, categories(name)")
         .eq("id", id)
         .single();
