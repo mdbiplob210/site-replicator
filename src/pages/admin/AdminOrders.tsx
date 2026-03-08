@@ -1484,21 +1484,33 @@ const AdminOrders = () => {
                     </Select>
                   </div>
                   {/* Order Status */}
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold flex items-center gap-1"><Activity className="h-3 w-3" /> Order Status</Label>
-                    <Select value={newOrderStatus} onValueChange={setNewOrderStatus}>
-                      <SelectTrigger className="rounded-xl h-9 text-sm"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {Constants.public.Enums.order_status.map((s) => (
-                          <SelectItem key={s} value={s}>
-                            <div className="flex items-center gap-2">
-                              <div className={cn("h-2.5 w-2.5 rounded-full", getStatusColor(s))} />
-                              {getStatusLabel(s)}
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                  {/* Order Status */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold flex items-center gap-1.5"><Activity className="h-4 w-4 text-primary" /> অর্ডার স্ট্যাটাস</Label>
+                    <div className="grid grid-cols-4 gap-2">
+                      {[
+                        { value: "processing", label: "New Order", color: "bg-blue-500", icon: Clock },
+                        { value: "confirmed", label: "Confirmed", color: "bg-emerald-600", icon: CheckCircle2 },
+                        { value: "on_hold", label: "Hold", color: "bg-yellow-500", icon: PauseCircle },
+                        { value: "hand_delivery", label: "Hand Delivery", color: "bg-cyan-500", icon: Hand },
+                        { value: "cancelled", label: "Cancelled", color: "bg-red-500", icon: XCircle },
+                      ].map((s) => (
+                        <button
+                          key={s.value}
+                          type="button"
+                          onClick={() => setNewOrderStatus(s.value)}
+                          className={cn(
+                            "flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold border-2 transition-all duration-200",
+                            newOrderStatus === s.value
+                              ? `${s.color} text-white border-transparent shadow-lg scale-[1.02]`
+                              : "bg-secondary/30 text-foreground border-border/40 hover:border-primary/30 hover:bg-secondary/50"
+                          )}
+                        >
+                          <s.icon className="h-3.5 w-3.5" />
+                          {s.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                   <Button className="w-full rounded-xl shadow-sm" onClick={handleCreateOrder} disabled={createOrder.isPending || !customerName.trim()}>
                     {createOrder.isPending ? <><Loader2 className="h-4 w-4 animate-spin" /> Creating...</> : <><Plus className="h-4 w-4" /> Create Order</>}
