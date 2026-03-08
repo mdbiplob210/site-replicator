@@ -1457,22 +1457,37 @@ const AdminOrders = () => {
                     )}
                   </div>
 
-                  <div className="grid grid-cols-4 gap-3">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold">Product Cost (৳)</Label>
-                      <Input type="number" className="rounded-xl" value={orderItems.length > 0 ? itemsTotal : productCost} onChange={(e) => setProductCost(Number(e.target.value))} disabled={orderItems.length > 0} />
+                  {/* Financial Summary */}
+                  <div className="p-4 rounded-2xl bg-secondary/20 border border-border/40 space-y-3">
+                    <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                      <div className="h-6 w-6 rounded-lg bg-emerald-500/10 flex items-center justify-center">৳</div>
+                      মূল্য হিসাব
+                    </h3>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-muted-foreground">প্রোডাক্ট খরচ (৳)</Label>
+                        <Input type="number" className="rounded-xl h-10 text-sm font-medium" value={orderItems.length > 0 ? itemsTotal : productCost} onChange={(e) => setProductCost(Number(e.target.value))} disabled={orderItems.length > 0} />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-muted-foreground">ডেলিভারি চার্জ (৳)</Label>
+                        <Input type="number" className="rounded-xl h-10 text-sm font-medium" value={deliveryCharge} onChange={(e) => setDeliveryCharge(Number(e.target.value))} />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-muted-foreground">ডিসকাউন্ট (৳)</Label>
+                        <Input type="number" className="rounded-xl h-10 text-sm font-medium" value={discount} onChange={(e) => setDiscount(Number(e.target.value))} />
+                      </div>
                     </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold">Delivery (৳)</Label>
-                      <Input type="number" className="rounded-xl" value={deliveryCharge} onChange={(e) => setDeliveryCharge(Number(e.target.value))} />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold">Discount (৳)</Label>
-                      <Input type="number" className="rounded-xl" value={discount} onChange={(e) => setDiscount(Number(e.target.value))} />
-                    </div>
-                    <div className="text-right p-3 rounded-xl bg-primary/5 border border-primary/20">
-                      <p className="text-xs text-primary font-semibold">Total</p>
-                      <p className="text-2xl font-bold text-primary">৳{(orderItems.length > 0 ? itemsTotal : productCost) + deliveryCharge - discount}</p>
+                    <div className="p-4 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <p className="text-xs text-muted-foreground">প্রোডাক্ট + ডেলিভারি − ডিসকাউন্ট</p>
+                        <p className="text-xs text-muted-foreground font-medium">
+                          ৳{(orderItems.length > 0 ? itemsTotal : productCost).toLocaleString()} + ৳{deliveryCharge.toLocaleString()} − ৳{discount.toLocaleString()}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs text-primary font-semibold">সর্বমোট</p>
+                        <p className="text-3xl font-bold text-primary">৳{((orderItems.length > 0 ? itemsTotal : productCost) + deliveryCharge - discount).toLocaleString()}</p>
+                      </div>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
