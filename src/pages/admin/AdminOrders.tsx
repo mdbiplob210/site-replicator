@@ -198,10 +198,11 @@ const AdminOrders = () => {
   const [productSearch, setProductSearch] = useState("");
   const [courierNote, setCourierNote] = useState("");
   
-  // Pathao city/zone/area auto-detect
-  const [pathaoCity, setPathaoCity] = useState("");
-  const [pathaoZone, setPathaoZone] = useState("");
-  const [pathaoArea, setPathaoArea] = useState("");
+  // Courier selection for order
+  const [selectedCourierId, setSelectedCourierId] = useState<string | null>(null);
+  const [selectedCityId, setSelectedCityId] = useState<string | null>(null);
+  const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null);
+  const [selectedAreaId, setSelectedAreaId] = useState<string | null>(null);
   const { user } = useAuth();
   const statusFilter = getStatusFromTab(activeTab);
   const queryClient = useQueryClient();
