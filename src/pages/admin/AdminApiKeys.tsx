@@ -16,6 +16,7 @@ import { toast } from "sonner";
 const ALL_PERMISSIONS = [
   { value: "orders:create", label: "অর্ডার তৈরি" },
   { value: "orders:read", label: "অর্ডার দেখা" },
+  { value: "orders:update", label: "অর্ডার আপডেট" },
   { value: "incomplete_orders:create", label: "ইনকমপ্লিট অর্ডার তৈরি" },
   { value: "incomplete_orders:read", label: "ইনকমপ্লিট অর্ডার দেখা" },
 ];
