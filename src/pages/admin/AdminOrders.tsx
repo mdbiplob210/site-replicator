@@ -500,9 +500,15 @@ const AdminOrders = () => {
         if (filterSalesType === "api" && !o.source) return false;
         if (filterSalesType === "manual" && o.source) return false;
       }
+      // Cancel reason filter
+      if (cancelReasonFilter !== "all" && activeTab === "Cancelled") {
+        if (cancelReasonFilter === "no_reason") { if ((o as any).cancel_reason) return false; }
+        else if (cancelReasonFilter === "others") { if (!(o as any).cancel_reason || CANCEL_REASONS.includes((o as any).cancel_reason)) return false; }
+        else { if ((o as any).cancel_reason !== cancelReasonFilter) return false; }
+      }
       return true;
     });
-  }, [orders, searchQuery, filterSource, filterPhone, filterAmountMin, filterAmountMax, filterDeviceType, filterAddress, filterDistrict, filterThana, filterZone, filterPaymentStatus, filterCourierProvider, filterCourierStatus, filterStatus, filterProductSearch, filterCategory, filterCourierCharged, filterNotes, filterUrl, filterOrderTag, filterSalesType, courierByOrderId, orderItemsByOrderId, allProducts]);
+  }, [orders, searchQuery, filterSource, filterPhone, filterAmountMin, filterAmountMax, filterDeviceType, filterAddress, filterDistrict, filterThana, filterZone, filterPaymentStatus, filterCourierProvider, filterCourierStatus, filterStatus, filterProductSearch, filterCategory, filterCourierCharged, filterNotes, filterUrl, filterOrderTag, filterSalesType, courierByOrderId, orderItemsByOrderId, allProducts, cancelReasonFilter, activeTab]);
 
   const activeFilterCount = [filterSource, filterPhone, filterAmountMin, filterAmountMax, filterAddress, filterStatus, filterProductSearch, filterNotes, filterUrl, filterOrderTag].filter(Boolean).length
     + [filterDeviceType, filterPaymentStatus, filterCourierProvider, filterCourierStatus, filterCategory, filterCourierCharged, filterSalesType, filterDistrict, filterThana, filterZone].filter(v => v !== "all").length
