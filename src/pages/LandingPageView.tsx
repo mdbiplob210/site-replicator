@@ -351,8 +351,15 @@ ttq.page();
 </script>
 `;
 
-    // Exit Intent Popup
-    const exitIntentScript = `
+    // Exit Intent Popup - only if enabled
+    const exitPopupEnabled = (page as any).exit_popup_enabled ?? false;
+    const exitDiscount = (page as any).exit_popup_discount ?? 50;
+    const exitTimer = (page as any).exit_popup_timer ?? 300;
+    const exitMessage = (page as any).exit_popup_message || 'এই ছাড়টি শুধু আপনার জন্য!';
+    const exitInitMin = String(Math.floor(exitTimer / 60)).padStart(2, '0');
+    const exitInitSec = String(exitTimer % 60).padStart(2, '0');
+
+    const exitIntentScript = !exitPopupEnabled ? '' : `
 <!-- Exit Intent Popup -->
 <style>
 #exit-overlay{display:none;position:fixed;inset:0;z-index:99999;align-items:center;justify-content:center;background:rgba(0,0,0,.7);backdrop-filter:blur(4px)}
@@ -393,16 +400,16 @@ ttq.page();
       <div id="exit-header"><p>⚡ বিশেষ অফার — শুধুমাত্র আপনার জন্য! ⚡</p></div>
       <div id="exit-body">
         <div id="exit-timer">
-          <div class="timer-box"><span id="exit-min">05</span><small>মিনিট</small></div>
+          <div class="timer-box"><span id="exit-min">${exitInitMin}</span><small>মিনিট</small></div>
           <span class="timer-sep">:</span>
-          <div class="timer-box"><span id="exit-sec">00</span><small>সেকেন্ড</small></div>
+          <div class="timer-box"><span id="exit-sec">${exitInitSec}</span><small>সেকেন্ড</small></div>
         </div>
-        <div id="exit-badge"><div><span class="amt">৳50</span><span class="lbl">ছাড়!</span></div><div class="gift">🎁</div></div>
-        <h3>এই ছাড়টি শুধু আপনার জন্য!</h3>
+        <div id="exit-badge"><div><span class="amt">৳${exitDiscount}</span><span class="lbl">ছাড়!</span></div><div class="gift">🎁</div></div>
+        <h3>${escapeHtml(exitMessage)}</h3>
         <p class="sub">আজকেই অর্ডার করুন এবং পান</p>
-        <p class="price">৳50 টাকা ছাড়!</p>
-        <div id="exit-warn"><p>⏰ এই অফার <span id="exit-time-text">5 মিনিটে</span> শেষ হবে!</p></div>
-        <button id="exit-accept" onclick="acceptExitOffer()">🎉 ৳50 ছাড়ে অর্ডার করুন</button>
+        <p class="price">৳${exitDiscount} টাকা ছাড়!</p>
+        <div id="exit-warn"><p>⏰ এই অফার <span id="exit-time-text">${Math.floor(exitTimer / 60)} মিনিটে</span> শেষ হবে!</p></div>
+        <button id="exit-accept" onclick="acceptExitOffer()">🎉 ৳${exitDiscount} ছাড়ে অর্ডার করুন</button>
         <button id="exit-reject" onclick="closeExitPopup()">না, ছাড় লাগবে না</button>
       </div>
     </div>
@@ -412,7 +419,8 @@ ttq.page();
 (function(){
   var shown = false;
   var dismissed = sessionStorage.getItem('_exit_dismissed');
-  var timeLeft = 300;
+  var timeLeft = ${exitTimer};
+  var DISCOUNT = ${exitDiscount};
   var timerInterval = null;
 
   function updateTimer(){
@@ -434,10 +442,9 @@ ttq.page();
     if(ov) ov.classList.add('show');
     timerInterval = setInterval(updateTimer, 1000);
     updateTimer();
-    // Track exit intent event
     if(typeof fbq==='function'){
       var eid = window._lpTrack ? window._lpTrack.generateEventId() : '';
-      fbq('trackCustom','ExitIntentShown',{page:window.location.href},{eventID:eid});
+      fbq('trackCustom','ExitIntentShown',{page:window.location.href,discount:DISCOUNT},{eventID:eid});
     }
     if(typeof ttq!=='undefined'&&ttq.track) ttq.track('ViewContent',{content_name:'ExitIntentPopup'});
   }
@@ -450,34 +457,27 @@ ttq.page();
   };
 
   window.acceptExitOffer = function(){
-    sessionStorage.setItem('_exit_discount','50');
+    sessionStorage.setItem('_exit_discount', String(DISCOUNT));
     sessionStorage.setItem('_exit_dismissed','1');
     if(typeof fbq==='function'){
       var eid = window._lpTrack ? window._lpTrack.generateEventId() : '';
-      fbq('trackCustom','ExitOfferAccepted',{value:50,currency:'BDT'},{eventID:eid});
+      fbq('trackCustom','ExitOfferAccepted',{value:DISCOUNT,currency:'BDT'},{eventID:eid});
     }
     var ov = document.getElementById('exit-overlay');
     if(ov) ov.classList.remove('show');
     if(timerInterval) clearInterval(timerInterval);
-    // Scroll to checkout/order form
     var form = document.querySelector('form, [data-checkout], #checkout, #order-form, .checkout, .order-form');
     if(form) form.scrollIntoView({behavior:'smooth',block:'center'});
-    // Try to apply discount to any visible price/total field
     var discountField = document.querySelector('[name="discount"], [data-discount], #discount');
-    if(discountField) discountField.value = '50';
+    if(discountField) discountField.value = String(DISCOUNT);
   };
 
-  // Desktop: mouse leaves viewport from top
   document.addEventListener('mouseout',function(e){
     if(e.clientY<=0 && !e.relatedTarget && !e.toElement) showExitPopup();
   });
-
-  // Mobile: back button / visibility change
   document.addEventListener('visibilitychange',function(){
     if(document.visibilityState==='hidden') showExitPopup();
   });
-
-  // Mobile: scroll up rapidly (indicates intent to leave)
   var lastScroll=0, scrollUpCount=0;
   window.addEventListener('scroll',function(){
     var st=window.pageYOffset||document.documentElement.scrollTop;
@@ -486,7 +486,6 @@ ttq.page();
     lastScroll=st;
   },{passive:true});
 
-  // Don't show within first 5 seconds
   var originalShow = showExitPopup;
   var canShow = false;
   setTimeout(function(){ canShow=true; },5000);
