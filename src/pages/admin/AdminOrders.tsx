@@ -1294,15 +1294,16 @@ const AdminOrders = () => {
                   )}
 
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold">Address</Label>
-                    <Textarea placeholder="Enter address" rows={2} className="rounded-xl" value={customerAddress} onChange={(e) => setCustomerAddress(e.target.value)} />
+                    <Label className="text-xs font-semibold text-muted-foreground">ঠিকানা</Label>
+                    <Textarea placeholder="সম্পূর্ণ ঠিকানা লিখুন" rows={2} className="rounded-xl text-sm" value={customerAddress} onChange={(e) => setCustomerAddress(e.target.value)} />
                   </div>
 
                   {/* Courier Selection */}
-                  <div className="space-y-2">
-                    <Label className="text-xs font-semibold flex items-center gap-1.5">
-                      <Truck className="h-3.5 w-3.5 text-violet-500" /> কুরিয়ার সিলেক্ট করুন
-                    </Label>
+                  <div className="p-4 rounded-2xl bg-secondary/20 border border-border/40 space-y-3">
+                    <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                      <div className="h-6 w-6 rounded-lg bg-violet-500/10 flex items-center justify-center"><Truck className="h-3.5 w-3.5 text-violet-500" /></div>
+                      কুরিয়ার সিলেক্ট
+                    </h3>
                     <Select value={selectedCourierId || ""} onValueChange={(v) => {
                       setSelectedCourierId(v || null);
                       setSelectedCityId(null);
