@@ -197,9 +197,9 @@ Deno.serve(async (req) => {
           client_ip: clientIp, user_agent: userAgent, device_info: deviceInfo,
           block_reason: blockReason, status: "processing", updated_at: new Date().toISOString(),
         };
-        const { data: exInc2 } = await supabase.from("incomplete_orders").select("id").eq("customer_phone", customer_phone).eq("status", "processing").limit(1);
-        if (exInc2 && exInc2.length > 0) {
-          await supabase.from("incomplete_orders").update(incData2).eq("id", exInc2[0].id);
+        const existingId2 = await findExistingIncomplete(supabase, clientIp, landing_page_slug, customer_phone);
+        if (existingId2) {
+          await supabase.from("incomplete_orders").update(incData2).eq("id", existingId2);
         } else {
           await supabase.from("incomplete_orders").insert(incData2);
         }
