@@ -18,6 +18,7 @@ const fmt = (n: number) => `৳${n.toLocaleString("en-BD")}`;
 const AdminDashboard = () => {
   const [activeFilter, setActiveFilter] = useState<typeof timeFilters[number]>("Today");
   const { isLoading, orderStats, shippingStats, profitStats, financeStats, salesDetails } = useDashboardData(activeFilter);
+  const { data: salesTrend } = useSalesTrend();
 
   const orderCards = [
     { label: "TOTAL ORDERS", value: String(orderStats.totalOrders), sub: "Orders", change: `(${fmt(orderStats.totalAmount)})`, icon: ShoppingCart, color: "text-foreground", bgGradient: "from-slate-100 to-slate-50", iconColor: "text-slate-500" },
