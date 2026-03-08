@@ -1823,7 +1823,7 @@ const AdminOrders = () => {
                     </TableCell>
 
                     {/* Select */}
-                    <TableCell className="px-1 py-2 align-top" onClick={(e) => e.stopPropagation()}>
+                    <TableCell className="px-1 py-1 align-top" onClick={(e) => e.stopPropagation()}>
                       <Checkbox 
                         checked={selectedOrderIds.has(order.id)} 
                         onCheckedChange={(checked) => {
