@@ -892,57 +892,13 @@ const AdminOrders = () => {
           ) : (
             <div className="space-y-3">
               {incompleteOrders.map((io) => (
-                <Card key={io.id} className="p-4 border-border/40">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0 space-y-2">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-bold text-foreground">{io.customer_name}</span>
-                        {io.block_reason === "abandoned_form" ? (
-                          <Badge variant="secondary" className="text-xs bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">📝 Abandoned</Badge>
-                        ) : (
-                          <Badge variant="destructive" className="text-xs">🚫 IP Blocked</Badge>
-                        )}
-                        {io.landing_page_slug && <Badge variant="outline" className="text-xs">LP: {io.landing_page_slug}</Badge>}
-                      </div>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-muted-foreground">
-                        <div className="flex items-center gap-1.5">
-                          <span><span className="font-medium">ফোন:</span> {io.customer_phone || "N/A"}</span>
-                          {io.customer_phone && (
-                            <a href={`tel:${io.customer_phone}`} onClick={(e) => e.stopPropagation()}>
-                              <Button variant="ghost" size="icon" className="h-5 w-5 rounded text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 p-0">
-                                <Phone className="h-3 w-3" />
-                              </Button>
-                            </a>
-                          )}
-                        </div>
-                        <div><span className="font-medium">IP:</span> {io.client_ip || "N/A"}</div>
-                        <div><span className="font-medium">ডিভাইস:</span> {io.device_info || "N/A"}</div>
-                        <div><span className="font-medium">মোট:</span> ৳{io.total_amount}</div>
-                      </div>
-                      {io.product_name && (
-                        <p className="text-xs text-muted-foreground">
-                          <span className="font-medium">প্রোডাক্ট:</span> {io.product_name} {io.product_code ? `(${io.product_code})` : ""} × {io.quantity}
-                        </p>
-                      )}
-                      <p className="text-xs text-destructive/80 bg-destructive/5 rounded px-2 py-1 inline-block">
-                        🚫 {io.block_reason}
-                      </p>
-                      <p className="text-xs text-muted-foreground">{format(new Date(io.created_at), "dd MMM yyyy, hh:mm a")}</p>
-                    </div>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      {activeIncompleteTab !== "Converted" && (
-                        <Button size="sm" variant="outline" className="gap-1 text-xs" onClick={() => convertIncomplete.mutate(io)}>
-                          <GitMerge className="h-3 w-3" /> অর্ডারে কনভার্ট
-                        </Button>
-                      )}
-                      <Button size="sm" variant="ghost" className="text-destructive" onClick={() => {
-                        if (confirm("ডিলিট করতে চান?")) deleteIncomplete.mutate(io.id);
-                      }}>
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
+                <IncompleteOrderCard
+                  key={io.id}
+                  io={io}
+                  activeIncompleteTab={activeIncompleteTab}
+                  convertIncomplete={convertIncomplete}
+                  deleteIncomplete={deleteIncomplete}
+                />
               ))}
             </div>
           )}
