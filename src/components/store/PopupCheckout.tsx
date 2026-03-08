@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { X, ShoppingBag, User, Phone, MapPin, Minus, Plus, CheckCircle2, Loader2 } from "lucide-react";
 import { useTracking } from "@/hooks/useTracking";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 
 interface CheckoutItem {
   productId: string;
