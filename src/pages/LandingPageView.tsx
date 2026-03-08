@@ -2,6 +2,10 @@ import { useParams } from "react-router-dom";
 import { useLandingPageBySlug } from "@/hooks/useLandingPages";
 import { useEffect, useRef } from "react";
 
+function escapeHtml(str: string): string {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 export default function LandingPageView() {
   const { slug } = useParams<{ slug: string }>();
   const { data: page, isLoading, error } = useLandingPageBySlug(slug || "");
