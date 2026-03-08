@@ -1741,7 +1741,7 @@ const AdminOrders = () => {
                   <TableHead className="font-bold text-xs">Customer</TableHead>
                   <TableHead className="font-bold text-xs">Phone</TableHead>
                   <TableHead className="font-bold text-xs">Amount</TableHead>
-                  <TableHead className="font-bold text-xs">Source</TableHead>
+                  <TableHead className="font-bold text-xs">Product</TableHead>
                   <TableHead className="font-bold text-xs">Status</TableHead>
                   <TableHead className="font-bold text-xs">Date</TableHead>
                   <TableHead className="font-bold text-xs text-right">Actions</TableHead>
