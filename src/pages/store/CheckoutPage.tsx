@@ -26,6 +26,8 @@ const CheckoutPage = () => {
   const formInteracted = useRef(false);
   const abandonedSaved = useRef(false);
   const orderSubmitted = useRef(false);
+  const { trackInitiateCheckout, trackAddPaymentInfo, trackPurchase } = useTracking();
+  const initiateTracked = useRef(false);
 
   useEffect(() => {
     const raw = sessionStorage.getItem("checkout_item");
