@@ -3183,3 +3183,52 @@ function IncompleteOrderCard({ io, activeIncompleteTab, convertIncomplete, delet
     </Card>
   );
 }
+
+// Activity Log Popover Content
+function ActivityLogPopover({ orderId }: { orderId: string }) {
+  const { data: logs = [], isLoading } = useQuery({
+    queryKey: ["activity-log-popover", orderId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("order_activity_logs")
+        .select("*")
+        .eq("order_id", orderId)
+        .order("created_at", { ascending: false })
+        .limit(10);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!orderId,
+  });
+
+  if (isLoading) {
+    return <div className="p-4 text-center"><Loader2 className="h-4 w-4 animate-spin mx-auto text-muted-foreground" /></div>;
+  }
+
+  if (logs.length === 0) {
+    return <div className="p-4 text-center text-xs text-muted-foreground">কোনো activity নেই</div>;
+  }
+
+  return (
+    <div className="divide-y divide-border/30">
+      <div className="px-3 py-2 bg-secondary/30">
+        <p className="text-xs font-semibold text-foreground flex items-center gap-1.5"><Activity className="h-3 w-3" /> Activity Log</p>
+      </div>
+      {logs.map((log: any) => (
+        <div key={log.id} className="px-3 py-2 text-[11px] space-y-0.5">
+          <div className="flex items-center justify-between">
+            <span className="font-semibold text-foreground">{log.action === "status_changed" ? "স্ট্যাটাস চেঞ্জ" : log.action === "created" ? "তৈরি" : log.action === "note_updated" ? "নোট" : log.action === "customer_blocked" ? "ব্লক" : log.action}</span>
+            <span className="text-muted-foreground">{format(new Date(log.created_at), "dd MMM, hh:mm a")}</span>
+          </div>
+          {log.old_value && log.new_value && (
+            <p className="text-muted-foreground">
+              <span className="line-through text-red-400">{log.old_value}</span> → <span className="text-emerald-600 font-medium">{log.new_value}</span>
+            </p>
+          )}
+          {log.details && <p className="text-muted-foreground">{log.details}</p>}
+          {log.user_name && <p className="text-muted-foreground/60">{log.user_name}</p>}
+        </div>
+      ))}
+    </div>
+  );
+}
