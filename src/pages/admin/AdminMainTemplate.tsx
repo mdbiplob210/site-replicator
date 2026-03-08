@@ -103,7 +103,7 @@ export default function AdminMainTemplate() {
             <h3 className="font-bold text-foreground">লাইভ প্রিভিউ</h3>
             <p className="text-sm text-muted-foreground">সিলেক্ট করা টেমপ্লেট দেখুন</p>
           </div>
-          <a href="/store" target="_blank" rel="noreferrer">
+          <a href="/" target="_blank" rel="noreferrer">
             <Button variant="outline" className="gap-2">
               <Globe className="h-4 w-4" /> Store দেখুন
             </Button>
