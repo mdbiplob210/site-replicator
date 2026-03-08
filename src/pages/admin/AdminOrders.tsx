@@ -1756,6 +1756,7 @@ const AdminOrders = () => {
                   <TableHead className="font-bold text-xs">Product</TableHead>
                   <TableHead className="font-bold text-xs">Status</TableHead>
                   <TableHead className="font-bold text-xs">Date</TableHead>
+                  <TableHead className="font-bold text-xs">Note</TableHead>
                   <TableHead className="font-bold text-xs text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -1849,6 +1850,15 @@ const AdminOrders = () => {
                       </Select>
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">{format(new Date(order.created_at), "dd MMM yyyy")}</TableCell>
+                    <TableCell>
+                      {order.notes ? (
+                        <p className="text-xs text-muted-foreground truncate max-w-[120px]" title={order.notes}>
+                          {order.notes}
+                        </p>
+                      ) : (
+                        <span className="text-xs text-muted-foreground/40">—</span>
+                      )}
+                    </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center gap-1 justify-end">
                         {order.status === "hand_delivery" && (
@@ -2101,7 +2111,7 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
     finally { setIsAddingNote(false); }
   };
 
-
+  const handleSaveChanges = async () => {
     if (!order || !orderId) return;
     setIsSaving(true);
     try {
@@ -2126,6 +2136,9 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
         queryClient.invalidateQueries({ queryKey: ["order-counts"] });
         queryClient.invalidateQueries({ queryKey: ["order-activity-logs", orderId] });
         toast.success("অর্ডার আপডেট হয়েছে!");
+        onClose();
+      } else {
+        onClose();
       }
     } catch (e: any) {
       toast.error("আপডেট ব্যর্থ: " + e.message);
