@@ -34,12 +34,12 @@ Deno.serve(async (req) => {
     );
 
     const token = authHeader.replace("Bearer ", "");
-    const anonKey = Deno.env.get("SUPABASE_ANON_KEY") || "";
-    const isCronCall = token === anonKey; // cron uses anon key directly
+    const cronSecret = Deno.env.get("CRON_SECRET") || "";
+    const isCronCall = cronSecret && token === cronSecret;
 
     if (!isCronCall) {
-      const { data: { user }, error: userError } = await supabase.auth.getUser(token);
-      if (userError || !user) {
+      const { data, error: claimsError } = await supabase.auth.getClaims(token);
+      if (claimsError || !data?.claims) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
           status: 401,
           headers: { ...corsHeaders, "Content-Type": "application/json" },

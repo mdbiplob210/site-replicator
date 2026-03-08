@@ -28,21 +28,25 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
 
-    // Validate auth token if provided
-    if (authToken) {
-      const { data: provider } = await supabase
-        .from('courier_providers')
-        .select('id')
-        .eq('slug', courierSlug)
-        .eq('auth_token', authToken)
-        .eq('is_active', true)
-        .single()
-      
-      if (!provider) {
-        return new Response(JSON.stringify({ error: 'Invalid auth token' }), {
-          status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        })
-      }
+    // Always require and validate auth token
+    if (!authToken) {
+      return new Response(JSON.stringify({ error: 'Missing auth token' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    const { data: provider } = await supabase
+      .from('courier_providers')
+      .select('id')
+      .eq('slug', courierSlug)
+      .eq('auth_token', authToken)
+      .eq('is_active', true)
+      .single()
+    
+    if (!provider) {
+      return new Response(JSON.stringify({ error: 'Invalid auth token' }), {
+        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
     }
 
     // Log the webhook
