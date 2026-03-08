@@ -1865,6 +1865,9 @@ const AdminOrders = () => {
                             ডেলিভারি সম্পন্ন
                           </Button>
                         )}
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20" title="নোট যোগ করুন" onClick={(e) => { e.stopPropagation(); setDetailOrderId(order.id); }}>
+                          <MessageSquare className="h-4 w-4" />
+                        </Button>
                         <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-primary hover:bg-primary/10" title="Activity Log" onClick={(e) => { e.stopPropagation(); setDetailOrderId(order.id); }}>
                           <Activity className="h-4 w-4" />
                         </Button>
@@ -1996,6 +1999,8 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
   const [detailProductSearch, setDetailProductSearch] = useState("");
   const [detailProductFocused, setDetailProductFocused] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [quickNote, setQuickNote] = useState("");
+  const [isAddingNote, setIsAddingNote] = useState(false);
   const [logFilterUser, setLogFilterUser] = useState("all");
   const [logFilterAction, setLogFilterAction] = useState("all");
   const [logFilterDate, setLogFilterDate] = useState<Date | undefined>();
@@ -2081,7 +2086,22 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
     } catch (e) { console.error(e); }
   };
 
-  const handleSaveChanges = async () => {
+  const handleAddQuickNote = async () => {
+    if (!orderId || !quickNote.trim()) return;
+    setIsAddingNote(true);
+    try {
+      await supabase.from("order_activity_logs" as any).insert({
+        order_id: orderId, user_id: user?.id || null, user_name: user?.email || "System",
+        action: "quick_note", field_name: "note", old_value: null, new_value: quickNote.trim(), details: quickNote.trim(),
+      } as any);
+      setQuickNote("");
+      queryClient.invalidateQueries({ queryKey: ["order-activity-logs", orderId] });
+      toast.success("নোট যোগ হয়েছে!");
+    } catch (e: any) { toast.error("নোট যোগ করতে ব্যর্থ"); }
+    finally { setIsAddingNote(false); }
+  };
+
+
     if (!order || !orderId) return;
     setIsSaving(true);
     try {
@@ -2328,6 +2348,55 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
               </div>
             </div>
 
+            {/* Quick Note Add */}
+            <div className="space-y-2 p-3 rounded-xl border border-amber-200 dark:border-amber-800/50 bg-amber-50/50 dark:bg-amber-900/10">
+              <Label className="text-xs font-semibold flex items-center gap-1.5 text-amber-700 dark:text-amber-400">
+                <MessageSquare className="h-3.5 w-3.5" /> দ্রুত নোট যোগ করুন
+              </Label>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="নোট লিখুন..."
+                  className="rounded-xl text-xs flex-1"
+                  value={quickNote}
+                  onChange={(e) => setQuickNote(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && quickNote.trim()) {
+                      handleAddQuickNote();
+                    }
+                  }}
+                />
+                <Button
+                  size="sm"
+                  className="rounded-xl text-xs px-4"
+                  disabled={!quickNote.trim() || isAddingNote}
+                  onClick={handleAddQuickNote}
+                >
+                  {isAddingNote ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
+                  যোগ করুন
+                </Button>
+              </div>
+              {/* Recent notes from activity logs */}
+              {(() => {
+                const noteEntries = activityLogs.filter((l: any) => l.action === "note_added" || l.action === "quick_note");
+                if (noteEntries.length === 0) return null;
+                return (
+                  <div className="mt-2 space-y-1 max-h-32 overflow-y-auto">
+                    {noteEntries.map((log: any) => (
+                      <div key={log.id} className="flex items-start gap-2 p-2 rounded-lg bg-background/80 border border-border/30 text-xs">
+                        <MessageSquare className="h-3 w-3 text-amber-500 mt-0.5 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-foreground">{log.details || log.new_value || "নোট"}</p>
+                          <p className="text-muted-foreground/60 text-[10px] mt-0.5">
+                            {log.user_name} — {format(new Date(log.created_at), "dd MMM yyyy, hh:mm a")}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+            </div>
+
             {/* Save Button */}
             <Button className="w-full rounded-xl shadow-sm" onClick={handleSaveChanges} disabled={isSaving}>
               {isSaving ? <><Loader2 className="h-4 w-4 animate-spin" /> Saving...</> : "পরিবর্তন সেভ করুন"}
@@ -2364,7 +2433,7 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                       <SelectTrigger className="rounded-lg h-6 text-[10px] w-auto min-w-[90px]"><SelectValue placeholder="Action" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">সব Action</SelectItem>
-                        {uniqueActions.map((a) => <SelectItem key={a} value={a}>{a === "created" ? "তৈরি" : a === "status_changed" ? "স্ট্যাটাস" : a === "field_edited" ? "এডিট" : a === "note_added" ? "নোট" : a}</SelectItem>)}
+                        {uniqueActions.map((a) => <SelectItem key={a} value={a}>{a === "created" ? "তৈরি" : a === "status_changed" ? "স্ট্যাটাস" : a === "field_edited" ? "এডিট" : a === "note_added" ? "নোট" : a === "quick_note" ? "📝 নোট" : a}</SelectItem>)}
                       </SelectContent>
                     </Select>
                     <Popover>
@@ -2400,7 +2469,8 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                             {log.action === "status_changed" && <>স্ট্যাটাস পরিবর্তন: <Badge variant="outline" className="text-[9px] h-4">{log.old_value}</Badge> → <Badge variant="secondary" className="text-[9px] h-4">{log.new_value}</Badge></>}
                             {log.action === "field_edited" && <>"{log.field_name}" পরিবর্তন করেছে</>}
                             {log.action === "note_added" && "নোট যোগ করেছে"}
-                            {!["created", "status_changed", "field_edited", "note_added"].includes(log.action) && log.action}
+                            {log.action === "quick_note" && "📝 নোট যোগ করেছে"}
+                            {!["created", "status_changed", "field_edited", "note_added", "quick_note"].includes(log.action) && log.action}
                           </p>
                           {log.details && <p className="text-muted-foreground mt-0.5">{log.details}</p>}
                           <p className="text-muted-foreground/60 mt-0.5">{format(new Date(log.created_at), "dd MMM yyyy, hh:mm a")}</p>
