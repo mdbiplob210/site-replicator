@@ -2902,7 +2902,7 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                     <button
                       key={p.id}
                       onMouseDown={(e) => e.preventDefault()}
-                      onClick={() => { addProductToDetailOrder(p); setDetailProductFocused(true); }}
+                      onClick={() => { addProductToDetailOrder(p); }}
                       className="w-full text-left px-3 py-2 hover:bg-secondary/60 transition-colors flex items-center justify-between text-sm border-b border-border/30 last:border-0"
                     >
                       <div>
