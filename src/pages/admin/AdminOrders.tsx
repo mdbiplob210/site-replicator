@@ -3180,6 +3180,7 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
               </div>
             )}
 
+            <div className="space-y-3">
               <Label className="text-xs font-semibold">প্রোডাক্ট যোগ করুন</Label>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
