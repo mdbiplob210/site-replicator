@@ -884,6 +884,7 @@ const AdminOrders = () => {
     setSelectedCityId(null);
     setSelectedZoneId(null);
     setSelectedAreaId(null);
+    setNewOrderStatus("processing");
   };
 
   // Old orders lookup by phone
