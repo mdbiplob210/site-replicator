@@ -223,6 +223,71 @@ export function useCreateOrder() {
   });
 }
 
+// Send Facebook Conversions API event for order status changes
+async function sendFbCapiEvent(order: Order, newStatus: OrderStatus) {
+  const capiStatuses = ["delivered", "cancelled", "returned"];
+  if (!capiStatuses.includes(newStatus)) return;
+
+  try {
+    // Get FB pixel from site_settings
+    const { data: settings } = await supabase
+      .from("site_settings")
+      .select("value")
+      .eq("key", "fb_pixel_id")
+      .single();
+
+    const pixelId = settings?.value;
+    if (!pixelId) return;
+
+    // Also check if order came from a landing page with its own pixel
+    let orderPixelId = pixelId;
+    if (order.source) {
+      const { data: lp } = await supabase
+        .from("landing_pages")
+        .select("fb_pixel_id")
+        .eq("slug", order.source)
+        .maybeSingle();
+      if (lp?.fb_pixel_id) orderPixelId = lp.fb_pixel_id;
+    }
+
+    // Map status to FB event
+    let eventName = "";
+    const customData: Record<string, any> = {
+      currency: "BDT",
+      value: Number(order.total_amount),
+      order_id: order.order_number,
+      content_name: order.customer_name,
+    };
+
+    if (newStatus === "delivered") {
+      eventName = "Purchase";
+    } else if (newStatus === "cancelled") {
+      eventName = "CancelOrder";
+      customData.cancel_reason = order.cancel_reason || "N/A";
+    } else if (newStatus === "returned") {
+      eventName = "ReturnOrder";
+    }
+
+    if (!eventName) return;
+
+    const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+    const url = `https://${projectId}.supabase.co/functions/v1/fb-conversions-api`;
+
+    await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        pixel_id: orderPixelId,
+        event_name: eventName,
+        event_id: `${order.id}_${newStatus}_${Date.now()}`,
+        custom_data: customData,
+      }),
+    });
+  } catch (err) {
+    console.error("FB CAPI event error:", err);
+  }
+}
+
 export function useUpdateOrderStatus() {
   const queryClient = useQueryClient();
 
@@ -235,6 +300,10 @@ export function useUpdateOrderStatus() {
         .select()
         .single();
       if (error) throw error;
+
+      // Fire FB CAPI event in background
+      sendFbCapiEvent(data as Order, status);
+
       return data;
     },
     onSuccess: () => {
