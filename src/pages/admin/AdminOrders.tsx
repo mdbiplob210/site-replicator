@@ -2690,6 +2690,12 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
 
   const handleStatusChange = async (newStatus: string) => {
     if (!orderId || !order || newStatus === order.status) return;
+    if (newStatus === "cancelled") {
+      setDetailCancelReason("");
+      setDetailCancelCustom("");
+      setDetailCancelDialogOpen(true);
+      return;
+    }
     try {
       const { error } = await supabase.from("orders").update({ status: newStatus as any }).eq("id", orderId);
       if (error) throw error;
@@ -2698,6 +2704,21 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
       queryClient.invalidateQueries({ queryKey: ["order-counts"] });
       queryClient.invalidateQueries({ queryKey: ["order-activity-logs", orderId] });
       toast.success("স্ট্যাটাস আপডেট হয়েছে!");
+    } catch (e: any) { toast.error(e.message); }
+  };
+
+  const confirmDetailCancel = async () => {
+    if (!orderId || !order) return;
+    const reason = detailCancelReason === "others" ? detailCancelCustom : detailCancelReason;
+    try {
+      const { error } = await supabase.from("orders").update({ status: "cancelled" as any, cancel_reason: reason } as any).eq("id", orderId);
+      if (error) throw error;
+      await logActivity("status_changed", "status", order.status, "cancelled", `কারণ: ${reason}`);
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      queryClient.invalidateQueries({ queryKey: ["order-counts"] });
+      queryClient.invalidateQueries({ queryKey: ["order-activity-logs", orderId] });
+      setDetailCancelDialogOpen(false);
+      toast.success("অর্ডার ক্যান্সেল হয়েছে!");
     } catch (e: any) { toast.error(e.message); }
   };
 
