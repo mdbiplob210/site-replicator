@@ -256,7 +256,8 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
 
   if (!open || !currentItem) return null;
 
-  const total = currentItem.price * qty;
+  const subtotal = currentItem.price * qty;
+  const total = Math.max(0, subtotal - discount);
 
   return (
     <div className="fixed inset-0 z-[999] flex items-end sm:items-center justify-center">
