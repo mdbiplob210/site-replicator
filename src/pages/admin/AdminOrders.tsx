@@ -1760,11 +1760,7 @@ const AdminOrders = () => {
                     <TableCell>
                       <Select
                         value={order.status}
-                        onValueChange={(value) => { 
-                          const oldStatus = order.status;
-                          updateStatus.mutate({ id: order.id, status: value as OrderStatus });
-                          logActivity(order.id, "status_changed", "status", getStatusLabel(oldStatus), getStatusLabel(value as OrderStatus));
-                        }}
+                        onValueChange={(value) => handleStatusChange(order.id, value, order.status)}
                       >
                         <SelectTrigger className="w-[130px] h-8 rounded-lg text-xs border-0 bg-secondary/40" onClick={(e) => e.stopPropagation()}>
                           <div className="flex items-center gap-2">
