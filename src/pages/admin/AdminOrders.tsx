@@ -537,7 +537,8 @@ const AdminOrders = () => {
     });
   }, [orders, searchQuery, filterSource, filterPhone, filterAmountMin, filterAmountMax, filterDeviceType, filterAddress, filterDistrict, filterThana, filterZone, filterPaymentStatus, filterCourierProvider, filterCourierStatus, filterStatus, filterProductSearch, filterProductIds, filterCategory, filterCourierCharged, filterNotes, filterUrl, filterOrderTag, filterSalesType, courierByOrderId, orderItemsByOrderId, allProducts, cancelReasonFilter, activeTab]);
 
-  const activeFilterCount = [filterSource, filterPhone, filterAmountMin, filterAmountMax, filterAddress, filterStatus, filterProductSearch, filterNotes, filterUrl, filterOrderTag].filter(Boolean).length
+  const activeFilterCount = [filterSource, filterPhone, filterAmountMin, filterAmountMax, filterAddress, filterStatus, filterNotes, filterUrl, filterOrderTag].filter(Boolean).length
+    + (filterProductIds.length > 0 ? 1 : (filterProductSearch ? 1 : 0))
     + [filterDeviceType, filterPaymentStatus, filterCourierProvider, filterCourierStatus, filterCategory, filterCourierCharged, filterSalesType, filterDistrict, filterThana, filterZone].filter(v => v !== "all").length
     + (orderDateFilter !== "all" ? 1 : 0);
 
