@@ -2714,6 +2714,19 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
     } catch (e: any) { toast.error(e.message); }
   };
 
+  const updateDetailItemPrice = async (item: any, newPrice: number) => {
+    if (!orderId || newPrice < 0) return;
+    try {
+      const newTotal = item.quantity * newPrice;
+      const { error } = await supabase.from("order_items").update({ unit_price: newPrice, total_price: newTotal }).eq("id", item.id);
+      if (error) throw error;
+      await logActivity("field_edited", "order_items", `৳${item.unit_price}`, `৳${newPrice}`, `${item.product_name} ইউনিট প্রাইস পরিবর্তন`);
+      queryClient.invalidateQueries({ queryKey: ["order-items", orderId] });
+      queryClient.invalidateQueries({ queryKey: ["all-order-items-filter"] });
+      await recalcOrderTotals();
+    } catch (e: any) { toast.error(e.message); }
+  };
+
   const removeDetailItem = async (item: any) => {
     if (!orderId) return;
     try {
