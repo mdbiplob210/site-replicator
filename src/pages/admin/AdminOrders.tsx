@@ -154,6 +154,9 @@ const AdminOrders = () => {
   const [inlineNoteText, setInlineNoteText] = useState("");
   const [selectedOrderSource, setSelectedOrderSource] = useState("");
   const [newOrderStatus, setNewOrderStatus] = useState<string>("processing");
+  const [newOrderCancelReason, setNewOrderCancelReason] = useState("");
+  const [newOrderCancelCustom, setNewOrderCancelCustom] = useState("");
+  const [cancelReasonFilter, setCancelReasonFilter] = useState("all");
   const [newSourceName, setNewSourceName] = useState("");
   const [newSourceIcon, setNewSourceIcon] = useState("📦");
   
