@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
@@ -11,6 +11,7 @@ import { ShoppingBag, ArrowLeft, Check, Package, CreditCard, MapPin, Phone, User
 
 interface CheckoutItem {
   productId: string; name: string; price: number; qty: number; image: string | null;
+  productCode?: string;
 }
 
 const CheckoutPage = () => {
@@ -21,11 +22,93 @@ const CheckoutPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ name: "", phone: "", address: "", notes: "" });
   const checkoutType = settings?.active_checkout || "1";
+  const formInteracted = useRef(false);
+  const abandonedSaved = useRef(false);
+  const orderSubmitted = useRef(false);
 
   useEffect(() => {
     const raw = sessionStorage.getItem("checkout_item");
     if (raw) setItem(JSON.parse(raw));
   }, []);
+
+  // Track abandoned form - save when user leaves page
+  const saveAbandonedOrder = useCallback(async () => {
+    if (orderSubmitted.current || abandonedSaved.current || !formInteracted.current) return;
+    if (!form.name && !form.phone) return; // No meaningful data
+    if (!item) return;
+    abandonedSaved.current = true;
+    
+    try {
+      await supabase.from("incomplete_orders" as any).insert({
+        customer_name: form.name || "Unknown",
+        customer_phone: form.phone || null,
+        customer_address: form.address || null,
+        product_name: item.name,
+        product_code: item.productCode || null,
+        quantity: item.qty,
+        unit_price: item.price,
+        total_amount: item.price * item.qty,
+        delivery_charge: 0,
+        discount: 0,
+        notes: form.notes || null,
+        block_reason: "abandoned_form",
+        status: "processing",
+        landing_page_slug: "website-store",
+        device_info: /Mobi|Android/i.test(navigator.userAgent) ? "Mobile" : "Desktop",
+        user_agent: navigator.userAgent.substring(0, 200),
+      } as any);
+    } catch (e) {
+      // Silent fail - don't block user
+    }
+  }, [form, item]);
+
+  // Save abandoned order when user leaves page
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (!orderSubmitted.current && formInteracted.current && (form.name || form.phone)) {
+        // Use sendBeacon for reliability
+        const payload = JSON.stringify({
+          customer_name: form.name || "Unknown",
+          customer_phone: form.phone || null,
+          customer_address: form.address || null,
+          product_name: item?.name || null,
+          product_code: item?.productCode || null,
+          quantity: item?.qty || 1,
+          unit_price: item?.price || 0,
+          total_amount: (item?.price || 0) * (item?.qty || 1),
+          block_reason: "abandoned_form",
+          status: "processing",
+          landing_page_slug: "website-store",
+          device_info: /Mobi|Android/i.test(navigator.userAgent) ? "Mobile" : "Desktop",
+        });
+        // We'll use the edge function or direct insert on visibility change
+        abandonedSaved.current = true;
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        saveAbandonedOrder();
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      // Also save on unmount (navigating away within app)
+      saveAbandonedOrder();
+    };
+  }, [saveAbandonedOrder, item, form]);
+
+  // Mark form as interacted when user types
+  const updateForm = (updates: Partial<typeof form>) => {
+    formInteracted.current = true;
+    abandonedSaved.current = false; // Reset if user comes back
+    setForm(prev => ({ ...prev, ...updates }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,23 +118,45 @@ const CheckoutPage = () => {
       return;
     }
     setSubmitting(true);
+    orderSubmitted.current = true;
     try {
       const orderNumber = `ORD-${Date.now().toString(36).toUpperCase()}`;
-      const { error } = await supabase.from("orders").insert({
+      const total = item.price * item.qty;
+      
+      // Create the order
+      const { data: orderData, error } = await supabase.from("orders").insert({
         order_number: orderNumber,
         customer_name: form.name,
         customer_phone: form.phone,
         customer_address: form.address,
         notes: form.notes || null,
-        total_amount: item.price * item.qty,
+        total_amount: total,
         product_cost: item.price * item.qty,
         status: "processing",
-      } as any);
+        source: "website",
+        device_info: /Mobi|Android/i.test(navigator.userAgent) ? "Mobile" : "Desktop",
+        user_agent: navigator.userAgent.substring(0, 200),
+      } as any).select().single();
       if (error) throw error;
+
+      // Insert order item
+      if (orderData) {
+        await supabase.from("order_items").insert({
+          order_id: orderData.id,
+          product_id: item.productId || null,
+          product_name: item.name,
+          product_code: item.productCode || "",
+          quantity: item.qty,
+          unit_price: item.price,
+          total_price: total,
+        } as any);
+      }
+
       sessionStorage.removeItem("checkout_item");
       toast.success("অর্ডার সফল হয়েছে! 🎉");
       navigate("/store/order-success");
     } catch (err: any) {
+      orderSubmitted.current = false;
       toast.error(err.message);
     } finally {
       setSubmitting(false);
@@ -73,19 +178,19 @@ const CheckoutPage = () => {
     <>
       <div className="space-y-1.5">
         <Label className="flex items-center gap-2 text-sm font-semibold"><User className="h-4 w-4" /> আপনার নাম</Label>
-        <Input placeholder="পুরো নাম" value={form.name} onChange={e => setForm({...form, name: e.target.value})} required />
+        <Input placeholder="পুরো নাম" value={form.name} onChange={e => updateForm({ name: e.target.value })} required />
       </div>
       <div className="space-y-1.5">
         <Label className="flex items-center gap-2 text-sm font-semibold"><Phone className="h-4 w-4" /> ফোন নম্বর</Label>
-        <Input placeholder="01XXXXXXXXX" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} required />
+        <Input placeholder="01XXXXXXXXX" value={form.phone} onChange={e => updateForm({ phone: e.target.value })} required />
       </div>
       <div className="space-y-1.5">
         <Label className="flex items-center gap-2 text-sm font-semibold"><MapPin className="h-4 w-4" /> ডেলিভারি ঠিকানা</Label>
-        <Textarea placeholder="সম্পূর্ণ ঠিকানা লিখুন" value={form.address} onChange={e => setForm({...form, address: e.target.value})} required />
+        <Textarea placeholder="সম্পূর্ণ ঠিকানা লিখুন" value={form.address} onChange={e => updateForm({ address: e.target.value })} required />
       </div>
       <div className="space-y-1.5">
         <Label className="text-sm font-semibold">নোট (ঐচ্ছিক)</Label>
-        <Input placeholder="অতিরিক্ত তথ্য..." value={form.notes} onChange={e => setForm({...form, notes: e.target.value})} />
+        <Input placeholder="অতিরিক্ত তথ্য..." value={form.notes} onChange={e => updateForm({ notes: e.target.value })} />
       </div>
     </>
   );
@@ -157,11 +262,11 @@ const CheckoutPage = () => {
               <div className="space-y-4">
                 <div className="space-y-1.5">
                   <Label className="text-gray-300">আপনার নাম</Label>
-                  <Input className="bg-gray-900 border-gray-800 text-white" value={form.name} onChange={e => setForm({...form, name: e.target.value})} required />
+                  <Input className="bg-gray-900 border-gray-800 text-white" value={form.name} onChange={e => updateForm({ name: e.target.value })} required />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-gray-300">ফোন নম্বর</Label>
-                  <Input className="bg-gray-900 border-gray-800 text-white" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} required />
+                  <Input className="bg-gray-900 border-gray-800 text-white" value={form.phone} onChange={e => updateForm({ phone: e.target.value })} required />
                 </div>
                 <Button type="button" onClick={() => { if (form.name && form.phone) setStep(2); else toast.error("নাম ও ফোন দিন"); }} className="w-full bg-amber-500 text-gray-950 font-bold hover:bg-amber-400 py-5">
                   Next →
@@ -172,11 +277,11 @@ const CheckoutPage = () => {
               <div className="space-y-4">
                 <div className="space-y-1.5">
                   <Label className="text-gray-300">ডেলিভারি ঠিকানা</Label>
-                  <Textarea className="bg-gray-900 border-gray-800 text-white" value={form.address} onChange={e => setForm({...form, address: e.target.value})} required />
+                  <Textarea className="bg-gray-900 border-gray-800 text-white" value={form.address} onChange={e => updateForm({ address: e.target.value })} required />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-gray-300">নোট</Label>
-                  <Input className="bg-gray-900 border-gray-800 text-white" value={form.notes} onChange={e => setForm({...form, notes: e.target.value})} />
+                  <Input className="bg-gray-900 border-gray-800 text-white" value={form.notes} onChange={e => updateForm({ notes: e.target.value })} />
                 </div>
                 <div className="flex gap-3">
                   <Button type="button" variant="outline" onClick={() => setStep(1)} className="flex-1 border-gray-700 text-gray-300">← Back</Button>

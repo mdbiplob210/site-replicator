@@ -893,7 +893,16 @@ const AdminOrders = () => {
                         {io.landing_page_slug && <Badge variant="outline" className="text-xs">LP: {io.landing_page_slug}</Badge>}
                       </div>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-muted-foreground">
-                        <div><span className="font-medium">ফোন:</span> {io.customer_phone || "N/A"}</div>
+                        <div className="flex items-center gap-1.5">
+                          <span><span className="font-medium">ফোন:</span> {io.customer_phone || "N/A"}</span>
+                          {io.customer_phone && (
+                            <a href={`tel:${io.customer_phone}`} onClick={(e) => e.stopPropagation()}>
+                              <Button variant="ghost" size="icon" className="h-5 w-5 rounded text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 p-0">
+                                <Phone className="h-3 w-3" />
+                              </Button>
+                            </a>
+                          )}
+                        </div>
                         <div><span className="font-medium">IP:</span> {io.client_ip || "N/A"}</div>
                         <div><span className="font-medium">ডিভাইস:</span> {io.device_info || "N/A"}</div>
                         <div><span className="font-medium">মোট:</span> ৳{io.total_amount}</div>
