@@ -731,6 +731,56 @@ const AdminOrders = () => {
     toast.success(`${confirmedWithCourier.length}টি অর্ডার In Courier-এ পাঠানো হয়েছে!`);
   };
 
+  // Bulk status change
+  const handleBulkStatusChange = (newStatus: string) => {
+    if (selectedOrderIds.size === 0) return;
+    if (newStatus === "cancelled") {
+      // For cancel, apply directly without reason dialog for bulk
+      selectedOrderIds.forEach(id => {
+        updateStatus.mutate({ id, status: newStatus as OrderStatus });
+        logActivity(id, "status_changed", "status", "", "Cancelled", "বাল্ক ক্যান্সেল");
+      });
+    } else {
+      selectedOrderIds.forEach(id => {
+        const order = filteredOrders.find(o => o.id === id);
+        updateStatus.mutate({ id, status: newStatus as OrderStatus });
+        logActivity(id, "status_changed", "status", order ? getStatusLabel(order.status) : "", getStatusLabel(newStatus as OrderStatus), "বাল্ক স্ট্যাটাস চেঞ্জ");
+      });
+    }
+    toast.success(`${selectedOrderIds.size}টি অর্ডারের স্ট্যাটাস আপডেট হয়েছে!`);
+    setSelectedOrderIds(new Set());
+    setBulkStatusValue("");
+  };
+
+  // Bulk delete
+  const handleBulkDelete = () => {
+    if (selectedOrderIds.size === 0) return;
+    if (!confirm(`${selectedOrderIds.size}টি অর্ডার ডিলিট করবেন? এটি undo করা যাবে না!`)) return;
+    selectedOrderIds.forEach(id => {
+      deleteOrder.mutate(id);
+    });
+    toast.success(`${selectedOrderIds.size}টি অর্ডার ডিলিট হয়েছে!`);
+    setSelectedOrderIds(new Set());
+  };
+
+  // Bulk courier assign
+  const handleBulkCourierAssign = async (courierId: string) => {
+    if (selectedOrderIds.size === 0 || !courierId) return;
+    let count = 0;
+    for (const orderId of selectedOrderIds) {
+      const { error } = await supabase.from("courier_orders").upsert({
+        order_id: orderId,
+        courier_provider_id: courierId,
+        courier_status: "pending",
+      } as any, { onConflict: "order_id" });
+      if (!error) count++;
+    }
+    queryClient.invalidateQueries({ queryKey: ["courier-orders-filter"] });
+    toast.success(`${count}টি অর্ডারে কুরিয়ার অ্যাসাইন হয়েছে!`);
+    setSelectedOrderIds(new Set());
+    setBulkCourierId("");
+  };
+
   const handleCreateOrder = () => {
     if (!customerName.trim()) return;
     const computedProductCost = orderItems.length > 0 ? itemsTotal : productCost;
