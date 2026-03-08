@@ -1765,154 +1765,224 @@ const AdminOrders = () => {
           </Card>
         ) : (
           <Card className="border-border/40 overflow-hidden shadow-sm">
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="bg-secondary/30">
-                  <TableHead className="font-bold text-[11px] px-2 py-1.5">Order</TableHead>
-                  <TableHead className="font-bold text-[11px] px-2 py-1.5">Customer</TableHead>
-                  <TableHead className="font-bold text-[11px] px-2 py-1.5">Phone</TableHead>
-                  <TableHead className="font-bold text-[11px] px-2 py-1.5">Amount</TableHead>
-                  <TableHead className="font-bold text-[11px] px-2 py-1.5">Product</TableHead>
-                  <TableHead className="font-bold text-[11px] px-2 py-1.5">Status</TableHead>
-                  <TableHead className="font-bold text-[11px] px-2 py-1.5">Courier</TableHead>
-                  <TableHead className="font-bold text-[11px] px-2 py-1.5">Date</TableHead>
-                  <TableHead className="font-bold text-[11px] px-2 py-1.5 text-center">📝</TableHead>
-                  <TableHead className="font-bold text-[11px] px-2 py-1.5 text-right">Actions</TableHead>
+                <TableRow className="bg-muted/60 border-b-2 border-border/60">
+                  <TableHead className="font-bold text-[11px] px-2 py-2 whitespace-nowrap">Status</TableHead>
+                  <TableHead className="font-bold text-[11px] px-1 py-2 w-8">
+                    <Checkbox 
+                      checked={selectedOrderIds.size === filteredOrders.length && filteredOrders.length > 0}
+                      onCheckedChange={(checked) => {
+                        if (checked) setSelectedOrderIds(new Set(filteredOrders.map(o => o.id)));
+                        else setSelectedOrderIds(new Set());
+                      }}
+                    />
+                  </TableHead>
+                  <TableHead className="font-bold text-[11px] px-1 py-2 w-10">Notes</TableHead>
+                  <TableHead className="font-bold text-[11px] px-2 py-2">Invoice ID</TableHead>
+                  <TableHead className="font-bold text-[11px] px-2 py-2">Name & Number</TableHead>
+                  <TableHead className="font-bold text-[11px] px-2 py-2">Date</TableHead>
+                  <TableHead className="font-bold text-[11px] px-2 py-2">Address</TableHead>
+                  <TableHead className="font-bold text-[11px] px-2 py-2">Courier</TableHead>
+                  <TableHead className="font-bold text-[11px] px-2 py-2">Summary</TableHead>
+                  <TableHead className="font-bold text-[11px] px-2 py-2">Employee</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredOrders.map((order) => {
+                {filteredOrders.map((order, idx) => {
                   const courierInfo = courierByOrderId[order.id];
+                  const items = orderItemsByOrderId[order.id] || [];
+                  const custStats = order.customer_phone ? customerStatsByPhone[order.customer_phone] : null;
+                  const successRate = custStats && custStats.total > 0 ? Math.round((custStats.success / custStats.total) * 100) : 0;
+                  const employeeName = assignmentByOrderId[order.id] || "";
+                  const due = Number(order.total_amount) - Number(order.discount);
                   return (
-                  <TableRow key={order.id} className="hover:bg-secondary/20 cursor-pointer group" onClick={() => setDetailOrderId(order.id)}>
-                    <TableCell className="font-mono text-xs font-semibold px-2 py-1.5">{order.order_number}</TableCell>
-                    <TableCell className="px-2 py-1.5">
-                      <p className="font-medium text-xs leading-tight">{order.customer_name}</p>
-                      {order.customer_address && <p className="text-[10px] text-muted-foreground truncate max-w-[150px] leading-tight">{order.customer_address}</p>}
+                  <TableRow key={order.id} className="hover:bg-secondary/20 cursor-pointer group border-b border-border/30 align-top" onClick={() => setDetailOrderId(order.id)}>
+                    {/* Status + SL */}
+                    <TableCell className="px-2 py-2 align-top">
+                      <div className="flex flex-col items-start gap-0.5">
+                        <Select value={order.status} onValueChange={(value) => handleStatusChange(order.id, value, order.status)}>
+                          <SelectTrigger className="w-[90px] h-5 rounded text-[10px] border-0 px-1.5 font-semibold" onClick={(e) => e.stopPropagation()}
+                            style={{ backgroundColor: order.status === 'processing' ? '#0ea5e9' : order.status === 'confirmed' ? '#059669' : order.status === 'cancelled' ? '#ef4444' : order.status === 'delivered' ? '#10b981' : order.status === 'in_courier' ? '#8b5cf6' : order.status === 'on_hold' ? '#eab308' : order.status === 'returned' ? '#f97316' : '#6b7280', color: 'white' }}>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Constants.public.Enums.order_status.map((s) => (
+                              <SelectItem key={s} value={s}>
+                                <div className="flex items-center gap-2">
+                                  <span className={`h-2 w-2 rounded-full ${getStatusColor(s as OrderStatus)}`} />
+                                  {getStatusLabel(s as OrderStatus)}
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <span className="text-[9px] text-muted-foreground font-medium">sl: {idx + 1}</span>
+                      </div>
                     </TableCell>
-                    <TableCell className="px-2 py-1.5">
-                      <div className="flex items-center gap-1">
-                        <span className="text-xs">{order.customer_phone || "—"}</span>
-                        {order.customer_phone && (
-                          <div className="flex items-center gap-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <a href={`tel:${order.customer_phone}`} onClick={(e) => e.stopPropagation()}>
-                              <Button variant="ghost" size="icon" className="h-5 w-5 rounded text-emerald-600">
-                                <Phone className="h-2.5 w-2.5" />
-                              </Button>
-                            </a>
-                            <Button variant="ghost" size="icon" className="h-5 w-5 rounded text-muted-foreground" onClick={(e) => {
-                              e.stopPropagation();
-                              navigator.clipboard.writeText(order.customer_phone!);
-                              toast.success("কপি!");
-                            }}>
-                              <Copy className="h-2.5 w-2.5" />
-                            </Button>
-                          </div>
+
+                    {/* Select */}
+                    <TableCell className="px-1 py-2 align-top" onClick={(e) => e.stopPropagation()}>
+                      <Checkbox 
+                        checked={selectedOrderIds.has(order.id)} 
+                        onCheckedChange={(checked) => {
+                          const newSet = new Set(selectedOrderIds);
+                          if (checked) newSet.add(order.id); else newSet.delete(order.id);
+                          setSelectedOrderIds(newSet);
+                        }}
+                      />
+                    </TableCell>
+
+                    {/* Notes */}
+                    <TableCell className="px-1 py-2 align-top" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center gap-0.5">
+                        {order.notes ? (
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <button className="h-6 w-6 rounded flex items-center justify-center bg-emerald-100 dark:bg-emerald-900/30 hover:bg-emerald-200 transition-colors" title={order.notes}>
+                                <MessageSquare className="h-3 w-3 text-emerald-600" />
+                              </button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-64 p-3 rounded-xl text-xs">
+                              <p className="font-semibold text-foreground mb-1 text-[11px]">Staff Note</p>
+                              <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed">{order.notes}</p>
+                            </PopoverContent>
+                          </Popover>
+                        ) : (
+                          <button className="h-6 w-6 rounded flex items-center justify-center bg-secondary/40 hover:bg-secondary transition-colors" onClick={() => setDetailOrderId(order.id)}>
+                            <Plus className="h-3 w-3 text-muted-foreground" />
+                          </button>
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="font-semibold text-xs px-2 py-1.5">৳{Number(order.total_amount).toLocaleString()}</TableCell>
-                    <TableCell className="px-2 py-1.5">
-                      {orderItemsByOrderId[order.id]?.length > 0 ? (
-                        <div className="flex items-center gap-1.5">
-                          {(() => {
-                            const firstItem = orderItemsByOrderId[order.id][0];
-                            const imgUrl = firstItem.product_id ? productImageMap[firstItem.product_id] : productImageMap[firstItem.product_name];
-                            return imgUrl ? (
-                              <img src={imgUrl} alt="" className="h-7 w-7 rounded object-cover border border-border/40 flex-shrink-0" />
-                            ) : (
-                              <div className="h-7 w-7 rounded bg-secondary/60 flex items-center justify-center flex-shrink-0">
-                                <Package className="h-3 w-3 text-muted-foreground/40" />
-                              </div>
-                            );
-                          })()}
-                          <div className="min-w-0">
-                            <p className="text-[11px] text-foreground truncate max-w-[120px] leading-tight">
-                              {orderItemsByOrderId[order.id][0].product_name}
-                            </p>
-                            {orderItemsByOrderId[order.id].length > 1 && (
-                              <p className="text-[9px] text-muted-foreground">+{orderItemsByOrderId[order.id].length - 1} আরো</p>
-                            )}
-                          </div>
-                        </div>
-                      ) : (
-                        <span className="text-[10px] text-muted-foreground">—</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="px-2 py-1.5">
-                      <Select
-                        value={order.status}
-                        onValueChange={(value) => handleStatusChange(order.id, value, order.status)}
-                      >
-                        <SelectTrigger className="w-[110px] h-6 rounded text-[11px] border-0 bg-secondary/40 px-2" onClick={(e) => e.stopPropagation()}>
-                          <div className="flex items-center gap-1.5">
-                            <span className={`h-1.5 w-1.5 rounded-full ${getStatusColor(order.status)}`} />
-                            <SelectValue />
-                          </div>
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Constants.public.Enums.order_status.map((s) => (
-                            <SelectItem key={s} value={s}>
-                              <div className="flex items-center gap-2">
-                                <span className={`h-2 w-2 rounded-full ${getStatusColor(s as OrderStatus)}`} />
-                                {getStatusLabel(s as OrderStatus)}
-                              </div>
-                            </SelectItem>
+
+                    {/* Invoice ID + Products */}
+                    <TableCell className="px-2 py-2 align-top min-w-[200px]">
+                      <p className="font-mono text-xs font-bold text-primary">#{order.order_number.replace(/^ORD-0*/, '')}</p>
+                      {items.length > 0 ? (
+                        <ul className="mt-0.5 space-y-0">
+                          {items.slice(0, 3).map((item: any, i: number) => (
+                            <li key={i} className="text-[10px] text-muted-foreground leading-tight">
+                              • {item.quantity || 1} x {item.product_name}
+                              {(() => {
+                                const product = allProducts.find((p: any) => p.id === item.product_id || p.name === item.product_name);
+                                return product ? ` - ${Number(product.selling_price).toLocaleString()}Tk` : '';
+                              })()}
+                            </li>
                           ))}
-                        </SelectContent>
-                      </Select>
+                          {items.length > 3 && <li className="text-[9px] text-muted-foreground">+{items.length - 3} আরো</li>}
+                        </ul>
+                      ) : null}
                     </TableCell>
-                    <TableCell className="px-2 py-1.5">
-                      {courierInfo ? (
-                        <div className="min-w-0">
-                          <p className="text-[11px] font-medium text-foreground leading-tight">{courierInfo.provider_name}</p>
-                          {(courierInfo.tracking_id || courierInfo.consignment_id) && (
-                            <p className="text-[9px] text-muted-foreground font-mono truncate max-w-[100px]" title={courierInfo.tracking_id || courierInfo.consignment_id || ""}>
-                              #{courierInfo.tracking_id || courierInfo.consignment_id}
-                            </p>
+
+                    {/* Name & Number */}
+                    <TableCell className="px-2 py-2 align-top min-w-[180px]">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-1">
+                          <span className="text-xs font-semibold text-foreground">{order.customer_name}</span>
+                          <button className="opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => {
+                            e.stopPropagation();
+                            navigator.clipboard.writeText(order.customer_name);
+                            toast.success("নাম কপি!");
+                          }}>
+                            <Copy className="h-2.5 w-2.5 text-muted-foreground" />
+                          </button>
+                        </div>
+                        {order.customer_phone && (
+                          <div className="flex items-center gap-1">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono font-semibold bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300">
+                              {order.customer_phone}
+                            </span>
+                            <a href={`https://wa.me/${order.customer_phone.replace(/^0/, '88')}`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="h-5 w-5 rounded-full bg-emerald-500 flex items-center justify-center hover:bg-emerald-600 transition-colors">
+                              <svg className="h-3 w-3 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.832-1.438A9.955 9.955 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/></svg>
+                            </a>
+                            <a href={`tel:${order.customer_phone}`} onClick={(e) => e.stopPropagation()} className="h-5 w-5 rounded-full bg-violet-500 flex items-center justify-center hover:bg-violet-600 transition-colors">
+                              <Phone className="h-2.5 w-2.5 text-white" />
+                            </a>
+                            <button onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(order.customer_phone!); toast.success("কপি!"); }} className="h-5 w-5 rounded-full bg-rose-500 flex items-center justify-center hover:bg-rose-600 transition-colors">
+                              <Copy className="h-2.5 w-2.5 text-white" />
+                            </button>
+                          </div>
+                        )}
+                        <div className="text-[9px] text-muted-foreground">Source: {order.source || "Landing Page"}</div>
+                      </div>
+                    </TableCell>
+
+                    {/* Date */}
+                    <TableCell className="px-2 py-2 align-top text-[10px] text-muted-foreground min-w-[140px]">
+                      <div className="space-y-0.5">
+                        <p>C:{format(new Date(order.created_at), "dd/MM/yyyy")} - {format(new Date(order.created_at), "hh:mma")}</p>
+                        <p>U:{format(new Date(order.updated_at), "dd/MM/yyyy")} - {format(new Date(order.updated_at), "hh:mma")}</p>
+                        {employeeName && <p className="font-semibold text-foreground">By: {employeeName.split(' ')[0]?.toUpperCase()}</p>}
+                      </div>
+                    </TableCell>
+
+                    {/* Address */}
+                    <TableCell className="px-2 py-2 align-top max-w-[140px]">
+                      <div className="flex items-start gap-1">
+                        <span className="text-[10px] text-muted-foreground leading-tight line-clamp-2">{order.customer_address || "—"}</span>
+                        {order.customer_address && (
+                          <button className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity mt-0.5" onClick={(e) => {
+                            e.stopPropagation();
+                            navigator.clipboard.writeText(order.customer_address!);
+                            toast.success("ঠিকানা কপি!");
+                          }}>
+                            <Copy className="h-2.5 w-2.5 text-muted-foreground" />
+                          </button>
+                        )}
+                      </div>
+                    </TableCell>
+
+                    {/* Courier - Customer delivery history */}
+                    <TableCell className="px-2 py-2 align-top min-w-[160px]">
+                      {custStats ? (
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2 text-[10px]">
+                            <span className="text-muted-foreground">To: <strong className="text-foreground">{custStats.total}</strong></span>
+                            <span className="text-muted-foreground">Co: <strong className="text-foreground">{custStats.confirmed}</strong></span>
+                            {custStats.isNew && <span className="px-1.5 py-0 rounded text-[9px] font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">New</span>}
+                          </div>
+                          {custStats.total > 1 && (
+                            <>
+                              <div className="w-full h-3 rounded-full overflow-hidden flex" style={{ backgroundColor: '#ef4444' }}>
+                                <div className="h-full rounded-l-full flex items-center justify-center text-[8px] font-bold text-white" style={{ width: `${successRate}%`, backgroundColor: '#22c55e', minWidth: successRate > 0 ? '20px' : '0' }}>
+                                  {successRate > 15 ? `${successRate.toFixed(1)}%` : ''}
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2 text-[9px]">
+                                <span className="text-muted-foreground">To: <strong>{custStats.total}</strong></span>
+                                <span className="text-emerald-600">Su: <strong>{custStats.success}</strong></span>
+                                <span className="text-destructive">Fa: <strong>{custStats.failed}</strong></span>
+                              </div>
+                            </>
                           )}
                         </div>
                       ) : (
                         <span className="text-[10px] text-muted-foreground/40">—</span>
                       )}
                     </TableCell>
-                    <TableCell className="text-[11px] text-muted-foreground px-2 py-1.5 whitespace-nowrap">{format(new Date(order.created_at), "dd MMM")}</TableCell>
-                    <TableCell className="px-2 py-1.5 text-center">
-                      {order.notes ? (
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <button
-                              className="text-base hover:scale-125 transition-transform cursor-pointer"
-                              onClick={(e) => e.stopPropagation()}
-                              title={order.notes}
-                            >
-                              📝
-                            </button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-64 p-3 rounded-xl text-xs" onClick={(e) => e.stopPropagation()}>
-                            <p className="font-semibold text-foreground mb-1 text-[11px]">Staff Note</p>
-                            <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed">{order.notes}</p>
-                          </PopoverContent>
-                        </Popover>
-                      ) : (
-                        <span className="text-muted-foreground/30 text-sm">—</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right px-2 py-1.5">
-                      <div className="flex items-center gap-0.5 justify-end">
-                        <Button variant="ghost" size="icon" className="h-6 w-6 rounded text-primary hover:bg-primary/10" title="Edit" onClick={(e) => { e.stopPropagation(); setDetailOrderId(order.id); }}>
-                          <Pencil className="h-3 w-3" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-6 w-6 rounded text-destructive hover:bg-destructive/10" onClick={(e) => { e.stopPropagation(); deleteOrder.mutate(order.id); }}>
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
+
+                    {/* Summary */}
+                    <TableCell className="px-2 py-2 align-top text-[10px] min-w-[100px]">
+                      <div className="space-y-0">
+                        <p className="text-foreground">Total: {Number(order.total_amount).toLocaleString()}</p>
+                        <p className="text-destructive font-semibold">Less: {Number(order.discount).toFixed(2)}</p>
+                        <p className="text-foreground">Paid: 0.00</p>
+                        <p className="text-foreground">Due: {due.toFixed(2)}</p>
                       </div>
+                    </TableCell>
+
+                    {/* Employee */}
+                    <TableCell className="px-2 py-2 align-top text-[10px] font-semibold text-foreground">
+                      {employeeName ? employeeName.split(' ')[0]?.toUpperCase() : "—"}
                     </TableCell>
                   </TableRow>
                   );
                 })}
               </TableBody>
             </Table>
+            </div>
           </Card>
         )}
         {/* Order Detail Dialog */}
