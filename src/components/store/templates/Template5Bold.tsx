@@ -11,7 +11,7 @@ const Template5Bold = () => {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-zinc-900 text-white">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/store" className="text-3xl font-black tracking-tighter">
+          <Link to="/" className="text-3xl font-black tracking-tighter">
             SOH<span className="text-lime-400">OZ</span>
           </Link>
           <div className="hidden md:flex items-center gap-8 text-sm font-bold uppercase tracking-widest text-zinc-400">
