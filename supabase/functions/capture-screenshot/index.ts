@@ -103,7 +103,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { data: publicUrl } = supabase.storage.from('screenshots').getPublicUrl(fileName);
+    const { data: signedUrlData, error: signedError } = await supabase.storage.from('screenshots').createSignedUrl(fileName, 86400); // 24h
+    const imageUrl = signedUrlData?.signedUrl || '';
 
     // Save metadata
     const { data: record, error: dbError } = await supabase
@@ -112,7 +113,7 @@ Deno.serve(async (req) => {
         user_id: user.id,
         url: formattedUrl,
         title,
-        image_url: publicUrl.publicUrl,
+        image_url: imageUrl,
       })
       .select()
       .single();
@@ -130,9 +131,9 @@ Deno.serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
-    console.error('Error:', error);
+    console.error('[capture-screenshot] Error:', error);
     return new Response(
-      JSON.stringify({ success: false, error: error instanceof Error ? error.message : 'Unknown error' }),
+      JSON.stringify({ success: false, error: 'Internal server error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

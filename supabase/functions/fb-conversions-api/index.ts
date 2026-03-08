@@ -31,6 +31,15 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Validate pixel_id against server-side allowlist
+    const allowedPixelId = Deno.env.get("FB_PIXEL_ID");
+    if (allowedPixelId && pixel_id !== allowedPixelId) {
+      return new Response(
+        JSON.stringify({ error: "Invalid pixel_id" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const accessToken = Deno.env.get("FB_ACCESS_TOKEN");
     if (!accessToken) {
       return new Response(
@@ -106,7 +115,7 @@ Deno.serve(async (req) => {
     if (!fbResponse.ok) {
       console.error("[CAPI] Error:", JSON.stringify(fbResult));
       return new Response(
-        JSON.stringify({ error: "CAPI error", details: fbResult }),
+        JSON.stringify({ error: "Failed to send conversion event" }),
         { status: fbResponse.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -120,7 +129,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error("[CAPI] Exception:", error.message);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: "Internal server error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
