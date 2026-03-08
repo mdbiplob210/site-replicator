@@ -2086,7 +2086,22 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
     } catch (e) { console.error(e); }
   };
 
-  const handleSaveChanges = async () => {
+  const handleAddQuickNote = async () => {
+    if (!orderId || !quickNote.trim()) return;
+    setIsAddingNote(true);
+    try {
+      await supabase.from("order_activity_logs" as any).insert({
+        order_id: orderId, user_id: user?.id || null, user_name: user?.email || "System",
+        action: "quick_note", field_name: "note", old_value: null, new_value: quickNote.trim(), details: quickNote.trim(),
+      } as any);
+      setQuickNote("");
+      queryClient.invalidateQueries({ queryKey: ["order-activity-logs", orderId] });
+      toast.success("নোট যোগ হয়েছে!");
+    } catch (e: any) { toast.error("নোট যোগ করতে ব্যর্থ"); }
+    finally { setIsAddingNote(false); }
+  };
+
+
     if (!order || !orderId) return;
     setIsSaving(true);
     try {
