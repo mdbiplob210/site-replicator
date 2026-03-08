@@ -138,7 +138,7 @@ const AdminOrders = () => {
   const [activeIncompleteTab, setActiveIncompleteTab] = useState("Processing");
   const [incompleteSourceFilter, setIncompleteSourceFilter] = useState<"all" | "ip_blocked" | "abandoned_form">("all");
   const [incompleteDateFilter, setIncompleteDateFilter] = useState<IncompleteDateFilter>("all");
-  const [deliveryRatio, setDeliveryRatio] = useState([0]);
+  
   const [searchQuery, setSearchQuery] = useState("");
   const [orderDateFilter, setOrderDateFilter] = useState<OrderDateFilter>("all");
   const [customDateFrom, setCustomDateFrom] = useState<Date | undefined>();
