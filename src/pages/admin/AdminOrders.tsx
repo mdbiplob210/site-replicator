@@ -1490,21 +1490,22 @@ const AdminOrders = () => {
                       </div>
                     </div>
                   </div>
+                  {/* Notes & Source */}
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold flex items-center gap-1"><MessageSquare className="h-3 w-3" /> Staff Note</Label>
-                      <Textarea placeholder="Internal staff note..." rows={2} className="rounded-xl text-xs" value={notes} onChange={(e) => setNotes(e.target.value)} />
+                      <Label className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><MessageSquare className="h-3 w-3" /> স্টাফ নোট</Label>
+                      <Textarea placeholder="ইন্টারনাল স্টাফ নোট..." rows={2} className="rounded-xl text-sm" value={notes} onChange={(e) => setNotes(e.target.value)} />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold flex items-center gap-1"><Truck className="h-3 w-3" /> Courier Note</Label>
-                      <Textarea placeholder="Courier/packing note (memo তে প্রিন্ট হবে)..." rows={2} className="rounded-xl text-xs" value={courierNote} onChange={(e) => setCourierNote(e.target.value)} />
+                      <Label className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><Truck className="h-3 w-3" /> কুরিয়ার নোট</Label>
+                      <Textarea placeholder="কুরিয়ার/প্যাকিং নোট (মেমো তে প্রিন্ট হবে)..." rows={2} className="rounded-xl text-sm" value={courierNote} onChange={(e) => setCourierNote(e.target.value)} />
                     </div>
                   </div>
                   {/* Order Source */}
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold flex items-center gap-1"><Globe className="h-3 w-3" /> Order Source</Label>
+                    <Label className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><Globe className="h-3 w-3" /> অর্ডার সোর্স</Label>
                     <Select value={selectedOrderSource} onValueChange={setSelectedOrderSource}>
-                      <SelectTrigger className="rounded-xl h-9 text-sm"><SelectValue placeholder="Select source..." /></SelectTrigger>
+                      <SelectTrigger className="rounded-xl h-10 text-sm"><SelectValue placeholder="সোর্স সিলেক্ট করুন..." /></SelectTrigger>
                       <SelectContent>
                         {orderSources.filter((s: any) => !s.is_system || s.slug !== 'api').map((src: any) => (
                           <SelectItem key={src.id} value={src.name}>
