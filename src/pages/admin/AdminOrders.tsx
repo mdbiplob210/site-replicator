@@ -1421,6 +1421,56 @@ const AdminOrders = () => {
           </div>
         </Card>
 
+        {/* Bulk Actions Bar */}
+        {selectedOrderIds.size > 0 && (
+          <Card className="p-3 border-primary/30 bg-primary/5 shadow-sm flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-2">
+              <Checkbox checked={true} onCheckedChange={() => setSelectedOrderIds(new Set())} />
+              <span className="text-sm font-semibold text-foreground">{selectedOrderIds.size}টি অর্ডার সিলেক্টেড</span>
+            </div>
+            <div className="h-5 w-px bg-border/60" />
+            {/* Bulk Status Change */}
+            <Select value={bulkStatusValue} onValueChange={(v) => { setBulkStatusValue(v); handleBulkStatusChange(v); }}>
+              <SelectTrigger className="w-[150px] h-8 rounded-xl text-xs font-semibold border-border/60">
+                <SelectValue placeholder="স্ট্যাটাস চেঞ্জ" />
+              </SelectTrigger>
+              <SelectContent>
+                {Constants.public.Enums.order_status.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    <div className="flex items-center gap-2">
+                      <span className={`h-2 w-2 rounded-full ${getStatusColor(s as OrderStatus)}`} />
+                      {getStatusLabel(s as OrderStatus)}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {/* Bulk Courier Assign */}
+            <Select value={bulkCourierId} onValueChange={(v) => { setBulkCourierId(v); handleBulkCourierAssign(v); }}>
+              <SelectTrigger className="w-[160px] h-8 rounded-xl text-xs font-semibold border-border/60">
+                <Truck className="h-3.5 w-3.5 mr-1" />
+                <SelectValue placeholder="কুরিয়ার অ্যাসাইন" />
+              </SelectTrigger>
+              <SelectContent>
+                {courierProviders.map((cp: any) => (
+                  <SelectItem key={cp.id} value={cp.id}>
+                    <div className="flex items-center gap-2">
+                      <Truck className="h-3 w-3" /> {cp.name}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {/* Bulk Delete */}
+            <Button variant="destructive" size="sm" className="gap-1.5 h-8 rounded-xl text-xs" onClick={handleBulkDelete}>
+              <Trash2 className="h-3.5 w-3.5" /> ডিলিট
+            </Button>
+            <Button variant="ghost" size="sm" className="h-8 rounded-xl text-xs text-muted-foreground ml-auto" onClick={() => setSelectedOrderIds(new Set())}>
+              <X className="h-3.5 w-3.5 mr-1" /> বাতিল
+            </Button>
+          </Card>
+        )}
+
         {/* Advanced Filter Panel */}
         <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
           <CollapsibleTrigger asChild>
