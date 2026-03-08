@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { ShoppingBag, ArrowUpRight, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 
 const Template5Bold = () => {
   const { data: products = [], isLoading } = usePublicProducts();
