@@ -70,6 +70,8 @@ export const getStatusLabel = (status: OrderStatus): string => {
     in_courier: "In Courier",
     delivered: "Delivered",
     returned: "Return",
+    pending_return: "Pending Return",
+    hand_delivery: "Hand Delivery",
   };
   return labels[status] || status;
 };
