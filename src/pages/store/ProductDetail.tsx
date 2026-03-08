@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useProduct } from "@/hooks/usePublicProducts";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
