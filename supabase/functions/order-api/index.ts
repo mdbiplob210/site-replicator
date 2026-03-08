@@ -163,9 +163,6 @@ Deno.serve(async (req) => {
       const type = body.type || 'order'
       const tracking = extractTrackingInfo(req, body)
 
-      // ── Duplicate detection (1-24h window) ──
-      const duplicateWindowHours = Math.min(Math.max(body.duplicate_window_hours || 24, 1), 48)
-      const windowAgo = new Date(Date.now() - duplicateWindowHours * 60 * 60 * 1000).toISOString()
       const customerPhone = body.customer_phone || body.phone || null
       const customerName = body.customer_name || body.name
 
@@ -175,42 +172,27 @@ Deno.serve(async (req) => {
         })
       }
 
-      // Check duplicates by IP and phone
-      let isDuplicate = false
-      let blockReason = ''
+      // ═══ Load fraud settings from DB ═══
+      const { data: fraudSettings } = await supabase
+        .from('fraud_settings')
+        .select('*')
+        .limit(1)
+        .single()
 
-      if (customerPhone) {
-        const { data: phoneOrders } = await supabase
-          .from('orders')
-          .select('id, order_number, created_at')
-          .eq('customer_phone', customerPhone)
-          .gte('created_at', windowAgo)
-          .limit(1)
+      const protectionEnabled = fraudSettings?.protection_enabled || false
+      const blockDuration = fraudSettings?.repeat_block_duration || '24h'
+      const deviceFingerprintEnabled = fraudSettings?.device_fingerprint_enabled || false
+      const deliveryRatioEnabled = fraudSettings?.delivery_ratio_enabled || false
+      const minDeliveryRatio = fraudSettings?.min_delivery_ratio || 0
+      const blockPopupMessage = fraudSettings?.block_popup_message || 'আপনি ইতিমধ্যে একটি অর্ডার করেছেন।'
 
-        if (phoneOrders && phoneOrders.length > 0) {
-          isDuplicate = true
-          blockReason = `একই ফোন (${customerPhone}) থেকে ${duplicateWindowHours}ঘণ্টার মধ্যে আগেই অর্ডার হয়েছে (Order: ${phoneOrders[0].order_number})`
-        }
-      }
+      const durationMap: Record<string, number> = { '1h': 1, '6h': 6, '12h': 12, '24h': 24 }
+      const duplicateWindowHours = durationMap[blockDuration] || 24
 
-      if (!isDuplicate && tracking.client_ip !== 'unknown') {
-        const { data: ipOrders } = await supabase
-          .from('orders')
-          .select('id, order_number, created_at')
-          .eq('client_ip', tracking.client_ip)
-          .gte('created_at', windowAgo)
-          .limit(1)
+      const totalAmount = body.total_amount || ((body.unit_price || 0) * (body.quantity || 1) + (body.delivery_charge || 0) - (body.discount || 0))
 
-        if (ipOrders && ipOrders.length > 0) {
-          isDuplicate = true
-          blockReason = `একই IP (${tracking.client_ip}) থেকে ${duplicateWindowHours}ঘণ্টার মধ্যে আগেই অর্ডার হয়েছে`
-        }
-      }
-
-      // ── If duplicate → store in incomplete_orders ──
-      if (isDuplicate) {
-        const totalAmount = body.total_amount || ((body.unit_price || 0) * (body.quantity || 1) + (body.delivery_charge || 0) - (body.discount || 0))
-
+      // Helper to insert incomplete order
+      const insertIncomplete = async (blockReason: string) => {
         const { data: incompleteData } = await supabase.from('incomplete_orders').insert({
           customer_name: customerName,
           customer_phone: customerPhone,
@@ -230,21 +212,126 @@ Deno.serve(async (req) => {
           user_agent: tracking.user_agent,
           device_info: tracking.device_info,
         }).select('id').single()
+        return incompleteData
+      }
 
+      // ═══ Check permanent phone block ═══
+      if (customerPhone) {
+        const { data: phoneBlocked } = await supabase
+          .from('blocked_phones')
+          .select('id')
+          .eq('phone_number', customerPhone)
+          .limit(1)
+
+        if (phoneBlocked && phoneBlocked.length > 0) {
+          const incompleteData = await insertIncomplete(`স্থায়ীভাবে ব্লক করা নম্বর: ${customerPhone}`)
+          return new Response(JSON.stringify({
+            success: false, blocked: true, reason: 'permanently_blocked_phone',
+            incomplete_order_id: incompleteData?.id || null,
+            message: blockPopupMessage,
+          }), { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+        }
+      }
+
+      // ═══ Check permanent IP block ═══
+      if (tracking.client_ip !== 'unknown') {
+        const { data: ipBlocked } = await supabase
+          .from('blocked_ips')
+          .select('id')
+          .eq('ip_address', tracking.client_ip)
+          .limit(1)
+
+        if (ipBlocked && ipBlocked.length > 0) {
+          const incompleteData = await insertIncomplete(`স্থায়ীভাবে ব্লক করা IP: ${tracking.client_ip}`)
+          return new Response(JSON.stringify({
+            success: false, blocked: true, reason: 'permanently_blocked_ip',
+            incomplete_order_id: incompleteData?.id || null,
+            message: blockPopupMessage,
+          }), { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+        }
+      }
+
+      // ═══ Repeat order block (only if protection enabled) ═══
+      let isDuplicate = false
+      let blockReason = ''
+
+      if (protectionEnabled && blockDuration !== 'off') {
+        const windowAgo = new Date(Date.now() - duplicateWindowHours * 60 * 60 * 1000).toISOString()
+
+        if (customerPhone) {
+          const { data: phoneOrders } = await supabase
+            .from('orders')
+            .select('id, order_number, created_at')
+            .eq('customer_phone', customerPhone)
+            .gte('created_at', windowAgo)
+            .limit(1)
+
+          if (phoneOrders && phoneOrders.length > 0) {
+            isDuplicate = true
+            blockReason = `একই ফোন (${customerPhone}) থেকে ${duplicateWindowHours}ঘণ্টার মধ্যে আগেই অর্ডার হয়েছে`
+          }
+        }
+
+        if (!isDuplicate && tracking.client_ip !== 'unknown') {
+          const { data: ipOrders } = await supabase
+            .from('orders')
+            .select('id, order_number, created_at')
+            .eq('client_ip', tracking.client_ip)
+            .gte('created_at', windowAgo)
+            .limit(1)
+
+          if (ipOrders && ipOrders.length > 0) {
+            isDuplicate = true
+            blockReason = `একই IP (${tracking.client_ip}) থেকে ${duplicateWindowHours}ঘণ্টার মধ্যে আগেই অর্ডার হয়েছে`
+          }
+        }
+
+        // Device fingerprint check
+        if (!isDuplicate && deviceFingerprintEnabled) {
+          const { data: deviceOrders } = await supabase
+            .from('orders')
+            .select('id')
+            .eq('device_info', tracking.device_info)
+            .gte('created_at', windowAgo)
+            .limit(1)
+
+          if (deviceOrders && deviceOrders.length > 0) {
+            isDuplicate = true
+            blockReason = `একই ডিভাইস থেকে ${duplicateWindowHours}ঘণ্টার মধ্যে আগেই অর্ডার হয়েছে`
+          }
+        }
+      }
+
+      if (isDuplicate) {
+        const incompleteData = await insertIncomplete(blockReason)
         return new Response(JSON.stringify({
-          success: false,
-          blocked: true,
-          duplicate: true,
+          success: false, blocked: true, duplicate: true,
           reason: blockReason,
           incomplete_order_id: incompleteData?.id || null,
-          message: `ডুপ্লিকেট অর্ডার সনাক্ত হয়েছে। ${duplicateWindowHours} ঘণ্টা পর আবার অর্ডার করা যাবে।`,
-          tracking: {
-            ip: tracking.client_ip,
-            device: tracking.device_info,
+          message: blockPopupMessage,
+          tracking: { ip: tracking.client_ip, device: tracking.device_info }
+        }), { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
+
+      // ═══ Delivery ratio check ═══
+      if (protectionEnabled && deliveryRatioEnabled && minDeliveryRatio > 0 && customerPhone) {
+        const { data: custOrders } = await supabase
+          .from('orders')
+          .select('id, status')
+          .eq('customer_phone', customerPhone)
+
+        if (custOrders && custOrders.length >= 3) {
+          const delivered = custOrders.filter((o: any) => o.status === 'delivered').length
+          const ratio = Math.round((delivered / custOrders.length) * 100)
+          if (ratio < minDeliveryRatio) {
+            const incompleteData = await insertIncomplete(`ডেলিভারি রেশিও কম (${ratio}% < ${minDeliveryRatio}%)`)
+            return new Response(JSON.stringify({
+              success: false, blocked: true, reason: 'low_delivery_ratio',
+              incomplete_order_id: incompleteData?.id || null,
+              message: blockPopupMessage,
+            }), { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
           }
-        }), {
-          status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        })
+        }
       }
 
       // ── Create incomplete_order (explicit type) ──
