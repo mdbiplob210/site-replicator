@@ -113,7 +113,7 @@ Deno.serve(async (req) => {
         user_id: user.id,
         url: formattedUrl,
         title,
-        image_url: publicUrl.publicUrl,
+        image_url: imageUrl,
       })
       .select()
       .single();
