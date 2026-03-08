@@ -11,17 +11,17 @@ const Template4Colorful = () => {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-rose-100">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link to="/store" className="text-2xl font-extrabold">
+          <Link to="/" className="text-2xl font-extrabold">
             <span className="bg-gradient-to-r from-rose-500 via-violet-500 to-indigo-500 bg-clip-text text-transparent">
               SOHOZ
             </span>
           </Link>
           <div className="hidden md:flex items-center gap-6 text-sm font-semibold text-gray-600">
-            <Link to="/store" className="hover:text-rose-500 transition">🏠 Home</Link>
-            <Link to="/store" className="hover:text-violet-500 transition">🛍️ Shop</Link>
-            <Link to="/store" className="hover:text-indigo-500 transition">💬 Contact</Link>
+            <Link to="/" className="hover:text-rose-500 transition">🏠 Home</Link>
+            <Link to="/" className="hover:text-violet-500 transition">🛍️ Shop</Link>
+            <Link to="/" className="hover:text-indigo-500 transition">💬 Contact</Link>
           </div>
-          <Link to="/store/cart" className="relative p-2 rounded-full bg-rose-50 hover:bg-rose-100 transition">
+          <Link to="/checkout" className="relative p-2 rounded-full bg-rose-50 hover:bg-rose-100 transition">
             <ShoppingBag className="h-5 w-5 text-rose-500" />
           </Link>
         </div>
@@ -62,7 +62,7 @@ const Template4Colorful = () => {
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
             {products.map((p) => (
-              <Link key={p.id} to={`/store/product/${p.id}`} className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-rose-50">
+              <Link key={p.id} to={`/product/${p.id}`} className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-rose-50">
                 <div className="aspect-square bg-gray-50 relative overflow-hidden">
                   {p.main_image_url ? (
                     <img src={p.main_image_url} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />

@@ -22,13 +22,13 @@ const ProductDetail = () => {
   const handleOrder = () => {
     const orderData = { productId: product.id, name: product.name, price: product.selling_price, qty, image: product.main_image_url, productCode: product.product_code };
     sessionStorage.setItem("checkout_item", JSON.stringify(orderData));
-    navigate("/store/checkout");
+    navigate("/checkout");
   };
 
   return (
     <div className={`min-h-screen ${bgClass}`}>
       <div className="max-w-6xl mx-auto px-4 py-8">
-        <Link to="/store" className="inline-flex items-center gap-2 text-sm mb-8 opacity-60 hover:opacity-100 transition">
+        <Link to="/" className="inline-flex items-center gap-2 text-sm mb-8 opacity-60 hover:opacity-100 transition">
           <ArrowLeft className="h-4 w-4" /> Back to Store
         </Link>
 

@@ -10,15 +10,15 @@ const Template3Minimal = () => {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-stone-50/95 backdrop-blur">
         <div className="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between">
-          <Link to="/store" className="text-xl font-normal tracking-[0.3em] uppercase text-stone-800">
+          <Link to="/" className="text-xl font-normal tracking-[0.3em] uppercase text-stone-800">
             Sohoz
           </Link>
           <div className="hidden md:flex items-center gap-10 text-xs tracking-[0.2em] uppercase text-stone-500">
-            <Link to="/store" className="hover:text-stone-900 transition">Shop</Link>
-            <Link to="/store" className="hover:text-stone-900 transition">About</Link>
-            <Link to="/store" className="hover:text-stone-900 transition">Contact</Link>
+            <Link to="/" className="hover:text-stone-900 transition">Shop</Link>
+            <Link to="/" className="hover:text-stone-900 transition">About</Link>
+            <Link to="/" className="hover:text-stone-900 transition">Contact</Link>
           </div>
-          <Link to="/store/cart" className="p-2">
+          <Link to="/checkout" className="p-2">
             <ShoppingBag className="h-5 w-5 text-stone-600" />
           </Link>
         </div>
@@ -34,7 +34,7 @@ const Template3Minimal = () => {
         <p className="text-stone-500 mb-10 max-w-md mx-auto text-sm leading-relaxed">
           সৌন্দর্য এবং গুণমানের সমন্বয়ে তৈরি আমাদের কিউরেটেড কালেকশন
         </p>
-        <Link to="/store" className="inline-flex items-center gap-2 text-xs tracking-[0.2em] uppercase text-stone-700 hover:text-stone-900 border-b border-stone-300 pb-1 transition">
+        <Link to="/" className="inline-flex items-center gap-2 text-xs tracking-[0.2em] uppercase text-stone-700 hover:text-stone-900 border-b border-stone-300 pb-1 transition">
           View Collection <ArrowRight className="h-3 w-3" />
         </Link>
       </section>
@@ -50,7 +50,7 @@ const Template3Minimal = () => {
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-10">
             {products.map((p) => (
-              <Link key={p.id} to={`/store/product/${p.id}`} className="group">
+              <Link key={p.id} to={`/product/${p.id}`} className="group">
                 <div className="aspect-[3/4] bg-stone-100 overflow-hidden mb-4">
                   {p.main_image_url ? (
                     <img src={p.main_image_url} alt={p.name} className="w-full h-full object-cover group-hover:scale-102 transition duration-700" />

@@ -11,16 +11,16 @@ const Template5Bold = () => {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-zinc-900 text-white">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/store" className="text-3xl font-black tracking-tighter">
+          <Link to="/" className="text-3xl font-black tracking-tighter">
             SOH<span className="text-lime-400">OZ</span>
           </Link>
           <div className="hidden md:flex items-center gap-8 text-sm font-bold uppercase tracking-widest text-zinc-400">
-            <Link to="/store" className="hover:text-white transition">Shop</Link>
-            <Link to="/store" className="hover:text-white transition">New</Link>
-            <Link to="/store" className="hover:text-white transition">About</Link>
+            <Link to="/" className="hover:text-white transition">Shop</Link>
+            <Link to="/" className="hover:text-white transition">New</Link>
+            <Link to="/" className="hover:text-white transition">About</Link>
           </div>
           <div className="flex items-center gap-3">
-            <Link to="/store/cart" className="flex items-center gap-2 bg-lime-400 text-zinc-900 px-4 py-2 rounded-full font-bold text-sm hover:bg-lime-300 transition">
+            <Link to="/checkout" className="flex items-center gap-2 bg-lime-400 text-zinc-900 px-4 py-2 rounded-full font-bold text-sm hover:bg-lime-300 transition">
               <ShoppingBag className="h-4 w-4" /> Cart
             </Link>
             <button className="md:hidden p-2"><Menu className="h-5 w-5" /></button>
@@ -61,7 +61,7 @@ const Template5Bold = () => {
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {products.map((p) => (
-              <Link key={p.id} to={`/store/product/${p.id}`} className="group bg-white overflow-hidden hover:shadow-2xl transition-all duration-300">
+              <Link key={p.id} to={`/product/${p.id}`} className="group bg-white overflow-hidden hover:shadow-2xl transition-all duration-300">
                 <div className="aspect-square bg-zinc-50 overflow-hidden">
                   {p.main_image_url ? (
                     <img src={p.main_image_url} alt={p.name} className="w-full h-full object-cover group-hover:scale-110 transition duration-500" />

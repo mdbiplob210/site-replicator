@@ -10,7 +10,7 @@ const OrderSuccess = () => (
       </div>
       <h1 className="text-3xl font-bold text-gray-900 mb-3">অর্ডার সফল হয়েছে! 🎉</h1>
       <p className="text-gray-500 mb-8">আপনার অর্ডার প্রসেসিং হচ্ছে। শীঘ্রই আপনাকে কল করা হবে।</p>
-      <Link to="/store">
+      <Link to="/">
         <Button variant="outline" className="gap-2">
           <ArrowLeft className="h-4 w-4" /> Store এ ফিরে যান
         </Button>

@@ -11,17 +11,17 @@ const Template2Dark = () => {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-gray-950/90 backdrop-blur-lg border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/store" className="text-2xl font-black tracking-wider">
+          <Link to="/" className="text-2xl font-black tracking-wider">
             SOHOZ<span className="text-amber-400">.</span>
           </Link>
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-400">
-            <Link to="/store" className="hover:text-white transition">Home</Link>
-            <Link to="/store" className="hover:text-white transition">Collection</Link>
-            <Link to="/store" className="hover:text-white transition">Contact</Link>
+            <Link to="/" className="hover:text-white transition">Home</Link>
+            <Link to="/" className="hover:text-white transition">Collection</Link>
+            <Link to="/" className="hover:text-white transition">Contact</Link>
           </div>
           <div className="flex items-center gap-3">
             <button className="p-2 rounded-full hover:bg-gray-800"><Search className="h-5 w-5" /></button>
-            <Link to="/store/cart" className="p-2 rounded-full hover:bg-gray-800">
+            <Link to="/checkout" className="p-2 rounded-full hover:bg-gray-800">
               <ShoppingBag className="h-5 w-5" />
             </Link>
           </div>
@@ -57,7 +57,7 @@ const Template2Dark = () => {
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
             {products.map((p) => (
-              <Link key={p.id} to={`/store/product/${p.id}`} className="group">
+              <Link key={p.id} to={`/product/${p.id}`} className="group">
                 <div className="aspect-square bg-gray-900 rounded-xl overflow-hidden mb-3 border border-gray-800 group-hover:border-amber-500/50 transition">
                   {p.main_image_url ? (
                     <img src={p.main_image_url} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />

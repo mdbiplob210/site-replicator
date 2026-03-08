@@ -27,7 +27,7 @@ const Template1Classic = () => {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <Link to="/store" className="flex items-center gap-1">
+          <Link to="/" className="flex items-center gap-1">
             <span className="text-2xl font-black tracking-tighter bg-gradient-to-r from-[#0f3460] to-[#533483] bg-clip-text text-transparent">
               SOHOZ
             </span>
@@ -35,10 +35,10 @@ const Template1Classic = () => {
           </Link>
 
           <nav className="hidden md:flex items-center gap-8 text-[13px] font-semibold uppercase tracking-widest text-gray-500">
-            <Link to="/store" className="hover:text-[#0f3460] transition-colors duration-200">Home</Link>
-            <Link to="/store" className="hover:text-[#0f3460] transition-colors duration-200">Shop</Link>
-            <Link to="/store" className="hover:text-[#0f3460] transition-colors duration-200">New</Link>
-            <Link to="/store" className="hover:text-[#0f3460] transition-colors duration-200">Contact</Link>
+            <Link to="/" className="hover:text-[#0f3460] transition-colors duration-200">Home</Link>
+            <Link to="/" className="hover:text-[#0f3460] transition-colors duration-200">Shop</Link>
+            <Link to="/" className="hover:text-[#0f3460] transition-colors duration-200">New</Link>
+            <Link to="/" className="hover:text-[#0f3460] transition-colors duration-200">Contact</Link>
           </nav>
 
           <div className="flex items-center gap-2">
@@ -48,7 +48,7 @@ const Template1Classic = () => {
             <button className="p-2.5 rounded-full hover:bg-gray-100 transition-colors relative">
               <Heart className="h-[18px] w-[18px] text-gray-600" />
             </button>
-            <Link to="/store/checkout" className="p-2.5 rounded-full hover:bg-gray-100 transition-colors relative">
+            <Link to="/checkout" className="p-2.5 rounded-full hover:bg-gray-100 transition-colors relative">
               <ShoppingBag className="h-[18px] w-[18px] text-gray-600" />
               <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-[#e94560] text-[10px] font-bold text-white flex items-center justify-center">0</span>
             </Link>
@@ -175,7 +175,7 @@ const Template1Classic = () => {
               return (
                 <Link
                   key={p.id}
-                  to={`/store/product/${p.id}`}
+                  to={`/product/${p.id}`}
                   className="group relative"
                   onMouseEnter={() => setHoveredId(p.id)}
                   onMouseLeave={() => setHoveredId(null)}
@@ -282,7 +282,7 @@ const Template1Classic = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
             <div className="col-span-2 md:col-span-1">
-              <Link to="/store" className="inline-block mb-4">
+              <Link to="/" className="inline-block mb-4">
                 <span className="text-xl font-black text-white">SOHOZ</span>
                 <span className="text-xl font-black text-[#e94560]">STORE</span>
               </Link>

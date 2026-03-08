@@ -196,7 +196,7 @@ const CheckoutPage = () => {
 
       sessionStorage.removeItem("checkout_item");
       toast.success("অর্ডার সফল হয়েছে! 🎉");
-      navigate("/store/order-success");
+      navigate("/order-success");
     } catch (err: any) {
       orderSubmitted.current = false;
       toast.error(err.message);
@@ -209,7 +209,7 @@ const CheckoutPage = () => {
     <div className="min-h-screen flex flex-col items-center justify-center gap-4">
       <ShoppingBag className="h-16 w-16 text-gray-300" />
       <p className="text-gray-500">কোন প্রোডাক্ট সিলেক্ট করা হয়নি</p>
-      <Button variant="outline" onClick={() => navigate("/store")}>Store এ ফিরে যান</Button>
+      <Button variant="outline" onClick={() => navigate("/")}>Store এ ফিরে যান</Button>
     </div>
   );
 
