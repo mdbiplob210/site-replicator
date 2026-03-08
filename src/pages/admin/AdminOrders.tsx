@@ -1199,7 +1199,7 @@ const AdminOrders = () => {
         </div>
 
         {/* Status Tabs */}
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
+        <div className="flex flex-wrap gap-2 pb-2">
           {statusTabs.map((tab) => (
             <button
               key={tab.label}
