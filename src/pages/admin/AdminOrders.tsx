@@ -27,7 +27,7 @@ import {
   Trash2, Copy, X, ShoppingCart, ArrowLeft, Clock, CheckCircle2,
   GitMerge, PauseCircle, XCircle, Trash, Smartphone, BarChart3,
   MessageSquare, Filter, Loader2, Package, Globe, SlidersHorizontal, AlertTriangle, History,
-  Hand, RotateCcw, CalendarClock
+  Hand, RotateCcw, CalendarClock, Phone, Pencil, Activity
 } from "lucide-react";
 import {
   useOrders, useOrderCounts, useCreateOrder, useUpdateOrderStatus,
@@ -1748,7 +1748,32 @@ const AdminOrders = () => {
                         {order.customer_address && <p className="text-xs text-muted-foreground truncate max-w-[200px]">{order.customer_address}</p>}
                       </div>
                     </TableCell>
-                    <TableCell className="text-sm">{order.customer_phone || "—"}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm">{order.customer_phone || "—"}</span>
+                        {order.customer_phone && (
+                          <div className="flex items-center gap-0.5">
+                            <a href={`tel:${order.customer_phone}`} onClick={(e) => e.stopPropagation()}>
+                              <Button variant="ghost" size="icon" className="h-6 w-6 rounded-md text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30">
+                                <Phone className="h-3 w-3" />
+                              </Button>
+                            </a>
+                            <Button variant="ghost" size="icon" className="h-6 w-6 rounded-md text-muted-foreground hover:bg-secondary" onClick={(e) => {
+                              e.stopPropagation();
+                              navigator.clipboard.writeText(order.customer_phone!);
+                              toast.success("নম্বর কপি হয়েছে!");
+                            }}>
+                              <Copy className="h-3 w-3" />
+                            </Button>
+                            <a href={`https://wa.me/${order.customer_phone.replace(/^0/, "88")}`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
+                              <Button variant="ghost" size="icon" className="h-6 w-6 rounded-md text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30">
+                                <MessageSquare className="h-3 w-3" />
+                              </Button>
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell className="font-semibold text-sm">৳{Number(order.total_amount).toLocaleString()}</TableCell>
                     <TableCell>
                       {order.source ? (
@@ -1784,24 +1809,32 @@ const AdminOrders = () => {
                       </Select>
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">{format(new Date(order.created_at), "dd MMM yyyy")}</TableCell>
-                    <TableCell className="text-right flex items-center gap-1 justify-end">
-                      {order.status === "hand_delivery" && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-8 rounded-lg text-xs gap-1 text-emerald-600 border-emerald-200 hover:bg-emerald-50 dark:border-emerald-800 dark:hover:bg-emerald-900/30"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleStatusChange(order.id, "delivered", order.status);
-                          }}
-                        >
-                          <CheckCircle2 className="h-3.5 w-3.5" />
-                          ডেলিভারি সম্পন্ন
+                    <TableCell className="text-right">
+                      <div className="flex items-center gap-1 justify-end">
+                        {order.status === "hand_delivery" && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8 rounded-lg text-xs gap-1 text-emerald-600 border-emerald-200 hover:bg-emerald-50 dark:border-emerald-800 dark:hover:bg-emerald-900/30"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleStatusChange(order.id, "delivered", order.status);
+                            }}
+                          >
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                            ডেলিভারি সম্পন্ন
+                          </Button>
+                        )}
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-primary hover:bg-primary/10" title="Activity Log" onClick={(e) => { e.stopPropagation(); setDetailOrderId(order.id); }}>
+                          <Activity className="h-4 w-4" />
                         </Button>
-                      )}
-                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive hover:bg-destructive/10" onClick={(e) => { e.stopPropagation(); deleteOrder.mutate(order.id); }}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:bg-secondary" title="Edit" onClick={(e) => { e.stopPropagation(); setDetailOrderId(order.id); }}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive hover:bg-destructive/10" onClick={(e) => { e.stopPropagation(); deleteOrder.mutate(order.id); }}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
