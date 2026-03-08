@@ -1,0 +1,69 @@
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+
+type LocationItem = { id: string | number; name: string };
+
+async function fetchCourierLocations(
+  providerId: string,
+  action: "cities" | "zones" | "areas",
+  cityId?: string | number,
+  zoneId?: string | number
+): Promise<LocationItem[]> {
+  const params = new URLSearchParams({
+    provider_id: providerId,
+    action,
+  });
+  if (cityId) params.set("city_id", String(cityId));
+  if (zoneId) params.set("zone_id", String(zoneId));
+
+  const { data, error } = await supabase.functions.invoke("courier-locations", {
+    method: "GET",
+    headers: {},
+    body: undefined,
+  });
+
+  // supabase.functions.invoke doesn't support GET params well, use fetch directly
+  const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+  const url = `https://${projectId}.supabase.co/functions/v1/courier-locations?${params.toString()}`;
+
+  const resp = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+    },
+  });
+
+  if (!resp.ok) {
+    const errData = await resp.json().catch(() => ({}));
+    throw new Error(errData.error || `Failed to fetch locations [${resp.status}]`);
+  }
+
+  const result = await resp.json();
+  return result.data || [];
+}
+
+export function useCourierCities(providerId: string | null) {
+  return useQuery({
+    queryKey: ["courier-cities", providerId],
+    queryFn: () => fetchCourierLocations(providerId!, "cities"),
+    enabled: !!providerId,
+    staleTime: 10 * 60 * 1000, // Cache 10 minutes
+  });
+}
+
+export function useCourierZones(providerId: string | null, cityId: string | number | null) {
+  return useQuery({
+    queryKey: ["courier-zones", providerId, cityId],
+    queryFn: () => fetchCourierLocations(providerId!, "zones", cityId!),
+    enabled: !!providerId && !!cityId,
+    staleTime: 10 * 60 * 1000,
+  });
+}
+
+export function useCourierAreas(providerId: string | null, zoneId: string | number | null) {
+  return useQuery({
+    queryKey: ["courier-areas", providerId, zoneId],
+    queryFn: () => fetchCourierLocations(providerId!, "areas", undefined, zoneId!),
+    enabled: !!providerId && !!zoneId,
+    staleTime: 10 * 60 * 1000,
+  });
+}
