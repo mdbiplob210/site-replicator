@@ -1202,15 +1202,22 @@ const AdminOrders = () => {
                     <Badge variant="secondary" className="ml-2 text-xs">{nextOrderNumber}</Badge>
                   </DialogTitle>
                 </DialogHeader>
-                <div className="space-y-5">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold">Customer Name *</Label>
-                      <Input placeholder="Enter name" className="rounded-xl" value={customerName} onChange={(e) => setCustomerName(e.target.value)} />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold">Phone</Label>
-                      <Input placeholder="01XXXXXXXXX" className="rounded-xl" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} />
+                <div className="space-y-6">
+                  {/* Customer Info Section */}
+                  <div className="p-4 rounded-2xl bg-secondary/20 border border-border/40 space-y-4">
+                    <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                      <div className="h-6 w-6 rounded-lg bg-primary/10 flex items-center justify-center"><Phone className="h-3.5 w-3.5 text-primary" /></div>
+                      কাস্টমার তথ্য
+                    </h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-muted-foreground">কাস্টমারের নাম *</Label>
+                        <Input placeholder="নাম লিখুন" className="rounded-xl h-10 text-sm" value={customerName} onChange={(e) => setCustomerName(e.target.value)} />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-muted-foreground">ফোন নম্বর</Label>
+                        <Input placeholder="01XXXXXXXXX" className="rounded-xl h-10 text-sm" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} />
+                      </div>
                     </div>
                   </div>
 
@@ -1287,15 +1294,16 @@ const AdminOrders = () => {
                   )}
 
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold">Address</Label>
-                    <Textarea placeholder="Enter address" rows={2} className="rounded-xl" value={customerAddress} onChange={(e) => setCustomerAddress(e.target.value)} />
+                    <Label className="text-xs font-semibold text-muted-foreground">ঠিকানা</Label>
+                    <Textarea placeholder="সম্পূর্ণ ঠিকানা লিখুন" rows={2} className="rounded-xl text-sm" value={customerAddress} onChange={(e) => setCustomerAddress(e.target.value)} />
                   </div>
 
                   {/* Courier Selection */}
-                  <div className="space-y-2">
-                    <Label className="text-xs font-semibold flex items-center gap-1.5">
-                      <Truck className="h-3.5 w-3.5 text-violet-500" /> কুরিয়ার সিলেক্ট করুন
-                    </Label>
+                  <div className="p-4 rounded-2xl bg-secondary/20 border border-border/40 space-y-3">
+                    <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                      <div className="h-6 w-6 rounded-lg bg-violet-500/10 flex items-center justify-center"><Truck className="h-3.5 w-3.5 text-violet-500" /></div>
+                      কুরিয়ার সিলেক্ট
+                    </h3>
                     <Select value={selectedCourierId || ""} onValueChange={(v) => {
                       setSelectedCourierId(v || null);
                       setSelectedCityId(null);
@@ -1321,11 +1329,14 @@ const AdminOrders = () => {
                         {courierProviders.find((cp: any) => cp.id === selectedCourierId)?.name || ""}
                       </Badge>
                     )}
-                  </div>
 
                   {/* City/Zone/Area from Courier API */}
                   {selectedCourierId && (
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="p-3 rounded-xl bg-background border border-border/30 space-y-3">
+                      <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+                        📍 {courierProviders.find((cp: any) => cp.id === selectedCourierId)?.name} এরিয়া সিলেক্ট
+                      </p>
+                      <div className="grid grid-cols-3 gap-2">
                       <div className="space-y-1">
                         <Label className="text-[10px] font-semibold text-muted-foreground">City</Label>
                         <Select value={selectedCityId || ""} onValueChange={(v) => {
@@ -1372,12 +1383,17 @@ const AdminOrders = () => {
                           </SelectContent>
                         </Select>
                       </div>
+                      </div>
                     </div>
                   )}
+                  </div>
 
                   {/* Product Items */}
-                  <div className="space-y-3">
-                    <Label className="text-xs font-semibold">প্রোডাক্ট যোগ করুন</Label>
+                  <div className="p-4 rounded-2xl bg-secondary/20 border border-border/40 space-y-3">
+                    <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                      <div className="h-6 w-6 rounded-lg bg-primary/10 flex items-center justify-center"><Package className="h-3.5 w-3.5 text-primary" /></div>
+                      প্রোডাক্ট যোগ করুন
+                    </h3>
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -1441,39 +1457,55 @@ const AdminOrders = () => {
                     )}
                   </div>
 
-                  <div className="grid grid-cols-4 gap-3">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold">Product Cost (৳)</Label>
-                      <Input type="number" className="rounded-xl" value={orderItems.length > 0 ? itemsTotal : productCost} onChange={(e) => setProductCost(Number(e.target.value))} disabled={orderItems.length > 0} />
+                  {/* Financial Summary */}
+                  <div className="p-4 rounded-2xl bg-secondary/20 border border-border/40 space-y-3">
+                    <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                      <div className="h-6 w-6 rounded-lg bg-emerald-500/10 flex items-center justify-center">৳</div>
+                      মূল্য হিসাব
+                    </h3>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-muted-foreground">প্রোডাক্ট খরচ (৳)</Label>
+                        <Input type="number" className="rounded-xl h-10 text-sm font-medium" value={orderItems.length > 0 ? itemsTotal : productCost} onChange={(e) => setProductCost(Number(e.target.value))} disabled={orderItems.length > 0} />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-muted-foreground">ডেলিভারি চার্জ (৳)</Label>
+                        <Input type="number" className="rounded-xl h-10 text-sm font-medium" value={deliveryCharge} onChange={(e) => setDeliveryCharge(Number(e.target.value))} />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-muted-foreground">ডিসকাউন্ট (৳)</Label>
+                        <Input type="number" className="rounded-xl h-10 text-sm font-medium" value={discount} onChange={(e) => setDiscount(Number(e.target.value))} />
+                      </div>
                     </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold">Delivery (৳)</Label>
-                      <Input type="number" className="rounded-xl" value={deliveryCharge} onChange={(e) => setDeliveryCharge(Number(e.target.value))} />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold">Discount (৳)</Label>
-                      <Input type="number" className="rounded-xl" value={discount} onChange={(e) => setDiscount(Number(e.target.value))} />
-                    </div>
-                    <div className="text-right p-3 rounded-xl bg-primary/5 border border-primary/20">
-                      <p className="text-xs text-primary font-semibold">Total</p>
-                      <p className="text-2xl font-bold text-primary">৳{(orderItems.length > 0 ? itemsTotal : productCost) + deliveryCharge - discount}</p>
+                    <div className="p-4 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <p className="text-xs text-muted-foreground">প্রোডাক্ট + ডেলিভারি − ডিসকাউন্ট</p>
+                        <p className="text-xs text-muted-foreground font-medium">
+                          ৳{(orderItems.length > 0 ? itemsTotal : productCost).toLocaleString()} + ৳{deliveryCharge.toLocaleString()} − ৳{discount.toLocaleString()}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs text-primary font-semibold">সর্বমোট</p>
+                        <p className="text-3xl font-bold text-primary">৳{((orderItems.length > 0 ? itemsTotal : productCost) + deliveryCharge - discount).toLocaleString()}</p>
+                      </div>
                     </div>
                   </div>
+                  {/* Notes & Source */}
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold flex items-center gap-1"><MessageSquare className="h-3 w-3" /> Staff Note</Label>
-                      <Textarea placeholder="Internal staff note..." rows={2} className="rounded-xl text-xs" value={notes} onChange={(e) => setNotes(e.target.value)} />
+                      <Label className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><MessageSquare className="h-3 w-3" /> স্টাফ নোট</Label>
+                      <Textarea placeholder="ইন্টারনাল স্টাফ নোট..." rows={2} className="rounded-xl text-sm" value={notes} onChange={(e) => setNotes(e.target.value)} />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold flex items-center gap-1"><Truck className="h-3 w-3" /> Courier Note</Label>
-                      <Textarea placeholder="Courier/packing note (memo তে প্রিন্ট হবে)..." rows={2} className="rounded-xl text-xs" value={courierNote} onChange={(e) => setCourierNote(e.target.value)} />
+                      <Label className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><Truck className="h-3 w-3" /> কুরিয়ার নোট</Label>
+                      <Textarea placeholder="কুরিয়ার/প্যাকিং নোট (মেমো তে প্রিন্ট হবে)..." rows={2} className="rounded-xl text-sm" value={courierNote} onChange={(e) => setCourierNote(e.target.value)} />
                     </div>
                   </div>
                   {/* Order Source */}
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold flex items-center gap-1"><Globe className="h-3 w-3" /> Order Source</Label>
+                    <Label className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><Globe className="h-3 w-3" /> অর্ডার সোর্স</Label>
                     <Select value={selectedOrderSource} onValueChange={setSelectedOrderSource}>
-                      <SelectTrigger className="rounded-xl h-9 text-sm"><SelectValue placeholder="Select source..." /></SelectTrigger>
+                      <SelectTrigger className="rounded-xl h-10 text-sm"><SelectValue placeholder="সোর্স সিলেক্ট করুন..." /></SelectTrigger>
                       <SelectContent>
                         {orderSources.filter((s: any) => !s.is_system || s.slug !== 'api').map((src: any) => (
                           <SelectItem key={src.id} value={src.name}>
@@ -1484,21 +1516,32 @@ const AdminOrders = () => {
                     </Select>
                   </div>
                   {/* Order Status */}
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold flex items-center gap-1"><Activity className="h-3 w-3" /> Order Status</Label>
-                    <Select value={newOrderStatus} onValueChange={setNewOrderStatus}>
-                      <SelectTrigger className="rounded-xl h-9 text-sm"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {Constants.public.Enums.order_status.map((s) => (
-                          <SelectItem key={s} value={s}>
-                            <div className="flex items-center gap-2">
-                              <div className={cn("h-2.5 w-2.5 rounded-full", getStatusColor(s))} />
-                              {getStatusLabel(s)}
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold flex items-center gap-1.5"><Activity className="h-4 w-4 text-primary" /> অর্ডার স্ট্যাটাস</Label>
+                    <div className="grid grid-cols-4 gap-2">
+                      {[
+                        { value: "processing", label: "New Order", color: "bg-blue-500", icon: Clock },
+                        { value: "confirmed", label: "Confirmed", color: "bg-emerald-600", icon: CheckCircle2 },
+                        { value: "on_hold", label: "Hold", color: "bg-yellow-500", icon: PauseCircle },
+                        { value: "hand_delivery", label: "Hand Delivery", color: "bg-cyan-500", icon: Hand },
+                        { value: "cancelled", label: "Cancelled", color: "bg-red-500", icon: XCircle },
+                      ].map((s) => (
+                        <button
+                          key={s.value}
+                          type="button"
+                          onClick={() => setNewOrderStatus(s.value)}
+                          className={cn(
+                            "flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold border-2 transition-all duration-200",
+                            newOrderStatus === s.value
+                              ? `${s.color} text-white border-transparent shadow-lg scale-[1.02]`
+                              : "bg-secondary/30 text-foreground border-border/40 hover:border-primary/30 hover:bg-secondary/50"
+                          )}
+                        >
+                          <s.icon className="h-3.5 w-3.5" />
+                          {s.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                   <Button className="w-full rounded-xl shadow-sm" onClick={handleCreateOrder} disabled={createOrder.isPending || !customerName.trim()}>
                     {createOrder.isPending ? <><Loader2 className="h-4 w-4 animate-spin" /> Creating...</> : <><Plus className="h-4 w-4" /> Create Order</>}
@@ -2770,16 +2813,22 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
         </DialogHeader>
 
         {order && (
-          <div className="space-y-5">
+          <div className="space-y-6">
             {/* Customer Info - Editable */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label className="text-xs font-semibold">Customer Name</Label>
-                <Input className="rounded-xl" value={editName} onChange={(e) => setEditName(e.target.value)} />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs font-semibold">Phone</Label>
-                <Input className="rounded-xl" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} />
+            <div className="p-4 rounded-2xl bg-secondary/20 border border-border/40 space-y-4">
+              <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                <div className="h-6 w-6 rounded-lg bg-primary/10 flex items-center justify-center"><Phone className="h-3.5 w-3.5 text-primary" /></div>
+                কাস্টমার তথ্য
+              </h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground">কাস্টমারের নাম</Label>
+                  <Input className="rounded-xl h-10 text-sm" value={editName} onChange={(e) => setEditName(e.target.value)} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground">ফোন নম্বর</Label>
+                  <Input className="rounded-xl h-10 text-sm" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} />
+                </div>
               </div>
             </div>
 
@@ -2808,8 +2857,8 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
 
             {/* Address */}
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold">Address</Label>
-              <Textarea className="rounded-xl" rows={2} value={editAddress} onChange={(e) => setEditAddress(e.target.value)} />
+              <Label className="text-xs font-semibold text-muted-foreground">ঠিকানা</Label>
+              <Textarea className="rounded-xl text-sm" rows={2} value={editAddress} onChange={(e) => setEditAddress(e.target.value)} />
             </div>
 
             {/* City/Zone/Area Manual Select */}
@@ -2844,10 +2893,11 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
             </div>
 
             {/* Courier Selection for Edit */}
-            <div className="space-y-2">
-              <Label className="text-xs font-semibold flex items-center gap-1.5">
-                <Truck className="h-3.5 w-3.5 text-violet-500" /> কুরিয়ার সিলেক্ট করুন
-              </Label>
+            <div className="p-4 rounded-2xl bg-secondary/20 border border-border/40 space-y-3">
+              <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                <div className="h-6 w-6 rounded-lg bg-violet-500/10 flex items-center justify-center"><Truck className="h-3.5 w-3.5 text-violet-500" /></div>
+                কুরিয়ার সিলেক্ট
+              </h3>
               <Select value={editCourierId || ""} onValueChange={(v) => {
                 setEditCourierId(v || null);
                 setEditCourierCityId(null);
@@ -2873,11 +2923,14 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                   {editCourierProviders.find((cp: any) => cp.id === editCourierId)?.name || ""}
                 </Badge>
               )}
-            </div>
 
-            {/* City/Zone/Area from Courier API for Edit */}
-            {editCourierId && (
-              <div className="grid grid-cols-3 gap-2">
+              {/* City/Zone/Area from Courier API for Edit */}
+              {editCourierId && (
+                <div className="p-3 rounded-xl bg-background border border-border/30 space-y-3">
+                  <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+                    📍 {editCourierProviders.find((cp: any) => cp.id === editCourierId)?.name} এরিয়া সিলেক্ট
+                  </p>
+                  <div className="grid grid-cols-3 gap-2">
                 <div className="space-y-1">
                   <Label className="text-[10px] font-semibold text-muted-foreground">City</Label>
                   <Select value={editCourierCityId || ""} onValueChange={(v) => {
@@ -2924,8 +2977,10 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                     </SelectContent>
                   </Select>
                 </div>
+                </div>
               </div>
-            )}
+              )}
+            </div>
 
             <div className="space-y-3">
               <Label className="text-xs font-semibold">প্রোডাক্ট যোগ করুন</Label>
@@ -3026,57 +3081,80 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
             </div>
 
             {/* Financial */}
-            <div className="grid grid-cols-4 gap-3">
-              <div className="space-y-1.5">
-                <Label className="text-xs font-semibold">Product Cost (৳)</Label>
-                <Input type="number" className="rounded-xl" value={Number(order.product_cost)} disabled />
+            <div className="p-4 rounded-2xl bg-secondary/20 border border-border/40 space-y-3">
+              <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                <div className="h-6 w-6 rounded-lg bg-emerald-500/10 flex items-center justify-center">৳</div>
+                মূল্য হিসাব
+              </h3>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground">প্রোডাক্ট খরচ (৳)</Label>
+                  <Input type="number" className="rounded-xl h-10 text-sm font-medium" value={Number(order.product_cost)} disabled />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground">ডেলিভারি চার্জ (৳)</Label>
+                  <Input type="number" className="rounded-xl h-10 text-sm font-medium" value={editDelivery} onChange={(e) => setEditDelivery(Number(e.target.value))} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground">ডিসকাউন্ট (৳)</Label>
+                  <Input type="number" className="rounded-xl h-10 text-sm font-medium" value={editDiscount} onChange={(e) => setEditDiscount(Number(e.target.value))} />
+                </div>
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs font-semibold">Delivery (৳)</Label>
-                <Input type="number" className="rounded-xl" value={editDelivery} onChange={(e) => setEditDelivery(Number(e.target.value))} />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs font-semibold">Discount (৳)</Label>
-                <Input type="number" className="rounded-xl" value={editDiscount} onChange={(e) => setEditDiscount(Number(e.target.value))} />
-              </div>
-              <div className="text-right p-3 rounded-xl bg-primary/5 border border-primary/20">
-                <p className="text-xs text-primary font-semibold">Total</p>
-                <p className="text-2xl font-bold text-primary">৳{(Number(order.product_cost) + editDelivery - editDiscount).toLocaleString()}</p>
+              <div className="p-4 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <p className="text-xs text-muted-foreground">প্রোডাক্ট + ডেলিভারি − ডিসকাউন্ট</p>
+                  <p className="text-xs text-muted-foreground font-medium">
+                    ৳{Number(order.product_cost).toLocaleString()} + ৳{editDelivery.toLocaleString()} − ৳{editDiscount.toLocaleString()}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-primary font-semibold">সর্বমোট</p>
+                  <p className="text-3xl font-bold text-primary">৳{(Number(order.product_cost) + editDelivery - editDiscount).toLocaleString()}</p>
+                </div>
               </div>
             </div>
 
             {/* Dual Notes */}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold flex items-center gap-1"><MessageSquare className="h-3 w-3" /> Staff Note</Label>
-                <Textarea rows={2} className="rounded-xl text-xs" value={editNotes} onChange={(e) => setEditNotes(e.target.value)} />
+                <Label className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><MessageSquare className="h-3 w-3" /> স্টাফ নোট</Label>
+                <Textarea rows={2} className="rounded-xl text-sm" value={editNotes} onChange={(e) => setEditNotes(e.target.value)} />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold flex items-center gap-1"><Truck className="h-3 w-3" /> Courier Note</Label>
-                <Textarea rows={2} className="rounded-xl text-xs" value={editCourierNote} onChange={(e) => setEditCourierNote(e.target.value)} />
+                <Label className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><Truck className="h-3 w-3" /> কুরিয়ার নোট</Label>
+                <Textarea rows={2} className="rounded-xl text-sm" value={editCourierNote} onChange={(e) => setEditCourierNote(e.target.value)} />
               </div>
             </div>
 
             {/* Status Change */}
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold flex items-center gap-1.5">
-                <Activity className="h-3.5 w-3.5" /> স্ট্যাটাস পরিবর্তন
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold flex items-center gap-1.5">
+                <Activity className="h-4 w-4 text-primary" /> স্ট্যাটাস পরিবর্তন
               </Label>
-              <Select value={order.status} onValueChange={handleStatusChange}>
-                <SelectTrigger className="rounded-xl h-9 text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Constants.public.Enums.order_status.map((s) => (
-                    <SelectItem key={s} value={s}>
-                      <div className="flex items-center gap-2">
-                        <div className={cn("h-2.5 w-2.5 rounded-full", getStatusColor(s))} />
-                        {getStatusLabel(s)}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="grid grid-cols-4 gap-2">
+                {[
+                  { value: "processing", label: "New Order", color: "bg-blue-500", icon: Clock },
+                  { value: "confirmed", label: "Confirmed", color: "bg-emerald-600", icon: CheckCircle2 },
+                  { value: "on_hold", label: "Hold", color: "bg-yellow-500", icon: PauseCircle },
+                  { value: "hand_delivery", label: "Hand Delivery", color: "bg-cyan-500", icon: Hand },
+                  { value: "cancelled", label: "Cancelled", color: "bg-red-500", icon: XCircle },
+                ].map((s) => (
+                  <button
+                    key={s.value}
+                    type="button"
+                    onClick={() => handleStatusChange(s.value)}
+                    className={cn(
+                      "flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold border-2 transition-all duration-200",
+                      order.status === s.value
+                        ? `${s.color} text-white border-transparent shadow-lg scale-[1.02]`
+                        : "bg-secondary/30 text-foreground border-border/40 hover:border-primary/30 hover:bg-secondary/50"
+                    )}
+                  >
+                    <s.icon className="h-3.5 w-3.5" />
+                    {s.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Save Button */}
