@@ -1202,15 +1202,22 @@ const AdminOrders = () => {
                     <Badge variant="secondary" className="ml-2 text-xs">{nextOrderNumber}</Badge>
                   </DialogTitle>
                 </DialogHeader>
-                <div className="space-y-5">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold">Customer Name *</Label>
-                      <Input placeholder="Enter name" className="rounded-xl" value={customerName} onChange={(e) => setCustomerName(e.target.value)} />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold">Phone</Label>
-                      <Input placeholder="01XXXXXXXXX" className="rounded-xl" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} />
+                <div className="space-y-6">
+                  {/* Customer Info Section */}
+                  <div className="p-4 rounded-2xl bg-secondary/20 border border-border/40 space-y-4">
+                    <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                      <div className="h-6 w-6 rounded-lg bg-primary/10 flex items-center justify-center"><Phone className="h-3.5 w-3.5 text-primary" /></div>
+                      কাস্টমার তথ্য
+                    </h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-muted-foreground">কাস্টমারের নাম *</Label>
+                        <Input placeholder="নাম লিখুন" className="rounded-xl h-10 text-sm" value={customerName} onChange={(e) => setCustomerName(e.target.value)} />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-muted-foreground">ফোন নম্বর</Label>
+                        <Input placeholder="01XXXXXXXXX" className="rounded-xl h-10 text-sm" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} />
+                      </div>
                     </div>
                   </div>
 
