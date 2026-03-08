@@ -1396,7 +1396,7 @@ const AdminOrders = () => {
                           <button
                             key={p.id}
                             onMouseDown={(e) => e.preventDefault()}
-                            onClick={() => { addProductToOrder(p); setProductSearchFocused(true); }}
+                            onClick={() => { addProductToOrder(p); setProductSearchFocused(false); }}
                             className="w-full text-left px-3 py-2 hover:bg-secondary/60 transition-colors flex items-center justify-between text-sm border-b border-border/30 last:border-0"
                           >
                             <div>
@@ -2656,16 +2656,57 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
   const addProductToDetailOrder = async (product: any) => {
     if (!orderId) return;
     try {
-      const { error } = await supabase.from("order_items").insert({
-        order_id: orderId, product_id: product.id, product_name: product.name,
-        product_code: product.product_code, quantity: 1, unit_price: Number(product.selling_price), total_price: Number(product.selling_price),
-      });
-      if (error) throw error;
-      await logActivity("field_edited", "order_items", undefined, undefined, `প্রোডাক্ট যোগ করা হয়েছে: ${product.name}`);
+      // Check if product already exists in order items — merge by incrementing qty
+      const existingItem = items.find((i: any) => i.product_id === product.id || (i.product_name === product.name && i.product_code === product.product_code));
+      if (existingItem) {
+        const newQty = (existingItem.quantity || 1) + 1;
+        const newTotal = newQty * Number(existingItem.unit_price);
+        const { error } = await supabase.from("order_items").update({ quantity: newQty, total_price: newTotal }).eq("id", existingItem.id);
+        if (error) throw error;
+        await logActivity("field_edited", "order_items", `${existingItem.quantity}`, `${newQty}`, `${product.name} কোয়ান্টিটি বাড়ানো হয়েছে`);
+      } else {
+        const { error } = await supabase.from("order_items").insert({
+          order_id: orderId, product_id: product.id, product_name: product.name,
+          product_code: product.product_code, quantity: 1, unit_price: Number(product.selling_price), total_price: Number(product.selling_price),
+        });
+        if (error) throw error;
+        await logActivity("field_edited", "order_items", undefined, undefined, `প্রোডাক্ট যোগ করা হয়েছে: ${product.name}`);
+      }
       queryClient.invalidateQueries({ queryKey: ["order-items", orderId] });
       queryClient.invalidateQueries({ queryKey: ["all-order-items-filter"] });
       setDetailProductSearch("");
-      toast.success("প্রোডাক্ট যোগ হয়েছে!");
+      setDetailProductFocused(false);
+      toast.success(existingItem ? "কোয়ান্টিটি বাড়ানো হয়েছে!" : "প্রোডাক্ট যোগ হয়েছে!");
+    } catch (e: any) { toast.error(e.message); }
+  };
+
+  const updateDetailItemQty = async (item: any, newQty: number) => {
+    if (!orderId) return;
+    try {
+      if (newQty <= 0) {
+        const { error } = await supabase.from("order_items").delete().eq("id", item.id);
+        if (error) throw error;
+        await logActivity("field_edited", "order_items", undefined, undefined, `${item.product_name} রিমুভ করা হয়েছে`);
+        toast.success("আইটেম রিমুভ হয়েছে!");
+      } else {
+        const newTotal = newQty * Number(item.unit_price);
+        const { error } = await supabase.from("order_items").update({ quantity: newQty, total_price: newTotal }).eq("id", item.id);
+        if (error) throw error;
+      }
+      queryClient.invalidateQueries({ queryKey: ["order-items", orderId] });
+      queryClient.invalidateQueries({ queryKey: ["all-order-items-filter"] });
+    } catch (e: any) { toast.error(e.message); }
+  };
+
+  const removeDetailItem = async (item: any) => {
+    if (!orderId) return;
+    try {
+      const { error } = await supabase.from("order_items").delete().eq("id", item.id);
+      if (error) throw error;
+      await logActivity("field_edited", "order_items", undefined, undefined, `${item.product_name} রিমুভ করা হয়েছে`);
+      queryClient.invalidateQueries({ queryKey: ["order-items", orderId] });
+      queryClient.invalidateQueries({ queryKey: ["all-order-items-filter"] });
+      toast.success("আইটেম রিমুভ হয়েছে!");
     } catch (e: any) { toast.error(e.message); }
   };
 
@@ -2861,7 +2902,7 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                     <button
                       key={p.id}
                       onMouseDown={(e) => e.preventDefault()}
-                      onClick={() => { addProductToDetailOrder(p); setDetailProductFocused(true); }}
+                      onClick={() => { addProductToDetailOrder(p); }}
                       className="w-full text-left px-3 py-2 hover:bg-secondary/60 transition-colors flex items-center justify-between text-sm border-b border-border/30 last:border-0"
                     >
                       <div>
@@ -2899,13 +2940,19 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                         )}
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-foreground truncate">{item.product_name}</p>
-                          <p className="text-xs text-muted-foreground">{item.product_code}</p>
+                          <p className="text-xs text-muted-foreground">{item.product_code} · ৳{Number(item.unit_price).toLocaleString()}</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-4 text-sm">
-                        <span className="text-muted-foreground">×{item.quantity}</span>
-                        <span className="text-muted-foreground">৳{Number(item.unit_price).toLocaleString()}</span>
+                      <div className="flex items-center gap-2 text-sm">
+                        <div className="flex items-center gap-1">
+                          <button onClick={() => updateDetailItemQty(item, item.quantity - 1)} className="h-7 w-7 rounded-lg border border-border flex items-center justify-center hover:bg-secondary text-foreground">−</button>
+                          <span className="w-8 text-center text-sm font-semibold text-foreground">{item.quantity}</span>
+                          <button onClick={() => updateDetailItemQty(item, item.quantity + 1)} className="h-7 w-7 rounded-lg border border-border flex items-center justify-center hover:bg-secondary text-foreground">+</button>
+                        </div>
                         <span className="font-semibold text-foreground w-20 text-right">৳{Number(item.total_price).toLocaleString()}</span>
+                        <button onClick={() => removeDetailItem(item)} className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-destructive/10 text-muted-foreground hover:text-destructive">
+                          <X className="h-3.5 w-3.5" />
+                        </button>
                       </div>
                     </div>
                     );
