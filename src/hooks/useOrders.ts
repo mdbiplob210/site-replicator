@@ -53,6 +53,8 @@ const STATUS_MAP: Record<string, OrderStatus> = {
   "Hold": "on_hold",
   "Ship Later": "ship_later",
   "Return": "returned",
+  "Pending Return": "pending_return",
+  "Hand Delivery": "hand_delivery",
 };
 
 export const getStatusFromTab = (tab: string): OrderStatus | null => {
