@@ -21,9 +21,11 @@ const ProductDetail = () => {
   // Popup checkout
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [checkoutItem, setCheckoutItem] = useState<any>(null);
-  const [appliedDiscount, setAppliedDiscount] = useState(0);
+  const [appliedDiscount, setAppliedDiscount] = useState(() => {
+    const saved = localStorage.getItem("exit_discount_amount");
+    return saved ? Number(saved) : 0;
+  });
   const [showDiscountBanner, setShowDiscountBanner] = useState(false);
-  const [discountUsed, setDiscountUsed] = useState(false);
 
   useEffect(() => {
     if (product && !viewTracked[0]) {
@@ -72,14 +74,15 @@ const ProductDetail = () => {
   };
 
   const handleExitIntent = () => {
-    if (discountUsed) return;
+    if (appliedDiscount >= 50) return; // Max ৳50 already applied
     setCheckoutOpen(false);
     setShowDiscountBanner(true);
   };
 
   const handleAcceptDiscount = () => {
-    setDiscountUsed(true);
-    setAppliedDiscount(50);
+    const newDiscount = Math.min(appliedDiscount + 50, 50); // Cap at 50
+    setAppliedDiscount(newDiscount);
+    localStorage.setItem("exit_discount_amount", String(newDiscount));
     setShowDiscountBanner(false);
     setCheckoutOpen(true);
   };
