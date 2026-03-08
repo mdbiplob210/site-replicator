@@ -572,6 +572,62 @@ const AdminOrders = () => {
     } catch (e) { console.error("Activity log error:", e); }
   };
 
+  // Handle status change with cancel/hold interception
+  const handleStatusChange = (orderId: string, newStatus: string, oldStatus: string) => {
+    if (newStatus === "cancelled") {
+      setCancelOrderId(orderId);
+      setCancelReason("");
+      setCancelCustomReason("");
+      setCancelDialogOpen(true);
+      return;
+    }
+    if (newStatus === "on_hold") {
+      setHoldOrderId(orderId);
+      setHoldUntilDate(undefined);
+      setHoldDialogOpen(true);
+      return;
+    }
+    updateStatus.mutate({ id: orderId, status: newStatus as OrderStatus });
+    logActivity(orderId, "status_changed", "status", getStatusLabel(oldStatus as OrderStatus), getStatusLabel(newStatus as OrderStatus));
+  };
+
+  const confirmCancel = async () => {
+    if (!cancelOrderId) return;
+    const reason = cancelReason === "others" ? cancelCustomReason : cancelReason;
+    await supabase.from("orders").update({ cancel_reason: reason } as any).eq("id", cancelOrderId);
+    updateStatus.mutate({ id: cancelOrderId, status: "cancelled" as OrderStatus });
+    const order = orders.find(o => o.id === cancelOrderId);
+    logActivity(cancelOrderId, "status_changed", "status", order ? getStatusLabel(order.status) : "", "Cancelled", `কারণ: ${reason}`);
+    setCancelDialogOpen(false);
+    setCancelOrderId(null);
+  };
+
+  const confirmHold = async () => {
+    if (!holdOrderId) return;
+    if (holdUntilDate) {
+      await supabase.from("orders").update({ hold_until: holdUntilDate.toISOString() } as any).eq("id", holdOrderId);
+    }
+    updateStatus.mutate({ id: holdOrderId, status: "on_hold" as OrderStatus });
+    const order = orders.find(o => o.id === holdOrderId);
+    logActivity(holdOrderId, "status_changed", "status", order ? getStatusLabel(order.status) : "", "Hold", holdUntilDate ? `Hold until: ${format(holdUntilDate, "dd MMM yyyy")}` : "");
+    setHoldDialogOpen(false);
+    setHoldOrderId(null);
+  };
+
+  // Move confirmed orders with courier to in_courier
+  const handleBulkInCourier = () => {
+    const confirmedWithCourier = filteredOrders.filter(o => o.status === "confirmed" && courierByOrderId[o.id]);
+    if (confirmedWithCourier.length === 0) {
+      toast.error("কুরিয়ার সিলেক্ট করা কোনো confirmed অর্ডার নেই!");
+      return;
+    }
+    confirmedWithCourier.forEach(o => {
+      updateStatus.mutate({ id: o.id, status: "in_courier" as OrderStatus });
+      logActivity(o.id, "status_changed", "status", "Confirmed", "In Courier");
+    });
+    toast.success(`${confirmedWithCourier.length}টি অর্ডার In Courier-এ পাঠানো হয়েছে!`);
+  };
+
   const handleCreateOrder = () => {
     if (!customerName.trim()) return;
     const computedProductCost = orderItems.length > 0 ? itemsTotal : productCost;
