@@ -45,6 +45,7 @@ const emptyPage: Partial<LandingPage> = {
 
 export default function AdminLandingPages() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { data: pages, isLoading } = useLandingPages();
   const createMutation = useCreateLandingPage();
   const updateMutation = useUpdateLandingPage();
@@ -54,6 +55,73 @@ export default function AdminLandingPages() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPage, setEditingPage] = useState<Partial<LandingPage> | null>(null);
   const [form, setForm] = useState<Partial<LandingPage>>(emptyPage);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch images for the editing page
+  const { data: pageImages } = useQuery({
+    queryKey: ["landing-page-images", editingPage?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("landing_page_images" as any)
+        .select("*")
+        .eq("landing_page_id", editingPage!.id!)
+        .order("sort_order", { ascending: true });
+      if (error) throw error;
+      return data as unknown as LandingPageImage[];
+    },
+    enabled: !!editingPage?.id,
+  });
+
+  const handleImageUpload = async (files: FileList | null) => {
+    if (!files || !editingPage?.id) return;
+    setUploading(true);
+    try {
+      const currentMax = pageImages?.length ? Math.max(...pageImages.map(i => i.sort_order)) : -1;
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const ext = file.name.split(".").pop();
+        const path = `${editingPage.id}/${Date.now()}-${i}.${ext}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("landing-page-images")
+          .upload(path, file, { upsert: true });
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabase.storage
+          .from("landing-page-images")
+          .getPublicUrl(path);
+
+        await supabase.from("landing_page_images" as any).insert({
+          landing_page_id: editingPage.id,
+          image_url: urlData.publicUrl,
+          file_name: file.name,
+          sort_order: currentMax + 1 + i,
+        } as any);
+      }
+      queryClient.invalidateQueries({ queryKey: ["landing-page-images", editingPage.id] });
+      toast.success(`${files.length}টি ছবি আপলোড হয়েছে!`);
+    } catch (err: any) {
+      toast.error("ছবি আপলোড ব্যর্থ: " + err.message);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDeleteImage = async (img: LandingPageImage) => {
+    try {
+      // Extract path from URL
+      const urlParts = img.image_url.split("/landing-page-images/");
+      if (urlParts[1]) {
+        await supabase.storage.from("landing-page-images").remove([urlParts[1]]);
+      }
+      await supabase.from("landing_page_images" as any).delete().eq("id", img.id);
+      queryClient.invalidateQueries({ queryKey: ["landing-page-images", editingPage?.id] });
+      toast.success("ছবি ডিলিট হয়েছে!");
+    } catch (err: any) {
+      toast.error("ডিলিট ব্যর্থ: " + err.message);
+    }
+  };
 
   const filtered = pages?.filter(
     (p) =>
