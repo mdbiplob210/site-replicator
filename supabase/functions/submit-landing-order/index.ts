@@ -231,9 +231,9 @@ Deno.serve(async (req) => {
             block_reason: `ডেলিভারি রেশিও কম (${ratio}% < ${minDeliveryRatio}%)`,
             status: "processing", updated_at: new Date().toISOString(),
           };
-          const { data: exInc3 } = await supabase.from("incomplete_orders").select("id").eq("customer_phone", customer_phone).eq("status", "processing").limit(1);
-          if (exInc3 && exInc3.length > 0) {
-            await supabase.from("incomplete_orders").update(incData3).eq("id", exInc3[0].id);
+          const existingId3 = await findExistingIncomplete(supabase, clientIp, landing_page_slug, customer_phone);
+          if (existingId3) {
+            await supabase.from("incomplete_orders").update(incData3).eq("id", existingId3);
           } else {
             await supabase.from("incomplete_orders").insert(incData3);
           }
