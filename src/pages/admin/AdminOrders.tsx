@@ -242,7 +242,7 @@ const AdminOrders = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("courier_orders")
-        .select("order_id, courier_provider_id, courier_status, submitted_at");
+        .select("order_id, courier_provider_id, courier_status, submitted_at, tracking_id, consignment_id");
       if (error) throw error;
       return data;
     },
@@ -291,11 +291,17 @@ const AdminOrders = () => {
   }, [allProducts]);
 
   // Build lookup maps
-  const courierByOrderId = useMemo(() => {
-    const map: Record<string, { provider_id: string; status: string; submitted_at: string }> = {};
-    courierOrders.forEach((co: any) => { map[co.order_id] = { provider_id: co.courier_provider_id, status: co.courier_status, submitted_at: co.submitted_at }; });
+  const courierProviderNameMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    courierProviders.forEach((cp: any) => { map[cp.id] = cp.name; });
     return map;
-  }, [courierOrders]);
+  }, [courierProviders]);
+
+  const courierByOrderId = useMemo(() => {
+    const map: Record<string, { provider_id: string; status: string; submitted_at: string; tracking_id: string | null; consignment_id: string | null; provider_name: string }> = {};
+    courierOrders.forEach((co: any) => { map[co.order_id] = { provider_id: co.courier_provider_id, status: co.courier_status, submitted_at: co.submitted_at, tracking_id: co.tracking_id, consignment_id: co.consignment_id, provider_name: courierProviderNameMap[co.courier_provider_id] || "—" }; });
+    return map;
+  }, [courierOrders, courierProviderNameMap]);
 
   const orderItemsByOrderId = useMemo(() => {
     const map: Record<string, any[]> = {};
@@ -1705,91 +1711,85 @@ const AdminOrders = () => {
             <Table>
               <TableHeader>
                 <TableRow className="bg-secondary/30">
-                  <TableHead className="font-bold text-xs">Order #</TableHead>
-                  <TableHead className="font-bold text-xs">Customer</TableHead>
-                  <TableHead className="font-bold text-xs">Phone</TableHead>
-                  <TableHead className="font-bold text-xs">Amount</TableHead>
-                  <TableHead className="font-bold text-xs">Product</TableHead>
-                  <TableHead className="font-bold text-xs">Status</TableHead>
-                  <TableHead className="font-bold text-xs">Date</TableHead>
-                  <TableHead className="font-bold text-xs">Note</TableHead>
-                  <TableHead className="font-bold text-xs text-right">Actions</TableHead>
+                  <TableHead className="font-bold text-[11px] px-2 py-1.5">Order</TableHead>
+                  <TableHead className="font-bold text-[11px] px-2 py-1.5">Customer</TableHead>
+                  <TableHead className="font-bold text-[11px] px-2 py-1.5">Phone</TableHead>
+                  <TableHead className="font-bold text-[11px] px-2 py-1.5">Amount</TableHead>
+                  <TableHead className="font-bold text-[11px] px-2 py-1.5">Product</TableHead>
+                  <TableHead className="font-bold text-[11px] px-2 py-1.5">Status</TableHead>
+                  <TableHead className="font-bold text-[11px] px-2 py-1.5">Courier</TableHead>
+                  <TableHead className="font-bold text-[11px] px-2 py-1.5">Date</TableHead>
+                  <TableHead className="font-bold text-[11px] px-2 py-1.5 text-center">📝</TableHead>
+                  <TableHead className="font-bold text-[11px] px-2 py-1.5 text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredOrders.map((order) => (
-                  <TableRow key={order.id} className="hover:bg-secondary/20 cursor-pointer" onClick={() => setDetailOrderId(order.id)}>
-                    <TableCell className="font-mono text-sm font-semibold">{order.order_number}</TableCell>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium text-sm">{order.customer_name}</p>
-                        {order.customer_address && <p className="text-xs text-muted-foreground truncate max-w-[200px]">{order.customer_address}</p>}
-                      </div>
+                {filteredOrders.map((order) => {
+                  const courierInfo = courierByOrderId[order.id];
+                  return (
+                  <TableRow key={order.id} className="hover:bg-secondary/20 cursor-pointer group" onClick={() => setDetailOrderId(order.id)}>
+                    <TableCell className="font-mono text-xs font-semibold px-2 py-1.5">{order.order_number}</TableCell>
+                    <TableCell className="px-2 py-1.5">
+                      <p className="font-medium text-xs leading-tight">{order.customer_name}</p>
+                      {order.customer_address && <p className="text-[10px] text-muted-foreground truncate max-w-[150px] leading-tight">{order.customer_address}</p>}
                     </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-sm">{order.customer_phone || "—"}</span>
+                    <TableCell className="px-2 py-1.5">
+                      <div className="flex items-center gap-1">
+                        <span className="text-xs">{order.customer_phone || "—"}</span>
                         {order.customer_phone && (
-                          <div className="flex items-center gap-0.5">
+                          <div className="flex items-center gap-0 opacity-0 group-hover:opacity-100 transition-opacity">
                             <a href={`tel:${order.customer_phone}`} onClick={(e) => e.stopPropagation()}>
-                              <Button variant="ghost" size="icon" className="h-6 w-6 rounded-md text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30">
-                                <Phone className="h-3 w-3" />
+                              <Button variant="ghost" size="icon" className="h-5 w-5 rounded text-emerald-600">
+                                <Phone className="h-2.5 w-2.5" />
                               </Button>
                             </a>
-                            <Button variant="ghost" size="icon" className="h-6 w-6 rounded-md text-muted-foreground hover:bg-secondary" onClick={(e) => {
+                            <Button variant="ghost" size="icon" className="h-5 w-5 rounded text-muted-foreground" onClick={(e) => {
                               e.stopPropagation();
                               navigator.clipboard.writeText(order.customer_phone!);
-                              toast.success("নম্বর কপি হয়েছে!");
+                              toast.success("কপি!");
                             }}>
-                              <Copy className="h-3 w-3" />
+                              <Copy className="h-2.5 w-2.5" />
                             </Button>
-                            <a href={`https://wa.me/${order.customer_phone.replace(/^0/, "88")}`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
-                              <Button variant="ghost" size="icon" className="h-6 w-6 rounded-md text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30">
-                                <MessageSquare className="h-3 w-3" />
-                              </Button>
-                            </a>
                           </div>
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="font-semibold text-sm">৳{Number(order.total_amount).toLocaleString()}</TableCell>
-                    <TableCell>
+                    <TableCell className="font-semibold text-xs px-2 py-1.5">৳{Number(order.total_amount).toLocaleString()}</TableCell>
+                    <TableCell className="px-2 py-1.5">
                       {orderItemsByOrderId[order.id]?.length > 0 ? (
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5">
                           {(() => {
                             const firstItem = orderItemsByOrderId[order.id][0];
                             const imgUrl = firstItem.product_id ? productImageMap[firstItem.product_id] : productImageMap[firstItem.product_name];
                             return imgUrl ? (
-                              <img src={imgUrl} alt="" className="h-9 w-9 rounded-lg object-cover border border-border/40 flex-shrink-0" />
+                              <img src={imgUrl} alt="" className="h-7 w-7 rounded object-cover border border-border/40 flex-shrink-0" />
                             ) : (
-                              <div className="h-9 w-9 rounded-lg bg-secondary/60 flex items-center justify-center flex-shrink-0">
-                                <Package className="h-4 w-4 text-muted-foreground/40" />
+                              <div className="h-7 w-7 rounded bg-secondary/60 flex items-center justify-center flex-shrink-0">
+                                <Package className="h-3 w-3 text-muted-foreground/40" />
                               </div>
                             );
                           })()}
-                          <div className="space-y-0.5 min-w-0">
-                            {orderItemsByOrderId[order.id].slice(0, 2).map((oi: any, idx: number) => (
-                              <p key={idx} className="text-xs text-foreground truncate max-w-[140px]">
-                                {oi.product_name}
-                              </p>
-                            ))}
-                            {orderItemsByOrderId[order.id].length > 2 && (
-                              <p className="text-[10px] text-muted-foreground">+{orderItemsByOrderId[order.id].length - 2} আরো</p>
+                          <div className="min-w-0">
+                            <p className="text-[11px] text-foreground truncate max-w-[120px] leading-tight">
+                              {orderItemsByOrderId[order.id][0].product_name}
+                            </p>
+                            {orderItemsByOrderId[order.id].length > 1 && (
+                              <p className="text-[9px] text-muted-foreground">+{orderItemsByOrderId[order.id].length - 1} আরো</p>
                             )}
                           </div>
                         </div>
                       ) : (
-                        <span className="text-xs text-muted-foreground">—</span>
+                        <span className="text-[10px] text-muted-foreground">—</span>
                       )}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="px-2 py-1.5">
                       <Select
                         value={order.status}
                         onValueChange={(value) => handleStatusChange(order.id, value, order.status)}
                       >
-                        <SelectTrigger className="w-[130px] h-8 rounded-lg text-xs border-0 bg-secondary/40" onClick={(e) => e.stopPropagation()}>
-                          <div className="flex items-center gap-2">
-                            <span className={`h-2 w-2 rounded-full ${getStatusColor(order.status)}`} />
+                        <SelectTrigger className="w-[110px] h-6 rounded text-[11px] border-0 bg-secondary/40 px-2" onClick={(e) => e.stopPropagation()}>
+                          <div className="flex items-center gap-1.5">
+                            <span className={`h-1.5 w-1.5 rounded-full ${getStatusColor(order.status)}`} />
                             <SelectValue />
                           </div>
                         </SelectTrigger>
@@ -1805,48 +1805,55 @@ const AdminOrders = () => {
                         </SelectContent>
                       </Select>
                     </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">{format(new Date(order.created_at), "dd MMM yyyy")}</TableCell>
-                    <TableCell>
-                      {order.notes ? (
-                        <p className="text-xs text-muted-foreground truncate max-w-[120px]" title={order.notes}>
-                          {order.notes}
-                        </p>
+                    <TableCell className="px-2 py-1.5">
+                      {courierInfo ? (
+                        <div className="min-w-0">
+                          <p className="text-[11px] font-medium text-foreground leading-tight">{courierInfo.provider_name}</p>
+                          {(courierInfo.tracking_id || courierInfo.consignment_id) && (
+                            <p className="text-[9px] text-muted-foreground font-mono truncate max-w-[100px]" title={courierInfo.tracking_id || courierInfo.consignment_id || ""}>
+                              #{courierInfo.tracking_id || courierInfo.consignment_id}
+                            </p>
+                          )}
+                        </div>
                       ) : (
-                        <span className="text-xs text-muted-foreground/40">—</span>
+                        <span className="text-[10px] text-muted-foreground/40">—</span>
                       )}
                     </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center gap-1 justify-end">
-                        {order.status === "hand_delivery" && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-8 rounded-lg text-xs gap-1 text-emerald-600 border-emerald-200 hover:bg-emerald-50 dark:border-emerald-800 dark:hover:bg-emerald-900/30"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleStatusChange(order.id, "delivered", order.status);
-                            }}
-                          >
-                            <CheckCircle2 className="h-3.5 w-3.5" />
-                            ডেলিভারি সম্পন্ন
-                          </Button>
-                        )}
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20" title="নোট যোগ করুন" onClick={(e) => { e.stopPropagation(); setDetailOrderId(order.id); }}>
-                          <MessageSquare className="h-4 w-4" />
+                    <TableCell className="text-[11px] text-muted-foreground px-2 py-1.5 whitespace-nowrap">{format(new Date(order.created_at), "dd MMM")}</TableCell>
+                    <TableCell className="px-2 py-1.5 text-center">
+                      {order.notes ? (
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <button
+                              className="text-base hover:scale-125 transition-transform cursor-pointer"
+                              onClick={(e) => e.stopPropagation()}
+                              title={order.notes}
+                            >
+                              📝
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-64 p-3 rounded-xl text-xs" onClick={(e) => e.stopPropagation()}>
+                            <p className="font-semibold text-foreground mb-1 text-[11px]">Staff Note</p>
+                            <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed">{order.notes}</p>
+                          </PopoverContent>
+                        </Popover>
+                      ) : (
+                        <span className="text-muted-foreground/30 text-sm">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right px-2 py-1.5">
+                      <div className="flex items-center gap-0.5 justify-end">
+                        <Button variant="ghost" size="icon" className="h-6 w-6 rounded text-primary hover:bg-primary/10" title="Edit" onClick={(e) => { e.stopPropagation(); setDetailOrderId(order.id); }}>
+                          <Pencil className="h-3 w-3" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-primary hover:bg-primary/10" title="Activity Log" onClick={(e) => { e.stopPropagation(); setDetailOrderId(order.id); }}>
-                          <Activity className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:bg-secondary" title="Edit" onClick={(e) => { e.stopPropagation(); setDetailOrderId(order.id); }}>
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive hover:bg-destructive/10" onClick={(e) => { e.stopPropagation(); deleteOrder.mutate(order.id); }}>
-                          <Trash2 className="h-4 w-4" />
+                        <Button variant="ghost" size="icon" className="h-6 w-6 rounded text-destructive hover:bg-destructive/10" onClick={(e) => { e.stopPropagation(); deleteOrder.mutate(order.id); }}>
+                          <Trash2 className="h-3 w-3" />
                         </Button>
                       </div>
                     </TableCell>
                   </TableRow>
-                ))}
+                  );
+                })}
               </TableBody>
             </Table>
           </Card>
