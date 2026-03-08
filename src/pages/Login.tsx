@@ -372,7 +372,7 @@ const Login = () => {
                   }}>
                   S
                 </div>
-                <h1 className="text-2xl font-bold" style={{ color: "#fff" }}>SOHOZ PRO</h1>
+                <h1 className="text-2xl font-bold" style={{ color: "#fff" }}>QUICK SHOP BD</h1>
                 <p className="mt-1 flex items-center justify-center gap-1 text-sm" style={{ color: "rgba(78,205,196,0.8)" }}>
                   <Star className="h-3 w-3" />
                   {isSignUp ? "নতুন অ্যাকাউন্ট তৈরি করুন" : "পোর্টালে প্রবেশ করুন"}
