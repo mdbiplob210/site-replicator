@@ -196,6 +196,9 @@ const AdminOrders = () => {
   const [filterCourierStatus, setFilterCourierStatus] = useState("all");
   const [filterStatus, setFilterStatus] = useState("");
   const [filterProductSearch, setFilterProductSearch] = useState("");
+  const [filterProductIds, setFilterProductIds] = useState<string[]>([]);
+  const [filterProductInput, setFilterProductInput] = useState("");
+  const [filterProductFocused, setFilterProductFocused] = useState(false);
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterCourierCharged, setFilterCourierCharged] = useState("all");
   const [filterNotes, setFilterNotes] = useState("");
@@ -449,7 +452,14 @@ const AdminOrders = () => {
     ).slice(0, 15);
   }, [allProducts, productSearch, allOrderItems]);
 
-  // Bangladesh districts list removed - using bdDistrictList const above
+  // Filter products for the filter dropdown
+  const filteredFilterProducts = useMemo(() => {
+    if (!filterProductInput.trim()) return (allProducts || []).slice(0, 20);
+    const q = filterProductInput.toLowerCase();
+    return (allProducts || []).filter((p: any) =>
+      p.name.toLowerCase().includes(q) || p.product_code.toLowerCase().includes(q)
+    ).slice(0, 20);
+  }, [allProducts, filterProductInput]);
 
   // Filtered orders by search + advanced filters
   const filteredOrders = useMemo(() => {
@@ -490,7 +500,13 @@ const AdminOrders = () => {
         const sl = getStatusLabel(o.status).toLowerCase();
         if (!sl.includes(filterStatus.toLowerCase()) && !o.status.includes(filterStatus.toLowerCase())) return false;
       }
-      if (filterProductSearch) {
+      if (filterProductIds.length > 0) {
+        const items = orderItemsByOrderId[o.id] || [];
+        const itemProductIds = items.map((i: any) => i.product_id).filter(Boolean);
+        const itemNames = items.map((i: any) => i.product_name?.toLowerCase());
+        const selectedProducts = (allProducts || []).filter((p: any) => filterProductIds.includes(p.id));
+        if (!selectedProducts.some((sp: any) => itemProductIds.includes(sp.id) || itemNames.includes(sp.name?.toLowerCase()))) return false;
+      } else if (filterProductSearch) {
         const items = orderItemsByOrderId[o.id] || [];
         const q = filterProductSearch.toLowerCase();
         if (!items.some((i: any) => i.product_name.toLowerCase().includes(q) || i.product_code.toLowerCase().includes(q))) return false;
@@ -519,9 +535,10 @@ const AdminOrders = () => {
       }
       return true;
     });
-  }, [orders, searchQuery, filterSource, filterPhone, filterAmountMin, filterAmountMax, filterDeviceType, filterAddress, filterDistrict, filterThana, filterZone, filterPaymentStatus, filterCourierProvider, filterCourierStatus, filterStatus, filterProductSearch, filterCategory, filterCourierCharged, filterNotes, filterUrl, filterOrderTag, filterSalesType, courierByOrderId, orderItemsByOrderId, allProducts, cancelReasonFilter, activeTab]);
+  }, [orders, searchQuery, filterSource, filterPhone, filterAmountMin, filterAmountMax, filterDeviceType, filterAddress, filterDistrict, filterThana, filterZone, filterPaymentStatus, filterCourierProvider, filterCourierStatus, filterStatus, filterProductSearch, filterProductIds, filterCategory, filterCourierCharged, filterNotes, filterUrl, filterOrderTag, filterSalesType, courierByOrderId, orderItemsByOrderId, allProducts, cancelReasonFilter, activeTab]);
 
-  const activeFilterCount = [filterSource, filterPhone, filterAmountMin, filterAmountMax, filterAddress, filterStatus, filterProductSearch, filterNotes, filterUrl, filterOrderTag].filter(Boolean).length
+  const activeFilterCount = [filterSource, filterPhone, filterAmountMin, filterAmountMax, filterAddress, filterStatus, filterNotes, filterUrl, filterOrderTag].filter(Boolean).length
+    + (filterProductIds.length > 0 ? 1 : (filterProductSearch ? 1 : 0))
     + [filterDeviceType, filterPaymentStatus, filterCourierProvider, filterCourierStatus, filterCategory, filterCourierCharged, filterSalesType, filterDistrict, filterThana, filterZone].filter(v => v !== "all").length
     + (orderDateFilter !== "all" ? 1 : 0);
 
@@ -529,7 +546,7 @@ const AdminOrders = () => {
     setFilterSource(""); setFilterPhone(""); setFilterAmountMin(""); setFilterAmountMax("");
     setFilterDeviceType("all"); setFilterAddress(""); setFilterDistrict("all"); setFilterThana("all"); setFilterZone("all");
     setFilterPaymentStatus("all"); setFilterCourierProvider("all"); setFilterCourierStatus("all");
-    setFilterStatus(""); setFilterProductSearch(""); setFilterCategory("all");
+    setFilterStatus(""); setFilterProductSearch(""); setFilterProductIds([]); setFilterProductInput(""); setFilterCategory("all");
     setFilterCourierCharged("all"); setFilterNotes(""); setFilterUrl("");
     setFilterOrderTag(""); setFilterSalesType("all");
     setOrderDateFilter("all"); setCustomDateFrom(undefined); setCustomDateTo(undefined);
@@ -1913,9 +1930,66 @@ const AdminOrders = () => {
                   <Label className="text-[10px] font-semibold text-muted-foreground">Address</Label>
                   <Input placeholder="Address..." className="rounded-lg h-7 text-xs" value={filterAddress} onChange={(e) => setFilterAddress(e.target.value)} />
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-1 relative">
                   <Label className="text-[10px] font-semibold text-muted-foreground">Product</Label>
-                  <Input placeholder="Product..." className="rounded-lg h-7 text-xs" value={filterProductSearch} onChange={(e) => setFilterProductSearch(e.target.value)} />
+                  {filterProductIds.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mb-1">
+                      {filterProductIds.map(pid => {
+                        const p = (allProducts || []).find((pr: any) => pr.id === pid);
+                        return p ? (
+                          <Badge key={pid} variant="secondary" className="text-[9px] py-0 px-1.5 gap-0.5">
+                            {p.name.length > 15 ? p.name.slice(0, 15) + "…" : p.name}
+                            <X className="h-2.5 w-2.5 cursor-pointer ml-0.5" onClick={() => setFilterProductIds(prev => prev.filter(id => id !== pid))} />
+                          </Badge>
+                        ) : null;
+                      })}
+                    </div>
+                  )}
+                  <div className="relative">
+                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                    <Input
+                      placeholder="প্রোডাক্ট সার্চ..."
+                      className="rounded-lg h-7 text-xs pl-7"
+                      value={filterProductInput}
+                      onChange={(e) => setFilterProductInput(e.target.value)}
+                      onFocus={() => setFilterProductFocused(true)}
+                      onBlur={() => setTimeout(() => setFilterProductFocused(false), 200)}
+                    />
+                  </div>
+                  {filterProductFocused && filteredFilterProducts.length > 0 && (
+                    <div className="absolute z-50 left-0 right-0 top-full mt-1 border border-border rounded-lg max-h-48 overflow-y-auto bg-card shadow-lg">
+                      {filteredFilterProducts.map((p: any) => {
+                        const isSelected = filterProductIds.includes(p.id);
+                        return (
+                          <div
+                            key={p.id}
+                            className={cn("flex items-center gap-2 px-2.5 py-1.5 cursor-pointer hover:bg-accent/50 text-xs border-b border-border/30 last:border-b-0", isSelected && "bg-accent/30")}
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              if (isSelected) {
+                                setFilterProductIds(prev => prev.filter(id => id !== p.id));
+                              } else {
+                                setFilterProductIds(prev => [...prev, p.id]);
+                              }
+                            }}
+                          >
+                            {p.main_image_url ? (
+                              <img src={p.main_image_url} alt="" className="w-7 h-7 rounded object-cover border border-border/50 flex-shrink-0" />
+                            ) : (
+                              <div className="w-7 h-7 rounded bg-muted flex items-center justify-center flex-shrink-0">
+                                <Package className="h-3.5 w-3.5 text-muted-foreground" />
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium truncate">{p.name}</p>
+                              <p className="text-[9px] text-muted-foreground">{p.product_code} • ৳{p.selling_price}</p>
+                            </div>
+                            {isSelected && <CheckCircle2 className="h-3.5 w-3.5 text-primary flex-shrink-0" />}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-1">
                   <Label className="text-[10px] font-semibold text-muted-foreground">Notes</Label>
