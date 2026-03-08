@@ -1482,6 +1482,23 @@ const AdminOrders = () => {
                       </SelectContent>
                     </Select>
                   </div>
+                  {/* Order Status */}
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold flex items-center gap-1"><Activity className="h-3 w-3" /> Order Status</Label>
+                    <Select value={newOrderStatus} onValueChange={setNewOrderStatus}>
+                      <SelectTrigger className="rounded-xl h-9 text-sm"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {Constants.public.Enums.order_status.map((s) => (
+                          <SelectItem key={s} value={s}>
+                            <div className="flex items-center gap-2">
+                              <div className={cn("h-2.5 w-2.5 rounded-full", getStatusColor(s))} />
+                              {getStatusLabel(s)}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <Button className="w-full rounded-xl shadow-sm" onClick={handleCreateOrder} disabled={createOrder.isPending || !customerName.trim()}>
                     {createOrder.isPending ? <><Loader2 className="h-4 w-4 animate-spin" /> Creating...</> : <><Plus className="h-4 w-4" /> Create Order</>}
                   </Button>
