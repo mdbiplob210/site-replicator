@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { ShoppingBag, Sparkles, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 
 const Template4Colorful = () => {
   const { data: products = [], isLoading } = usePublicProducts();
@@ -65,7 +66,7 @@ const Template4Colorful = () => {
               <Link key={p.id} to={`/product/${p.id}`} className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-rose-50">
                 <div className="aspect-square bg-gray-50 relative overflow-hidden">
                   {p.main_image_url ? (
-                    <img src={p.main_image_url} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                    <OptimizedImage src={p.main_image_url} alt={p.name} width={400} quality={80} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-rose-200">
                       <ShoppingBag className="h-12 w-12" />

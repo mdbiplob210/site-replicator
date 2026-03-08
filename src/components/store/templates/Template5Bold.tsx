@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { ShoppingBag, ArrowUpRight, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 
 const Template5Bold = () => {
   const { data: products = [], isLoading } = usePublicProducts();
@@ -64,7 +65,7 @@ const Template5Bold = () => {
               <Link key={p.id} to={`/product/${p.id}`} className="group bg-white overflow-hidden hover:shadow-2xl transition-all duration-300">
                 <div className="aspect-square bg-zinc-50 overflow-hidden">
                   {p.main_image_url ? (
-                    <img src={p.main_image_url} alt={p.name} className="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+                    <OptimizedImage src={p.main_image_url} alt={p.name} width={400} quality={80} className="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-zinc-300">
                       <ShoppingBag className="h-12 w-12" />

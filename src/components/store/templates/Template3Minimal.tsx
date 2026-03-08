@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { ShoppingBag, ArrowRight } from "lucide-react";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 
 const Template3Minimal = () => {
   const { data: products = [], isLoading } = usePublicProducts();
@@ -53,7 +54,7 @@ const Template3Minimal = () => {
               <Link key={p.id} to={`/product/${p.id}`} className="group">
                 <div className="aspect-[3/4] bg-stone-100 overflow-hidden mb-4">
                   {p.main_image_url ? (
-                    <img src={p.main_image_url} alt={p.name} className="w-full h-full object-cover group-hover:scale-102 transition duration-700" />
+                    <OptimizedImage src={p.main_image_url} alt={p.name} width={400} quality={80} className="w-full h-full object-cover group-hover:scale-102 transition duration-700" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-stone-300">
                       <ShoppingBag className="h-10 w-10" />

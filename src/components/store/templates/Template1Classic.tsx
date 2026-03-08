@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { ShoppingBag, Search, Star, Truck, ShieldCheck, RotateCcw, ChevronRight, Minus, Plus, ShoppingCart, Menu, X, Phone, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 import { useState, useMemo } from "react";
 import { useTracking } from "@/hooks/useTracking";
 import { PopupCheckout } from "@/components/store/PopupCheckout";
@@ -246,7 +247,7 @@ const Template1Classic = () => {
                   <Link to={`/product/${p.id}`} className="block relative">
                     <div className="aspect-square overflow-hidden bg-gray-50">
                       {p.main_image_url ? (
-                        <img src={p.main_image_url} alt={p.name} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" loading="lazy" />
+                        <OptimizedImage src={p.main_image_url} alt={p.name} width={400} quality={80} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <ShoppingBag className="h-10 w-10 text-gray-200" />
