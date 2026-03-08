@@ -671,21 +671,11 @@ const AdminOrders = () => {
     setCourierNote("");
     setOrderItems([]);
     setProductSearch("");
-    setPathaoCity("");
-    setPathaoZone("");
-    setPathaoArea("");
+    setSelectedCourierId(null);
+    setSelectedCityId(null);
+    setSelectedZoneId(null);
+    setSelectedAreaId(null);
   };
-
-  // Auto-detect Pathao city/zone/area from address
-  const detectedLocation = useMemo(() => {
-    const addr = customerAddress.toLowerCase();
-    if (!addr) return { city: "", zone: "", area: "" };
-    const city = bdDistrictList.find(d => addr.includes(d.toLowerCase())) || "";
-    const zone = bdZoneList.find(z => addr.includes(z.toLowerCase().replace(" metro", "").replace(" sub", ""))) || 
-      (city ? (["Dhaka", "Chittagong", "Rajshahi", "Khulna", "Sylhet", "Rangpur"].includes(city) ? `${city} Metro` : "") : "");
-    const area = bdThanaList.find(t => addr.includes(t.toLowerCase())) || "";
-    return { city, zone, area };
-  }, [customerAddress]);
 
   // Old orders lookup by phone
   const { data: oldOrdersByPhone = [] } = useQuery({
