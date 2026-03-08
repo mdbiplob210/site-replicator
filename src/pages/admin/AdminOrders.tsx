@@ -2333,6 +2333,55 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
               </div>
             </div>
 
+            {/* Quick Note Add */}
+            <div className="space-y-2 p-3 rounded-xl border border-amber-200 dark:border-amber-800/50 bg-amber-50/50 dark:bg-amber-900/10">
+              <Label className="text-xs font-semibold flex items-center gap-1.5 text-amber-700 dark:text-amber-400">
+                <MessageSquare className="h-3.5 w-3.5" /> দ্রুত নোট যোগ করুন
+              </Label>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="নোট লিখুন..."
+                  className="rounded-xl text-xs flex-1"
+                  value={quickNote}
+                  onChange={(e) => setQuickNote(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && quickNote.trim()) {
+                      handleAddQuickNote();
+                    }
+                  }}
+                />
+                <Button
+                  size="sm"
+                  className="rounded-xl text-xs px-4"
+                  disabled={!quickNote.trim() || isAddingNote}
+                  onClick={handleAddQuickNote}
+                >
+                  {isAddingNote ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
+                  যোগ করুন
+                </Button>
+              </div>
+              {/* Recent notes from activity logs */}
+              {(() => {
+                const noteEntries = activityLogs.filter((l: any) => l.action === "note_added" || l.action === "quick_note");
+                if (noteEntries.length === 0) return null;
+                return (
+                  <div className="mt-2 space-y-1 max-h-32 overflow-y-auto">
+                    {noteEntries.map((log: any) => (
+                      <div key={log.id} className="flex items-start gap-2 p-2 rounded-lg bg-background/80 border border-border/30 text-xs">
+                        <MessageSquare className="h-3 w-3 text-amber-500 mt-0.5 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-foreground">{log.details || log.new_value || "নোট"}</p>
+                          <p className="text-muted-foreground/60 text-[10px] mt-0.5">
+                            {log.user_name} — {format(new Date(log.created_at), "dd MMM yyyy, hh:mm a")}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+            </div>
+
             {/* Save Button */}
             <Button className="w-full rounded-xl shadow-sm" onClick={handleSaveChanges} disabled={isSaving}>
               {isSaving ? <><Loader2 className="h-4 w-4 animate-spin" /> Saving...</> : "পরিবর্তন সেভ করুন"}
