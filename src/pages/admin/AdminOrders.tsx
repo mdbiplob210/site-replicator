@@ -225,6 +225,17 @@ const AdminOrders = () => {
   const { data: nextOrderNumber = "ORD-00001" } = useNextOrderNumber();
   const { data: allProducts = [] } = usePublicProducts();
 
+  // Fetch blocked phones for toggle
+  const { data: blockedPhones = [], refetch: refetchBlockedPhones } = useQuery({
+    queryKey: ["blocked-phones-list"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("blocked_phones").select("phone_number");
+      if (error) return [];
+      return (data || []).map((d: any) => d.phone_number as string);
+    },
+  });
+  const blockedPhoneSet = new Set(blockedPhones);
+
   // Courier location hooks for new order form
   const { data: courierCities = [], isLoading: citiesLoading } = useCourierCities(selectedCourierId);
   const { data: courierZones = [], isLoading: zonesLoading } = useCourierZones(selectedCourierId, selectedCityId);
