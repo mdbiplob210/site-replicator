@@ -3109,7 +3109,77 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
               )}
             </div>
 
-            <div className="space-y-3">
+            {/* Courier Tracking Info */}
+            {existingCourierOrder && (
+              <div className="p-4 rounded-2xl bg-violet-500/5 border border-violet-500/20 space-y-3">
+                <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                  <div className="h-6 w-6 rounded-lg bg-violet-500/10 flex items-center justify-center"><Package className="h-3.5 w-3.5 text-violet-500" /></div>
+                  কুরিয়ার ট্র্যাকিং তথ্য
+                </h3>
+                <div className="grid grid-cols-2 gap-3">
+                  {existingCourierOrder.tracking_id && (
+                    <div className="space-y-1">
+                      <Label className="text-[10px] font-semibold text-muted-foreground">ট্র্যাকিং আইডি</Label>
+                      <div className="flex items-center gap-2">
+                        <code className="text-sm font-mono font-semibold text-foreground bg-secondary/50 px-2 py-1 rounded-lg">{existingCourierOrder.tracking_id}</code>
+                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { navigator.clipboard.writeText(existingCourierOrder.tracking_id!); toast.success("কপি হয়েছে!"); }}>
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  {existingCourierOrder.consignment_id && (
+                    <div className="space-y-1">
+                      <Label className="text-[10px] font-semibold text-muted-foreground">কনসাইনমেন্ট আইডি</Label>
+                      <div className="flex items-center gap-2">
+                        <code className="text-sm font-mono font-semibold text-foreground bg-secondary/50 px-2 py-1 rounded-lg">{existingCourierOrder.consignment_id}</code>
+                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { navigator.clipboard.writeText(existingCourierOrder.consignment_id!); toast.success("কপি হয়েছে!"); }}>
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  <div className="space-y-1">
+                    <Label className="text-[10px] font-semibold text-muted-foreground">কুরিয়ার স্ট্যাটাস</Label>
+                    <Badge variant="outline" className="text-xs font-semibold capitalize">{existingCourierOrder.courier_status}</Badge>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[10px] font-semibold text-muted-foreground">সাবমিট তারিখ</Label>
+                    <p className="text-xs text-foreground">{format(new Date(existingCourierOrder.submitted_at), "dd MMM yyyy, hh:mm a")}</p>
+                  </div>
+                </div>
+                {/* Extended courier response data */}
+                {existingCourierOrder.courier_response && typeof existingCourierOrder.courier_response === 'object' && (
+                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/30">
+                    {(existingCourierOrder.courier_response as any).rider_name && (
+                      <div className="text-xs"><span className="text-muted-foreground">রাইডার:</span> <span className="font-medium text-foreground">{(existingCourierOrder.courier_response as any).rider_name}</span></div>
+                    )}
+                    {(existingCourierOrder.courier_response as any).rider_phone && (
+                      <div className="text-xs"><span className="text-muted-foreground">রাইডার ফোন:</span> <span className="font-medium text-foreground">{(existingCourierOrder.courier_response as any).rider_phone}</span></div>
+                    )}
+                    {(existingCourierOrder.courier_response as any).area && (
+                      <div className="text-xs"><span className="text-muted-foreground">এরিয়া:</span> <span className="font-medium text-foreground">{(existingCourierOrder.courier_response as any).area}</span></div>
+                    )}
+                    {(existingCourierOrder.courier_response as any).delivery_fee !== undefined && (
+                      <div className="text-xs"><span className="text-muted-foreground">ডেলিভারি ফি:</span> <span className="font-medium text-foreground">৳{(existingCourierOrder.courier_response as any).delivery_fee}</span></div>
+                    )}
+                    {(existingCourierOrder.courier_response as any).cod_amount !== undefined && (
+                      <div className="text-xs"><span className="text-muted-foreground">COD:</span> <span className="font-medium text-foreground">৳{(existingCourierOrder.courier_response as any).cod_amount}</span></div>
+                    )}
+                    {(existingCourierOrder.courier_response as any).delivery_date && (
+                      <div className="text-xs"><span className="text-muted-foreground">ডেলিভারি তারিখ:</span> <span className="font-medium text-foreground">{(existingCourierOrder.courier_response as any).delivery_date}</span></div>
+                    )}
+                    {(existingCourierOrder.courier_response as any).return_reason && (
+                      <div className="text-xs col-span-2"><span className="text-muted-foreground">রিটার্ন কারণ:</span> <span className="font-medium text-destructive">{(existingCourierOrder.courier_response as any).return_reason}</span></div>
+                    )}
+                  </div>
+                )}
+                {!existingCourierOrder.tracking_id && !existingCourierOrder.consignment_id && (
+                  <p className="text-xs text-muted-foreground italic">ট্র্যাকিং/কনসাইনমেন্ট আইডি এখনো পাওয়া যায়নি। কুরিয়ার ওয়েবহুক থেকে আপডেট হবে।</p>
+                )}
+              </div>
+            )}
+
               <Label className="text-xs font-semibold">প্রোডাক্ট যোগ করুন</Label>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
