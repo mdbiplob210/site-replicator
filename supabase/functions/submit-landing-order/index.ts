@@ -134,10 +134,9 @@ Deno.serve(async (req) => {
           block_reason: `স্থায়ীভাবে ব্লক করা IP: ${clientIp}`,
           status: "processing", updated_at: new Date().toISOString(),
         };
-        // Upsert by phone
-        const { data: exInc } = await supabase.from("incomplete_orders").select("id").eq("customer_phone", customer_phone).eq("status", "processing").limit(1);
-        if (exInc && exInc.length > 0) {
-          await supabase.from("incomplete_orders").update(incData).eq("id", exInc[0].id);
+        const existingId = await findExistingIncomplete(supabase, clientIp, landing_page_slug, customer_phone);
+        if (existingId) {
+          await supabase.from("incomplete_orders").update(incData).eq("id", existingId);
         } else {
           await supabase.from("incomplete_orders").insert(incData);
         }
