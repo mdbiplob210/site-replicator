@@ -14,9 +14,9 @@ const Template3Minimal = () => {
             Sohoz
           </Link>
           <div className="hidden md:flex items-center gap-10 text-xs tracking-[0.2em] uppercase text-stone-500">
-            <Link to="/store" className="hover:text-stone-900 transition">Shop</Link>
-            <Link to="/store" className="hover:text-stone-900 transition">About</Link>
-            <Link to="/store" className="hover:text-stone-900 transition">Contact</Link>
+            <Link to="/" className="hover:text-stone-900 transition">Shop</Link>
+            <Link to="/" className="hover:text-stone-900 transition">About</Link>
+            <Link to="/" className="hover:text-stone-900 transition">Contact</Link>
           </div>
           <Link to="/store/cart" className="p-2">
             <ShoppingBag className="h-5 w-5 text-stone-600" />
