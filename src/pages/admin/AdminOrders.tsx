@@ -1329,7 +1329,6 @@ const AdminOrders = () => {
                         {courierProviders.find((cp: any) => cp.id === selectedCourierId)?.name || ""}
                       </Badge>
                     )}
-                  </div>
 
                   {/* City/Zone/Area from Courier API */}
                   {selectedCourierId && (
