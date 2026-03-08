@@ -1767,11 +1767,10 @@ const AdminOrders = () => {
           <Card className="border-border/40 overflow-hidden shadow-sm">
             {/* Desktop Table */}
             <div className="hidden md:block overflow-x-auto">
-            <Table className="table-fixed w-full min-w-[920px]">
+            <Table className="w-full">
               <TableHeader>
-                <TableRow className="bg-muted/60 border-b-2 border-border/60">
-                  <TableHead className="font-bold text-[10px] px-1.5 py-1.5 w-[105px]">Status</TableHead>
-                  <TableHead className="font-bold text-[10px] px-1 py-1.5 w-[30px]">
+                <TableRow className="bg-muted/30 border-b border-border/40">
+                  <TableHead className="font-semibold text-xs text-muted-foreground px-3 py-2.5 w-[30px]">
                     <Checkbox 
                       checked={selectedOrderIds.size === filteredOrders.length && filteredOrders.length > 0}
                       onCheckedChange={(checked) => {
@@ -1780,14 +1779,16 @@ const AdminOrders = () => {
                       }}
                     />
                   </TableHead>
-                  <TableHead className="font-bold text-[10px] px-1 py-1.5 w-[28px]">N</TableHead>
-                  <TableHead className="font-bold text-[10px] px-1.5 py-1.5 w-[17%]">Invoice</TableHead>
-                  <TableHead className="font-bold text-[10px] px-1.5 py-1.5 w-[17%]">Customer</TableHead>
-                  <TableHead className="font-bold text-[10px] px-1.5 py-1.5 w-[11%]">Date</TableHead>
-                  <TableHead className="font-bold text-[10px] px-1.5 py-1.5 w-[13%]">Address</TableHead>
-                  <TableHead className="font-bold text-[10px] px-1.5 py-1.5 w-[12%]">Courier</TableHead>
-                  <TableHead className="font-bold text-[10px] px-1.5 py-1.5 w-[9%]">Summary</TableHead>
-                  <TableHead className="font-bold text-[10px] px-1.5 py-1.5 w-[48px]">Emp</TableHead>
+                  <TableHead className="font-semibold text-xs text-muted-foreground px-3 py-2.5 uppercase tracking-wider">Order</TableHead>
+                  <TableHead className="font-semibold text-xs text-muted-foreground px-3 py-2.5 uppercase tracking-wider">Customer</TableHead>
+                  <TableHead className="font-semibold text-xs text-muted-foreground px-3 py-2.5 uppercase tracking-wider text-center">Products</TableHead>
+                  <TableHead className="font-semibold text-xs text-muted-foreground px-3 py-2.5 uppercase tracking-wider text-center">Amount</TableHead>
+                  <TableHead className="font-semibold text-xs text-muted-foreground px-3 py-2.5 uppercase tracking-wider text-center">Payment</TableHead>
+                  <TableHead className="font-semibold text-xs text-muted-foreground px-3 py-2.5 uppercase tracking-wider text-center">Status</TableHead>
+                  <TableHead className="font-semibold text-xs text-muted-foreground px-3 py-2.5 uppercase tracking-wider text-center">Courier</TableHead>
+                  <TableHead className="font-semibold text-xs text-muted-foreground px-3 py-2.5 uppercase tracking-wider text-center">Note</TableHead>
+                  <TableHead className="font-semibold text-xs text-muted-foreground px-3 py-2.5 uppercase tracking-wider text-center">Source</TableHead>
+                  <TableHead className="font-semibold text-xs text-muted-foreground px-3 py-2.5 uppercase tracking-wider text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -1795,46 +1796,94 @@ const AdminOrders = () => {
                   const courierInfo = courierByOrderId[order.id];
                   const items = orderItemsByOrderId[order.id] || [];
                   const custStats = order.customer_phone ? customerStatsByPhone[order.customer_phone] : null;
-                  const successRate = custStats && custStats.total > 0 ? Math.round((custStats.success / custStats.total) * 100) : 0;
                   const employeeName = assignmentByOrderId[order.id] || "";
-                  const due = Number(order.total_amount) - Number(order.discount);
                   return (
-                  <TableRow key={order.id} className="hover:bg-secondary/20 cursor-pointer group border-b border-border/20 align-top" onClick={() => setDetailOrderId(order.id)}>
-                    <TableCell className="px-1.5 py-1 align-top">
-                      <div className="flex items-center gap-1">
-                        <span className="text-[9px] text-muted-foreground font-medium shrink-0">{idx + 1}.</span>
-                        <Select value={order.status} onValueChange={(value) => handleStatusChange(order.id, value, order.status)}>
-                          <SelectTrigger className="w-[78px] h-5 rounded text-[9px] border-0 px-1 font-semibold" onClick={(e) => e.stopPropagation()}
-                            style={{ backgroundColor: order.status === 'processing' ? '#0ea5e9' : order.status === 'confirmed' ? '#059669' : order.status === 'cancelled' ? '#ef4444' : order.status === 'delivered' ? '#10b981' : order.status === 'in_courier' ? '#8b5cf6' : order.status === 'on_hold' ? '#eab308' : order.status === 'returned' ? '#f97316' : '#6b7280', color: 'white' }}>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {Constants.public.Enums.order_status.map((s) => (
-                              <SelectItem key={s} value={s}>
-                                <div className="flex items-center gap-2">
-                                  <span className={`h-2 w-2 rounded-full ${getStatusColor(s as OrderStatus)}`} />
-                                  {getStatusLabel(s as OrderStatus)}
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </TableCell>
-                    <TableCell className="px-1 py-1 align-top" onClick={(e) => e.stopPropagation()}>
+                  <TableRow key={order.id} className="hover:bg-secondary/20 cursor-pointer group border-b border-border/20" onClick={() => setDetailOrderId(order.id)}>
+                    {/* Checkbox */}
+                    <TableCell className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
                       <Checkbox checked={selectedOrderIds.has(order.id)} onCheckedChange={(checked) => {
                         const newSet = new Set(selectedOrderIds);
                         if (checked) newSet.add(order.id); else newSet.delete(order.id);
                         setSelectedOrderIds(newSet);
                       }} />
                     </TableCell>
-                    <TableCell className="px-1 py-1 align-top" onClick={(e) => e.stopPropagation()}>
+                    {/* ORDER: number, date, time */}
+                    <TableCell className="px-3 py-3">
+                      <p className="font-bold text-primary text-sm">{order.order_number.replace(/^ORD-0*/, '')}</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">{format(new Date(order.created_at), "dd MMM yy")}</p>
+                      <p className="text-[10px] text-muted-foreground">{format(new Date(order.created_at), "hh:mm a")}</p>
+                    </TableCell>
+                    {/* CUSTOMER: name, phone, stats, address */}
+                    <TableCell className="px-3 py-3">
+                      <p className="font-semibold text-foreground text-sm">{order.customer_name}</p>
+                      {order.customer_phone && (
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-xs font-mono text-primary font-semibold">{order.customer_phone}</span>
+                          {custStats && custStats.total > 0 && (
+                            <span className="flex items-center gap-0.5 text-[11px] text-muted-foreground">
+                              <BarChart3 className="h-3 w-3" />
+                              <span className="font-semibold">{custStats.total}</span>
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      {order.customer_address && (
+                        <p className="text-[11px] text-muted-foreground mt-0.5 truncate max-w-[200px]">{order.customer_address}</p>
+                      )}
+                    </TableCell>
+                    {/* PRODUCTS */}
+                    <TableCell className="px-3 py-3 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="h-8 w-8 rounded-lg bg-secondary/60 flex items-center justify-center">
+                          <Package className="h-4 w-4 text-muted-foreground/50" />
+                        </div>
+                        <span className="text-sm text-foreground">
+                          <span className="font-semibold">{items.length}</span>
+                          <br />
+                          <span className="text-[11px] text-muted-foreground">{items.length === 1 ? 'item' : 'items'}</span>
+                        </span>
+                      </div>
+                    </TableCell>
+                    {/* AMOUNT */}
+                    <TableCell className="px-3 py-3 text-center">
+                      <span className="text-base font-bold text-foreground">৳{Number(order.total_amount).toLocaleString()}</span>
+                    </TableCell>
+                    {/* PAYMENT */}
+                    <TableCell className="px-3 py-3 text-center">
+                      <Badge variant="outline" className="text-[11px] font-semibold border-orange-300 text-orange-600 bg-orange-50 dark:bg-orange-900/20 dark:border-orange-700 dark:text-orange-400">
+                        Unpaid
+                      </Badge>
+                      <p className="text-[10px] text-muted-foreground mt-1">COD</p>
+                    </TableCell>
+                    {/* STATUS */}
+                    <TableCell className="px-3 py-3 text-center" onClick={(e) => e.stopPropagation()}>
+                      <Select value={order.status} onValueChange={(value) => handleStatusChange(order.id, value, order.status)}>
+                        <SelectTrigger className="w-[130px] h-8 rounded-full text-xs border-0 px-3 font-semibold mx-auto"
+                          style={{ backgroundColor: order.status === 'processing' ? '#3b82f6' : order.status === 'confirmed' ? '#059669' : order.status === 'cancelled' ? '#ef4444' : order.status === 'delivered' ? '#10b981' : order.status === 'in_courier' ? '#8b5cf6' : order.status === 'on_hold' ? '#eab308' : order.status === 'returned' ? '#f97316' : order.status === 'pending_return' ? '#f97316' : order.status === 'hand_delivery' ? '#06b6d4' : order.status === 'ship_later' ? '#14b8a6' : '#6b7280', color: 'white' }}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Constants.public.Enums.order_status.map((s) => (
+                            <SelectItem key={s} value={s}>
+                              <div className="flex items-center gap-2">
+                                <span className={`h-2 w-2 rounded-full ${getStatusColor(s as OrderStatus)}`} />
+                                {getStatusLabel(s as OrderStatus)}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                    {/* COURIER */}
+                    <TableCell className="px-3 py-3 text-center text-sm text-muted-foreground">
+                      {courierInfo ? courierInfo.provider_name : "—"}
+                    </TableCell>
+                    {/* NOTE */}
+                    <TableCell className="px-3 py-3 text-center" onClick={(e) => e.stopPropagation()}>
                       {order.notes ? (
                         <Popover>
                           <PopoverTrigger asChild>
-                            <button className="h-5 w-5 rounded flex items-center justify-center bg-emerald-100 dark:bg-emerald-900/30 hover:bg-emerald-200 transition-colors" title={order.notes}>
-                              <MessageSquare className="h-2.5 w-2.5 text-emerald-600" />
-                            </button>
+                            <button className="text-xs text-primary hover:underline font-medium">View note</button>
                           </PopoverTrigger>
                           <PopoverContent className="w-64 p-3 rounded-xl text-xs">
                             <p className="font-semibold text-foreground mb-1 text-[11px]">Staff Note</p>
@@ -1842,66 +1891,35 @@ const AdminOrders = () => {
                           </PopoverContent>
                         </Popover>
                       ) : (
-                        <button className="h-5 w-5 rounded flex items-center justify-center bg-secondary/40 hover:bg-secondary transition-colors" onClick={() => setDetailOrderId(order.id)}>
-                          <Plus className="h-2.5 w-2.5 text-muted-foreground" />
+                        <button className="text-xs text-muted-foreground hover:text-primary transition-colors" onClick={() => setDetailOrderId(order.id)}>
+                          Add<br/>note
                         </button>
                       )}
                     </TableCell>
-                    <TableCell className="px-1.5 py-1 align-top">
-                      <p className="font-mono text-[11px] font-bold text-primary leading-none truncate">#{order.order_number.replace(/^ORD-0*/, '')}</p>
-                      {items.length > 0 && (
-                        <ul className="mt-0.5">
-                          {items.slice(0, 2).map((item: any, i: number) => (
-                            <li key={i} className="text-[9px] text-muted-foreground leading-[1.3] truncate">{item.quantity || 1}x {item.product_name}</li>
-                          ))}
-                          {items.length > 2 && <li className="text-[8px] text-muted-foreground">+{items.length - 2} আরো</li>}
-                        </ul>
+                    {/* SOURCE */}
+                    <TableCell className="px-3 py-3 text-center">
+                      {order.source ? (
+                        <span className="text-xs text-muted-foreground bg-secondary/60 px-2 py-1 rounded-md font-medium">{order.source}</span>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
                       )}
                     </TableCell>
-                    <TableCell className="px-1.5 py-1 align-top">
-                      <span className="text-[11px] font-semibold text-foreground leading-none block truncate">{order.customer_name}</span>
-                      {order.customer_phone && (
-                        <div className="flex items-center gap-0.5 mt-0.5">
-                          <span className="text-[10px] font-mono text-muted-foreground">{order.customer_phone}</span>
-                          <a href={`https://wa.me/${order.customer_phone.replace(/^0/, '88')}`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="h-4 w-4 rounded-full bg-emerald-500 flex items-center justify-center shrink-0">
-                            <svg className="h-2.5 w-2.5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.832-1.438A9.955 9.955 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/></svg>
-                          </a>
-                          <a href={`tel:${order.customer_phone}`} onClick={(e) => e.stopPropagation()} className="h-4 w-4 rounded-full bg-violet-500 flex items-center justify-center shrink-0">
-                            <Phone className="h-2 w-2 text-white" />
-                          </a>
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell className="px-1.5 py-1 align-top text-[9px] text-muted-foreground">
-                      <p className="leading-[1.3]">{format(new Date(order.created_at), "dd/MM/yy hh:mma")}</p>
-                      {employeeName && <p className="font-semibold text-foreground leading-[1.3]">{employeeName.split(' ')[0]?.toUpperCase()}</p>}
-                    </TableCell>
-                    <TableCell className="px-1.5 py-1 align-top">
-                      <span className="text-[9px] text-muted-foreground leading-tight line-clamp-2 block">{order.customer_address || "—"}</span>
-                    </TableCell>
-                    <TableCell className="px-1.5 py-1 align-top">
-                      {custStats ? (
-                        <div className="space-y-0.5">
-                          <div className="flex items-center gap-1 text-[9px] flex-wrap">
-                            <span>T:<strong className="text-foreground">{custStats.total}</strong></span>
-                            <span className="text-emerald-600">S:<strong>{custStats.success}</strong></span>
-                            <span className="text-destructive">F:<strong>{custStats.failed}</strong></span>
-                          </div>
-                          {custStats.total > 1 && (
-                            <div className="w-full h-2 rounded-full overflow-hidden flex" style={{ backgroundColor: '#ef4444' }}>
-                              <div className="h-full rounded-l-full" style={{ width: `${successRate}%`, backgroundColor: '#22c55e', minWidth: successRate > 0 ? '8px' : '0' }} />
-                            </div>
-                          )}
-                        </div>
-                      ) : <span className="text-[9px] text-muted-foreground/40">—</span>}
-                    </TableCell>
-                    <TableCell className="px-1.5 py-1 align-top text-[9px]">
-                      <p className="text-foreground leading-[1.4]">৳{Number(order.total_amount).toLocaleString()}</p>
-                      {Number(order.discount) > 0 && <p className="text-destructive leading-[1.4]">-{Number(order.discount).toFixed(0)}</p>}
-                      <p className="font-semibold text-foreground leading-[1.4]">Due:{due.toFixed(0)}</p>
-                    </TableCell>
-                    <TableCell className="px-1.5 py-1 align-top text-[9px] font-semibold text-foreground">
-                      {employeeName ? employeeName.split(' ')[0]?.toUpperCase() : "—"}
+                    {/* ACTIONS */}
+                    <TableCell className="px-3 py-3 text-right" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center justify-end gap-1">
+                        <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-secondary/60 transition-colors text-muted-foreground hover:text-foreground" title="Activity Log" onClick={() => setDetailOrderId(order.id)}>
+                          <History className="h-3.5 w-3.5" />
+                        </button>
+                        <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-secondary/60 transition-colors text-muted-foreground hover:text-foreground" title="Edit" onClick={() => setDetailOrderId(order.id)}>
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                        <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-secondary/60 transition-colors text-muted-foreground hover:text-foreground" title="Block" onClick={() => { /* future */ }}>
+                          <Ban className="h-3.5 w-3.5" />
+                        </button>
+                        <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-destructive/10 transition-colors text-muted-foreground hover:text-destructive" title="Delete" onClick={() => { if (confirm("অর্ডারটি ডিলিট করবেন?")) deleteOrder.mutate(order.id); }}>
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
                     </TableCell>
                   </TableRow>
                   );
@@ -1915,15 +1933,37 @@ const AdminOrders = () => {
               {filteredOrders.map((order, idx) => {
                 const items = orderItemsByOrderId[order.id] || [];
                 const custStats = order.customer_phone ? customerStatsByPhone[order.customer_phone] : null;
-                const due = Number(order.total_amount) - Number(order.discount);
+                const courierInfo = courierByOrderId[order.id];
                 return (
-                  <div key={order.id} className="p-3 space-y-1.5 active:bg-secondary/30" onClick={() => setDetailOrderId(order.id)}>
+                  <div key={order.id} className="p-3 space-y-2 active:bg-secondary/30" onClick={() => setDetailOrderId(order.id)}>
                     <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] text-muted-foreground">{idx + 1}.</span>
+                      <div className="flex items-center gap-2">
+                        <Checkbox checked={selectedOrderIds.has(order.id)} onCheckedChange={(checked) => {
+                          const newSet = new Set(selectedOrderIds);
+                          if (checked) newSet.add(order.id); else newSet.delete(order.id);
+                          setSelectedOrderIds(newSet);
+                        }} onClick={(e) => e.stopPropagation()} />
+                        <div>
+                          <span className="font-bold text-primary text-sm">{order.order_number.replace(/^ORD-0*/, '')}</span>
+                          <p className="text-[10px] text-muted-foreground">{format(new Date(order.created_at), "dd MMM yy, hh:mm a")}</p>
+                        </div>
+                      </div>
+                      <span className="text-base font-bold text-foreground">৳{Number(order.total_amount).toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-semibold text-foreground truncate">{order.customer_name}</p>
+                        {order.customer_phone && (
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-xs font-mono text-primary">{order.customer_phone}</span>
+                            {custStats && <span className="text-[10px] text-muted-foreground">({custStats.total} orders)</span>}
+                          </div>
+                        )}
+                      </div>
+                      <div onClick={(e) => e.stopPropagation()}>
                         <Select value={order.status} onValueChange={(value) => handleStatusChange(order.id, value, order.status)}>
-                          <SelectTrigger className="w-[90px] h-6 rounded text-[10px] border-0 px-1.5 font-semibold" onClick={(e) => e.stopPropagation()}
-                            style={{ backgroundColor: order.status === 'processing' ? '#0ea5e9' : order.status === 'confirmed' ? '#059669' : order.status === 'cancelled' ? '#ef4444' : order.status === 'delivered' ? '#10b981' : order.status === 'in_courier' ? '#8b5cf6' : order.status === 'on_hold' ? '#eab308' : order.status === 'returned' ? '#f97316' : '#6b7280', color: 'white' }}>
+                          <SelectTrigger className="w-[110px] h-7 rounded-full text-[10px] border-0 px-2 font-semibold"
+                            style={{ backgroundColor: order.status === 'processing' ? '#3b82f6' : order.status === 'confirmed' ? '#059669' : order.status === 'cancelled' ? '#ef4444' : order.status === 'delivered' ? '#10b981' : order.status === 'in_courier' ? '#8b5cf6' : order.status === 'on_hold' ? '#eab308' : order.status === 'returned' ? '#f97316' : '#6b7280', color: 'white' }}>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -1937,44 +1977,11 @@ const AdminOrders = () => {
                             ))}
                           </SelectContent>
                         </Select>
-                        <span className="font-mono text-[11px] font-bold text-primary">#{order.order_number.replace(/^ORD-0*/, '')}</span>
-                      </div>
-                      <span className="text-sm font-bold text-foreground">৳{Number(order.total_amount).toLocaleString()}</span>
-                    </div>
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs font-semibold text-foreground truncate">{order.customer_name}</p>
-                        {order.customer_phone && (
-                          <div className="flex items-center gap-1 mt-0.5">
-                            <span className="text-[11px] font-mono text-muted-foreground">{order.customer_phone}</span>
-                            <a href={`https://wa.me/${order.customer_phone.replace(/^0/, '88')}`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="h-5 w-5 rounded-full bg-emerald-500 flex items-center justify-center shrink-0">
-                              <svg className="h-3 w-3 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.832-1.438A9.955 9.955 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/></svg>
-                            </a>
-                            <a href={`tel:${order.customer_phone}`} onClick={(e) => e.stopPropagation()} className="h-5 w-5 rounded-full bg-violet-500 flex items-center justify-center shrink-0">
-                              <Phone className="h-3 w-3 text-white" />
-                            </a>
-                          </div>
-                        )}
-                      </div>
-                      <div className="text-right text-[10px] text-muted-foreground shrink-0">
-                        <p>{format(new Date(order.created_at), "dd/MM/yy")}</p>
-                        <p>{format(new Date(order.created_at), "hh:mma")}</p>
                       </div>
                     </div>
-                    {items.length > 0 && (
-                      <p className="text-[10px] text-muted-foreground truncate">
-                        {items.slice(0, 2).map((item: any, i: number) => `${i > 0 ? ', ' : ''}${item.quantity || 1}x ${item.product_name}`).join('')}
-                        {items.length > 2 ? ` +${items.length - 2}` : ''}
-                      </p>
-                    )}
-                    {order.customer_address && <p className="text-[10px] text-muted-foreground line-clamp-1">{order.customer_address}</p>}
-                    <div className="flex items-center justify-between text-[10px]">
-                      {custStats && custStats.total > 1 ? (
-                        <span className="text-muted-foreground">T:{custStats.total} S:{custStats.success} F:{custStats.failed}</span>
-                      ) : custStats?.isNew ? (
-                        <span className="text-emerald-600 font-semibold">🆕 New</span>
-                      ) : <span />}
-                      <span className="font-semibold text-foreground">Due: ৳{due.toFixed(0)}</span>
+                    <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                      <span>{items.length} {items.length === 1 ? 'item' : 'items'} · {courierInfo ? courierInfo.provider_name : 'No courier'}</span>
+                      {order.source && <span className="bg-secondary/60 px-1.5 py-0.5 rounded text-[10px]">{order.source}</span>}
                     </div>
                   </div>
                 );
