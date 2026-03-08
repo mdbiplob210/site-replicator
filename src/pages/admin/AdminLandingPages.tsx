@@ -151,6 +151,10 @@ export default function AdminLandingPages() {
       tiktok_pixel_id: page.tiktok_pixel_id || "",
       gtm_id: page.gtm_id || "",
       custom_head_scripts: page.custom_head_scripts || "",
+      exit_popup_enabled: page.exit_popup_enabled ?? false,
+      exit_popup_discount: page.exit_popup_discount ?? 50,
+      exit_popup_timer: page.exit_popup_timer ?? 300,
+      exit_popup_message: page.exit_popup_message || "এই ছাড়টি শুধু আপনার জন্য!",
     });
     setDialogOpen(true);
   };
