@@ -106,7 +106,6 @@ const App = () => (
           <Route path="/lp/:slug" element={<LandingPageView />} />
           <Route path="/lp/:slug/checkout" element={<LandingPageCheckout />} />
           <Route path="*" element={<NotFound />} />
-        </Routes>
       </BrowserRouter>
     </AuthProvider>
   </QueryClientProvider>
