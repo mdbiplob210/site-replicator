@@ -20,6 +20,11 @@ const Template1Classic = () => {
   // Popup checkout state
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [checkoutItem, setCheckoutItem] = useState<any>(null);
+  const [appliedDiscount, setAppliedDiscount] = useState(() => {
+    const saved = localStorage.getItem("exit_discount_amount");
+    return saved ? Number(saved) : 0;
+  });
+  const [showDiscountBanner, setShowDiscountBanner] = useState(false);
 
   // Categories from products
   const categories = useMemo(() => {
