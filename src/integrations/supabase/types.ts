@@ -775,6 +775,7 @@ export type Database = {
       }
       orders: {
         Row: {
+          cancel_reason: string | null
           client_ip: string | null
           courier_note: string | null
           created_at: string
@@ -784,6 +785,7 @@ export type Database = {
           delivery_charge: number
           device_info: string | null
           discount: number
+          hold_until: string | null
           id: string
           notes: string | null
           order_number: string
@@ -795,6 +797,7 @@ export type Database = {
           user_agent: string | null
         }
         Insert: {
+          cancel_reason?: string | null
           client_ip?: string | null
           courier_note?: string | null
           created_at?: string
@@ -804,6 +807,7 @@ export type Database = {
           delivery_charge?: number
           device_info?: string | null
           discount?: number
+          hold_until?: string | null
           id?: string
           notes?: string | null
           order_number: string
@@ -815,6 +819,7 @@ export type Database = {
           user_agent?: string | null
         }
         Update: {
+          cancel_reason?: string | null
           client_ip?: string | null
           courier_note?: string | null
           created_at?: string
@@ -824,6 +829,7 @@ export type Database = {
           delivery_charge?: number
           device_info?: string | null
           discount?: number
+          hold_until?: string | null
           id?: string
           notes?: string | null
           order_number?: string
@@ -1051,6 +1057,8 @@ export type Database = {
         | "in_courier"
         | "delivered"
         | "returned"
+        | "pending_return"
+        | "hand_delivery"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1203,6 +1211,8 @@ export const Constants = {
         "in_courier",
         "delivered",
         "returned",
+        "pending_return",
+        "hand_delivery",
       ],
     },
   },

@@ -26,7 +26,8 @@ import {
   Settings, Download, Printer, RefreshCw, ChevronDown, Wifi, Ban,
   Trash2, Copy, X, ShoppingCart, ArrowLeft, Clock, CheckCircle2,
   GitMerge, PauseCircle, XCircle, Trash, Smartphone, BarChart3,
-  MessageSquare, Filter, Loader2, Package, Globe, SlidersHorizontal, AlertTriangle, History
+  MessageSquare, Filter, Loader2, Package, Globe, SlidersHorizontal, AlertTriangle, History,
+  Hand, RotateCcw, CalendarClock
 } from "lucide-react";
 import {
   useOrders, useOrderCounts, useCreateOrder, useUpdateOrderStatus,
@@ -51,10 +52,12 @@ const statusTabs = [
   { label: "Confirmed", color: "bg-emerald-600", icon: CheckCircle2 },
   { label: "In Courier", color: "bg-violet-500", icon: Truck },
   { label: "Delivered", color: "bg-emerald-500", icon: CheckCircle2 },
-  { label: "Cancelled", color: "bg-red-500", icon: XCircle },
   { label: "Hold", color: "bg-yellow-500", icon: PauseCircle },
   { label: "Ship Later", color: "bg-teal-500", icon: Clock },
+  { label: "Pending Return", color: "bg-orange-500", icon: RotateCcw },
   { label: "Return", color: "bg-red-400", icon: ArrowLeft },
+  { label: "Cancelled", color: "bg-red-500", icon: XCircle },
+  { label: "Hand Delivery", color: "bg-cyan-500", icon: Hand },
 ];
 
 const orderStatusSettings = [
@@ -72,6 +75,13 @@ const orderStatusSettings = [
   { label: "Lost", color: "bg-violet-700" },
   { label: "Delete", color: "bg-red-600" },
   { label: "Incomplete", color: "bg-amber-400" },
+];
+const CANCEL_REASONS = [
+  "কাস্টমারের কাছে টাকা নাই",
+  "কাস্টমারের পছন্দ হচ্ছে না",
+  "কাস্টমার নিতে চাচ্ছে না",
+  "ডেলিভারি এরিয়ার বাইরে",
+  "ভুল অর্ডার / ডুপ্লিকেট",
 ];
 
 
@@ -135,6 +145,17 @@ const AdminOrders = () => {
   const [detailOrderId, setDetailOrderId] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [productSearchFocused, setProductSearchFocused] = useState(false);
+  
+  // Cancel reason dialog
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [cancelOrderId, setCancelOrderId] = useState<string | null>(null);
+  const [cancelReason, setCancelReason] = useState("");
+  const [cancelCustomReason, setCancelCustomReason] = useState("");
+  
+  // Hold date dialog
+  const [holdDialogOpen, setHoldDialogOpen] = useState(false);
+  const [holdOrderId, setHoldOrderId] = useState<string | null>(null);
+  const [holdUntilDate, setHoldUntilDate] = useState<Date | undefined>();
 
   // Modal states for action buttons
   const [orderItemsModalOpen, setOrderItemsModalOpen] = useState(false);
@@ -549,6 +570,62 @@ const AdminOrders = () => {
         details: details || null,
       } as any);
     } catch (e) { console.error("Activity log error:", e); }
+  };
+
+  // Handle status change with cancel/hold interception
+  const handleStatusChange = (orderId: string, newStatus: string, oldStatus: string) => {
+    if (newStatus === "cancelled") {
+      setCancelOrderId(orderId);
+      setCancelReason("");
+      setCancelCustomReason("");
+      setCancelDialogOpen(true);
+      return;
+    }
+    if (newStatus === "on_hold") {
+      setHoldOrderId(orderId);
+      setHoldUntilDate(undefined);
+      setHoldDialogOpen(true);
+      return;
+    }
+    updateStatus.mutate({ id: orderId, status: newStatus as OrderStatus });
+    logActivity(orderId, "status_changed", "status", getStatusLabel(oldStatus as OrderStatus), getStatusLabel(newStatus as OrderStatus));
+  };
+
+  const confirmCancel = async () => {
+    if (!cancelOrderId) return;
+    const reason = cancelReason === "others" ? cancelCustomReason : cancelReason;
+    await supabase.from("orders").update({ cancel_reason: reason } as any).eq("id", cancelOrderId);
+    updateStatus.mutate({ id: cancelOrderId, status: "cancelled" as OrderStatus });
+    const order = orders.find(o => o.id === cancelOrderId);
+    logActivity(cancelOrderId, "status_changed", "status", order ? getStatusLabel(order.status) : "", "Cancelled", `কারণ: ${reason}`);
+    setCancelDialogOpen(false);
+    setCancelOrderId(null);
+  };
+
+  const confirmHold = async () => {
+    if (!holdOrderId) return;
+    if (holdUntilDate) {
+      await supabase.from("orders").update({ hold_until: holdUntilDate.toISOString() } as any).eq("id", holdOrderId);
+    }
+    updateStatus.mutate({ id: holdOrderId, status: "on_hold" as OrderStatus });
+    const order = orders.find(o => o.id === holdOrderId);
+    logActivity(holdOrderId, "status_changed", "status", order ? getStatusLabel(order.status) : "", "Hold", holdUntilDate ? `Hold until: ${format(holdUntilDate, "dd MMM yyyy")}` : "");
+    setHoldDialogOpen(false);
+    setHoldOrderId(null);
+  };
+
+  // Move confirmed orders with courier to in_courier
+  const handleBulkInCourier = () => {
+    const confirmedWithCourier = filteredOrders.filter(o => o.status === "confirmed" && courierByOrderId[o.id]);
+    if (confirmedWithCourier.length === 0) {
+      toast.error("কুরিয়ার সিলেক্ট করা কোনো confirmed অর্ডার নেই!");
+      return;
+    }
+    confirmedWithCourier.forEach(o => {
+      updateStatus.mutate({ id: o.id, status: "in_courier" as OrderStatus });
+      logActivity(o.id, "status_changed", "status", "Confirmed", "In Courier");
+    });
+    toast.success(`${confirmedWithCourier.length}টি অর্ডার In Courier-এ পাঠানো হয়েছে!`);
   };
 
   const handleCreateOrder = () => {
@@ -1219,6 +1296,18 @@ const AdminOrders = () => {
           ))}
         </div>
 
+        {/* In Courier button for Confirmed tab */}
+        {activeTab === "Confirmed" && (
+          <div className="flex items-center gap-2">
+            <Button size="sm" className="gap-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white shadow-sm" onClick={handleBulkInCourier}>
+              <Truck className="h-4 w-4" /> In Courier-এ পাঠান
+            </Button>
+            <span className="text-xs text-muted-foreground">
+              (কুরিয়ার সিলেক্ট করা {filteredOrders.filter(o => o.status === "confirmed" && courierByOrderId[o.id]).length}টি অর্ডার)
+            </span>
+          </div>
+        )}
+
         {/* Search & Filters */}
         <Card className="p-3 border-border/40 flex items-center gap-3 flex-wrap shadow-sm">
           <div className="relative flex-1 min-w-[250px]">
@@ -1671,11 +1760,7 @@ const AdminOrders = () => {
                     <TableCell>
                       <Select
                         value={order.status}
-                        onValueChange={(value) => { 
-                          const oldStatus = order.status;
-                          updateStatus.mutate({ id: order.id, status: value as OrderStatus });
-                          logActivity(order.id, "status_changed", "status", getStatusLabel(oldStatus), getStatusLabel(value as OrderStatus));
-                        }}
+                        onValueChange={(value) => handleStatusChange(order.id, value, order.status)}
                       >
                         <SelectTrigger className="w-[130px] h-8 rounded-lg text-xs border-0 bg-secondary/40" onClick={(e) => e.stopPropagation()}>
                           <div className="flex items-center gap-2">
@@ -1713,6 +1798,62 @@ const AdminOrders = () => {
           order={filteredOrders.find((o) => o.id === detailOrderId) || null}
           onClose={() => setDetailOrderId(null)}
         />
+
+        {/* Cancel Reason Dialog */}
+        <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+          <DialogContent className="max-w-md rounded-2xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <XCircle className="h-5 w-5 text-destructive" /> ক্যান্সেল কারণ সিলেক্ট করুন
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              {CANCEL_REASONS.map((reason) => (
+                <label key={reason} className={cn(
+                  "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all",
+                  cancelReason === reason ? "border-primary bg-primary/5" : "border-border/40 hover:bg-secondary/30"
+                )}>
+                  <input type="radio" name="cancel_reason" className="accent-primary" checked={cancelReason === reason} onChange={() => setCancelReason(reason)} />
+                  <span className="text-sm font-medium">{reason}</span>
+                </label>
+              ))}
+              <label className={cn(
+                "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all",
+                cancelReason === "others" ? "border-primary bg-primary/5" : "border-border/40 hover:bg-secondary/30"
+              )}>
+                <input type="radio" name="cancel_reason" className="accent-primary" checked={cancelReason === "others"} onChange={() => setCancelReason("others")} />
+                <span className="text-sm font-medium">Others (নিজে লিখুন)</span>
+              </label>
+              {cancelReason === "others" && (
+                <Textarea placeholder="ক্যান্সেলের কারণ লিখুন..." className="rounded-xl" value={cancelCustomReason} onChange={(e) => setCancelCustomReason(e.target.value)} rows={2} />
+              )}
+              <Button className="w-full rounded-xl" variant="destructive" onClick={confirmCancel} disabled={!cancelReason || (cancelReason === "others" && !cancelCustomReason.trim())}>
+                ক্যান্সেল নিশ্চিত করুন
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Hold Date Dialog */}
+        <Dialog open={holdDialogOpen} onOpenChange={setHoldDialogOpen}>
+          <DialogContent className="max-w-sm rounded-2xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <CalendarClock className="h-5 w-5 text-yellow-500" /> Hold Date সিলেক্ট করুন
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">কত তারিখ পর্যন্ত Hold রাখতে চান?</p>
+              <CalendarWidget mode="single" selected={holdUntilDate} onSelect={setHoldUntilDate} className="rounded-xl border border-border/40 p-3 mx-auto" disabled={(date) => date < new Date()} />
+              {holdUntilDate && (
+                <p className="text-sm text-center font-medium text-primary">Hold until: {format(holdUntilDate, "dd MMM yyyy")}</p>
+              )}
+              <Button className="w-full rounded-xl bg-yellow-500 hover:bg-yellow-600 text-white" onClick={confirmHold}>
+                Hold নিশ্চিত করুন
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </AdminLayout>
   );

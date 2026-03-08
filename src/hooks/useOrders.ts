@@ -53,6 +53,8 @@ const STATUS_MAP: Record<string, OrderStatus> = {
   "Hold": "on_hold",
   "Ship Later": "ship_later",
   "Return": "returned",
+  "Pending Return": "pending_return",
+  "Hand Delivery": "hand_delivery",
 };
 
 export const getStatusFromTab = (tab: string): OrderStatus | null => {
@@ -70,6 +72,8 @@ export const getStatusLabel = (status: OrderStatus): string => {
     in_courier: "In Courier",
     delivered: "Delivered",
     returned: "Return",
+    pending_return: "Pending Return",
+    hand_delivery: "Hand Delivery",
   };
   return labels[status] || status;
 };
@@ -84,6 +88,8 @@ export const getStatusColor = (status: OrderStatus): string => {
     in_courier: "bg-violet-500",
     delivered: "bg-emerald-500",
     returned: "bg-red-400",
+    pending_return: "bg-orange-500",
+    hand_delivery: "bg-cyan-500",
   };
   return colors[status] || "bg-muted";
 };
