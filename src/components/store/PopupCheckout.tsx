@@ -233,7 +233,21 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
   };
 
   const handleClose = () => {
-    if (!orderSubmitted.current) saveAbandonedOrder();
+    if (!orderSubmitted.current) {
+      saveAbandonedOrder();
+      // Trigger exit intent discount if no order was placed
+      if (onExitIntent && discount === 0) {
+        onExitIntent();
+        return; // Don't close yet, let parent show discount banner
+      }
+    }
+    setForm({ name: "", phone: "", address: "", notes: "" });
+    setOrderComplete(false);
+    formInteracted.current = false;
+    onClose();
+  };
+
+  const handleForceClose = () => {
     setForm({ name: "", phone: "", address: "", notes: "" });
     setOrderComplete(false);
     formInteracted.current = false;
