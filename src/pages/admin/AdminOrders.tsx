@@ -303,6 +303,38 @@ const AdminOrders = () => {
     },
   });
 
+  // Employee name map from profiles
+  const profileNameMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    profilesList.forEach((p: any) => { if (p.full_name) map[p.user_id] = p.full_name; });
+    return map;
+  }, [profilesList]);
+
+  // Assignment by order id
+  const assignmentByOrderId = useMemo(() => {
+    const map: Record<string, string> = {};
+    orderAssignments.forEach((a: any) => {
+      map[a.order_id] = profileNameMap[a.assigned_to] || "—";
+    });
+    return map;
+  }, [orderAssignments, profileNameMap]);
+
+  // Customer delivery stats by phone for courier column
+  const customerStatsByPhone = useMemo(() => {
+    const phoneMap: Record<string, { total: number; success: number; failed: number; confirmed: number; isNew: boolean }> = {};
+    orders.forEach((o) => {
+      const phone = o.customer_phone;
+      if (!phone) return;
+      if (!phoneMap[phone]) phoneMap[phone] = { total: 0, success: 0, failed: 0, confirmed: 0, isNew: true };
+      phoneMap[phone].total++;
+      if (o.status === "delivered") phoneMap[phone].success++;
+      if (o.status === "returned" || o.status === "cancelled") phoneMap[phone].failed++;
+      if (o.status === "confirmed") phoneMap[phone].confirmed++;
+      phoneMap[phone].isNew = phoneMap[phone].total <= 1;
+    });
+    return phoneMap;
+  }, [orders]);
+
   // Build product image lookup from allProducts
   const productImageMap = useMemo(() => {
     const map: Record<string, string> = {};
