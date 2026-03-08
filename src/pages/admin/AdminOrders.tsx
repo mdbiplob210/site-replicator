@@ -452,7 +452,14 @@ const AdminOrders = () => {
     ).slice(0, 15);
   }, [allProducts, productSearch, allOrderItems]);
 
-  // Bangladesh districts list removed - using bdDistrictList const above
+  // Filter products for the filter dropdown
+  const filteredFilterProducts = useMemo(() => {
+    if (!filterProductInput.trim()) return (allProducts || []).slice(0, 20);
+    const q = filterProductInput.toLowerCase();
+    return (allProducts || []).filter((p: any) =>
+      p.name.toLowerCase().includes(q) || p.product_code.toLowerCase().includes(q)
+    ).slice(0, 20);
+  }, [allProducts, filterProductInput]);
 
   // Filtered orders by search + advanced filters
   const filteredOrders = useMemo(() => {
