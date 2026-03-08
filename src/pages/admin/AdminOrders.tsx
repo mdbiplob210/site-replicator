@@ -291,11 +291,17 @@ const AdminOrders = () => {
   }, [allProducts]);
 
   // Build lookup maps
-  const courierByOrderId = useMemo(() => {
-    const map: Record<string, { provider_id: string; status: string; submitted_at: string }> = {};
-    courierOrders.forEach((co: any) => { map[co.order_id] = { provider_id: co.courier_provider_id, status: co.courier_status, submitted_at: co.submitted_at }; });
+  const courierProviderNameMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    courierProviders.forEach((cp: any) => { map[cp.id] = cp.name; });
     return map;
-  }, [courierOrders]);
+  }, [courierProviders]);
+
+  const courierByOrderId = useMemo(() => {
+    const map: Record<string, { provider_id: string; status: string; submitted_at: string; tracking_id: string | null; consignment_id: string | null; provider_name: string }> = {};
+    courierOrders.forEach((co: any) => { map[co.order_id] = { provider_id: co.courier_provider_id, status: co.courier_status, submitted_at: co.submitted_at, tracking_id: co.tracking_id, consignment_id: co.consignment_id, provider_name: courierProviderNameMap[co.courier_provider_id] || "—" }; });
+    return map;
+  }, [courierOrders, courierProviderNameMap]);
 
   const orderItemsByOrderId = useMemo(() => {
     const map: Record<string, any[]> = {};
