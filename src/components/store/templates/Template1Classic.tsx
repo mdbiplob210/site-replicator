@@ -80,6 +80,24 @@ const Template1Classic = () => {
   const whatsappNumber = settings?.whatsapp_number || "";
   const phoneNumber = settings?.phone_number || "";
 
+  const handleExitIntent = () => {
+    if (appliedDiscount >= 50) return;
+    setCheckoutOpen(false);
+    setShowDiscountBanner(true);
+  };
+
+  const handleAcceptDiscount = () => {
+    const newDiscount = Math.min(appliedDiscount + 50, 50);
+    setAppliedDiscount(newDiscount);
+    localStorage.setItem("exit_discount_amount", String(newDiscount));
+    setShowDiscountBanner(false);
+    setCheckoutOpen(true);
+  };
+
+  const handleRejectDiscount = () => {
+    setShowDiscountBanner(false);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Top announcement bar */}
