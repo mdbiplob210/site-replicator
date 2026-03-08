@@ -57,7 +57,6 @@ const bottomMenuItems = [
   { title: "Support", url: "/admin/support", icon: HeadphonesIcon },
   { title: "Coming Soon", url: "/admin/coming-soon", icon: Sparkles },
   { title: "Plan", url: "/admin/plan", icon: CreditCard },
-  { title: "Screenshots", url: "/admin/screenshots", icon: Camera },
 ];
 
 export function AdminSidebar() {
