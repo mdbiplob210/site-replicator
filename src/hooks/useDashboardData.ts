@@ -36,6 +36,27 @@ export function useDashboardData(filter: TimeFilter) {
     },
   });
 
+  const orderItemsQuery = useQuery({
+    queryKey: ["dashboard-order-items", filter],
+    queryFn: async () => {
+      const orderIds = (ordersQuery.data || []).map((o) => o.id);
+      if (orderIds.length === 0) return [];
+      // fetch in batches of 200 ids
+      let allItems: any[] = [];
+      for (let i = 0; i < orderIds.length; i += 200) {
+        const batch = orderIds.slice(i, i + 200);
+        const { data, error } = await supabase
+          .from("order_items")
+          .select("order_id, product_name, product_code, product_id, quantity, unit_price, total_price")
+          .in("order_id", batch);
+        if (error) throw error;
+        if (data) allItems = allItems.concat(data);
+      }
+      return allItems;
+    },
+    enabled: !!ordersQuery.data,
+  });
+
   const financeQuery = useQuery({
     queryKey: ["dashboard-finance"],
     queryFn: async () => {
@@ -72,6 +93,7 @@ export function useDashboardData(filter: TimeFilter) {
   });
 
   const orders = ordersQuery.data || [];
+  const orderItems = orderItemsQuery.data || [];
   const finance = financeQuery.data || [];
   const adSpends = adSpendQuery.data || [];
   const products = stockQuery.data || [];
@@ -96,9 +118,62 @@ export function useDashboardData(filter: TimeFilter) {
   const onHold = countAndAmount("on_hold");
   const shipLater = countAndAmount("ship_later");
   const inCourier = countAndAmount("in_courier");
+  const delivered = countAndAmount("delivered");
+  const returned = countAndAmount("returned");
+  const pendingReturn = countAndAmount("pending_return");
+  const handDelivery = countAndAmount("hand_delivery");
 
   // Incomplete = processing + confirmed + on_hold + cancelled (not yet shipped/delivered)
   const incompleteTotal = processing.count + confirmed.count + onHold.count + cancelled.count;
+
+  // Average order value
+  const avgOrderValue = totalOrders > 0 ? Math.round(totalAmount / totalOrders) : 0;
+
+  // Payment status breakdown
+  const paidOrders = orders.filter((o) => o.payment_status === "paid");
+  const unpaidOrders = orders.filter((o) => o.payment_status === "unpaid");
+  const partialPaidOrders = orders.filter((o) => o.payment_status === "partial");
+  const paymentStats = {
+    paid: { count: paidOrders.length, amount: paidOrders.reduce((s, o) => s + Number(o.total_amount), 0) },
+    unpaid: { count: unpaidOrders.length, amount: unpaidOrders.reduce((s, o) => s + Number(o.total_amount), 0) },
+    partial: { count: partialPaidOrders.length, amount: partialPaidOrders.reduce((s, o) => s + Number(o.total_amount), 0) },
+  };
+
+  // Top selling products (by quantity)
+  const productMap = new Map<string, { name: string; qty: number; revenue: number }>();
+  for (const item of orderItems) {
+    // Only count items from non-cancelled/returned orders
+    const order = orders.find((o) => o.id === item.order_id);
+    if (!order || ["cancelled", "returned"].includes(order.status)) continue;
+    const key = item.product_name || item.product_code || "Unknown";
+    const existing = productMap.get(key) || { name: key, qty: 0, revenue: 0 };
+    existing.qty += Number(item.quantity);
+    existing.revenue += Number(item.total_price);
+    productMap.set(key, existing);
+  }
+  const topProducts = Array.from(productMap.values())
+    .sort((a, b) => b.qty - a.qty)
+    .slice(0, 5);
+
+  // Hourly order distribution
+  const hourlyOrders = Array(24).fill(0);
+  for (const o of orders) {
+    const hour = new Date(o.created_at).getHours();
+    hourlyOrders[hour]++;
+  }
+
+  // Source breakdown
+  const sourceMap = new Map<string, { count: number; amount: number }>();
+  for (const o of orders) {
+    const src = o.source || "Unknown";
+    const existing = sourceMap.get(src) || { count: 0, amount: 0 };
+    existing.count++;
+    existing.amount += Number(o.total_amount);
+    sourceMap.set(src, existing);
+  }
+  const sourceBreakdown = Array.from(sourceMap.entries())
+    .map(([name, data]) => ({ name, ...data }))
+    .sort((a, b) => b.count - a.count);
 
   // Profit calculation
   const revenue = orders
@@ -142,10 +217,15 @@ export function useDashboardData(filter: TimeFilter) {
     orderStats: {
       totalOrders,
       totalAmount,
+      avgOrderValue,
       processing,
       confirmed,
       cancelled,
       onHold,
+      delivered,
+      returned,
+      pendingReturn,
+      handDelivery,
     },
     shippingStats: {
       shipLater,
@@ -160,6 +240,7 @@ export function useDashboardData(filter: TimeFilter) {
     },
     profitStats: {
       revenue,
+      productCost,
       adsCostBdt,
       adsCostUsd,
       deliveryCost,
@@ -174,6 +255,12 @@ export function useDashboardData(filter: TimeFilter) {
       loanTotal,
       investmentTotal,
       netValue,
+    },
+    salesDetails: {
+      paymentStats,
+      topProducts,
+      hourlyOrders,
+      sourceBreakdown,
     },
   };
 }
