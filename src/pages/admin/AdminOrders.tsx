@@ -1138,36 +1138,89 @@ const AdminOrders = () => {
                     <Textarea placeholder="Enter address" rows={2} className="rounded-xl" value={customerAddress} onChange={(e) => setCustomerAddress(e.target.value)} />
                   </div>
 
-                  {/* Pathao City/Zone/Area — Auto-detect + Manual Select */}
-                  <div className="grid grid-cols-3 gap-2">
-                    <div className="space-y-1">
-                      <Label className="text-[10px] font-semibold text-muted-foreground">City</Label>
-                      <Select value={pathaoCity || detectedLocation.city || ""} onValueChange={setPathaoCity}>
-                        <SelectTrigger className="rounded-lg h-8 text-xs"><SelectValue placeholder="City সিলেক্ট করুন" /></SelectTrigger>
-                        <SelectContent className="max-h-60">
-                          {bdDistrictList.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-[10px] font-semibold text-muted-foreground">Zone</Label>
-                      <Select value={pathaoZone || detectedLocation.zone || ""} onValueChange={setPathaoZone}>
-                        <SelectTrigger className="rounded-lg h-8 text-xs"><SelectValue placeholder="Zone সিলেক্ট করুন" /></SelectTrigger>
-                        <SelectContent>
-                          {bdZoneList.map((z) => <SelectItem key={z} value={z}>{z}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-[10px] font-semibold text-muted-foreground">Area/Thana</Label>
-                      <Select value={pathaoArea || detectedLocation.area || ""} onValueChange={setPathaoArea}>
-                        <SelectTrigger className="rounded-lg h-8 text-xs"><SelectValue placeholder="Area সিলেক্ট করুন" /></SelectTrigger>
-                        <SelectContent className="max-h-60">
-                          {bdThanaList.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                  {/* Courier Selection */}
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold flex items-center gap-1.5">
+                      <Truck className="h-3.5 w-3.5 text-violet-500" /> কুরিয়ার সিলেক্ট করুন
+                    </Label>
+                    <Select value={selectedCourierId || ""} onValueChange={(v) => {
+                      setSelectedCourierId(v || null);
+                      setSelectedCityId(null);
+                      setSelectedZoneId(null);
+                      setSelectedAreaId(null);
+                    }}>
+                      <SelectTrigger className="rounded-xl h-9 text-sm">
+                        <SelectValue placeholder="কুরিয়ার সিলেক্ট করুন" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {courierProviders.filter((cp: any) => cp.is_active !== false).map((cp: any) => (
+                          <SelectItem key={cp.id} value={cp.id}>
+                            <div className="flex items-center gap-2">
+                              <Truck className="h-3.5 w-3.5" /> {cp.name}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {selectedCourierId && (
+                      <Badge variant="outline" className="text-xs gap-1">
+                        <Truck className="h-3 w-3" />
+                        {courierProviders.find((cp: any) => cp.id === selectedCourierId)?.name || ""}
+                      </Badge>
+                    )}
                   </div>
+
+                  {/* City/Zone/Area from Courier API */}
+                  {selectedCourierId && (
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="space-y-1">
+                        <Label className="text-[10px] font-semibold text-muted-foreground">City</Label>
+                        <Select value={selectedCityId || ""} onValueChange={(v) => {
+                          setSelectedCityId(v || null);
+                          setSelectedZoneId(null);
+                          setSelectedAreaId(null);
+                        }}>
+                          <SelectTrigger className="rounded-lg h-8 text-xs">
+                            <SelectValue placeholder={citiesLoading ? "লোড হচ্ছে..." : "City সিলেক্ট করুন"} />
+                          </SelectTrigger>
+                          <SelectContent className="max-h-60">
+                            {courierCities.map((c: any) => (
+                              <SelectItem key={String(c.id)} value={String(c.id)}>{c.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[10px] font-semibold text-muted-foreground">Zone</Label>
+                        <Select value={selectedZoneId || ""} onValueChange={(v) => {
+                          setSelectedZoneId(v || null);
+                          setSelectedAreaId(null);
+                        }} disabled={!selectedCityId}>
+                          <SelectTrigger className="rounded-lg h-8 text-xs">
+                            <SelectValue placeholder={zonesLoading ? "লোড হচ্ছে..." : "Zone সিলেক্ট করুন"} />
+                          </SelectTrigger>
+                          <SelectContent className="max-h-60">
+                            {courierZones.map((z: any) => (
+                              <SelectItem key={String(z.id)} value={String(z.id)}>{z.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[10px] font-semibold text-muted-foreground">Area/Thana</Label>
+                        <Select value={selectedAreaId || ""} onValueChange={setSelectedAreaId} disabled={!selectedZoneId}>
+                          <SelectTrigger className="rounded-lg h-8 text-xs">
+                            <SelectValue placeholder={areasLoading ? "লোড হচ্ছে..." : "Area সিলেক্ট করুন"} />
+                          </SelectTrigger>
+                          <SelectContent className="max-h-60">
+                            {courierAreas.map((a: any) => (
+                              <SelectItem key={String(a.id)} value={String(a.id)}>{a.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Product Items */}
                   <div className="space-y-3">
