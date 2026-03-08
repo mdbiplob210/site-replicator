@@ -6,6 +6,7 @@ import { OptimizedImage } from "@/components/ui/optimized-image";
 import { useState, useMemo } from "react";
 import { useTracking } from "@/hooks/useTracking";
 import { PopupCheckout } from "@/components/store/PopupCheckout";
+import { ExitDiscountBanner } from "@/components/store/ExitDiscountBanner";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 const Template1Classic = () => {
