@@ -152,6 +152,9 @@ const AdminOrders = () => {
   const [bulkCourierId, setBulkCourierId] = useState("");
   const [inlineNoteOrderId, setInlineNoteOrderId] = useState<string | null>(null);
   const [inlineNoteText, setInlineNoteText] = useState("");
+  const [selectedOrderSource, setSelectedOrderSource] = useState("");
+  const [newSourceName, setNewSourceName] = useState("");
+  const [newSourceIcon, setNewSourceIcon] = useState("📦");
   
   // Cancel reason dialog
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
