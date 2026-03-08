@@ -45,6 +45,22 @@ Deno.serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
+
+      // Verify admin role
+      const userId = data.claims.sub as string;
+      const { data: roleData } = await supabaseAdmin
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId)
+        .eq("role", "admin")
+        .maybeSingle();
+
+      if (!roleData) {
+        return new Response(JSON.stringify({ error: "Admin access required" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     const body = await req.json().catch(() => ({}));
@@ -222,7 +238,7 @@ Deno.serve(async (req) => {
     });
   } catch (err: any) {
     console.error("Edge function error:", err);
-    return new Response(JSON.stringify({ error: err.message || "Internal error" }), {
+    return new Response(JSON.stringify({ error: "An internal error occurred. Please try again later." }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
