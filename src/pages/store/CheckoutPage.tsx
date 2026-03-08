@@ -39,37 +39,39 @@ const CheckoutPage = () => {
     abandonedSaved.current = true;
     
     try {
-      // Upsert: if same phone exists in incomplete_orders (processing), update it instead of creating new
+      // Generate a stable session ID for this checkout to prevent duplicates
+      let sessionId = sessionStorage.getItem("checkout_session_id");
+      if (!sessionId) {
+        sessionId = `cs_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+        sessionStorage.setItem("checkout_session_id", sessionId);
+      }
+
+      // Upsert: find existing incomplete order by session_id (stored in notes prefix) or phone
       const phoneVal = form.phone?.trim();
-      if (phoneVal) {
-        const { data: existing } = await supabase
+      
+      // Try to find by session ID first (in user_agent field as marker)
+      const { data: existingBySession } = await supabase
+        .from("incomplete_orders" as any)
+        .select("id")
+        .eq("status", "processing")
+        .eq("landing_page_slug", "website-store")
+        .ilike("user_agent", `%${sessionId}%`)
+        .limit(1);
+
+      let existingId = (existingBySession as any)?.[0]?.id;
+      
+      // Fallback: try by phone
+      if (!existingId && phoneVal) {
+        const { data: existingByPhone } = await supabase
           .from("incomplete_orders" as any)
           .select("id")
           .eq("customer_phone", phoneVal)
           .eq("status", "processing")
           .limit(1);
-        
-        if (existing && existing.length > 0) {
-          await supabase.from("incomplete_orders" as any).update({
-            customer_name: form.name || "Unknown",
-            customer_address: form.address || null,
-            product_name: item.name,
-            product_code: item.productCode || null,
-            quantity: item.qty,
-            unit_price: item.price,
-            total_amount: item.price * item.qty,
-            notes: form.notes || null,
-            block_reason: "abandoned_form",
-            landing_page_slug: "website-store",
-            device_info: /Mobi|Android/i.test(navigator.userAgent) ? "Mobile" : "Desktop",
-            user_agent: navigator.userAgent.substring(0, 200),
-            updated_at: new Date().toISOString(),
-          } as any).eq("id", (existing as any)[0].id);
-          return;
-        }
+        existingId = (existingByPhone as any)?.[0]?.id;
       }
       
-      await supabase.from("incomplete_orders" as any).insert({
+      const incompleteData = {
         customer_name: form.name || "Unknown",
         customer_phone: form.phone || null,
         customer_address: form.address || null,
@@ -78,14 +80,24 @@ const CheckoutPage = () => {
         quantity: item.qty,
         unit_price: item.price,
         total_amount: item.price * item.qty,
-        delivery_charge: 0,
-        discount: 0,
         notes: form.notes || null,
         block_reason: "abandoned_form",
-        status: "processing",
         landing_page_slug: "website-store",
         device_info: /Mobi|Android/i.test(navigator.userAgent) ? "Mobile" : "Desktop",
-        user_agent: navigator.userAgent.substring(0, 200),
+        user_agent: `${navigator.userAgent.substring(0, 150)}|${sessionId}`,
+        updated_at: new Date().toISOString(),
+      };
+
+      if (existingId) {
+        await supabase.from("incomplete_orders" as any).update(incompleteData as any).eq("id", existingId);
+        return;
+      }
+      
+      await supabase.from("incomplete_orders" as any).insert({
+        ...incompleteData,
+        delivery_charge: 0,
+        discount: 0,
+        status: "processing",
       } as any);
     } catch (e) {
       // Silent fail - don't block user
