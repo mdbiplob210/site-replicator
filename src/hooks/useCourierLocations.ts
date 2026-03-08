@@ -27,7 +27,8 @@ async function fetchCourierLocations(
 
   if (!resp.ok) {
     const errData = await resp.json().catch(() => ({}));
-    throw new Error(errData.error || `Failed to fetch locations [${resp.status}]`);
+    console.warn(`Courier locations [${action}]:`, errData.error || resp.status);
+    return []; // Return empty instead of throwing to avoid blank screen
   }
 
   const result = await resp.json();
