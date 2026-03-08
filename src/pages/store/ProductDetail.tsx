@@ -20,7 +20,7 @@ const ProductDetail = () => {
   const bgClass = isDark ? "bg-gray-950 text-white" : template === "5" ? "bg-zinc-100 text-zinc-900" : "bg-white text-gray-900";
 
   const handleOrder = () => {
-    const orderData = { productId: product.id, name: product.name, price: product.selling_price, qty, image: product.main_image_url };
+    const orderData = { productId: product.id, name: product.name, price: product.selling_price, qty, image: product.main_image_url, productCode: product.product_code };
     sessionStorage.setItem("checkout_item", JSON.stringify(orderData));
     navigate("/store/checkout");
   };
