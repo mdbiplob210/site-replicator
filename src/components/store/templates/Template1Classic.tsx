@@ -48,7 +48,7 @@ const Template1Classic = () => {
             <button className="p-2.5 rounded-full hover:bg-gray-100 transition-colors relative">
               <Heart className="h-[18px] w-[18px] text-gray-600" />
             </button>
-            <Link to="/store/checkout" className="p-2.5 rounded-full hover:bg-gray-100 transition-colors relative">
+            <Link to="/checkout" className="p-2.5 rounded-full hover:bg-gray-100 transition-colors relative">
               <ShoppingBag className="h-[18px] w-[18px] text-gray-600" />
               <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-[#e94560] text-[10px] font-bold text-white flex items-center justify-center">0</span>
             </Link>
