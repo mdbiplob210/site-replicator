@@ -15,9 +15,9 @@ const Template5Bold = () => {
             SOH<span className="text-lime-400">OZ</span>
           </Link>
           <div className="hidden md:flex items-center gap-8 text-sm font-bold uppercase tracking-widest text-zinc-400">
-            <Link to="/store" className="hover:text-white transition">Shop</Link>
-            <Link to="/store" className="hover:text-white transition">New</Link>
-            <Link to="/store" className="hover:text-white transition">About</Link>
+            <Link to="/" className="hover:text-white transition">Shop</Link>
+            <Link to="/" className="hover:text-white transition">New</Link>
+            <Link to="/" className="hover:text-white transition">About</Link>
           </div>
           <div className="flex items-center gap-3">
             <Link to="/store/cart" className="flex items-center gap-2 bg-lime-400 text-zinc-900 px-4 py-2 rounded-full font-bold text-sm hover:bg-lime-300 transition">
