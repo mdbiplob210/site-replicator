@@ -2653,6 +2653,20 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
     }
   };
 
+  // Recalculate product_cost & total_amount from order_items
+  const recalcOrderTotals = async () => {
+    if (!orderId || !order) return;
+    try {
+      const { data: freshItems, error } = await supabase.from("order_items").select("total_price").eq("order_id", orderId);
+      if (error) throw error;
+      const newProductCost = (freshItems || []).reduce((s: number, i: any) => s + Number(i.total_price), 0);
+      const newTotal = newProductCost + Number(order.delivery_charge) - Number(order.discount);
+      await supabase.from("orders").update({ product_cost: newProductCost, total_amount: newTotal }).eq("id", orderId);
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      queryClient.invalidateQueries({ queryKey: ["order-counts"] });
+    } catch (e) { console.error("Recalc error:", e); }
+  };
+
   const addProductToDetailOrder = async (product: any) => {
     if (!orderId) return;
     try {
@@ -2676,6 +2690,7 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
       queryClient.invalidateQueries({ queryKey: ["all-order-items-filter"] });
       setDetailProductSearch("");
       setDetailProductFocused(false);
+      await recalcOrderTotals();
       toast.success(existingItem ? "কোয়ান্টিটি বাড়ানো হয়েছে!" : "প্রোডাক্ট যোগ হয়েছে!");
     } catch (e: any) { toast.error(e.message); }
   };
@@ -2695,6 +2710,7 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
       }
       queryClient.invalidateQueries({ queryKey: ["order-items", orderId] });
       queryClient.invalidateQueries({ queryKey: ["all-order-items-filter"] });
+      await recalcOrderTotals();
     } catch (e: any) { toast.error(e.message); }
   };
 
@@ -2706,6 +2722,7 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
       await logActivity("field_edited", "order_items", undefined, undefined, `${item.product_name} রিমুভ করা হয়েছে`);
       queryClient.invalidateQueries({ queryKey: ["order-items", orderId] });
       queryClient.invalidateQueries({ queryKey: ["all-order-items-filter"] });
+      await recalcOrderTotals();
       toast.success("আইটেম রিমুভ হয়েছে!");
     } catch (e: any) { toast.error(e.message); }
   };
