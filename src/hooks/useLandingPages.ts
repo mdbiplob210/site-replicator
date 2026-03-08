@@ -13,6 +13,10 @@ export interface LandingPage {
   tiktok_pixel_id: string | null;
   gtm_id: string | null;
   custom_head_scripts: string | null;
+  exit_popup_enabled: boolean;
+  exit_popup_discount: number;
+  exit_popup_timer: number;
+  exit_popup_message: string;
   created_at: string;
   updated_at: string;
 }
