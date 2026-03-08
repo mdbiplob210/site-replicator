@@ -351,8 +351,8 @@ const AdminOrders = () => {
 
   // Build lookup maps
   const courierProviderNameMap = useMemo(() => {
-    const map: Record<string, string> = {};
-    courierProviders.forEach((cp: any) => { map[cp.id] = cp.name; });
+    const map: Record<string, { name: string; logo_url: string | null }> = {};
+    courierProviders.forEach((cp: any) => { map[cp.id] = { name: cp.name, logo_url: cp.logo_url || null }; });
     return map;
   }, [courierProviders]);
 
