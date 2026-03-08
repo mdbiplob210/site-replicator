@@ -31,8 +31,21 @@ const CheckoutPage = () => {
 
   useEffect(() => {
     const raw = sessionStorage.getItem("checkout_item");
-    if (raw) setItem(JSON.parse(raw));
-  }, []);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      setItem(parsed);
+      // Track InitiateCheckout
+      if (!initiateTracked.current && parsed) {
+        initiateTracked.current = true;
+        trackInitiateCheckout({
+          value: parsed.price * parsed.qty,
+          contentName: parsed.name,
+          contentId: parsed.productCode || parsed.productId,
+          qty: parsed.qty,
+        });
+      }
+    }
+  }, [trackInitiateCheckout]);
 
   // Track abandoned form - save when user leaves page
   const saveAbandonedOrder = useCallback(async () => {
