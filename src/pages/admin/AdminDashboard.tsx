@@ -5,7 +5,8 @@ import {
   ShoppingCart, Clock, CheckCircle2, XCircle, PauseCircle,
   CalendarClock, Truck, PhoneOff, TrendingUp, DollarSign,
   Target, Package, AlertTriangle, Landmark, Layers, HandCoins,
-  PiggyBank, Receipt, Loader2
+  PiggyBank, Receipt, Loader2, BarChart3, CreditCard, Undo2,
+  Hand, ShoppingBag, Hash
 } from "lucide-react";
 import { useDashboardData } from "@/hooks/useDashboardData";
 
@@ -15,7 +16,7 @@ const fmt = (n: number) => `৳${n.toLocaleString("en-BD")}`;
 
 const AdminDashboard = () => {
   const [activeFilter, setActiveFilter] = useState<typeof timeFilters[number]>("Today");
-  const { isLoading, orderStats, shippingStats, profitStats, financeStats } = useDashboardData(activeFilter);
+  const { isLoading, orderStats, shippingStats, profitStats, financeStats, salesDetails } = useDashboardData(activeFilter);
 
   const orderCards = [
     { label: "TOTAL ORDERS", value: String(orderStats.totalOrders), sub: "Orders", change: `(${fmt(orderStats.totalAmount)})`, icon: ShoppingCart, color: "text-foreground", bgGradient: "from-slate-100 to-slate-50", iconColor: "text-slate-500" },
@@ -23,6 +24,13 @@ const AdminDashboard = () => {
     { label: "CONFIRMED", value: String(orderStats.confirmed.count), sub: "Confirmed", change: `(${orderStats.confirmed.pct}%)`, extra: `(${fmt(orderStats.confirmed.amount)})`, icon: CheckCircle2, color: "text-emerald-600", bgGradient: "from-emerald-100 to-emerald-50", iconColor: "text-emerald-500" },
     { label: "CANCELLED", value: String(orderStats.cancelled.count), sub: "Cancelled", change: `(${orderStats.cancelled.pct}%)`, extra: `(${fmt(orderStats.cancelled.amount)})`, icon: XCircle, color: "text-red-500", bgGradient: "from-red-100 to-red-50", iconColor: "text-red-500" },
     { label: "ON HOLD", value: String(orderStats.onHold.count), sub: "On Hold", change: `(${orderStats.onHold.pct}%)`, extra: `(${fmt(orderStats.onHold.amount)})`, icon: PauseCircle, color: "text-amber-600", bgGradient: "from-amber-100 to-amber-50", iconColor: "text-amber-500" },
+  ];
+
+  const deliveryCards = [
+    { label: "DELIVERED", value: String(orderStats.delivered.count), sub: `(${orderStats.delivered.pct}%)`, extra: fmt(orderStats.delivered.amount), icon: CheckCircle2, color: "text-emerald-600", bgGradient: "from-emerald-100 to-emerald-50", iconColor: "text-emerald-500" },
+    { label: "HAND DELIVERY", value: String(orderStats.handDelivery.count), sub: `(${orderStats.handDelivery.pct}%)`, extra: fmt(orderStats.handDelivery.amount), icon: Hand, color: "text-indigo-600", bgGradient: "from-indigo-100 to-indigo-50", iconColor: "text-indigo-500" },
+    { label: "RETURNED", value: String(orderStats.returned.count), sub: `(${orderStats.returned.pct}%)`, extra: fmt(orderStats.returned.amount), icon: Undo2, color: "text-red-500", bgGradient: "from-red-100 to-red-50", iconColor: "text-red-500" },
+    { label: "PENDING RETURN", value: String(orderStats.pendingReturn.count), sub: `(${orderStats.pendingReturn.pct}%)`, extra: fmt(orderStats.pendingReturn.amount), icon: AlertTriangle, color: "text-orange-500", bgGradient: "from-orange-100 to-orange-50", iconColor: "text-orange-500" },
   ];
 
   const shipCards = [
@@ -40,6 +48,7 @@ const AdminDashboard = () => {
 
   const profitItems = [
     { label: "REVENUE", value: fmt(profitStats.revenue), icon: DollarSign, iconColor: "text-blue-600", bgGradient: "from-blue-100 to-blue-50" },
+    { label: "PRODUCT COST", value: fmt(profitStats.productCost), icon: Package, iconColor: "text-slate-600", bgGradient: "from-slate-100 to-slate-50" },
     { label: "ADS COST", value: fmt(profitStats.adsCostBdt), sub: `($${profitStats.adsCostUsd.toFixed(2)})`, icon: Target, iconColor: "text-violet-600", bgGradient: "from-violet-100 to-violet-50" },
     { label: "DELIVERY", value: fmt(profitStats.deliveryCost), icon: Truck, iconColor: "text-cyan-600", bgGradient: "from-cyan-100 to-cyan-50" },
     { label: "RETURNS", value: fmt(profitStats.returnAmount), icon: AlertTriangle, iconColor: "text-red-500", bgGradient: "from-red-100 to-red-50" },
@@ -54,6 +63,8 @@ const AdminDashboard = () => {
     { label: "INVESTMENTS", value: fmt(financeStats.investmentTotal), icon: PiggyBank, iconColor: "text-amber-600", bgGradient: "from-amber-100 to-amber-50" },
     { label: "NET VALUE", value: fmt(financeStats.netValue), icon: Receipt, iconColor: "text-emerald-600", bgGradient: "from-emerald-100 to-emerald-50" },
   ];
+
+  const maxHourly = Math.max(...salesDetails.hourlyOrders, 1);
 
   return (
     <AdminLayout>
@@ -89,6 +100,26 @@ const AdminDashboard = () => {
 
         {!isLoading && (
           <>
+            {/* Quick Summary Bar */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <Card className="p-3 border-border/30 bg-gradient-to-br from-blue-50 to-blue-100/50">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">AVG ORDER VALUE</p>
+                <p className="text-xl font-extrabold text-blue-600 mt-0.5">{fmt(orderStats.avgOrderValue)}</p>
+              </Card>
+              <Card className="p-3 border-border/30 bg-gradient-to-br from-emerald-50 to-emerald-100/50">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">PAID ORDERS</p>
+                <p className="text-xl font-extrabold text-emerald-600 mt-0.5">{salesDetails.paymentStats.paid.count} <span className="text-xs font-medium text-muted-foreground">({fmt(salesDetails.paymentStats.paid.amount)})</span></p>
+              </Card>
+              <Card className="p-3 border-border/30 bg-gradient-to-br from-amber-50 to-amber-100/50">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">UNPAID ORDERS</p>
+                <p className="text-xl font-extrabold text-amber-600 mt-0.5">{salesDetails.paymentStats.unpaid.count} <span className="text-xs font-medium text-muted-foreground">({fmt(salesDetails.paymentStats.unpaid.amount)})</span></p>
+              </Card>
+              <Card className="p-3 border-border/30 bg-gradient-to-br from-violet-50 to-violet-100/50">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">PARTIAL PAID</p>
+                <p className="text-xl font-extrabold text-violet-600 mt-0.5">{salesDetails.paymentStats.partial.count} <span className="text-xs font-medium text-muted-foreground">({fmt(salesDetails.paymentStats.partial.amount)})</span></p>
+              </Card>
+            </div>
+
             {/* Order Status Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
               {orderCards.map((stat) => (
@@ -106,6 +137,27 @@ const AdminDashboard = () => {
                       {stat.change && <span className="text-xs font-normal text-muted-foreground ml-1">{stat.change}</span>}
                     </p>
                     {stat.extra && <p className="text-xs text-muted-foreground mt-1">{stat.extra}</p>}
+                  </div>
+                </Card>
+              ))}
+            </div>
+
+            {/* Delivery Status Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {deliveryCards.map((stat) => (
+                <Card key={stat.label} className="p-4 border-border/30 card-hover group overflow-hidden relative">
+                  <div className={`absolute inset-0 bg-gradient-to-br ${stat.bgGradient} opacity-0 group-hover:opacity-30 transition-opacity duration-300`} />
+                  <div className="relative">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className={`p-2.5 rounded-xl bg-gradient-to-br ${stat.bgGradient} transition-transform duration-300 group-hover:scale-110`}>
+                        <stat.icon className={`h-5 w-5 ${stat.iconColor}`} />
+                      </div>
+                      <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground/60">{stat.label}</span>
+                    </div>
+                    <p className={`text-2xl font-extrabold ${stat.color}`}>
+                      {stat.value} <span className="text-xs font-normal text-muted-foreground ml-1">{stat.sub}</span>
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">{stat.extra}</p>
                   </div>
                 </Card>
               ))}
@@ -141,6 +193,98 @@ const AdminDashboard = () => {
               ))}
             </div>
 
+            {/* Top Products & Hourly Orders */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* Top Products */}
+              <Card className="p-5 border-border/30">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2.5 rounded-xl bg-gradient-to-br from-violet-500 to-purple-500 shadow-lg shadow-violet-500/20">
+                    <ShoppingBag className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-bold text-foreground">Top Selling Products</h2>
+                    <p className="text-xs text-muted-foreground">By quantity sold</p>
+                  </div>
+                </div>
+                {salesDetails.topProducts.length === 0 ? (
+                  <p className="text-sm text-muted-foreground py-6 text-center">No product data available</p>
+                ) : (
+                  <div className="space-y-2.5">
+                    {salesDetails.topProducts.map((p, i) => (
+                      <div key={i} className="flex items-center gap-3 p-2.5 rounded-lg border border-border/30 hover:bg-secondary/30 transition-colors">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-100 to-purple-100 text-violet-600 font-bold text-sm shrink-0">
+                          #{i + 1}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-foreground truncate">{p.name}</p>
+                          <div className="flex items-center gap-3 mt-0.5">
+                            <span className="text-xs text-muted-foreground flex items-center gap-1">
+                              <Hash className="h-3 w-3" />{p.qty} sold
+                            </span>
+                            <span className="text-xs font-medium text-emerald-600">{fmt(p.revenue)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </Card>
+
+              {/* Hourly Orders Chart */}
+              <Card className="p-5 border-border/30">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 shadow-lg shadow-blue-500/20">
+                    <BarChart3 className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-bold text-foreground">Hourly Orders</h2>
+                    <p className="text-xs text-muted-foreground">Order distribution by hour</p>
+                  </div>
+                </div>
+                <div className="flex items-end gap-[3px] h-32 mt-2">
+                  {salesDetails.hourlyOrders.map((count, hour) => (
+                    <div key={hour} className="flex-1 flex flex-col items-center gap-1 group/bar">
+                      <span className="text-[9px] font-medium text-muted-foreground opacity-0 group-hover/bar:opacity-100 transition-opacity">
+                        {count}
+                      </span>
+                      <div
+                        className="w-full rounded-t bg-gradient-to-t from-blue-500 to-cyan-400 transition-all duration-200 group-hover/bar:from-blue-600 group-hover/bar:to-cyan-500 min-h-[2px]"
+                        style={{ height: `${Math.max((count / maxHourly) * 100, 2)}%` }}
+                        title={`${hour}:00 - ${count} orders`}
+                      />
+                      {hour % 3 === 0 && (
+                        <span className="text-[9px] text-muted-foreground/60 font-medium">{hour}</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </div>
+
+            {/* Source Breakdown */}
+            {salesDetails.sourceBreakdown.length > 0 && (
+              <Card className="p-5 border-border/30">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2.5 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 shadow-lg shadow-amber-500/20">
+                    <Target className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-bold text-foreground">Order Sources</h2>
+                    <p className="text-xs text-muted-foreground">Where orders are coming from</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                  {salesDetails.sourceBreakdown.map((src) => (
+                    <div key={src.name} className="text-center p-3 rounded-xl border border-border/30 hover:bg-secondary/30 transition-colors">
+                      <p className="text-lg font-extrabold text-foreground">{src.count}</p>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60 mt-0.5 truncate">{src.name}</p>
+                      <p className="text-xs font-medium text-emerald-600 mt-1">{fmt(src.amount)}</p>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            )}
+
             {/* Profit Breakdown */}
             <Card className="p-6 border-border/30 overflow-hidden relative">
               <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-[hsl(187,85%,53%)]/5 to-transparent rounded-full -mr-32 -mt-32" />
@@ -154,7 +298,7 @@ const AdminDashboard = () => {
                     <p className="text-xs text-muted-foreground">Revenue, costs and profit analysis</p>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4">
                   {profitItems.map((item) => (
                     <div key={item.label} className="text-center p-4 rounded-xl border border-border/30 card-hover bg-card group overflow-hidden relative">
                       <div className={`absolute inset-0 bg-gradient-to-br ${item.bgGradient} opacity-0 group-hover:opacity-40 transition-opacity duration-300`} />
