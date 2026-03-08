@@ -18,7 +18,7 @@ const Template3Minimal = () => {
             <Link to="/" className="hover:text-stone-900 transition">About</Link>
             <Link to="/" className="hover:text-stone-900 transition">Contact</Link>
           </div>
-          <Link to="/store/cart" className="p-2">
+          <Link to="/checkout" className="p-2">
             <ShoppingBag className="h-5 w-5 text-stone-600" />
           </Link>
         </div>
