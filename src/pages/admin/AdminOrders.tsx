@@ -255,7 +255,7 @@ const AdminOrders = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("courier_providers")
-        .select("id, name, slug");
+        .select("id, name, slug, logo_url");
       if (error) throw error;
       return data;
     },
