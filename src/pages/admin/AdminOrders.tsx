@@ -458,8 +458,8 @@ const AdminOrders = () => {
       if (filterThana !== "all" && !(o.customer_address && o.customer_address.toLowerCase().includes(filterThana.toLowerCase()))) return false;
       if (filterZone !== "all" && !(o.customer_address && o.customer_address.toLowerCase().includes(filterZone.toLowerCase()))) return false;
       if (filterPaymentStatus !== "all") {
-        if (filterPaymentStatus === "paid" && Number(o.delivery_charge) > 0) return false;
-        if (filterPaymentStatus === "cod" && Number(o.delivery_charge) === 0) return false;
+        if (filterPaymentStatus === "paid" && o.payment_status !== "paid") return false;
+        if (filterPaymentStatus === "unpaid" && o.payment_status === "paid") return false;
         if (filterPaymentStatus === "free_delivery" && Number(o.delivery_charge) > 0) return false;
       }
       if (filterCourierProvider !== "all") {
