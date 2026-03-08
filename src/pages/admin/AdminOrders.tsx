@@ -1384,8 +1384,10 @@ const AdminOrders = () => {
                           </SelectContent>
                         </Select>
                       </div>
+                      </div>
                     </div>
                   )}
+                  </div>
 
                   {/* Product Items */}
                   <div className="space-y-3">
