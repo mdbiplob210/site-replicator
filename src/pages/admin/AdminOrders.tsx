@@ -2140,17 +2140,31 @@ const AdminOrders = () => {
                         <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-secondary/60 transition-colors text-muted-foreground hover:text-foreground" title="Edit" onClick={() => setDetailOrderId(order.id)}>
                           <Pencil className="h-3.5 w-3.5" />
                         </button>
-                        {/* Block Customer */}
-                        <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-red-500/10 transition-colors text-muted-foreground hover:text-red-500" title="Block Customer" onClick={async () => {
-                          if (!order.customer_phone) { toast.error("ফোন নম্বর নেই!"); return; }
-                          if (!confirm(`${order.customer_phone} নম্বরটি ব্লক করবেন? এই নম্বর থেকে আর অর্ডার আসবে না।`)) return;
-                          const { error } = await supabase.from("blocked_phones").insert({ phone_number: order.customer_phone, reason: `Blocked from order ${order.order_number}`, blocked_by: user?.id || null } as any);
-                          if (error) { toast.error("ব্লক ব্যর্থ: " + error.message); return; }
-                          logActivity(order.id, "customer_blocked", "phone", undefined, order.customer_phone, "কাস্টমার ব্লক করা হয়েছে");
-                          toast.success(`${order.customer_phone} ব্লক হয়েছে!`);
-                        }}>
-                          <Ban className="h-3.5 w-3.5" />
-                        </button>
+                        {/* Block/Unblock Customer Toggle */}
+                        {(() => {
+                          const isBlocked = !!order.customer_phone && blockedPhoneSet.has(order.customer_phone);
+                          return (
+                            <button className={`h-7 w-7 rounded-lg flex items-center justify-center transition-colors ${isBlocked ? "bg-red-500/15 text-red-500 hover:bg-red-500/25" : "hover:bg-red-500/10 text-muted-foreground hover:text-red-500"}`} title={isBlocked ? "Unblock Customer" : "Block Customer"} onClick={async () => {
+                              if (!order.customer_phone) { toast.error("ফোন নম্বর নেই!"); return; }
+                              if (isBlocked) {
+                                if (!confirm(`${order.customer_phone} আনব্লক করবেন?`)) return;
+                                const { error } = await supabase.from("blocked_phones").delete().eq("phone_number", order.customer_phone);
+                                if (error) { toast.error("আনব্লক ব্যর্থ: " + error.message); return; }
+                                logActivity(order.id, "customer_unblocked", "phone", order.customer_phone, undefined, "কাস্টমার আনব্লক করা হয়েছে");
+                                toast.success(`${order.customer_phone} আনব্লক হয়েছে!`);
+                              } else {
+                                if (!confirm(`${order.customer_phone} ব্লক করবেন? এই নম্বর থেকে আর অর্ডার আসবে না।`)) return;
+                                const { error } = await supabase.from("blocked_phones").insert({ phone_number: order.customer_phone, reason: `Blocked from order ${order.order_number}`, blocked_by: user?.id || null } as any);
+                                if (error) { toast.error("ব্লক ব্যর্থ: " + error.message); return; }
+                                logActivity(order.id, "customer_blocked", "phone", undefined, order.customer_phone, "কাস্টমার ব্লক করা হয়েছে");
+                                toast.success(`${order.customer_phone} ব্লক হয়েছে!`);
+                              }
+                              refetchBlockedPhones();
+                            }}>
+                              <Ban className="h-3.5 w-3.5" />
+                            </button>
+                          );
+                        })()}
                         {/* Delete */}
                         <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-destructive/10 transition-colors text-muted-foreground hover:text-destructive" title="Delete" onClick={() => { if (confirm("অর্ডারটি ডিলিট করবেন?")) deleteOrder.mutate(order.id); }}>
                           <Trash2 className="h-3.5 w-3.5" />
