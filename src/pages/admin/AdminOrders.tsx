@@ -302,11 +302,22 @@ const AdminOrders = () => {
   const { data: allOrderItems = [] } = useQuery({
     queryKey: ["all-order-items-filter"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("order_items")
-        .select("order_id, product_name, product_code, product_id");
-      if (error) throw error;
-      return data;
+      // Fetch all order items with pagination to bypass 1000 row limit
+      let allItems: any[] = [];
+      let from = 0;
+      const pageSize = 1000;
+      while (true) {
+        const { data, error } = await supabase
+          .from("order_items")
+          .select("order_id, product_name, product_code, product_id")
+          .range(from, from + pageSize - 1);
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+        allItems = allItems.concat(data);
+        if (data.length < pageSize) break;
+        from += pageSize;
+      }
+      return allItems;
     },
   });
 
