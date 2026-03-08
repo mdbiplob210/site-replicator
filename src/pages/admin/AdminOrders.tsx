@@ -1389,8 +1389,11 @@ const AdminOrders = () => {
                   </div>
 
                   {/* Product Items */}
-                  <div className="space-y-3">
-                    <Label className="text-xs font-semibold">প্রোডাক্ট যোগ করুন</Label>
+                  <div className="p-4 rounded-2xl bg-secondary/20 border border-border/40 space-y-3">
+                    <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                      <div className="h-6 w-6 rounded-lg bg-primary/10 flex items-center justify-center"><Package className="h-3.5 w-3.5 text-primary" /></div>
+                      প্রোডাক্ট যোগ করুন
+                    </h3>
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
