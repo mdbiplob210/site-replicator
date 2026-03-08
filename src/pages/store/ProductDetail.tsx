@@ -22,7 +22,7 @@ const ProductDetail = () => {
   const handleOrder = () => {
     const orderData = { productId: product.id, name: product.name, price: product.selling_price, qty, image: product.main_image_url, productCode: product.product_code };
     sessionStorage.setItem("checkout_item", JSON.stringify(orderData));
-    navigate("/store/checkout");
+    navigate("/checkout");
   };
 
   return (
