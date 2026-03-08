@@ -154,6 +154,9 @@ const AdminOrders = () => {
   const [inlineNoteText, setInlineNoteText] = useState("");
   const [selectedOrderSource, setSelectedOrderSource] = useState("");
   const [newOrderStatus, setNewOrderStatus] = useState<string>("processing");
+  const [newOrderCancelReason, setNewOrderCancelReason] = useState("");
+  const [newOrderCancelCustom, setNewOrderCancelCustom] = useState("");
+  const [cancelReasonFilter, setCancelReasonFilter] = useState("all");
   const [newSourceName, setNewSourceName] = useState("");
   const [newSourceIcon, setNewSourceIcon] = useState("📦");
   
@@ -497,9 +500,15 @@ const AdminOrders = () => {
         if (filterSalesType === "api" && !o.source) return false;
         if (filterSalesType === "manual" && o.source) return false;
       }
+      // Cancel reason filter
+      if (cancelReasonFilter !== "all" && activeTab === "Cancelled") {
+        if (cancelReasonFilter === "no_reason") { if ((o as any).cancel_reason) return false; }
+        else if (cancelReasonFilter === "others") { if (!(o as any).cancel_reason || CANCEL_REASONS.includes((o as any).cancel_reason)) return false; }
+        else { if ((o as any).cancel_reason !== cancelReasonFilter) return false; }
+      }
       return true;
     });
-  }, [orders, searchQuery, filterSource, filterPhone, filterAmountMin, filterAmountMax, filterDeviceType, filterAddress, filterDistrict, filterThana, filterZone, filterPaymentStatus, filterCourierProvider, filterCourierStatus, filterStatus, filterProductSearch, filterCategory, filterCourierCharged, filterNotes, filterUrl, filterOrderTag, filterSalesType, courierByOrderId, orderItemsByOrderId, allProducts]);
+  }, [orders, searchQuery, filterSource, filterPhone, filterAmountMin, filterAmountMax, filterDeviceType, filterAddress, filterDistrict, filterThana, filterZone, filterPaymentStatus, filterCourierProvider, filterCourierStatus, filterStatus, filterProductSearch, filterCategory, filterCourierCharged, filterNotes, filterUrl, filterOrderTag, filterSalesType, courierByOrderId, orderItemsByOrderId, allProducts, cancelReasonFilter, activeTab]);
 
   const activeFilterCount = [filterSource, filterPhone, filterAmountMin, filterAmountMax, filterAddress, filterStatus, filterProductSearch, filterNotes, filterUrl, filterOrderTag].filter(Boolean).length
     + [filterDeviceType, filterPaymentStatus, filterCourierProvider, filterCourierStatus, filterCategory, filterCourierCharged, filterSalesType, filterDistrict, filterThana, filterZone].filter(v => v !== "all").length
@@ -831,8 +840,15 @@ const AdminOrders = () => {
 
   const handleCreateOrder = () => {
     if (!customerName.trim()) return;
+    if (newOrderStatus === "cancelled" && !newOrderCancelReason && !newOrderCancelCustom.trim()) {
+      toast.error("ক্যান্সেল কারণ সিলেক্ট করুন!");
+      return;
+    }
     const computedProductCost = orderItems.length > 0 ? itemsTotal : productCost;
     const computedTotal = totalAmount || (computedProductCost + deliveryCharge - discount);
+    const finalCancelReason = newOrderStatus === "cancelled" 
+      ? (newOrderCancelReason === "others" ? newOrderCancelCustom : newOrderCancelReason) 
+      : null;
     createOrder.mutate({
       order: {
         order_number: nextOrderNumber,
@@ -847,6 +863,7 @@ const AdminOrders = () => {
         courier_note: courierNote || null,
         source: selectedOrderSource || "Panel",
         status: newOrderStatus as any,
+        cancel_reason: finalCancelReason,
       } as any,
       items: orderItems,
     }, {
@@ -885,6 +902,8 @@ const AdminOrders = () => {
     setSelectedZoneId(null);
     setSelectedAreaId(null);
     setNewOrderStatus("processing");
+    setNewOrderCancelReason("");
+    setNewOrderCancelCustom("");
   };
 
   // Old orders lookup by phone
@@ -1542,6 +1561,30 @@ const AdminOrders = () => {
                         </button>
                       ))}
                     </div>
+                    {newOrderStatus === "cancelled" && (
+                      <div className="space-y-2 p-3 rounded-xl border border-destructive/30 bg-destructive/5">
+                        <Label className="text-xs font-semibold text-destructive flex items-center gap-1"><XCircle className="h-3.5 w-3.5" /> ক্যান্সেল কারণ</Label>
+                        {CANCEL_REASONS.map((reason) => (
+                          <label key={reason} className={cn(
+                            "flex items-center gap-2 p-2 rounded-lg border cursor-pointer text-xs transition-all",
+                            newOrderCancelReason === reason ? "border-destructive bg-destructive/10" : "border-border/40 hover:bg-secondary/30"
+                          )}>
+                            <input type="radio" name="new_cancel_reason" className="accent-destructive" checked={newOrderCancelReason === reason} onChange={() => setNewOrderCancelReason(reason)} />
+                            {reason}
+                          </label>
+                        ))}
+                        <label className={cn(
+                          "flex items-center gap-2 p-2 rounded-lg border cursor-pointer text-xs transition-all",
+                          newOrderCancelReason === "others" ? "border-destructive bg-destructive/10" : "border-border/40 hover:bg-secondary/30"
+                        )}>
+                          <input type="radio" name="new_cancel_reason" className="accent-destructive" checked={newOrderCancelReason === "others"} onChange={() => setNewOrderCancelReason("others")} />
+                          Others (নিজে লিখুন)
+                        </label>
+                        {newOrderCancelReason === "others" && (
+                          <Textarea placeholder="ক্যান্সেলের কারণ লিখুন..." className="rounded-lg text-xs" rows={2} value={newOrderCancelCustom} onChange={(e) => setNewOrderCancelCustom(e.target.value)} />
+                        )}
+                      </div>
+                    )}
                   </div>
                   <Button className="w-full rounded-xl shadow-sm" onClick={handleCreateOrder} disabled={createOrder.isPending || !customerName.trim()}>
                     {createOrder.isPending ? <><Loader2 className="h-4 w-4 animate-spin" /> Creating...</> : <><Plus className="h-4 w-4" /> Create Order</>}
@@ -1557,7 +1600,7 @@ const AdminOrders = () => {
           {statusTabs.map((tab) => (
             <button
               key={tab.label}
-              onClick={() => setActiveTab(tab.label)}
+              onClick={() => { setActiveTab(tab.label); setCancelReasonFilter("all"); }}
               className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium whitespace-nowrap transition-all duration-200 ${
                 activeTab === tab.label
                   ? `${tab.color} text-white shadow-lg`
@@ -1603,7 +1646,57 @@ const AdminOrders = () => {
           </div>
         </Card>
 
-        {/* Bulk Actions Bar */}
+        {/* Cancel Reason Filter for Cancelled tab */}
+        {activeTab === "Cancelled" && (
+          <Card className="p-3 border-border/40 shadow-sm">
+            <div className="flex items-center gap-3 flex-wrap">
+              <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><Filter className="h-3.5 w-3.5" /> ক্যান্সেল কারণ:</span>
+              <button
+                onClick={() => setCancelReasonFilter("all")}
+                className={cn("px-3 py-1.5 rounded-lg text-xs font-medium transition-all", cancelReasonFilter === "all" ? "bg-primary text-primary-foreground shadow-sm" : "bg-secondary/50 text-muted-foreground hover:bg-secondary")}
+              >
+                সব ({filteredOrders.length})
+              </button>
+              {CANCEL_REASONS.map((reason) => {
+                const count = filteredOrders.filter((o: any) => o.cancel_reason === reason).length;
+                return (
+                  <button
+                    key={reason}
+                    onClick={() => setCancelReasonFilter(reason)}
+                    className={cn("px-3 py-1.5 rounded-lg text-xs font-medium transition-all", cancelReasonFilter === reason ? "bg-destructive text-destructive-foreground shadow-sm" : "bg-secondary/50 text-muted-foreground hover:bg-secondary")}
+                  >
+                    {reason} ({count})
+                  </button>
+                );
+              })}
+              {(() => {
+                const otherCount = filteredOrders.filter((o: any) => o.cancel_reason && !CANCEL_REASONS.includes(o.cancel_reason)).length;
+                const noReasonCount = filteredOrders.filter((o: any) => !o.cancel_reason).length;
+                return (
+                  <>
+                    {otherCount > 0 && (
+                      <button
+                        onClick={() => setCancelReasonFilter("others")}
+                        className={cn("px-3 py-1.5 rounded-lg text-xs font-medium transition-all", cancelReasonFilter === "others" ? "bg-destructive text-destructive-foreground shadow-sm" : "bg-secondary/50 text-muted-foreground hover:bg-secondary")}
+                      >
+                        অন্যান্য ({otherCount})
+                      </button>
+                    )}
+                    {noReasonCount > 0 && (
+                      <button
+                        onClick={() => setCancelReasonFilter("no_reason")}
+                        className={cn("px-3 py-1.5 rounded-lg text-xs font-medium transition-all", cancelReasonFilter === "no_reason" ? "bg-muted text-foreground shadow-sm" : "bg-secondary/50 text-muted-foreground hover:bg-secondary")}
+                      >
+                        কারণ নেই ({noReasonCount})
+                      </button>
+                    )}
+                  </>
+                );
+              })()}
+            </div>
+          </Card>
+        )}
+
         {selectedOrderIds.size > 0 && (
           <Card className="p-3 border-primary/30 bg-primary/5 shadow-sm flex items-center gap-3 flex-wrap">
             <div className="flex items-center gap-2">
@@ -2208,6 +2301,11 @@ const AdminOrders = () => {
                           ))}
                         </SelectContent>
                       </Select>
+                      {order.status === "cancelled" && (order as any).cancel_reason && (
+                        <p className="text-[10px] text-destructive mt-1 truncate max-w-[130px]" title={(order as any).cancel_reason}>
+                          {(order as any).cancel_reason}
+                        </p>
+                      )}
                     </TableCell>
                     {/* COURIER: logo + name */}
                     <TableCell className="px-3 py-3 text-center" onClick={(e) => e.stopPropagation()}>
@@ -2391,6 +2489,11 @@ const AdminOrders = () => {
                             ))}
                           </SelectContent>
                         </Select>
+                        {order.status === "cancelled" && (order as any).cancel_reason && (
+                          <p className="text-[10px] text-destructive truncate max-w-[110px]" title={(order as any).cancel_reason}>
+                            {(order as any).cancel_reason}
+                          </p>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center justify-between text-[11px] text-muted-foreground">
@@ -2550,6 +2653,9 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
   const { data: editCourierZones = [], isLoading: editZonesLoading } = useCourierZones(editCourierId, editCourierCityId);
   const { data: editCourierAreas = [], isLoading: editAreasLoading } = useCourierAreas(editCourierId, editCourierZoneId);
   const [editStatus, setEditStatus] = useState<string>("");
+  const [detailCancelDialogOpen, setDetailCancelDialogOpen] = useState(false);
+  const [detailCancelReason, setDetailCancelReason] = useState("");
+  const [detailCancelCustom, setDetailCancelCustom] = useState("");
   const [logFilterUser, setLogFilterUser] = useState("all");
   const [logFilterAction, setLogFilterAction] = useState("all");
   const [logFilterDate, setLogFilterDate] = useState<Date | undefined>();
@@ -2650,6 +2756,12 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
 
   const handleStatusChange = async (newStatus: string) => {
     if (!orderId || !order || newStatus === order.status) return;
+    if (newStatus === "cancelled") {
+      setDetailCancelReason("");
+      setDetailCancelCustom("");
+      setDetailCancelDialogOpen(true);
+      return;
+    }
     try {
       const { error } = await supabase.from("orders").update({ status: newStatus as any }).eq("id", orderId);
       if (error) throw error;
@@ -2658,6 +2770,21 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
       queryClient.invalidateQueries({ queryKey: ["order-counts"] });
       queryClient.invalidateQueries({ queryKey: ["order-activity-logs", orderId] });
       toast.success("স্ট্যাটাস আপডেট হয়েছে!");
+    } catch (e: any) { toast.error(e.message); }
+  };
+
+  const confirmDetailCancel = async () => {
+    if (!orderId || !order) return;
+    const reason = detailCancelReason === "others" ? detailCancelCustom : detailCancelReason;
+    try {
+      const { error } = await supabase.from("orders").update({ status: "cancelled" as any, cancel_reason: reason } as any).eq("id", orderId);
+      if (error) throw error;
+      await logActivity("status_changed", "status", order.status, "cancelled", `কারণ: ${reason}`);
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      queryClient.invalidateQueries({ queryKey: ["order-counts"] });
+      queryClient.invalidateQueries({ queryKey: ["order-activity-logs", orderId] });
+      setDetailCancelDialogOpen(false);
+      toast.success("অর্ডার ক্যান্সেল হয়েছে!");
     } catch (e: any) { toast.error(e.message); }
   };
 
@@ -3155,7 +3282,49 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                   </button>
                 ))}
               </div>
-            </div>
+              </div>
+              {/* Show existing cancel reason */}
+              {order.status === "cancelled" && (order as any).cancel_reason && (
+                <div className="p-3 rounded-xl border border-destructive/30 bg-destructive/5">
+                  <p className="text-xs font-semibold text-destructive flex items-center gap-1 mb-1"><XCircle className="h-3.5 w-3.5" /> ক্যান্সেল কারণ</p>
+                  <p className="text-sm text-foreground">{(order as any).cancel_reason}</p>
+                </div>
+              )}
+
+              {/* Detail Cancel Reason Dialog */}
+              <Dialog open={detailCancelDialogOpen} onOpenChange={setDetailCancelDialogOpen}>
+                <DialogContent className="max-w-md rounded-2xl">
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                      <XCircle className="h-5 w-5 text-destructive" /> ক্যান্সেল কারণ সিলেক্ট করুন
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-3">
+                    {CANCEL_REASONS.map((reason) => (
+                      <label key={reason} className={cn(
+                        "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all",
+                        detailCancelReason === reason ? "border-primary bg-primary/5" : "border-border/40 hover:bg-secondary/30"
+                      )}>
+                        <input type="radio" name="detail_cancel_reason" className="accent-primary" checked={detailCancelReason === reason} onChange={() => setDetailCancelReason(reason)} />
+                        <span className="text-sm font-medium">{reason}</span>
+                      </label>
+                    ))}
+                    <label className={cn(
+                      "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all",
+                      detailCancelReason === "others" ? "border-primary bg-primary/5" : "border-border/40 hover:bg-secondary/30"
+                    )}>
+                      <input type="radio" name="detail_cancel_reason" className="accent-primary" checked={detailCancelReason === "others"} onChange={() => setDetailCancelReason("others")} />
+                      <span className="text-sm font-medium">Others (নিজে লিখুন)</span>
+                    </label>
+                    {detailCancelReason === "others" && (
+                      <Textarea placeholder="ক্যান্সেলের কারণ লিখুন..." className="rounded-xl" value={detailCancelCustom} onChange={(e) => setDetailCancelCustom(e.target.value)} rows={2} />
+                    )}
+                    <Button className="w-full rounded-xl" variant="destructive" onClick={confirmDetailCancel} disabled={!detailCancelReason || (detailCancelReason === "others" && !detailCancelCustom.trim())}>
+                      ক্যান্সেল নিশ্চিত করুন
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
 
             {/* Save Button */}
             <Button className="w-full rounded-xl shadow-sm" onClick={handleSaveChanges} disabled={isSaving}>
