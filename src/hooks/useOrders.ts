@@ -98,22 +98,33 @@ export function useOrders(statusFilter: string | null = null, dateFilter: OrderD
   return useQuery({
     queryKey: ["orders", statusFilter, dateFilter, customFrom?.toISOString(), customTo?.toISOString()],
     queryFn: async () => {
-      let query = supabase
-        .from("orders")
-        .select("*")
-        .order("created_at", { ascending: false });
+      // Fetch all orders with pagination to bypass 1000 row limit
+      let allOrders: Order[] = [];
+      let from = 0;
+      const pageSize = 1000;
+      while (true) {
+        let query = supabase
+          .from("orders")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .range(from, from + pageSize - 1);
 
-      if (statusFilter) {
-        query = query.eq("status", statusFilter as OrderStatus);
+        if (statusFilter) {
+          query = query.eq("status", statusFilter as OrderStatus);
+        }
+
+        const range = getOrderDateRange(dateFilter, customFrom, customTo);
+        if (range.from) query = query.gte("created_at", range.from);
+        if (range.to) query = query.lt("created_at", range.to);
+
+        const { data, error } = await query;
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+        allOrders = allOrders.concat(data as Order[]);
+        if (data.length < pageSize) break;
+        from += pageSize;
       }
-
-      const range = getOrderDateRange(dateFilter, customFrom, customTo);
-      if (range.from) query = query.gte("created_at", range.from);
-      if (range.to) query = query.lt("created_at", range.to);
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return data as Order[];
+      return allOrders;
     },
   });
 }
@@ -138,17 +149,27 @@ export function useOrderCounts(dateFilter: OrderDateFilter = "all", customFrom?:
   return useQuery({
     queryKey: ["order-counts", dateFilter, customFrom?.toISOString(), customTo?.toISOString()],
     queryFn: async () => {
-      let query = supabase.from("orders").select("status, created_at");
+      // Fetch all order counts with pagination to bypass 1000 row limit
+      let allData: { status: OrderStatus; created_at: string }[] = [];
+      let from = 0;
+      const pageSize = 1000;
+      while (true) {
+        let query = supabase.from("orders").select("status, created_at").range(from, from + pageSize - 1);
 
-      const range = getOrderDateRange(dateFilter, customFrom, customTo);
-      if (range.from) query = query.gte("created_at", range.from);
-      if (range.to) query = query.lt("created_at", range.to);
+        const range = getOrderDateRange(dateFilter, customFrom, customTo);
+        if (range.from) query = query.gte("created_at", range.from);
+        if (range.to) query = query.lt("created_at", range.to);
 
-      const { data, error } = await query;
-      if (error) throw error;
+        const { data, error } = await query;
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+        allData = allData.concat(data as any[]);
+        if (data.length < pageSize) break;
+        from += pageSize;
+      }
 
-      const counts: Record<string, number> = { "All Orders": data.length };
-      for (const order of data) {
+      const counts: Record<string, number> = { "All Orders": allData.length };
+      for (const order of allData) {
         const label = getStatusLabel(order.status);
         counts[label] = (counts[label] || 0) + 1;
       }
