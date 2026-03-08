@@ -59,8 +59,25 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
       orderSubmitted.current = false;
       abandonedSaved.current = false;
       initiateTracked.current = false;
+      // Push a history state so back button can close the popup
+      window.history.pushState({ popupCheckout: true }, "");
     }
   }, [item, open]);
+
+  // Handle browser back button
+  useEffect(() => {
+    if (!open) return;
+    const handlePopState = (e: PopStateEvent) => {
+      // Back button pressed while popup is open
+      if (!orderSubmitted.current && onExitIntent) {
+        onExitIntent();
+      } else {
+        onClose();
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [open, onExitIntent, onClose]);
 
   // Track InitiateCheckout
   useEffect(() => {
