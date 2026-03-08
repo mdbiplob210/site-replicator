@@ -330,7 +330,12 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
 
               {/* Summary */}
               <div className="bg-gray-50 rounded-xl p-3 space-y-1.5 text-sm">
-                <div className="flex justify-between"><span className="text-gray-500">সাবটোটাল</span><span>৳{total}</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">সাবটোটাল</span><span>৳{subtotal}</span></div>
+                {discount > 0 && (
+                  <div className="flex justify-between text-red-500 font-semibold">
+                    <span>🎁 বিশেষ ছাড়</span><span>-৳{discount}</span>
+                  </div>
+                )}
                 <div className="flex justify-between"><span className="text-gray-500">ডেলিভারি চার্জ</span><span className="text-green-600">ফ্রি</span></div>
                 <div className="flex justify-between font-bold text-base border-t pt-1.5"><span>মোট</span><span className="text-green-600">৳{total}</span></div>
               </div>
