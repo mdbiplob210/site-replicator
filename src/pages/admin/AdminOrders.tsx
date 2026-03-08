@@ -1798,6 +1798,62 @@ const AdminOrders = () => {
           order={filteredOrders.find((o) => o.id === detailOrderId) || null}
           onClose={() => setDetailOrderId(null)}
         />
+
+        {/* Cancel Reason Dialog */}
+        <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+          <DialogContent className="max-w-md rounded-2xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <XCircle className="h-5 w-5 text-destructive" /> ক্যান্সেল কারণ সিলেক্ট করুন
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              {CANCEL_REASONS.map((reason) => (
+                <label key={reason} className={cn(
+                  "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all",
+                  cancelReason === reason ? "border-primary bg-primary/5" : "border-border/40 hover:bg-secondary/30"
+                )}>
+                  <input type="radio" name="cancel_reason" className="accent-primary" checked={cancelReason === reason} onChange={() => setCancelReason(reason)} />
+                  <span className="text-sm font-medium">{reason}</span>
+                </label>
+              ))}
+              <label className={cn(
+                "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all",
+                cancelReason === "others" ? "border-primary bg-primary/5" : "border-border/40 hover:bg-secondary/30"
+              )}>
+                <input type="radio" name="cancel_reason" className="accent-primary" checked={cancelReason === "others"} onChange={() => setCancelReason("others")} />
+                <span className="text-sm font-medium">Others (নিজে লিখুন)</span>
+              </label>
+              {cancelReason === "others" && (
+                <Textarea placeholder="ক্যান্সেলের কারণ লিখুন..." className="rounded-xl" value={cancelCustomReason} onChange={(e) => setCancelCustomReason(e.target.value)} rows={2} />
+              )}
+              <Button className="w-full rounded-xl" variant="destructive" onClick={confirmCancel} disabled={!cancelReason || (cancelReason === "others" && !cancelCustomReason.trim())}>
+                ক্যান্সেল নিশ্চিত করুন
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Hold Date Dialog */}
+        <Dialog open={holdDialogOpen} onOpenChange={setHoldDialogOpen}>
+          <DialogContent className="max-w-sm rounded-2xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <CalendarClock className="h-5 w-5 text-yellow-500" /> Hold Date সিলেক্ট করুন
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">কত তারিখ পর্যন্ত Hold রাখতে চান?</p>
+              <CalendarWidget mode="single" selected={holdUntilDate} onSelect={setHoldUntilDate} className="rounded-xl border border-border/40 p-3 mx-auto" disabled={(date) => date < new Date()} />
+              {holdUntilDate && (
+                <p className="text-sm text-center font-medium text-primary">Hold until: {format(holdUntilDate, "dd MMM yyyy")}</p>
+              )}
+              <Button className="w-full rounded-xl bg-yellow-500 hover:bg-yellow-600 text-white" onClick={confirmHold}>
+                Hold নিশ্চিত করুন
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </AdminLayout>
   );
