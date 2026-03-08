@@ -458,8 +458,8 @@ const AdminOrders = () => {
       if (filterThana !== "all" && !(o.customer_address && o.customer_address.toLowerCase().includes(filterThana.toLowerCase()))) return false;
       if (filterZone !== "all" && !(o.customer_address && o.customer_address.toLowerCase().includes(filterZone.toLowerCase()))) return false;
       if (filterPaymentStatus !== "all") {
-        if (filterPaymentStatus === "paid" && Number(o.delivery_charge) > 0) return false;
-        if (filterPaymentStatus === "cod" && Number(o.delivery_charge) === 0) return false;
+        if (filterPaymentStatus === "paid" && o.payment_status !== "paid") return false;
+        if (filterPaymentStatus === "unpaid" && o.payment_status === "paid") return false;
         if (filterPaymentStatus === "free_delivery" && Number(o.delivery_charge) > 0) return false;
       }
       if (filterCourierProvider !== "all") {
@@ -1677,8 +1677,15 @@ const AdminOrders = () => {
                 </div>
                 <div className="space-y-1">
                   <Label className="text-[10px] font-semibold text-muted-foreground">Source</Label>
-                  <Input placeholder="Source..." className="rounded-lg h-7 text-xs" value={filterSource} onChange={(e) => setFilterSource(e.target.value)} list="source-suggestions" />
-                  <datalist id="source-suggestions">{uniqueSources.map((s) => <option key={s} value={s} />)}</datalist>
+                  <Select value={filterSource || "all"} onValueChange={(v) => setFilterSource(v === "all" ? "" : v)}>
+                    <SelectTrigger className="rounded-lg h-7 text-xs"><SelectValue placeholder="All" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      {orderSources.map((src: any) => (
+                        <SelectItem key={src.id} value={src.name}>{src.icon} {src.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-1">
                   <Label className="text-[10px] font-semibold text-muted-foreground">Phone</Label>
@@ -1737,14 +1744,14 @@ const AdminOrders = () => {
                   </Select>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-[10px] font-semibold text-muted-foreground">Payment</Label>
+                   <Label className="text-[10px] font-semibold text-muted-foreground">Payment</Label>
                   <Select value={filterPaymentStatus} onValueChange={setFilterPaymentStatus}>
                     <SelectTrigger className="rounded-lg h-7 text-xs"><SelectValue placeholder="All" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All</SelectItem>
-                      <SelectItem value="cod">COD</SelectItem>
-                      <SelectItem value="paid">Paid</SelectItem>
-                      <SelectItem value="free_delivery">Free</SelectItem>
+                      <SelectItem value="paid">✅ Paid</SelectItem>
+                      <SelectItem value="unpaid">💰 Unpaid</SelectItem>
+                      <SelectItem value="free_delivery">🆓 Free Delivery</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
