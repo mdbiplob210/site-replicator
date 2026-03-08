@@ -6,7 +6,7 @@ export function usePublicProducts() {
     queryKey: ["public-products"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("products")
+        .from("products_public" as any)
         .select("*, categories(name)")
         .eq("status", "active")
         .order("created_at", { ascending: false });
