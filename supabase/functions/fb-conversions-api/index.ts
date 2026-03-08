@@ -115,7 +115,7 @@ Deno.serve(async (req) => {
     if (!fbResponse.ok) {
       console.error("[CAPI] Error:", JSON.stringify(fbResult));
       return new Response(
-        JSON.stringify({ error: "CAPI error", details: fbResult }),
+        JSON.stringify({ error: "Failed to send conversion event" }),
         { status: fbResponse.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
