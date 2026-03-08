@@ -15,9 +15,15 @@ const ProductDetail = () => {
   const { data: settings } = useSiteSettings();
   const navigate = useNavigate();
   const [qty, setQty] = useState(1);
-  const { trackViewContent, trackAddToCart } = useTracking();
+  const { trackViewContent, trackAddToCart, trackCustomEvent } = useTracking();
   useEngagementTracking();
   const viewTracked = useState(false);
+
+  // Exit popup settings from site_settings
+  const exitEnabled = settings?.exit_popup_enabled === 'true';
+  const exitDiscount = Number(settings?.exit_popup_discount || 50);
+  const exitTimer = Number(settings?.exit_popup_timer || 300);
+  const exitMessage = settings?.exit_popup_message || 'এই ছাড়টি শুধু আপনার জন্য!';
 
   // Popup checkout
   const [checkoutOpen, setCheckoutOpen] = useState(false);
@@ -27,6 +33,7 @@ const ProductDetail = () => {
     return saved ? Number(saved) : 0;
   });
   const [showDiscountBanner, setShowDiscountBanner] = useState(false);
+  const exitShownRef = useRef(false);
 
   useEffect(() => {
     if (product && !viewTracked[0]) {
@@ -41,6 +48,54 @@ const ProductDetail = () => {
       });
     }
   }, [product, trackViewContent, viewTracked]);
+
+  // Exit intent detection on the product page itself
+  useEffect(() => {
+    if (!exitEnabled || appliedDiscount > 0) return;
+
+    const dismissed = sessionStorage.getItem('_store_exit_dismissed');
+    if (dismissed) return;
+
+    let canShow = false;
+    const delayTimer = setTimeout(() => { canShow = true; }, 5000);
+
+    const triggerExit = () => {
+      if (!canShow || exitShownRef.current || checkoutOpen) return;
+      exitShownRef.current = true;
+      setShowDiscountBanner(true);
+      trackCustomEvent('ExitIntentShown', { page: 'product', product_id: id });
+    };
+
+    // Desktop: mouse leaves from top
+    const handleMouseOut = (e: MouseEvent) => {
+      if (e.clientY <= 0 && !e.relatedTarget) triggerExit();
+    };
+
+    // Mobile: visibility change
+    const handleVisibility = () => {
+      if (document.visibilityState === 'hidden') triggerExit();
+    };
+
+    // Mobile: rapid scroll up
+    let lastScroll = 0, scrollUpCount = 0;
+    const handleScroll = () => {
+      const st = window.pageYOffset || document.documentElement.scrollTop;
+      if (st < lastScroll && lastScroll - st > 100) { scrollUpCount++; if (scrollUpCount >= 3) triggerExit(); }
+      else scrollUpCount = 0;
+      lastScroll = st;
+    };
+
+    document.addEventListener('mouseout', handleMouseOut);
+    document.addEventListener('visibilitychange', handleVisibility);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    return () => {
+      clearTimeout(delayTimer);
+      document.removeEventListener('mouseout', handleMouseOut);
+      document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [exitEnabled, appliedDiscount, checkoutOpen, id, trackCustomEvent]);
 
   if (isLoading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin h-8 w-8 border-4 border-green-500 border-t-transparent rounded-full" /></div>;
   if (!product) return <div className="min-h-screen flex items-center justify-center">Product not found</div>;
@@ -75,21 +130,24 @@ const ProductDetail = () => {
   };
 
   const handleExitIntent = () => {
-    if (appliedDiscount >= 50) return; // Max ৳50 already applied
+    if (!exitEnabled || appliedDiscount >= exitDiscount) return;
     setCheckoutOpen(false);
     setShowDiscountBanner(true);
   };
 
   const handleAcceptDiscount = () => {
-    const newDiscount = Math.min(appliedDiscount + 50, 50); // Cap at 50
+    const newDiscount = Math.min(appliedDiscount + exitDiscount, exitDiscount);
     setAppliedDiscount(newDiscount);
     localStorage.setItem("exit_discount_amount", String(newDiscount));
+    sessionStorage.setItem('_store_exit_dismissed', '1');
     setShowDiscountBanner(false);
     setCheckoutOpen(true);
+    trackCustomEvent('ExitOfferAccepted', { value: exitDiscount, currency: 'BDT' });
   };
 
   const handleRejectDiscount = () => {
     setShowDiscountBanner(false);
+    sessionStorage.setItem('_store_exit_dismissed', '1');
   };
 
   return (
