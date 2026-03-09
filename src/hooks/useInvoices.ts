@@ -1,6 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+export type InvoiceItem = {
+  product_name: string;
+  product_code: string;
+  quantity: number;
+  unit_price: number;
+  total_price: number;
+};
+
 export type Invoice = {
   id: string;
   invoice_number: string;
@@ -18,6 +26,7 @@ export type Invoice = {
   delivery_date: string | null;
   status: string;
   notes: string | null;
+  items: InvoiceItem[];
   created_at: string;
   updated_at: string;
 };
