@@ -420,6 +420,29 @@ const AdminOrders = () => {
     return map;
   }, [allOrderItems]);
 
+  // Site settings for shop name
+  const { data: siteSettings } = useSiteSettings();
+  const shopName = siteSettings?.site_name || "SOHOZ";
+
+  // Bulk memo print
+  const selectedOrdersForPrint = useMemo(() => filteredOrders.filter(o => selectedOrderIds.has(o.id)), [filteredOrders, selectedOrderIds]);
+  
+  const handleMarkPrinted = useCallback(async (orderIds: string[]) => {
+    for (const id of orderIds) {
+      await supabase.from("orders").update({ memo_printed: true } as any).eq("id", id);
+    }
+    queryClient.invalidateQueries({ queryKey: ["orders"] });
+    toast.success(`${orderIds.length}টি অর্ডারের মেমো প্রিন্টেড হয়েছে!`);
+  }, [queryClient]);
+
+  const bulkPrint = useBulkMemoPrint({
+    orders: selectedOrdersForPrint,
+    courierByOrderId,
+    orderItemsByOrderId,
+    siteName: shopName,
+    onPrinted: handleMarkPrinted,
+  });
+
   // Get unique sources for dropdown
   const uniqueSources = useMemo(() => {
     const sources = new Set<string>();
