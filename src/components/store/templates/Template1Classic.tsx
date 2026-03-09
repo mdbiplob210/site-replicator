@@ -81,6 +81,8 @@ const Template1Classic = () => {
 
   const whatsappNumber = settings?.whatsapp_number || "";
   const phoneNumber = settings?.phone_number || "";
+  const siteName = settings?.site_name || "QUICK SHOP BD";
+  const siteLogo = settings?.site_logo || "";
 
   const handleExitIntent = () => {
     if (appliedDiscount >= 50) return;
