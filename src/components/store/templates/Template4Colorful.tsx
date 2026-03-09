@@ -129,7 +129,7 @@ const Template4Colorful = () => {
       </section>
 
       <footer className="bg-white border-t border-rose-100 py-10">
-        <div className="max-w-7xl mx-auto px-4 text-center text-sm text-gray-400">© 2026 SOHOZ — Made with ❤️</div>
+        <div className="max-w-7xl mx-auto px-4 text-center text-sm text-gray-400">© 2026 {siteName} — Made with ❤️</div>
       </footer>
 
       {showDiscountBanner && <ExitDiscountBanner onAccept={handleAcceptDiscount} onReject={handleRejectDiscount} />}
