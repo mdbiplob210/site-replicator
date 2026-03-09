@@ -65,6 +65,7 @@ export default function AdminFinance() {
   // Database hooks
   const { data: summary } = useFinanceSummary();
   const { data: records = [], isLoading: recordsLoading } = useFinanceRecords(histType);
+  const { data: purchaseRecordsAll = [] } = useFinanceRecords("product_purchase");
   const createRecord = useCreateFinanceRecord();
   const deleteRecord = useDeleteFinanceRecord();
   const { data: incomeSources = [] } = useFinanceSources("income");
