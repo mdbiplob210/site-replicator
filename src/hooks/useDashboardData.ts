@@ -129,6 +129,7 @@ export function useDashboardData(filter: TimeFilter) {
 
   const processing = countAndAmount("processing");
   const confirmed = countAndAmount("confirmed");
+  const inquiry = countAndAmount("inquiry");
   const cancelled = countAndAmount("cancelled");
   const onHold = countAndAmount("on_hold");
   const shipLater = countAndAmount("ship_later");
@@ -138,8 +139,8 @@ export function useDashboardData(filter: TimeFilter) {
   const pendingReturn = countAndAmount("pending_return");
   const handDelivery = countAndAmount("hand_delivery");
 
-  // Incomplete = processing + confirmed + on_hold + cancelled (not yet shipped/delivered)
-  const incompleteTotal = processing.count + confirmed.count + onHold.count + cancelled.count;
+  // Incomplete = processing + confirmed + inquiry + on_hold + cancelled (not yet shipped/delivered)
+  const incompleteTotal = processing.count + confirmed.count + inquiry.count + onHold.count + cancelled.count;
 
   // Average order value
   const avgOrderValue = totalOrders > 0 ? Math.round(totalAmount / totalOrders) : 0;
@@ -235,6 +236,7 @@ export function useDashboardData(filter: TimeFilter) {
       avgOrderValue,
       processing,
       confirmed,
+      inquiry,
       cancelled,
       onHold,
       delivered,

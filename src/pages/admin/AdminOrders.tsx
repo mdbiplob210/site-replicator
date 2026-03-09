@@ -52,6 +52,7 @@ const statusTabs = [
   { label: "All Orders", color: "bg-primary", icon: ShoppingCart },
   { label: "New Orders", color: "bg-blue-500", icon: CheckCircle2 },
   { label: "Confirmed", color: "bg-emerald-600", icon: CheckCircle2 },
+  { label: "Inquiry", color: "bg-amber-600", icon: Clock },
   { label: "In Courier", color: "bg-violet-500", icon: Truck },
   { label: "Delivered", color: "bg-emerald-500", icon: CheckCircle2 },
   { label: "Hold", color: "bg-yellow-500", icon: PauseCircle },
@@ -1569,6 +1570,7 @@ const AdminOrders = () => {
                       {[
                         { value: "processing", label: "New Order", color: "bg-blue-500", icon: Clock },
                         { value: "confirmed", label: "Confirmed", color: "bg-emerald-600", icon: CheckCircle2 },
+                        { value: "inquiry", label: "Inquiry", color: "bg-amber-600", icon: Clock },
                         { value: "on_hold", label: "Hold", color: "bg-yellow-500", icon: PauseCircle },
                         { value: "hand_delivery", label: "Hand Delivery", color: "bg-cyan-500", icon: Hand },
                         { value: "cancelled", label: "Cancelled", color: "bg-red-500", icon: XCircle },
@@ -2414,11 +2416,11 @@ const AdminOrders = () => {
                     <TableCell className="px-3 py-3 text-center" onClick={(e) => e.stopPropagation()}>
                       <Select value={order.status} onValueChange={(value) => handleStatusChange(order.id, value, order.status)}>
                         <SelectTrigger className="w-[130px] h-8 rounded-full text-xs border-0 px-3 font-semibold mx-auto"
-                          style={{ backgroundColor: order.status === 'processing' ? '#3b82f6' : order.status === 'confirmed' ? '#059669' : order.status === 'cancelled' ? '#ef4444' : order.status === 'delivered' ? '#10b981' : order.status === 'in_courier' ? '#8b5cf6' : order.status === 'on_hold' ? '#eab308' : order.status === 'returned' ? '#f97316' : order.status === 'pending_return' ? '#f97316' : order.status === 'hand_delivery' ? '#06b6d4' : order.status === 'ship_later' ? '#14b8a6' : '#6b7280', color: 'white' }}>
+                          style={{ backgroundColor: order.status === 'processing' ? '#3b82f6' : order.status === 'confirmed' ? '#059669' : order.status === 'inquiry' ? '#d97706' : order.status === 'cancelled' ? '#ef4444' : order.status === 'delivered' ? '#10b981' : order.status === 'in_courier' ? '#8b5cf6' : order.status === 'on_hold' ? '#eab308' : order.status === 'returned' ? '#f97316' : order.status === 'pending_return' ? '#f97316' : order.status === 'hand_delivery' ? '#06b6d4' : order.status === 'ship_later' ? '#14b8a6' : '#6b7280', color: 'white' }}>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {([...["processing", "confirmed", "on_hold", "hand_delivery", "cancelled"] as const, ...(order.status === "pending_return" ? ["returned" as const] : [])]).map((s) => (
+                          {([...["processing", "confirmed", "inquiry", "on_hold", "hand_delivery", "cancelled"] as const, ...(order.status === "pending_return" ? ["returned" as const] : []), ...(order.status === "inquiry" ? ["pending_return" as const] : [])]).map((s) => (
                             <SelectItem key={s} value={s}>
                               <div className="flex items-center gap-2">
                                 <span className={`h-2 w-2 rounded-full ${getStatusColor(s as OrderStatus)}`} />
@@ -2606,7 +2608,7 @@ const AdminOrders = () => {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            {([...["processing", "confirmed", "on_hold", "hand_delivery", "cancelled"] as const, ...(order.status === "pending_return" ? ["returned" as const] : [])]).map((s) => (
+                            {([...["processing", "confirmed", "inquiry", "on_hold", "hand_delivery", "cancelled"] as const, ...(order.status === "pending_return" ? ["returned" as const] : []), ...(order.status === "inquiry" ? ["pending_return" as const] : [])]).map((s) => (
                               <SelectItem key={s} value={s}>
                                 <div className="flex items-center gap-2">
                                   <span className={`h-2 w-2 rounded-full ${getStatusColor(s as OrderStatus)}`} />
@@ -3460,10 +3462,12 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                 {[
                   { value: "processing", label: "New Order", color: "bg-blue-500", icon: Clock },
                   { value: "confirmed", label: "Confirmed", color: "bg-emerald-600", icon: CheckCircle2 },
+                  { value: "inquiry", label: "Inquiry", color: "bg-amber-600", icon: Clock },
                   { value: "on_hold", label: "Hold", color: "bg-yellow-500", icon: PauseCircle },
                   { value: "hand_delivery", label: "Hand Delivery", color: "bg-cyan-500", icon: Hand },
                   { value: "cancelled", label: "Cancelled", color: "bg-red-500", icon: XCircle },
                   ...(order.status === "pending_return" ? [{ value: "returned", label: "Return", color: "bg-red-400", icon: RotateCcw }] : []),
+                  ...(order.status === "inquiry" ? [{ value: "pending_return", label: "Pending Return", color: "bg-orange-500", icon: RotateCcw }] : []),
                 ].map((s) => (
                   <button
                     key={s.value}

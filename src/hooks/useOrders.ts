@@ -47,6 +47,7 @@ const STATUS_MAP: Record<string, OrderStatus> = {
   "All Orders": "processing",
   "New Orders": "processing",
   "Confirmed": "confirmed",
+  "Inquiry": "inquiry",
   "In Courier": "in_courier",
   "Delivered": "delivered",
   "Cancelled": "cancelled",
@@ -66,6 +67,7 @@ export const getStatusLabel = (status: OrderStatus): string => {
   const labels: Record<OrderStatus, string> = {
     processing: "New Orders",
     confirmed: "Confirmed",
+    inquiry: "Inquiry",
     cancelled: "Cancelled",
     on_hold: "Hold",
     ship_later: "Ship Later",
@@ -82,6 +84,7 @@ export const getStatusColor = (status: OrderStatus): string => {
   const colors: Record<OrderStatus, string> = {
     processing: "bg-blue-500",
     confirmed: "bg-emerald-600",
+    inquiry: "bg-amber-600",
     cancelled: "bg-red-500",
     on_hold: "bg-yellow-500",
     ship_later: "bg-teal-500",
