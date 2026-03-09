@@ -492,7 +492,7 @@ export default function AdminFinance() {
                 supplierMap[r.label].records.push(r);
               }
               const suppliers = Object.entries(supplierMap);
-              const totalPurchaseAll = purchaseRecords.reduce((s, r) => s + Number(r.amount), 0);
+              const totalPurchaseAll = purchaseRecordsAll.reduce((s, r) => s + Number(r.amount), 0);
 
               return (
                 <div className="bg-card rounded-2xl border border-border p-6 space-y-5">
