@@ -66,6 +66,58 @@ const AdminUsers = () => {
   const [newRole, setNewRole] = useState<string>("manager");
   const [creating, setCreating] = useState(false);
 
+  // Edit user dialog
+  const [editOpen, setEditOpen] = useState(false);
+  const [editUserId, setEditUserId] = useState("");
+  const [editName, setEditName] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [editPassword, setEditPassword] = useState("");
+  const [editLoading, setEditLoading] = useState(false);
+  const [editFetching, setEditFetching] = useState(false);
+
+  const openEditDialog = async (userId: string, fullName: string | null) => {
+    setEditUserId(userId);
+    setEditName(fullName || "");
+    setEditPassword("");
+    setEditEmail("");
+    setEditOpen(true);
+    setEditFetching(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-update-user`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ action: "get_user_email", target_user_id: userId }),
+      });
+      const data = await res.json();
+      if (data.email) setEditEmail(data.email);
+    } catch {} finally { setEditFetching(false); }
+  };
+
+  const handleEditUser = async () => {
+    if (!editName && !editEmail && !editPassword) { toast.error("কিছু পরিবর্তন করুন"); return; }
+    setEditLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-update-user`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({
+          action: "update_auth",
+          target_user_id: editUserId,
+          email: editEmail || undefined,
+          password: editPassword || undefined,
+          full_name: editName || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      toast.success("ইউজার আপডেট হয়েছে!");
+      setEditOpen(false);
+      fetchUsers();
+    } catch (err: any) { toast.error(err.message); } finally { setEditLoading(false); }
+  };
+
   // Rules tab
   const { data: employees = [], isLoading: employeesLoading } = useEmployees();
   const togglePermission = useTogglePermission();
