@@ -101,7 +101,6 @@ export function useOrders(statusFilter: string | null = null, dateFilter: OrderD
   return useQuery({
     queryKey: ["orders", statusFilter, dateFilter, customFrom?.toISOString(), customTo?.toISOString()],
     queryFn: async () => {
-      // Fetch all orders with pagination to bypass 1000 row limit
       let allOrders: Order[] = [];
       let from = 0;
       const pageSize = 1000;
@@ -129,6 +128,7 @@ export function useOrders(statusFilter: string | null = null, dateFilter: OrderD
       }
       return allOrders;
     },
+    staleTime: 30 * 1000, // 30s cache for order list
   });
 }
 
