@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useProduct, useSuggestedProducts } from "@/hooks/usePublicProducts";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { useProductSEO } from "@/hooks/useProductSEO";
 import { Button } from "@/components/ui/button";
 import { ShoppingBag, ArrowLeft, Minus, Plus, Truck, Shield, RotateCcw, Phone, MessageCircle } from "lucide-react";
 import { useTracking, useEngagementTracking } from "@/hooks/useTracking";
@@ -13,6 +14,19 @@ const ProductDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const { data: product, isLoading } = useProduct(slug || "");
   const { data: settings } = useSiteSettings();
+
+  // SEO: dynamic meta tags, canonical URL, JSON-LD structured data
+  useProductSEO(product ? {
+    name: product.name || "",
+    description: product.short_description || product.detailed_description,
+    price: product.selling_price || 0,
+    originalPrice: product.original_price,
+    image: product.main_image_url,
+    slug: product.slug,
+    id: product.id,
+    stockQuantity: product.stock_quantity,
+    productCode: product.product_code,
+  } : null);
   const navigate = useNavigate();
   const [qty, setQty] = useState(1);
   const { trackViewContent, trackAddToCart, trackCustomEvent } = useTracking();
