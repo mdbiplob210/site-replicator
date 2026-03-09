@@ -389,7 +389,10 @@ export default function AdminFinance() {
               <div className="h-9 w-9 rounded-lg bg-secondary flex items-center justify-center"><ArrowDownCircle className="h-4 w-4 text-foreground" /></div>
               <div><p className="font-semibold text-foreground">Amount IN (Income)</p><p className="text-xs text-muted-foreground">Record money received into your business</p></div>
             </div>
-            <SelectField label="Source" value={incomeSource} onChange={setIncomeSource} options={incomeSources.length > 0 ? incomeSources.map((s: any) => s.name) : incomeSources.length > 0 ? incomeSources.map((s: any) => s.name) : ["Sales", "Refund", "Investment", "Loan", "Other"]} />
+            <div className="grid grid-cols-2 gap-4">
+              <SelectField label="Source" value={incomeSource} onChange={setIncomeSource} options={incomeSources.length > 0 ? incomeSources.map((s: any) => s.name) : ["Sales", "Refund", "Investment", "Loan", "Other"]} />
+              <SelectField label="ব্যাংক অ্যাকাউন্ট" value={incomeBank} onChange={setIncomeBank} options={bankAccounts.map((b) => b.label)} placeholder="সিলেক্ট করুন (ঐচ্ছিক)" />
+            </div>
             <div>
               <label className="text-xs font-semibold text-muted-foreground uppercase">Amount (৳)</label>
               <Input className="mt-1" type="number" value={incomeAmount} onChange={(e) => setIncomeAmount(e.target.value)} placeholder="0.00" />
