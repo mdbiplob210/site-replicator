@@ -32,7 +32,7 @@ export default function AdminMetaAds() {
   const [dateRange, setDateRange] = useState("today");
   const [trendMode, setTrendMode] = useState<"weekly" | "monthly">("weekly");
   const [fbConnected, setFbConnected] = useState(true);
-  const [selectedAccountId, setSelectedAccountId] = useState<string>("");
+  const [selectedAccountId, setSelectedAccountId] = useState<string>("all");
   const exchangeToken = useExchangeToken();
   const { data: adAccounts = [], isLoading: accountsLoading } = useAdAccounts();
   const syncMutation = useSyncMetaAds();
