@@ -1163,12 +1163,12 @@ const AdminOrders = () => {
 
   return (
     <AdminLayout>
-      <div className="space-y-5">
+      <div className="space-y-3 sm:space-y-5">
         {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 sm:gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground tracking-tight">Orders</h1>
-            <p className="text-muted-foreground text-sm">Manage and track all orders across channels</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">Orders</h1>
+            <p className="text-muted-foreground text-xs sm:text-sm">Manage and track all orders</p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             {/* Date Filter removed - moved to advanced filter panel */}
