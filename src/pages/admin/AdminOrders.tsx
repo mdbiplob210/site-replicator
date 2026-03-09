@@ -2868,9 +2868,13 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
   const { data: editCourierProviders = [] } = useQuery({
     queryKey: ["courier-providers-filter"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("courier_providers").select("id, name, slug, is_active");
+      const { data, error } = await supabase.from("courier_providers").select("id, name, slug, is_active, api_configs");
       if (error) throw error;
-      return data;
+      return (data || []).filter((cp: any) => {
+        if (!cp.is_active) return false;
+        const configs = Array.isArray(cp.api_configs) ? cp.api_configs : JSON.parse(cp.api_configs || "[]");
+        return configs.length > 0 && configs.some((c: any) => c.api_key);
+      });
     },
   });
 
