@@ -1118,6 +1118,35 @@ const AdminUsers = () => {
           </div>
         </DialogContent>
       </Dialog>
+      {/* ===== EDIT USER DIALOG ===== */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <div className="p-2 rounded-xl bg-primary/10"><Edit className="h-5 w-5 text-primary" /></div>
+              ইউজার তথ্য পরিবর্তন
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label className="text-xs font-semibold text-muted-foreground uppercase">নাম</Label>
+              <Input className="mt-1" placeholder="Full Name" value={editName} onChange={(e) => setEditName(e.target.value)} />
+            </div>
+            <div>
+              <Label className="text-xs font-semibold text-muted-foreground uppercase">ইমেইল</Label>
+              <Input className="mt-1" type="email" placeholder={editFetching ? "লোড হচ্ছে..." : "email@example.com"} value={editEmail} onChange={(e) => setEditEmail(e.target.value)} disabled={editFetching} />
+            </div>
+            <div>
+              <Label className="text-xs font-semibold text-muted-foreground uppercase">নতুন পাসওয়ার্ড</Label>
+              <Input className="mt-1" type="password" placeholder="খালি রাখলে আগেরটাই থাকবে" value={editPassword} onChange={(e) => setEditPassword(e.target.value)} />
+            </div>
+            <Button className="w-full h-11 gap-2" onClick={handleEditUser} disabled={editLoading}>
+              {editLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+              আপডেট করুন
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 };
