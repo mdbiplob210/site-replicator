@@ -84,12 +84,26 @@ const Template1Classic = () => {
   const siteName = settings?.site_name || "QUICK SHOP BD";
   const siteLogo = settings?.site_logo || "";
   const marqueeText = settings?.marquee_text || "🚚 সারা দেশে ক্যাশ অন ডেলিভারি (৪৮ থেকে ৭২ ঘণ্টার মধ্যে নিশ্চিত ডেলিভারি)";
-  const footerDescription = settings?.footer_description || "বাংলাদেশের সেরা অনলাইন শপিং ডেস্টিনেশন।";
+  const footerDescription = settings?.footer_description || settings?.tagline || "বাংলাদেশের সেরা অনলাইন শপিং ডেস্টিনেশন।";
   const footerQuickLinks = (settings?.footer_quick_links || "হোম,সব প্রোডাক্ট,অফার,যোগাযোগ").split(",").map(s => s.trim()).filter(Boolean);
   const footerHelpLinks = (settings?.footer_help_links || "ডেলিভারি তথ্য,রিটার্ন পলিসি,প্রাইভেসি পলিসি").split(",").map(s => s.trim()).filter(Boolean);
   const footerAddress = settings?.footer_address || "ঢাকা, বাংলাদেশ";
   const footerCopyright = settings?.footer_copyright || "© 2026 QUICK SHOP BD — All rights reserved";
-  // Countdown moved to ProductDetail page
+  const contactEmail = settings?.contact_email || "";
+  const facebookUrl = settings?.facebook_url || "";
+  const instagramUrl = settings?.instagram_url || "";
+  const freeDeliveryAbove = Number(settings?.free_delivery_above) || 0;
+
+  // Button settings
+  const orderBtnEnabled = settings?.btn_order_enabled !== "false";
+  const orderBtnText = settings?.btn_order_text || "অর্ডার করুন";
+  const orderBtnColor = settings?.btn_order_color || "#16a34a";
+  const cartBtnEnabled = settings?.btn_cart_enabled !== "false";
+  const cartBtnText = settings?.btn_cart_text || "বিস্তারিত দেখুন";
+  const cartBtnColor = settings?.btn_cart_color || "#2563eb";
+  const floatingContactsEnabled = settings?.floating_contacts_enabled !== "false";
+  const floatingWhatsappEnabled = settings?.floating_whatsapp_enabled !== "false";
+  const floatingCallEnabled = settings?.floating_call_enabled !== "false";
 
   const handleExitIntent = () => {
     if (appliedDiscount >= 50) return;
