@@ -340,9 +340,10 @@ const AdminDashboard = () => {
                 </div>
               </Card>
             </div>
+            )}
 
             {/* Source Breakdown */}
-            {salesDetails.sourceBreakdown.length > 0 && (
+            {canSeeOrders && salesDetails.sourceBreakdown.length > 0 && (
               <Card className="p-5 border-border/30">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="p-2.5 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 shadow-lg shadow-amber-500/20">
