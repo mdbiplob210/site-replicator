@@ -285,7 +285,7 @@ const Template1Classic = () => {
               return (
                 <div key={p.id} className="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                   {/* Image */}
-                  <Link to={`/product/${p.id}`} className="block relative">
+                  <Link to={`/product/${(p as any).slug || p.id}`} className="block relative">
                     <div className="aspect-square overflow-hidden bg-gray-50">
                       {p.main_image_url ? (
                         <OptimizedImage src={p.main_image_url} alt={p.name} width={400} quality={80} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
