@@ -339,22 +339,14 @@ export function useDeleteOrder() {
   });
 }
 
-// Generate next order number
+// Generate next order number using DB sequence
 export function useNextOrderNumber() {
   return useQuery({
     queryKey: ["next-order-number"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("orders")
-        .select("order_number")
-        .order("created_at", { ascending: false })
-        .limit(1);
+      const { data, error } = await supabase.rpc("generate_order_number");
       if (error) throw error;
-      if (data && data.length > 0) {
-        const lastNum = parseInt(data[0].order_number.replace(/\D/g, "") || "0");
-        return `ORD-${String(lastNum + 1).padStart(5, "0")}`;
-      }
-      return "ORD-00001";
+      return String(data);
     },
   });
 }

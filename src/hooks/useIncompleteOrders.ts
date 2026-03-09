@@ -149,7 +149,8 @@ export function useConvertIncompleteToOrder() {
   return useMutation({
     mutationFn: async (order: IncompleteOrder) => {
       // Create real order
-      const orderNumber = `LP-${Date.now().toString(36).toUpperCase()}`;
+      const { data: seqNum } = await supabase.rpc("generate_order_number");
+      const orderNumber = String(seqNum || Date.now());
       const { error: orderError } = await supabase.from("orders").insert({
         order_number: orderNumber,
         customer_name: order.customer_name,

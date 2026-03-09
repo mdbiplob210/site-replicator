@@ -167,7 +167,8 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
     trackAddPaymentInfo({ value: currentItem.price * qty });
 
     try {
-      const orderNumber = `ORD-${Date.now().toString(36).toUpperCase()}`;
+      const { data: seqNum } = await supabase.rpc("generate_order_number");
+      const orderNumber = String(seqNum || Date.now());
       const orderId = crypto.randomUUID();
       const total = currentItem.price * qty;
 

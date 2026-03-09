@@ -181,7 +181,8 @@ const CheckoutPage = () => {
     // Track AddPaymentInfo
     trackAddPaymentInfo({ value: item.price * item.qty });
     try {
-      const orderNumber = `ORD-${Date.now().toString(36).toUpperCase()}`;
+      const { data: seqNum } = await supabase.rpc("generate_order_number");
+      const orderNumber = String(seqNum || Date.now());
       const total = item.price * item.qty;
       
       // Create the order

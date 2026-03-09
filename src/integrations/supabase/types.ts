@@ -1552,6 +1552,7 @@ export type Database = {
       }
     }
     Functions: {
+      generate_order_number: { Args: never; Returns: string }
       has_permission: {
         Args: {
           _permission: Database["public"]["Enums"]["employee_permission"]
