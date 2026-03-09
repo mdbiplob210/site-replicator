@@ -45,6 +45,25 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
 
   const { trackInitiateCheckout, trackAddPaymentInfo, trackPurchase, trackAddToCart, trackCustomEvent } = useTracking();
   const { data: allProducts = [] } = usePublicProducts();
+  const { data: settings } = useSiteSettings();
+
+  // Scarcity counter - fake "people viewing" countdown
+  const scarcityStart = Number(settings?.checkout_scarcity_count) || 47;
+  const [scarcityCount, setScarcityCount] = useState(scarcityStart);
+
+  useEffect(() => {
+    if (!open) {
+      setScarcityCount(scarcityStart);
+      return;
+    }
+    const timer = setInterval(() => {
+      setScarcityCount(prev => {
+        if (prev <= 3) return scarcityStart; // reset when too low
+        return prev - 1;
+      });
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [open, scarcityStart]);
 
   // Same-category suggestions
   const suggestedProducts = allProducts.filter(
