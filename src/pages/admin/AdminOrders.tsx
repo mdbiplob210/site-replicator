@@ -1655,25 +1655,27 @@ const AdminOrders = () => {
           </div>
         </div>
 
-        {/* Status Tabs - Two equal rows */}
-        <div className="grid grid-cols-6 gap-2 pb-2">
-          {statusTabs.map((tab) => (
-            <button
-              key={tab.label}
-              onClick={() => { setActiveTab(tab.label); setCancelReasonFilter("all"); }}
-              className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium whitespace-nowrap transition-all duration-200 ${
-                activeTab === tab.label
-                  ? `${tab.color} text-white shadow-lg`
-                  : "bg-card text-muted-foreground hover:bg-secondary border border-border/40"
-              }`}
-            >
-              <tab.icon className="h-3.5 w-3.5 shrink-0" />
-              <span className="truncate">{tab.label}</span>
-              <span className={`text-[10px] font-bold shrink-0 ${activeTab === tab.label ? "text-white/80" : "text-muted-foreground/50"}`}>
-                {counts[tab.label] || 0}
-              </span>
-            </button>
-          ))}
+        {/* Status Tabs - Horizontal scroll on mobile, grid on desktop */}
+        <div className="overflow-x-auto -mx-2 px-2 pb-2 scrollbar-hide">
+          <div className="flex sm:grid sm:grid-cols-6 gap-1.5 sm:gap-2 min-w-max sm:min-w-0">
+            {statusTabs.map((tab) => (
+              <button
+                key={tab.label}
+                onClick={() => { setActiveTab(tab.label); setCancelReasonFilter("all"); }}
+                className={`flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-2 rounded-xl text-[11px] sm:text-xs font-medium whitespace-nowrap transition-all duration-200 ${
+                  activeTab === tab.label
+                    ? `${tab.color} text-white shadow-lg`
+                    : "bg-card text-muted-foreground hover:bg-secondary border border-border/40"
+                }`}
+              >
+                <tab.icon className="h-3 sm:h-3.5 w-3 sm:w-3.5 shrink-0" />
+                <span className="truncate">{tab.label}</span>
+                <span className={`text-[9px] sm:text-[10px] font-bold shrink-0 ${activeTab === tab.label ? "text-white/80" : "text-muted-foreground/50"}`}>
+                  {counts[tab.label] || 0}
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* In Courier button for Confirmed tab */}
