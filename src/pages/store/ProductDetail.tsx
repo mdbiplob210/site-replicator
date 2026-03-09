@@ -137,7 +137,7 @@ const ProductDetail = () => {
       price: product.selling_price,
       qty,
       productCode: product.product_code,
-      category: (product.categories as any)?.name || "",
+      category: "",
     });
     setCheckoutItem({
       productId: product.id,
