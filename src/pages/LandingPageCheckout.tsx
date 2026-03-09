@@ -335,7 +335,21 @@ ttq.track('InitiateCheckout');
 })();
 </script>`;
 
-    const allScripts = richTrackingHelper + trackingScripts + partialTrackingScript + orderScript;
+    // Autocomplete enhancement script
+    const autocompleteScript = `
+<script>
+(function(){
+  document.addEventListener('DOMContentLoaded', function(){
+    var map = {customer_name:'name', customer_phone:'tel', customer_address:'street-address'};
+    for(var n in map){
+      var el = document.querySelector('[name="'+n+'"]');
+      if(el && !el.getAttribute('autocomplete')) el.setAttribute('autocomplete', map[n]);
+    }
+  });
+})();
+</script>`;
+
+    const allScripts = richTrackingHelper + trackingScripts + partialTrackingScript + orderScript + autocompleteScript;
 
     const cleanHtml = sanitizeHtmlScripts(page.checkout_html!);
 
