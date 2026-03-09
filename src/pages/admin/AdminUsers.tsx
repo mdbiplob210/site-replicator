@@ -63,7 +63,7 @@ const AdminUsers = () => {
   const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [newName, setNewName] = useState("");
-  const [newRole, setNewRole] = useState<"admin" | "moderator" | "user">("admin");
+  const [newRole, setNewRole] = useState<string>("manager");
   const [creating, setCreating] = useState(false);
 
   // Rules tab
@@ -119,7 +119,7 @@ const AdminUsers = () => {
     fetchUsers();
   }, []);
 
-  const assignRole = async (userId: string, role: "admin" | "moderator" | "user") => {
+  const assignRole = async (userId: string, role: string) => {
     const { error } = await supabase
       .from("user_roles")
       .upsert({ user_id: userId, role } as any, { onConflict: "user_id,role" });
@@ -132,7 +132,7 @@ const AdminUsers = () => {
     }
   };
 
-  const removeRole = async (userId: string, role: "admin" | "moderator" | "user") => {
+  const removeRole = async (userId: string, role: string) => {
     const { data: { user: currentUser } } = await supabase.auth.getUser();
     if (currentUser && currentUser.id === userId && role === "admin") {
       toast.error("⚠️ নিজের অ্যাডমিন রোল ডিলিট করা যাবে না!");
@@ -211,7 +211,7 @@ const AdminUsers = () => {
   };
 
   const adminCount = users.filter(u => u.roles.includes("admin")).length;
-  const modCount = users.filter(u => u.roles.includes("moderator")).length;
+  const modCount = users.filter(u => u.roles.includes("moderator") || u.roles.includes("manager")).length;
   const onlineCount = presenceList.filter((p: any) => {
     const lastSeen = new Date(p.last_seen_at);
     return (Date.now() - lastSeen.getTime()) < 60000 && p.is_online;
@@ -324,7 +324,7 @@ const AdminUsers = () => {
                 <CardContent className="p-5 flex items-center gap-4">
                   <div className="p-2.5 rounded-xl bg-amber-500/10"><Users className="h-5 w-5 text-amber-600" /></div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Moderators</p>
+                    <p className="text-sm text-muted-foreground">ম্যানেজার</p>
                     <p className="text-2xl font-bold text-foreground">{modCount}</p>
                   </div>
                 </CardContent>
@@ -387,32 +387,37 @@ const AdminUsers = () => {
                               </div>
                             </TableCell>
                             <TableCell>
-                              {user.roles.length > 0 ? (
+                            {user.roles.length > 0 ? (
                                 <div className="flex gap-1 flex-wrap">
-                                  {user.roles.map((role) => (
-                                    <Badge
-                                      key={role}
-                                      variant={role === "admin" ? "default" : "secondary"}
-                                      className="text-xs cursor-pointer"
-                                      onClick={() => removeRole(user.user_id, role as any)}
-                                    >
-                                      {role} ✕
-                                    </Badge>
-                                  ))}
+                                  {user.roles.map((role) => {
+                                    const displayName = role === "moderator" ? "ম্যানেজার" : role === "manager" ? "ম্যানেজার" : role === "accounting" ? "অ্যাকাউন্টিং" : role === "ad_analytics" ? "অ্যাড অ্যানালিটিক্স" : role === "admin" ? "অ্যাডমিন" : "ইউজার";
+                                    return (
+                                      <Badge
+                                        key={role}
+                                        variant={role === "admin" ? "default" : "secondary"}
+                                        className="text-xs cursor-pointer"
+                                        onClick={() => removeRole(user.user_id, role)}
+                                      >
+                                        {displayName} ✕
+                                      </Badge>
+                                    );
+                                  })}
                                 </div>
                               ) : (
                                 <span className="text-muted-foreground text-sm">No role</span>
                               )}
                             </TableCell>
                             <TableCell>
-                              <Select onValueChange={(val) => assignRole(user.user_id, val as any)}>
-                                <SelectTrigger className="w-32 h-8">
-                                  <SelectValue placeholder="Add role..." />
+                              <Select onValueChange={(val) => assignRole(user.user_id, val)}>
+                                <SelectTrigger className="w-36 h-8">
+                                  <SelectValue placeholder="রোল দিন..." />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="admin">Admin</SelectItem>
-                                  <SelectItem value="moderator">Moderator</SelectItem>
-                                  <SelectItem value="user">User</SelectItem>
+                                  <SelectItem value="admin">অ্যাডমিন</SelectItem>
+                                  <SelectItem value="manager">ম্যানেজার</SelectItem>
+                                  <SelectItem value="user">ইউজার</SelectItem>
+                                  <SelectItem value="accounting">অ্যাকাউন্টিং</SelectItem>
+                                  <SelectItem value="ad_analytics">অ্যাড অ্যানালিটিক্স</SelectItem>
                                 </SelectContent>
                               </Select>
                             </TableCell>
@@ -1039,9 +1044,11 @@ const AdminUsers = () => {
               <Select value={newRole} onValueChange={(v) => setNewRole(v as any)}>
                 <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="admin">Admin (Full Access)</SelectItem>
-                  <SelectItem value="moderator">Moderator (Limited Access)</SelectItem>
-                  <SelectItem value="user">User (Basic Access)</SelectItem>
+                  <SelectItem value="admin">অ্যাডমিন (Full Access)</SelectItem>
+                  <SelectItem value="manager">ম্যানেজার (Limited Access)</SelectItem>
+                  <SelectItem value="user">ইউজার (Basic Access)</SelectItem>
+                  <SelectItem value="accounting">অ্যাকাউন্টিং (Finance Only)</SelectItem>
+                  <SelectItem value="ad_analytics">অ্যাড অ্যানালিটিক্স (Ads Only)</SelectItem>
                 </SelectContent>
               </Select>
             </div>

@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, ROLE_DISPLAY_NAMES } from "@/contexts/AuthContext";
 import {
   Sidebar,
   SidebarContent,
@@ -62,7 +62,46 @@ export function AdminSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
-  const { signOut, user } = useAuth();
+  const { signOut, user, isAdmin, userRoles } = useAuth();
+
+  // Role-based menu filtering
+  const hasRole = (role: string) => userRoles.includes(role as any);
+  const canSeeOrders = isAdmin || hasRole("manager") || hasRole("moderator") || hasRole("user");
+  const canSeeProducts = isAdmin || hasRole("manager") || hasRole("moderator");
+  const canSeeWebsite = isAdmin;
+  const canSeeReports = isAdmin;
+  const canSeeFinance = isAdmin || hasRole("accounting");
+  const canSeePlanning = isAdmin;
+  const canSeeTasks = isAdmin || hasRole("manager") || hasRole("moderator");
+  const canSeeAnalytics = isAdmin || hasRole("ad_analytics");
+  const canSeeMetaAds = isAdmin || hasRole("ad_analytics");
+  const canSeeAutomation = isAdmin;
+  const canSeeBackup = isAdmin;
+  const canSeeUsers = isAdmin;
+
+  const filteredMainMenu = mainMenuItems.filter((item) => {
+    if (item.title === "Dashboard") return true; // everyone sees dashboard
+    if (item.title === "Orders") return canSeeOrders;
+    if (item.title === "Products") return canSeeProducts;
+    if (item.title === "Website") return canSeeWebsite;
+    if (item.title === "Reports") return canSeeReports;
+    if (item.title === "Finance") return canSeeFinance;
+    if (item.title === "Planning") return canSeePlanning;
+    if (item.title === "Tasks") return canSeeTasks;
+    if (item.title === "Analytics") return canSeeAnalytics;
+    return true;
+  });
+
+  const filteredBottomMenu = bottomMenuItems.filter((item) => {
+    if (item.title === "Meta Ads") return canSeeMetaAds;
+    if (item.title === "Automation") return canSeeAutomation;
+    if (item.title === "Backup") return canSeeBackup;
+    if (item.title === "Users") return canSeeUsers;
+    return isAdmin; // Support, Coming Soon, Plan - admin only
+  });
+
+  const primaryRole = userRoles[0];
+  const roleDisplayName = primaryRole ? ROLE_DISPLAY_NAMES[primaryRole] || primaryRole : "User";
 
   const isWebsiteActive = location.pathname.startsWith("/admin/website");
   const [websiteOpen, setWebsiteOpen] = useState(isWebsiteActive);
@@ -101,7 +140,7 @@ export function AdminSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="px-2 space-y-0.5">
-              {mainMenuItems.map((item) => (
+              {filteredMainMenu.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   {item.subItems ? (
                     <>
@@ -177,7 +216,7 @@ export function AdminSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="px-2 space-y-0.5">
-              {bottomMenuItems.map((item) => (
+              {filteredBottomMenu.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink
@@ -209,7 +248,7 @@ export function AdminSidebar() {
               <p className="text-sm font-semibold text-white truncate">{userName}</p>
               <div className="flex items-center gap-1.5">
                 <span className="h-2 w-2 rounded-full bg-emerald-400 pulse-dot" />
-                <span className="text-[11px] text-sidebar-foreground/50 font-medium">Admin</span>
+                <span className="text-[11px] text-sidebar-foreground/50 font-medium">{roleDisplayName}</span>
               </div>
             </div>
           )}

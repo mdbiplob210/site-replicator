@@ -9,6 +9,7 @@ import {
   Hand, ShoppingBag, Hash
 } from "lucide-react";
 import { useDashboardData, useSalesTrend } from "@/hooks/useDashboardData";
+import { useAuth } from "@/contexts/AuthContext";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from "recharts";
 
 const timeFilters = ["Today", "Yesterday", "This Week", "This Month"] as const;
@@ -19,6 +20,13 @@ const AdminDashboard = () => {
   const [activeFilter, setActiveFilter] = useState<typeof timeFilters[number]>("Today");
   const { isLoading, orderStats, shippingStats, profitStats, financeStats, salesDetails } = useDashboardData(activeFilter);
   const { data: salesTrend } = useSalesTrend();
+  const { isAdmin, userRoles } = useAuth();
+
+  const hasRole = (role: string) => userRoles.includes(role as any);
+  const canSeeOrders = isAdmin || hasRole("manager") || hasRole("moderator") || hasRole("user");
+  const canSeeFinance = isAdmin || hasRole("accounting");
+  const canSeeProfit = isAdmin || hasRole("accounting");
+  const canSeeAdAnalytics = isAdmin || hasRole("ad_analytics");
 
   const orderCards = [
     { label: "TOTAL ORDERS", value: String(orderStats.totalOrders), sub: "Orders", change: `(${fmt(orderStats.totalAmount)})`, icon: ShoppingCart, color: "text-foreground", bgGradient: "from-slate-100 to-slate-50", iconColor: "text-slate-500" },
@@ -103,7 +111,8 @@ const AdminDashboard = () => {
 
         {!isLoading && (
           <>
-            {/* Quick Summary Bar */}
+            {/* Quick Summary Bar - orders visible to order roles */}
+            {canSeeOrders && (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <Card className="p-3 border-border/30 bg-gradient-to-br from-blue-50 to-blue-100/50">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">AVG ORDER VALUE</p>
@@ -122,8 +131,10 @@ const AdminDashboard = () => {
                 <p className="text-xl font-extrabold text-violet-600 mt-0.5">{salesDetails.paymentStats.partial.count} <span className="text-xs font-medium text-muted-foreground">({fmt(salesDetails.paymentStats.partial.amount)})</span></p>
               </Card>
             </div>
+            )}
 
             {/* Order Status Cards */}
+            {canSeeOrders && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
               {orderCards.map((stat) => (
                 <Card key={stat.label} className="p-4 border-border/30 card-hover group overflow-hidden relative">
@@ -144,8 +155,10 @@ const AdminDashboard = () => {
                 </Card>
               ))}
             </div>
+            )}
 
             {/* Delivery Status Cards */}
+            {canSeeOrders && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {deliveryCards.map((stat) => (
                 <Card key={stat.label} className="p-4 border-border/30 card-hover group overflow-hidden relative">
@@ -165,8 +178,10 @@ const AdminDashboard = () => {
                 </Card>
               ))}
             </div>
+            )}
 
             {/* Shipping Stats */}
+            {canSeeOrders && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {shipCards.map((stat) => (
                 <Card key={stat.label} className="p-4 border-border/30 card-hover group overflow-hidden relative">
@@ -195,9 +210,10 @@ const AdminDashboard = () => {
                 </Card>
               ))}
             </div>
+            )}
 
             {/* Sales Trend Chart */}
-            {salesTrend && salesTrend.length > 0 && (
+            {canSeeOrders && salesTrend && salesTrend.length > 0 && (
               <Card className="p-5 border-border/30">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="p-2.5 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 shadow-lg shadow-emerald-500/20">
@@ -257,6 +273,7 @@ const AdminDashboard = () => {
             )}
 
             {/* Top Products & Hourly Orders */}
+            {canSeeOrders && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {/* Top Products */}
               <Card className="p-5 border-border/30">
@@ -323,9 +340,10 @@ const AdminDashboard = () => {
                 </div>
               </Card>
             </div>
+            )}
 
             {/* Source Breakdown */}
-            {salesDetails.sourceBreakdown.length > 0 && (
+            {canSeeOrders && salesDetails.sourceBreakdown.length > 0 && (
               <Card className="p-5 border-border/30">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="p-2.5 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 shadow-lg shadow-amber-500/20">
@@ -349,6 +367,7 @@ const AdminDashboard = () => {
             )}
 
             {/* Profit Breakdown */}
+            {canSeeProfit && (
             <Card className="p-6 border-border/30 overflow-hidden relative">
               <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-[hsl(187,85%,53%)]/5 to-transparent rounded-full -mr-32 -mt-32" />
               <div className="relative">
@@ -378,8 +397,10 @@ const AdminDashboard = () => {
                 </div>
               </div>
             </Card>
+            )}
 
-            {/* Finance Summary - 2 Rows, 3 per row */}
+            {/* Finance Summary */}
+            {canSeeFinance && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {finCards.map((card) => (
                 <Card key={card.label} className="p-5 border-border/30 card-hover">
@@ -395,6 +416,17 @@ const AdminDashboard = () => {
                 </Card>
               ))}
             </div>
+            )}
+
+            {/* Role-specific empty state */}
+            {!canSeeOrders && !canSeeFinance && !canSeeProfit && (
+              <Card className="p-12 text-center border-border/30">
+                <p className="text-lg font-bold text-foreground mb-2">স্বাগতম! 👋</p>
+                <p className="text-sm text-muted-foreground">
+                  আপনার রোল অনুযায়ী সংশ্লিষ্ট সেকশনে যান — সাইডবার থেকে নেভিগেট করুন।
+                </p>
+              </Card>
+            )}
           </>
         )}
       </div>
