@@ -106,10 +106,10 @@ export function AdminLayout({ children }: { children: ReactNode }) {
         <AdminSidebar />
         <div className="flex-1 flex flex-col min-w-0">
           {/* Top Header */}
-          <header className="h-14 flex items-center border-b border-border/40 px-4 gap-3 bg-card/90 backdrop-blur-md sticky top-0 z-10 transition-colors duration-300">
+          <header className="h-12 sm:h-14 flex items-center border-b border-border/40 px-2 sm:px-4 gap-1.5 sm:gap-3 bg-card/90 backdrop-blur-md sticky top-0 z-10 transition-colors duration-300">
             <SidebarTrigger className="text-muted-foreground hover:text-foreground transition-colors" />
             <div className="flex-1" />
-            {/* Search Trigger */}
+            {/* Search Trigger - desktop only */}
             <div
               onClick={() => setSearchOpen(true)}
               className="hidden md:flex items-center gap-2.5 bg-secondary/70 rounded-xl px-4 py-2 border border-border/50 hover:border-primary/40 hover:shadow-sm transition-all cursor-pointer group relative"
@@ -118,6 +118,10 @@ export function AdminLayout({ children }: { children: ReactNode }) {
               <span className="text-sm text-muted-foreground">Search...</span>
               <kbd className="ml-6 text-[10px] bg-card px-2 py-0.5 rounded-md text-muted-foreground/60 border border-border/60 font-mono">⌘K</kbd>
             </div>
+            {/* Mobile search button */}
+            <button onClick={() => setSearchOpen(true)} className="md:hidden p-2 rounded-lg hover:bg-secondary text-muted-foreground">
+              <Search className="h-4 w-4" />
+            </button>
             <div className="flex items-center gap-0.5">
               {/* Theme Toggle */}
               <button
