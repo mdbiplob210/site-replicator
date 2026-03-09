@@ -310,7 +310,7 @@ const Template1Classic = () => {
 
                   {/* Info */}
                   <div className="p-3">
-                    <Link to={`/product/${p.id}`}>
+                    <Link to={`/product/${(p as any).slug || p.id}`}>
                       <h3 className="text-sm font-semibold text-gray-800 truncate hover:text-green-600 transition">{p.name}</h3>
                     </Link>
 
