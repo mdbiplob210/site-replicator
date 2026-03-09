@@ -100,7 +100,8 @@ export function useDashboardData(filter: TimeFilter) {
         .select("total_amount")
         .eq("status", "in_courier" as any);
       if (error) throw error;
-      return (data || []).reduce((s, o) => s + Number(o.total_amount), 0);
+      const items = data || [];
+      return { amount: items.reduce((s, o) => s + Number(o.total_amount), 0), count: items.length };
     },
   });
 
@@ -109,7 +110,8 @@ export function useDashboardData(filter: TimeFilter) {
   const finance = financeQuery.data || [];
   const adSpends = adSpendQuery.data || [];
   const products = stockQuery.data || [];
-  const courierBalance = courierBalanceQuery.data || 0;
+  const courierBalance = courierBalanceQuery.data?.amount || 0;
+  const courierCount = courierBalanceQuery.data?.count || 0;
 
   // Order stats
   const totalOrders = orders.length;
@@ -265,6 +267,7 @@ export function useDashboardData(filter: TimeFilter) {
       bankBalance,
       stockValue,
       courierBalance,
+      courierCount,
       loanCount: loans.length,
       loanTotal,
       investmentTotal,
