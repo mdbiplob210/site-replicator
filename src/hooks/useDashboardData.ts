@@ -92,6 +92,18 @@ export function useDashboardData(filter: TimeFilter) {
     },
   });
 
+  const courierBalanceQuery = useQuery({
+    queryKey: ["dashboard-courier-balance"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("orders")
+        .select("total_amount")
+        .eq("status", "in_courier" as any);
+      if (error) throw error;
+      return (data || []).reduce((s, o) => s + Number(o.total_amount), 0);
+    },
+  });
+
   const orders = ordersQuery.data || [];
   const orderItems = orderItemsQuery.data || [];
   const finance = financeQuery.data || [];
