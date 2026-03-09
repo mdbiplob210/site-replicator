@@ -13,7 +13,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 
-type FinanceTab = "income" | "expense" | "banks" | "loans" | "investments" | "history";
+type FinanceTab = "income" | "expense" | "product_purchase" | "banks" | "loans" | "investments" | "history";
 type Period = "today" | "this_week" | "this_month" | "last_month" | "custom";
 
 export default function AdminFinance() {
@@ -47,6 +47,12 @@ export default function AdminFinance() {
   const [investAmount, setInvestAmount] = useState("");
   const [investSource, setInvestSource] = useState("");
   const [investNote, setInvestNote] = useState("");
+
+  // Product Purchase form
+  const [purchaseSupplier, setPurchaseSupplier] = useState("");
+  const [purchaseAmount, setPurchaseAmount] = useState("");
+  const [purchaseNote, setPurchaseNote] = useState("");
+  const [purchaseBank, setPurchaseBank] = useState("");
 
   // History filters
   const [histType, setHistType] = useState("all");
@@ -88,6 +94,7 @@ export default function AdminFinance() {
   const tabs: { id: FinanceTab; label: string; icon: any }[] = [
     { id: "income", label: "Income", icon: ArrowDownCircle },
     { id: "expense", label: "Expense", icon: ArrowUpCircle },
+    { id: "product_purchase", label: "Product Purchase", icon: Package },
     { id: "banks", label: "Banks", icon: Landmark },
     { id: "loans", label: "Loans", icon: PiggyBank },
     { id: "investments", label: "Investments", icon: TrendingUp },
@@ -170,9 +177,21 @@ export default function AdminFinance() {
     }, { onSuccess: () => { setInvestAmount(""); setInvestSource(""); setInvestNote(""); } });
   };
 
+  const handleSubmitPurchase = () => {
+    if (!purchaseAmount || Number(purchaseAmount) <= 0 || !purchaseSupplier) return;
+    const bankInfo = purchaseBank ? ` [${purchaseBank}]` : "";
+    createRecord.mutate({
+      type: "product_purchase",
+      label: purchaseSupplier,
+      amount: Number(purchaseAmount),
+      notes: (purchaseNote ? purchaseNote : "") + bankInfo || null,
+    }, { onSuccess: () => { setPurchaseAmount(""); setPurchaseSupplier(""); setPurchaseNote(""); } });
+  };
+
   const getTypeLabel = (type: string) => {
     const map: Record<string, string> = {
       income: "Income", expense: "Expense", bank: "Bank",
+      product_purchase: "Product Purchase",
       loan_in: "Loan (In)", loan_out: "Loan (Out)",
       investment_in: "Investment (In)", investment_out: "Investment (Out)",
     };
@@ -181,7 +200,7 @@ export default function AdminFinance() {
 
   const getTypeColor = (type: string) => {
     if (type === "income" || type === "loan_in" || type === "investment_in") return "text-emerald-600";
-    if (type === "expense" || type === "loan_out" || type === "investment_out") return "text-destructive";
+    if (type === "expense" || type === "loan_out" || type === "investment_out" || type === "product_purchase") return "text-destructive";
     return "text-primary";
   };
 
@@ -432,7 +451,34 @@ export default function AdminFinance() {
           </div>
         )}
 
-        {/* Banks Tab */}
+        {/* Product Purchase Tab */}
+        {tab === "product_purchase" && (
+          <div className="bg-card rounded-2xl border border-border p-6 space-y-5">
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-lg bg-secondary flex items-center justify-center"><Package className="h-4 w-4 text-foreground" /></div>
+              <div><p className="font-semibold text-foreground">প্রোডাক্ট পারচেজ</p><p className="text-xs text-muted-foreground">সাপ্লায়ার থেকে প্রোডাক্ট কেনার হিসাব রাখুন</p></div>
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground uppercase">সাপ্লায়ার নাম</label>
+              <Input className="mt-1" placeholder="e.g. ABC Traders, XYZ Supplier" value={purchaseSupplier} onChange={(e) => setPurchaseSupplier(e.target.value)} />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground uppercase">Amount (৳)</label>
+                <Input className="mt-1" type="number" value={purchaseAmount} onChange={(e) => setPurchaseAmount(e.target.value)} placeholder="0.00" />
+              </div>
+              <SelectField label="ব্যাংক অ্যাকাউন্ট" value={purchaseBank} onChange={setPurchaseBank} options={bankAccounts.map((b) => b.label)} placeholder="সিলেক্ট করুন (ঐচ্ছিক)" />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground uppercase">Note (Optional)</label>
+              <Textarea className="mt-1" placeholder="কি প্রোডাক্ট কিনলেন, পরিমাণ ইত্যাদি..." value={purchaseNote} onChange={(e) => setPurchaseNote(e.target.value)} />
+            </div>
+            <Button className="w-full h-12 rounded-2xl text-base font-semibold bg-destructive hover:bg-destructive/90 text-destructive-foreground" onClick={handleSubmitPurchase} disabled={createRecord.isPending || !purchaseAmount || !purchaseSupplier}>
+              {createRecord.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Record Purchase"}
+            </Button>
+          </div>
+        )}
+
         {tab === "banks" && (
           <div className="bg-card rounded-2xl border border-border p-6 space-y-5">
             <div className="flex items-center gap-3">
@@ -539,6 +585,7 @@ export default function AdminFinance() {
                 <option value="all">All Types</option>
                 <option value="income">Income</option>
                 <option value="expense">Expense</option>
+                <option value="product_purchase">Product Purchase</option>
                 <option value="loan_in">Loan (In)</option>
                 <option value="loan_out">Loan (Out)</option>
                 <option value="investment_in">Investment (In)</option>
@@ -570,7 +617,7 @@ export default function AdminFinance() {
                     </div>
                     <div className="flex items-center gap-3">
                       <p className={`font-bold text-sm ${getTypeColor(r.type)}`}>
-                        {r.type === "expense" || r.type === "loan_out" || r.type === "investment_out" ? "-" : "+"}৳{Number(r.amount).toLocaleString()}
+                        {r.type === "expense" || r.type === "loan_out" || r.type === "investment_out" || r.type === "product_purchase" ? "-" : "+"}৳{Number(r.amount).toLocaleString()}
                       </p>
                       <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => deleteRecord.mutate(r.id)}>
                         <Trash2 className="h-4 w-4" />
