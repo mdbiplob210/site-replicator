@@ -49,11 +49,21 @@ export default function AdminFinance() {
   // History filters
   const [histType, setHistType] = useState("all");
 
+  // Source management
+  const [showSourceManager, setShowSourceManager] = useState(false);
+  const [newSourceName, setNewSourceName] = useState("");
+  const [newSourceType, setNewSourceType] = useState<"income" | "expense">("income");
+
   // Database hooks
   const { data: summary } = useFinanceSummary();
   const { data: records = [], isLoading: recordsLoading } = useFinanceRecords(histType);
   const createRecord = useCreateFinanceRecord();
   const deleteRecord = useDeleteFinanceRecord();
+  const { data: incomeSources = [] } = useFinanceSources("income");
+  const { data: expenseSources = [] } = useFinanceSources("expense");
+  const { data: allSources = [] } = useFinanceSources();
+  const createSource = useCreateFinanceSource();
+  const deleteSource = useDeleteFinanceSource();
 
   // Cross-connect: Stock value from products table
   const { data: stockValue = 0 } = useQuery({
