@@ -516,25 +516,37 @@ const AdminUsers = () => {
                         </div>
                       </button>
 
-                      {isExpanded && !isAdmin && (
+                      {isExpanded && (
                         <div className="border-t border-border p-5 space-y-5">
-                          <div className="flex items-center gap-3">
-                            <Button size="sm" variant="outline" className="gap-1.5 text-xs" onClick={() => handleGrantAll(emp.user_id)}>
-                              <Check className="h-3.5 w-3.5" /> Grant All
-                            </Button>
-                            <Button size="sm" variant="outline" className="gap-1.5 text-xs text-destructive" onClick={() => handleRevokeAll(emp.user_id)}>
-                              <X className="h-3.5 w-3.5" /> Revoke All
-                            </Button>
-                            <div className="ml-auto flex items-center gap-2">
-                              <span className="text-sm text-muted-foreground">Order Panel</span>
-                              <Switch
-                                checked={emp.panel?.is_active || false}
-                                onCheckedChange={(checked) =>
-                                  handleTogglePanel(emp.user_id, emp.full_name || "Panel", checked)
-                                }
-                              />
+                          {isAdmin && (
+                            <div className="flex items-center gap-3 p-4 rounded-xl bg-primary/5 border border-primary/20">
+                              <Shield className="h-5 w-5 text-primary" />
+                              <div>
+                                <p className="text-sm font-bold text-foreground">অ্যাডমিন ইউজার</p>
+                                <p className="text-xs text-muted-foreground">অ্যাডমিনের সব পারমিশন স্বয়ংক্রিয়ভাবে থাকে। নিচে দেখুন কোন কোন পারমিশন আছে।</p>
+                              </div>
                             </div>
-                          </div>
+                          )}
+
+                          {!isAdmin && (
+                            <div className="flex items-center gap-3">
+                              <Button size="sm" variant="outline" className="gap-1.5 text-xs" onClick={() => handleGrantAll(emp.user_id)}>
+                                <Check className="h-3.5 w-3.5" /> Grant All
+                              </Button>
+                              <Button size="sm" variant="outline" className="gap-1.5 text-xs text-destructive" onClick={() => handleRevokeAll(emp.user_id)}>
+                                <X className="h-3.5 w-3.5" /> Revoke All
+                              </Button>
+                              <div className="ml-auto flex items-center gap-2">
+                                <span className="text-sm text-muted-foreground">Order Panel</span>
+                                <Switch
+                                  checked={emp.panel?.is_active || false}
+                                  onCheckedChange={(checked) =>
+                                    handleTogglePanel(emp.user_id, emp.full_name || "Panel", checked)
+                                  }
+                                />
+                              </div>
+                            </div>
+                          )}
 
                           {Object.entries(permissionGroups).map(([group, perms]) => {
                             const GroupIcon = groupIcons[group] || Settings;
@@ -546,7 +558,7 @@ const AdminUsers = () => {
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                                   {perms.map((perm) => {
-                                    const isGranted = emp.permissions?.includes(perm.key as PermissionKey) || false;
+                                    const isGranted = isAdmin || (emp.permissions?.includes(perm.key as PermissionKey) || false);
                                     return (
                                       <div
                                         key={perm.key}
@@ -560,10 +572,16 @@ const AdminUsers = () => {
                                           <p className="text-sm font-medium text-foreground">{perm.label}</p>
                                           <p className="text-[11px] text-muted-foreground">{perm.description}</p>
                                         </div>
-                                        <Switch
-                                          checked={isGranted}
-                                          onCheckedChange={() => handleTogglePermission(emp.user_id, perm.key, isGranted)}
-                                        />
+                                        {isAdmin ? (
+                                          <Badge variant="secondary" className="text-[10px] bg-emerald-100 text-emerald-700">
+                                            <Check className="h-3 w-3 mr-1" /> Auto
+                                          </Badge>
+                                        ) : (
+                                          <Switch
+                                            checked={isGranted}
+                                            onCheckedChange={() => handleTogglePermission(emp.user_id, perm.key, isGranted)}
+                                          />
+                                        )}
                                       </div>
                                     );
                                   })}
@@ -571,18 +589,6 @@ const AdminUsers = () => {
                               </div>
                             );
                           })}
-                        </div>
-                      )}
-
-                      {isExpanded && isAdmin && (
-                        <div className="border-t border-border p-5">
-                          <div className="flex items-center gap-3 p-4 rounded-xl bg-primary/5 border border-primary/20">
-                            <Shield className="h-5 w-5 text-primary" />
-                            <div>
-                              <p className="text-sm font-bold text-foreground">অ্যাডমিন ইউজার</p>
-                              <p className="text-xs text-muted-foreground">অ্যাডমিনের সব পারমিশন স্বয়ংক্রিয়ভাবে থাকে।</p>
-                            </div>
-                          </div>
                         </div>
                       )}
                     </Card>
