@@ -379,21 +379,22 @@ const AdminDashboard = () => {
               </div>
             </Card>
 
-            {/* Finance Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-              {finCards.map((card) => (
-                <Card key={card.label} className="p-4 border-border/30 card-hover group overflow-hidden relative">
-                  <div className={`absolute inset-0 bg-gradient-to-br ${card.bgGradient} opacity-0 group-hover:opacity-30 transition-opacity duration-300`} />
-                  <div className="relative">
-                    <div className={`p-2.5 rounded-xl bg-gradient-to-br ${card.bgGradient} w-fit mb-3 transition-transform duration-300 group-hover:scale-110`}>
-                      <card.icon className={`h-5 w-5 ${card.iconColor}`} />
+            {/* Finance Summary - Compact Single Row */}
+            <Card className="p-3 border-border/30">
+              <div className="flex items-center flex-wrap gap-x-1 gap-y-1 divide-x divide-border/40">
+                {finCards.map((card, i) => (
+                  <div key={card.label} className={`flex items-center gap-2 ${i > 0 ? "pl-3" : ""} pr-3`}>
+                    <div className={`p-1.5 rounded-lg bg-gradient-to-br ${card.bgGradient} shrink-0`}>
+                      <card.icon className={`h-3.5 w-3.5 ${card.iconColor}`} />
                     </div>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground/60">{card.label}</p>
-                    <p className="text-2xl font-extrabold text-foreground mt-1">{card.value}</p>
+                    <div className="min-w-0">
+                      <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60 leading-none">{card.label}</p>
+                      <p className="text-sm font-extrabold text-foreground leading-tight mt-0.5">{card.value}</p>
+                    </div>
                   </div>
-                </Card>
-              ))}
-            </div>
+                ))}
+              </div>
+            </Card>
           </>
         )}
       </div>
