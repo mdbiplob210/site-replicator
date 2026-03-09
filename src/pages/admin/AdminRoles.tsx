@@ -5,17 +5,19 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Shield, Users, ChevronDown, ChevronRight,
   Loader2, Package, ShoppingCart, DollarSign, BarChart3,
   Settings, Monitor, Check, X, Globe, Megaphone,
-  Truck, Info
+  Truck, Info, LayoutGrid
 } from "lucide-react";
 import {
   useEmployees, useTogglePermission, useTogglePanel,
   ALL_PERMISSIONS, type PermissionKey
 } from "@/hooks/useEmployeePermissions";
+import { PanelManagement } from "@/components/admin/PanelManagement";
 
 const groupIcons: Record<string, any> = {
   "অর্ডার": ShoppingCart,
