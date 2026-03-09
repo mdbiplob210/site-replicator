@@ -35,11 +35,11 @@ const perfBadge = (roas: number, spend: number) => {
   return "border border-red-300 text-red-600 dark:border-red-700 dark:text-red-400";
 };
 
-export function CampaignBreakdown({ dateRange }: Props) {
+export function CampaignBreakdown({ dateRange, adAccountId }: Props) {
   const [expandedCampaigns, setExpandedCampaigns] = useState<Set<string>>(new Set());
   const [expandedAdSets, setExpandedAdSets] = useState<Set<string>>(new Set());
 
-  const { data: campaigns = [], isLoading, error } = useMetaCampaigns(dateRange);
+  const { data: campaigns = [], isLoading, error } = useMetaCampaigns(dateRange, adAccountId);
   const syncMutation = useSyncMetaAds();
 
   // Summary stats
