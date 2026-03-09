@@ -367,6 +367,7 @@ const AdminDashboard = () => {
             )}
 
             {/* Profit Breakdown */}
+            {canSeeProfit && (
             <Card className="p-6 border-border/30 overflow-hidden relative">
               <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-[hsl(187,85%,53%)]/5 to-transparent rounded-full -mr-32 -mt-32" />
               <div className="relative">
