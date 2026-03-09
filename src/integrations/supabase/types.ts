@@ -803,6 +803,30 @@ export type Database = {
         }
         Relationships: []
       }
+      login_attempts: {
+        Row: {
+          attempted_at: string
+          email: string | null
+          id: string
+          ip_address: string
+          success: boolean
+        }
+        Insert: {
+          attempted_at?: string
+          email?: string | null
+          id?: string
+          ip_address: string
+          success?: boolean
+        }
+        Update: {
+          attempted_at?: string
+          email?: string | null
+          id?: string
+          ip_address?: string
+          success?: boolean
+        }
+        Relationships: []
+      }
       meta_ads: {
         Row: {
           adset_id: string
