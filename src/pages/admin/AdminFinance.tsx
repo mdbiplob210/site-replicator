@@ -24,11 +24,13 @@ export default function AdminFinance() {
   const [incomeSource, setIncomeSource] = useState("Sales");
   const [incomeAmount, setIncomeAmount] = useState("");
   const [incomeNote, setIncomeNote] = useState("");
+  const [incomeBank, setIncomeBank] = useState("");
 
   // Expense form
   const [expensePurpose, setExpensePurpose] = useState("Ads");
   const [expenseAmount, setExpenseAmount] = useState("");
   const [expenseNote, setExpenseNote] = useState("");
+  const [expenseBank, setExpenseBank] = useState("");
 
   // Banks form
   const [bankName, setBankName] = useState("");
