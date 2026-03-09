@@ -202,7 +202,7 @@ Deno.serve(async (req) => {
             const invoiceNumber = `INV-${dateStr}-${random}`
 
             const subtotal = Number(order.product_cost) || 0
-            const finalDeliveryCharge = deliveryFee ?? Number(order.delivery_charge) || 0
+            const finalDeliveryCharge = (deliveryFee ?? Number(order.delivery_charge)) || 0
             const finalDiscount = Number(order.discount) || 0
             const finalTotal = Number(order.total_amount) || 0
             const finalCod = codAmount ?? finalTotal
