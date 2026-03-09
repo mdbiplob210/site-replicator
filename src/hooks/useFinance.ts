@@ -3,6 +3,67 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables, TablesInsert } from "@/integrations/supabase/types";
 import { toast } from "sonner";
 
+// Finance Sources
+export function useFinanceSources(type?: string) {
+  return useQuery({
+    queryKey: ["finance-sources", type],
+    queryFn: async () => {
+      let query = supabase
+        .from("finance_sources" as any)
+        .select("*")
+        .eq("is_active", true)
+        .order("name");
+
+      if (type) {
+        query = query.eq("type", type);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+      return data as any[];
+    },
+  });
+}
+
+export function useCreateFinanceSource() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (source: { name: string; type: string }) => {
+      const { data, error } = await supabase
+        .from("finance_sources" as any)
+        .insert(source)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["finance-sources"] });
+      toast.success("সোর্স যোগ হয়েছে!");
+    },
+    onError: (error: Error) => {
+      toast.error("সোর্স যোগ করতে ব্যর্থ: " + error.message);
+    },
+  });
+}
+
+export function useDeleteFinanceSource() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("finance_sources" as any).delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["finance-sources"] });
+      toast.success("সোর্স ডিলিট হয়েছে!");
+    },
+    onError: (error: Error) => {
+      toast.error("ডিলিট করতে ব্যর্থ: " + error.message);
+    },
+  });
+}
+
 export type FinanceRecord = Tables<"finance_records">;
 export type FinanceRecordInsert = TablesInsert<"finance_records">;
 
