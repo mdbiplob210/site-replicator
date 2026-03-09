@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useActiveBanners } from "@/hooks/useBanners";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 
 const BannerCarousel = () => {
   const { data: banners = [] } = useActiveBanners();
