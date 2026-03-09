@@ -118,6 +118,50 @@ const AdminUsers = () => {
     } catch (err: any) { toast.error(err.message); } finally { setEditLoading(false); }
   };
 
+  const handleDisableUser = async (userId: string, name: string | null) => {
+    const action = confirm(`"${name || userId}" কে ডিসেবল/ব্যান করতে চান? (ইতিমধ্যে ব্যান থাকলে আনব্যান হবে)`);
+    if (!action) return;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      // First check current ban status
+      const checkRes = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-update-user`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ action: "get_user_email", target_user_id: userId }),
+      });
+      const checkData = await checkRes.json();
+      const isBanned = checkData.banned;
+
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-update-user`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ action: "disable_user", target_user_id: userId, disabled: !isBanned }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      toast.success(data.disabled ? `"${name}" ডিসেবল হয়েছে` : `"${name}" আবার সক্রিয় হয়েছে`);
+    } catch (err: any) { toast.error(err.message); }
+  };
+
+  const handleDeleteUser = async (userId: string, name: string | null) => {
+    const confirmed = confirm(`⚠️ "${name || userId}" কে পার্মানেন্টলি ডিলিট করতে চান?\n\nএটি undo করা যাবে না!`);
+    if (!confirmed) return;
+    const doubleConfirm = confirm(`সত্যিই "${name}" ডিলিট করবেন? সব ডাটা মুছে যাবে।`);
+    if (!doubleConfirm) return;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-update-user`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ action: "delete_user", target_user_id: userId }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      toast.success(`"${name}" ডিলিট হয়েছে`);
+      fetchUsers();
+    } catch (err: any) { toast.error(err.message); }
+  };
+
   // Rules tab
   const { data: employees = [], isLoading: employeesLoading } = useEmployees();
   const togglePermission = useTogglePermission();
@@ -508,6 +552,20 @@ const AdminUsers = () => {
                                   title="Edit Rules"
                                 >
                                   <Shield className="h-4 w-4" />
+                                </button>
+                                <button
+                                  onClick={() => handleDisableUser(user.user_id, user.full_name)}
+                                  className="p-1.5 rounded-lg hover:bg-amber-500/10 text-muted-foreground hover:text-amber-600 transition-colors"
+                                  title="Disable/Enable User"
+                                >
+                                  <Ban className="h-4 w-4" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteUser(user.user_id, user.full_name)}
+                                  className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                                  title="Delete User"
+                                >
+                                  <Trash2 className="h-4 w-4" />
                                 </button>
                               </div>
                             </TableCell>
