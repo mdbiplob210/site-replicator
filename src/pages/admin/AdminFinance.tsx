@@ -94,6 +94,7 @@ export default function AdminFinance() {
   const tabs: { id: FinanceTab; label: string; icon: any }[] = [
     { id: "income", label: "Income", icon: ArrowDownCircle },
     { id: "expense", label: "Expense", icon: ArrowUpCircle },
+    { id: "product_purchase", label: "Product Purchase", icon: Package },
     { id: "banks", label: "Banks", icon: Landmark },
     { id: "loans", label: "Loans", icon: PiggyBank },
     { id: "investments", label: "Investments", icon: TrendingUp },
