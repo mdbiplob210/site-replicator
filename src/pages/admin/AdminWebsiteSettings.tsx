@@ -113,6 +113,10 @@ function GeneralTab() {
     setSiteUrl(settings["site_url"] || "");
     setTagline(settings["tagline"] || "");
     setContactPhone(settings["phone_number"] || "");
+    setContactPhone2(settings["phone_number_2"] || "");
+    setWhatsappNumber(settings["whatsapp_number"] || "");
+    setMessengerLink(settings["messenger_link"] || "");
+    setPaymentNumber(settings["payment_number"] || "");
     setContactEmail(settings["contact_email"] || "");
     setInsideDhaka(settings["delivery_inside_dhaka"] || "0");
     setOutsideDhaka(settings["delivery_outside_dhaka"] || "0");
