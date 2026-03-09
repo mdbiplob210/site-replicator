@@ -545,6 +545,29 @@ const AdminOrders = () => {
     + [filterDeviceType, filterPaymentStatus, filterCourierProvider, filterCourierStatus, filterCategory, filterCourierCharged, filterSalesType, filterDistrict, filterThana, filterZone].filter(v => v !== "all").length
     + (orderDateFilter !== "all" ? 1 : 0);
 
+  // Site settings for shop name
+  const { data: siteSettings } = useSiteSettings();
+  const shopName = siteSettings?.site_name || "SOHOZ";
+
+  // Bulk memo print
+  const selectedOrdersForPrint = useMemo(() => filteredOrders.filter(o => selectedOrderIds.has(o.id)), [filteredOrders, selectedOrderIds]);
+  
+  const handleMarkPrinted = useCallback(async (orderIds: string[]) => {
+    for (const id of orderIds) {
+      await supabase.from("orders").update({ memo_printed: true } as any).eq("id", id);
+    }
+    queryClient.invalidateQueries({ queryKey: ["orders"] });
+    toast.success(`${orderIds.length}টি অর্ডারের মেমো প্রিন্টেড হয়েছে!`);
+  }, [queryClient]);
+
+  const bulkPrint = useBulkMemoPrint({
+    orders: selectedOrdersForPrint,
+    courierByOrderId,
+    orderItemsByOrderId,
+    siteName: shopName,
+    onPrinted: handleMarkPrinted,
+  });
+
   const clearAllFilters = () => {
     setFilterSource(""); setFilterPhone(""); setFilterAmountMin(""); setFilterAmountMax("");
     setFilterDeviceType("all"); setFilterAddress(""); setFilterDistrict("all"); setFilterThana("all"); setFilterZone("all");
