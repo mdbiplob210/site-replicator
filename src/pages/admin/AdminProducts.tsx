@@ -120,7 +120,7 @@ const AdminProducts = () => {
       return;
     }
     setSaving(true);
-    const payload = {
+    const payload: any = {
       name: form.name,
       product_code: form.product_code,
       purchase_price: parseFloat(form.purchase_price) || 0,
@@ -137,6 +137,13 @@ const AdminProducts = () => {
       category_id: form.category_id || null,
       status: form.status,
     };
+    // Only set slug if user provided one; otherwise let DB trigger auto-generate
+    if (form.slug.trim()) {
+      payload.slug = form.slug.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    } else if (!editingId) {
+      // New product: let DB handle it (slug = null triggers the auto-generate function)
+      payload.slug = null;
+    }
 
     let error;
     if (editingId) {
