@@ -385,7 +385,7 @@ const CheckoutPage = () => {
                 <div className="bg-gray-900 rounded-xl p-5 border border-gray-800">
                   <div className="flex items-center gap-4">
                     <div className="w-14 h-14 bg-gray-800 rounded-lg overflow-hidden">
-                      {item.image ? <img src={item.image} className="w-full h-full object-cover" /> : null}
+                      {item.image ? <OptimizedImage src={item.image} alt={item.name} width={56} quality={75} className="w-full h-full object-cover" /> : null}
                     </div>
                     <div className="flex-1"><p className="font-bold">{item.name}</p><p className="text-sm text-gray-500">৳{item.price} × {item.qty}</p></div>
                     <span className="font-bold text-amber-400">৳{total}</span>
