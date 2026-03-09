@@ -5,11 +5,12 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { X, ShoppingBag, User, Phone, MapPin, Minus, Plus, CheckCircle2, Loader2 } from "lucide-react";
+import { X, ShoppingBag, User, Phone, MapPin, Minus, Plus, CheckCircle2, Loader2, Users, Clock } from "lucide-react";
 import { useTracking } from "@/hooks/useTracking";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
 import { OptimizedImage } from "@/components/ui/optimized-image";
 import { getClientIp, parseDeviceInfo } from "@/lib/deviceDetect";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 interface CheckoutItem {
   productId: string;
