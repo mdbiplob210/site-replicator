@@ -419,10 +419,10 @@ const Login = () => {
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       required
-                      className="border-0 text-sm"
+                    className="border-0 text-sm font-bold"
                       style={{
                         background: "rgba(255,255,255,0.08)",
-                        color: "#fff",
+                        color: "#000",
                         borderBottom: "2px solid rgba(78,205,196,0.3)",
                         borderRadius: "12px",
                       }}
@@ -437,10 +437,10 @@ const Login = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="border-0 text-sm"
+                    className="border-0 text-sm font-bold"
                     style={{
                       background: "rgba(255,255,255,0.08)",
-                      color: "#fff",
+                      color: "#000",
                       borderBottom: "2px solid rgba(78,205,196,0.3)",
                       borderRadius: "12px",
                     }}
@@ -454,10 +454,10 @@ const Login = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="border-0 pr-10 text-sm"
+                    className="border-0 pr-10 text-sm font-bold"
                     style={{
                       background: "rgba(255,255,255,0.08)",
-                      color: "#fff",
+                      color: "#000",
                       borderBottom: "2px solid rgba(78,205,196,0.3)",
                       borderRadius: "12px",
                     }}
