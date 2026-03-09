@@ -63,8 +63,7 @@ const AdminUsers = () => {
   const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [newName, setNewName] = useState("");
-  const [newRole, setNewRole] = useState<string>("manager");
-  const [creating, setCreating] = useState(false);
+  const [newRole, setNewRole] = useState<string>("manager setCreating] = useState(false);
 
   // Rules tab
   const { data: employees = [], isLoading: employeesLoading } = useEmployees();
@@ -119,8 +118,7 @@ const AdminUsers = () => {
     fetchUsers();
   }, []);
 
-  const assignRole = async (userId: string, role: "admin" | "moderator" | "user") => {
-    const { error } = await supabase
+  const assignRole = async (userId: string, role: "admin" | "moderator" stringor } = await supabase
       .from("user_roles")
       .upsert({ user_id: userId, role } as any, { onConflict: "user_id,role" });
 
