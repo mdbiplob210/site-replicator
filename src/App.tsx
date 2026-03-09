@@ -37,6 +37,7 @@ import AdminThankYouTemplate from "./pages/admin/AdminThankYouTemplate";
 import AdminLandingPages from "./pages/admin/AdminLandingPages";
 import AdminLandingPageAnalytics from "./pages/admin/AdminLandingPageAnalytics";
 import AdminPayment from "./pages/admin/AdminPayment";
+import AdminInvoices from "./pages/admin/AdminInvoices";
 import AdminPages from "./pages/admin/AdminPages";
 import LandingPageView from "./pages/LandingPageView";
 import LandingPageCheckout from "./pages/LandingPageCheckout";
