@@ -268,15 +268,25 @@ export function useTracking() {
   const gtmId = settings?.gtm_id || "";
   const clarityId = settings?.clarity_id || "";
 
-  // Initialize all tracking scripts
+  // Initialize tracking scripts AFTER page is interactive (deferred)
   useEffect(() => {
     if (initialized.current || !settings) return;
     initialized.current = true;
 
-    if (fbPixelId) loadFBPixel(fbPixelId);
-    if (tiktokPixelId) loadTikTokPixel(tiktokPixelId);
-    if (gtmId) loadGTM(gtmId);
-    if (clarityId) loadClarity(clarityId);
+    // Defer tracking scripts to not block initial render
+    const loadScripts = () => {
+      if (fbPixelId) loadFBPixel(fbPixelId);
+      if (tiktokPixelId) loadTikTokPixel(tiktokPixelId);
+      if (gtmId) loadGTM(gtmId);
+      if (clarityId) loadClarity(clarityId);
+    };
+
+    // Use requestIdleCallback if available, otherwise setTimeout
+    if ('requestIdleCallback' in window) {
+      (window as any).requestIdleCallback(loadScripts, { timeout: 3000 });
+    } else {
+      setTimeout(loadScripts, 1500);
+    }
 
     // Save UTM params to sessionStorage for later use
     const utms = getUtmParams();

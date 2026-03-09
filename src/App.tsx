@@ -10,8 +10,8 @@ import { useDynamicMeta } from "@/hooks/useDynamicMeta";
 
 const DynamicMetaProvider = () => { useDynamicMeta(); return null; };
 
-// Critical public pages - eagerly loaded
-import StorePage from "./pages/store/StorePage";
+// StorePage also lazy-loaded now for better code splitting
+const StorePage = lazy(() => import("./pages/store/StorePage"));
 
 // Lazy-loaded public pages
 const ProductDetail = lazy(() => import("./pages/store/ProductDetail"));

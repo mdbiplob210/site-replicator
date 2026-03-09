@@ -18,8 +18,14 @@
     <!-- DNS prefetch for critical origins -->
     <link rel="dns-prefetch" href="https://hogejkqzynixmjwodkoi.supabase.co" />
     <link rel="preconnect" href="https://hogejkqzynixmjwodkoi.supabase.co" crossorigin />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-    <!-- Preload critical font if used -->
+    <!-- Non-blocking font loading -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'" />
+
+    <!-- Preload critical module -->
     <link rel="modulepreload" href="/src/main.tsx" />
   </head>
 
