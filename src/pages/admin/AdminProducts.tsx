@@ -259,10 +259,15 @@ const AdminProducts = () => {
               </div>
 
               {/* Row 1 */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                   <Label className="text-sm font-semibold">Product Name</Label>
                   <Input placeholder="e.g. Smart Watch" value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="mt-1.5" />
+                </div>
+                <div>
+                  <Label className="text-sm font-semibold">URL Slug</Label>
+                  <Input placeholder="auto-generated if empty" value={form.slug} onChange={e => setForm({...form, slug: e.target.value})} className="mt-1.5 font-mono text-xs" />
+                  <p className="text-[10px] text-muted-foreground mt-1">খালি রাখলে নাম থেকে স্বয়ংক্রিয় তৈরি হবে</p>
                 </div>
                 <div>
                   <Label className="text-sm font-semibold">Product Code <span className="text-destructive">*</span></Label>
