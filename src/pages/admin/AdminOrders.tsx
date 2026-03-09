@@ -2677,7 +2677,14 @@ const AdminOrders = () => {
                           setSelectedOrderIds(newSet);
                         }} onClick={(e) => e.stopPropagation()} />
                         <div>
-                          <span className="font-bold text-primary text-sm">{order.order_number.replace(/^ORD-0*/, '')}</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-bold text-primary text-sm">#{order.order_number.replace(/^ORD-0*/, '')}</span>
+                            {(order as any).memo_printed && (
+                              <span className="inline-flex items-center justify-center h-4 w-4 rounded-full bg-emerald-500/20 text-emerald-600" title="মেমো প্রিন্টেড">
+                                <Printer className="h-2.5 w-2.5" />
+                              </span>
+                            )}
+                          </div>
                           <p className="text-[10px] text-muted-foreground">{format(new Date(order.created_at), "dd MMM yy, hh:mm a")}</p>
                         </div>
                       </div>
