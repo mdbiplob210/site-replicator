@@ -97,6 +97,9 @@ export const getStatusColor = (status: OrderStatus): string => {
   return colors[status] || "bg-muted";
 };
 
+// Select only columns needed for order list view
+const ORDER_LIST_COLS = "id, order_number, customer_name, customer_phone, customer_address, status, total_amount, delivery_charge, discount, product_cost, payment_status, source, notes, courier_note, cancel_reason, memo_printed, hold_until, created_at, updated_at";
+
 export function useOrders(statusFilter: string | null = null, dateFilter: OrderDateFilter = "all", customFrom?: Date, customTo?: Date) {
   return useQuery({
     queryKey: ["orders", statusFilter, dateFilter, customFrom?.toISOString(), customTo?.toISOString()],
@@ -104,18 +107,17 @@ export function useOrders(statusFilter: string | null = null, dateFilter: OrderD
       let allOrders: Order[] = [];
       let from = 0;
       const pageSize = 1000;
+      const range = getOrderDateRange(dateFilter, customFrom, customTo);
       while (true) {
         let query = supabase
           .from("orders")
-          .select("*")
+          .select(ORDER_LIST_COLS)
           .order("created_at", { ascending: false })
           .range(from, from + pageSize - 1);
 
         if (statusFilter) {
           query = query.eq("status", statusFilter as OrderStatus);
         }
-
-        const range = getOrderDateRange(dateFilter, customFrom, customTo);
         if (range.from) query = query.gte("created_at", range.from);
         if (range.to) query = query.lt("created_at", range.to);
 
@@ -128,7 +130,7 @@ export function useOrders(statusFilter: string | null = null, dateFilter: OrderD
       }
       return allOrders;
     },
-    staleTime: 30 * 1000, // 30s cache for order list
+    staleTime: 30 * 1000,
   });
 }
 
@@ -152,13 +154,12 @@ export function useOrderCounts(dateFilter: OrderDateFilter = "all", customFrom?:
   return useQuery({
     queryKey: ["order-counts", dateFilter, customFrom?.toISOString(), customTo?.toISOString()],
     queryFn: async () => {
-      let allData: { status: OrderStatus; created_at: string }[] = [];
+      const range = getOrderDateRange(dateFilter, customFrom, customTo);
+      let allData: { status: OrderStatus }[] = [];
       let from = 0;
       const pageSize = 1000;
       while (true) {
         let query = supabase.from("orders").select("status").range(from, from + pageSize - 1);
-
-        const range = getOrderDateRange(dateFilter, customFrom, customTo);
         if (range.from) query = query.gte("created_at", range.from);
         if (range.to) query = query.lt("created_at", range.to);
 

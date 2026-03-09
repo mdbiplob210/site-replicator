@@ -26,6 +26,14 @@ export default defineConfig(({ mode }) => ({
   build: {
     target: "es2020",
     cssCodeSplit: true,
+    minify: "terser",
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+        passes: 2,
+      },
+    },
     rollupOptions: {
       output: {
         manualChunks: {
@@ -34,6 +42,8 @@ export default defineConfig(({ mode }) => ({
           "vendor-ui": ["@radix-ui/react-dialog", "@radix-ui/react-popover", "@radix-ui/react-select", "@radix-ui/react-tabs", "@radix-ui/react-tooltip"],
           "vendor-charts": ["recharts"],
           "vendor-supabase": ["@supabase/supabase-js"],
+          "vendor-date": ["date-fns"],
+          "vendor-xlsx": ["@datalens-tech/xlsx"],
         },
       },
     },
