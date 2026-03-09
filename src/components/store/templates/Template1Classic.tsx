@@ -285,7 +285,7 @@ const Template1Classic = () => {
               return (
                 <div key={p.id} className="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                   {/* Image */}
-                  <Link to={`/product/${p.id}`} className="block relative">
+                  <Link to={`/product/${(p as any).slug || p.id}`} className="block relative">
                     <div className="aspect-square overflow-hidden bg-gray-50">
                       {p.main_image_url ? (
                         <OptimizedImage src={p.main_image_url} alt={p.name} width={400} quality={80} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
@@ -310,7 +310,7 @@ const Template1Classic = () => {
 
                   {/* Info */}
                   <div className="p-3">
-                    <Link to={`/product/${p.id}`}>
+                    <Link to={`/product/${(p as any).slug || p.id}`}>
                       <h3 className="text-sm font-semibold text-gray-800 truncate hover:text-green-600 transition">{p.name}</h3>
                     </Link>
 
@@ -340,7 +340,7 @@ const Template1Classic = () => {
                       <ShoppingCart className="h-4 w-4" /> অর্ডার করুন
                     </button>
                     <button
-                      onClick={() => navigate(`/product/${p.id}`)}
+                      onClick={() => navigate(`/product/${(p as any).slug || p.id}`)}
                       className="w-full py-2 border border-green-600 text-green-600 hover:bg-green-50 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition"
                     >
                       <ShoppingBag className="h-4 w-4" /> বিস্তারিত দেখুন

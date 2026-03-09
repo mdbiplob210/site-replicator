@@ -96,7 +96,7 @@ const Template5Bold = () => {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {products.map((p) => (
               <div key={p.id} className="group bg-white overflow-hidden hover:shadow-2xl transition-all duration-300">
-                <Link to={`/product/${p.id}`}>
+                <Link to={`/product/${(p as any).slug || p.id}`}>
                   <div className="aspect-square bg-zinc-50 overflow-hidden">
                     {p.main_image_url ? (
                       <OptimizedImage src={p.main_image_url} alt={p.name} width={400} quality={80} className="w-full h-full object-cover group-hover:scale-110 transition duration-500" />

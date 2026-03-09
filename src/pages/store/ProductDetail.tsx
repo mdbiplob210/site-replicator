@@ -10,8 +10,8 @@ import { ExitDiscountBanner } from "@/components/store/ExitDiscountBanner";
 import { OptimizedImage } from "@/components/ui/optimized-image";
 
 const ProductDetail = () => {
-  const { id } = useParams<{ id: string }>();
-  const { data: product, isLoading } = useProduct(id || "");
+  const { slug } = useParams<{ slug: string }>();
+  const { data: product, isLoading } = useProduct(slug || "");
   const { data: settings } = useSiteSettings();
   const navigate = useNavigate();
   const [qty, setQty] = useState(1);
@@ -64,7 +64,7 @@ const ProductDetail = () => {
       if (!canShow || exitShownRef.current || checkoutOpen) return;
       exitShownRef.current = true;
       setShowDiscountBanner(true);
-      trackCustomEvent('ExitIntentShown', { page: 'product', product_id: id });
+      trackCustomEvent('ExitIntentShown', { page: 'product', product_id: slug });
     };
     const handleMouseOut = (e: MouseEvent) => { if (e.clientY <= 0 && !e.relatedTarget) triggerExit(); };
     const handleVisibility = () => { if (document.visibilityState === 'hidden') triggerExit(); };
@@ -84,7 +84,7 @@ const ProductDetail = () => {
       document.removeEventListener('visibilitychange', handleVisibility);
       window.removeEventListener('scroll', handleScroll);
     };
-  }, [exitEnabled, appliedDiscount, checkoutOpen, id, trackCustomEvent]);
+  }, [exitEnabled, appliedDiscount, checkoutOpen, slug, trackCustomEvent]);
 
   const offerCountdownMinutes = Number(settings?.offer_countdown_minutes) || 30;
 
@@ -482,7 +482,7 @@ function SuggestedProducts({ categoryId, currentProductId, onOrder }: { category
 
           return (
             <div key={p.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition group">
-              <Link to={`/product/${p.id}`} className="block">
+              <Link to={`/product/${p.slug || p.id}`} className="block">
                 <div className="relative aspect-square overflow-hidden bg-gray-50">
                   {p.main_image_url ? (
                     <OptimizedImage
@@ -507,7 +507,7 @@ function SuggestedProducts({ categoryId, currentProductId, onOrder }: { category
                 </div>
               </Link>
               <div className="p-3">
-                <Link to={`/product/${p.id}`}>
+                <Link to={`/product/${p.slug || p.id}`}>
                   <h3 className="font-semibold text-gray-800 text-sm truncate mb-1">{p.name}</h3>
                 </Link>
                 <div className="flex items-baseline gap-2 mb-2">

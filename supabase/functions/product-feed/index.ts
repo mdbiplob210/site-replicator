@@ -81,7 +81,7 @@ Deno.serve(async (req) => {
         : "out of stock";
       const condition = "new";
       const imageUrl = p.main_image_url || "";
-      const productUrl = `${siteUrl}/product/${p.id}`;
+      const productUrl = `${siteUrl}/product/${p.slug || p.id}`;
       const salePrice = p.selling_price;
       const originalPrice = p.original_price > p.selling_price ? p.original_price : null;
 

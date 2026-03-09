@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-const PRODUCT_FIELDS = "id, name, product_code, selling_price, original_price, main_image_url, additional_images, short_description, detailed_description, youtube_url, category_id, status, stock_quantity, allow_out_of_stock_orders, free_delivery, created_at, updated_at";
+const PRODUCT_FIELDS = "id, name, product_code, selling_price, original_price, main_image_url, additional_images, short_description, detailed_description, youtube_url, category_id, status, stock_quantity, allow_out_of_stock_orders, free_delivery, created_at, updated_at, slug";
 
 export function usePublicProducts() {
   return useQuery({
@@ -15,28 +15,38 @@ export function usePublicProducts() {
       if (error) throw error;
       return data || [];
     },
-    staleTime: 2 * 60 * 1000, // Products rarely change - 2 min cache
-  });
-}
-
-export function useProduct(id: string) {
-  return useQuery({
-    queryKey: ["product", id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("products_public")
-        .select(PRODUCT_FIELDS)
-        .eq("id", id)
-        .single();
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!id,
     staleTime: 2 * 60 * 1000,
   });
 }
 
-const SUGGESTION_FIELDS = "id, name, product_code, selling_price, original_price, main_image_url, category_id, stock_quantity, allow_out_of_stock_orders";
+export function useProduct(slugOrId: string) {
+  return useQuery({
+    queryKey: ["product", slugOrId],
+    queryFn: async () => {
+      // Try slug first, then fall back to id
+      const { data, error } = await supabase
+        .from("products_public")
+        .select(PRODUCT_FIELDS)
+        .eq("slug", slugOrId)
+        .maybeSingle();
+      
+      if (data) return data;
+      
+      // Fallback: try by id (for backward compatibility)
+      const { data: dataById, error: errorById } = await supabase
+        .from("products_public")
+        .select(PRODUCT_FIELDS)
+        .eq("id", slugOrId)
+        .single();
+      if (errorById) throw errorById;
+      return dataById;
+    },
+    enabled: !!slugOrId,
+    staleTime: 2 * 60 * 1000,
+  });
+}
+
+const SUGGESTION_FIELDS = "id, name, product_code, selling_price, original_price, main_image_url, category_id, stock_quantity, allow_out_of_stock_orders, slug";
 
 export function useSuggestedProducts(categoryId: string | null | undefined, currentProductId: string | undefined) {
   return useQuery({
