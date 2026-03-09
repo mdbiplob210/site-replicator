@@ -77,6 +77,7 @@ export default function AdminWebsiteSettings() {
 
         {/* Tab Content */}
         {activeTab === "general" && <GeneralTab />}
+        {activeTab === "banners" && <BannerSettings />}
         {activeTab === "buttons" && <ButtonsTab />}
         {activeTab === "buy_domain" && <BuyDomainTab />}
         {activeTab === "tracking" && <TrackingTab />}

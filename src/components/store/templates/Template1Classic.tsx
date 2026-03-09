@@ -178,6 +178,9 @@ const Template1Classic = () => {
         )}
       </header>
 
+      {/* Banner Carousel */}
+      <BannerCarousel />
+
       {/* Categories horizontal scroll */}
       {categories.length > 0 && (
         <div className="bg-white border-b">
