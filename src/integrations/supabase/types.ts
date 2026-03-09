@@ -1192,6 +1192,7 @@ export type Database = {
           discount: number
           hold_until: string | null
           id: string
+          memo_printed: boolean
           notes: string | null
           order_number: string
           payment_status: string
@@ -1215,6 +1216,7 @@ export type Database = {
           discount?: number
           hold_until?: string | null
           id?: string
+          memo_printed?: boolean
           notes?: string | null
           order_number: string
           payment_status?: string
@@ -1238,6 +1240,7 @@ export type Database = {
           discount?: number
           hold_until?: string | null
           id?: string
+          memo_printed?: boolean
           notes?: string | null
           order_number?: string
           payment_status?: string
