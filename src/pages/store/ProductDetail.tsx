@@ -335,12 +335,12 @@ const ProductDetail = () => {
             </div>
 
             {/* Action buttons */}
-            <div className="space-y-2">
+            <div className="space-y-2.5 sm:space-y-2">
               <Button
                 size="lg"
                 onClick={handleOrder}
                 disabled={product.stock_quantity <= 0 && !product.allow_out_of_stock_orders}
-                className="w-full text-base font-bold py-6 rounded-xl bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-200"
+                className="w-full text-base font-bold py-6 sm:py-6 rounded-xl bg-green-600 hover:bg-green-700 active:scale-[0.98] text-white shadow-lg shadow-green-200 transition-all"
               >
                 🛒 অর্ডার করুন
               </Button>
