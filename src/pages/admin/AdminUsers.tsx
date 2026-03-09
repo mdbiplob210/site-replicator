@@ -119,7 +119,9 @@ const AdminUsers = () => {
     fetchUsers();
   }, []);
 
-  const assignRole = async (userId: string, role: "admin" | "moderator" stringor } = await supstring)
+  const assignRole = async (userId: string, role: string) => {
+    const { error } = await supabase
+      .from("user_roles")
       .upsert({ user_id: userId, role } as any, { onConflict: "user_id,role" });
 
     if (error) {
