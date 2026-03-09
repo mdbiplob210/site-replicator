@@ -1292,6 +1292,17 @@ export type Database = {
         | "view_reports"
         | "manage_users"
         | "manage_settings"
+        | "create_products"
+        | "delete_products"
+        | "manage_website"
+        | "manage_landing_pages"
+        | "manage_courier"
+        | "manage_meta_ads"
+        | "manage_banners"
+        | "manage_backup"
+        | "manage_automation"
+        | "view_dashboard"
+        | "manage_categories"
       order_status:
         | "processing"
         | "confirmed"
@@ -1445,6 +1456,17 @@ export const Constants = {
         "view_reports",
         "manage_users",
         "manage_settings",
+        "create_products",
+        "delete_products",
+        "manage_website",
+        "manage_landing_pages",
+        "manage_courier",
+        "manage_meta_ads",
+        "manage_banners",
+        "manage_backup",
+        "manage_automation",
+        "view_dashboard",
+        "manage_categories",
       ],
       order_status: [
         "processing",
