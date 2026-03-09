@@ -55,7 +55,7 @@ export function useSuggestedProducts(categoryId: string | null | undefined, curr
         const existingIds = data.map(p => p.id);
         existingIds.push(currentProductId || "");
         const { data: moreData } = await supabase
-          .from("products")
+          .from("products_public")
           .select("id, name, product_code, selling_price, original_price, main_image_url, category_id, stock_quantity, allow_out_of_stock_orders")
           .eq("status", "active")
           .not("id", "in", `(${existingIds.join(",")})`)
