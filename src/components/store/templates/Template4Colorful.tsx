@@ -51,8 +51,8 @@ const Template4Colorful = () => {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-rose-100">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link to="/" className="text-2xl font-extrabold">
-            <span className="bg-gradient-to-r from-rose-500 via-violet-500 to-indigo-500 bg-clip-text text-transparent">SOHOZ</span>
+          <Link to="/" className="text-2xl font-extrabold flex items-center gap-2">
+            {siteLogo ? <img src={siteLogo} alt={siteName} className="h-8 w-auto object-contain" /> : <span className="bg-gradient-to-r from-rose-500 via-violet-500 to-indigo-500 bg-clip-text text-transparent">{siteName}</span>}
           </Link>
           <div className="hidden md:flex items-center gap-6 text-sm font-semibold text-gray-600">
             <Link to="/" className="hover:text-rose-500 transition">🏠 Home</Link>
