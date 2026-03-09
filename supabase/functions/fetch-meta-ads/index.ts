@@ -8,6 +8,18 @@ const corsHeaders = {
 
 const FB_GRAPH_URL = "https://graph.facebook.com/v21.0";
 
+async function getSettingValue(supabaseAdmin: any, key: string, envFallback?: string): Promise<string> {
+  try {
+    const { data } = await supabaseAdmin
+      .from("site_settings")
+      .select("value")
+      .eq("key", key)
+      .maybeSingle();
+    if (data?.value) return data.value;
+  } catch (_) {}
+  return envFallback || "";
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
