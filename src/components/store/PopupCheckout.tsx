@@ -319,7 +319,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleClose} />
 
       {/* Modal */}
-      <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl animate-in slide-in-from-bottom duration-300 mx-0 sm:mx-4">
+      <div className="relative w-full max-w-md max-h-[92vh] overflow-y-auto bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl animate-in slide-in-from-bottom duration-300 mx-0 sm:mx-4">
         {/* Close button */}
         <button onClick={handleClose} className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition">
           <X className="h-4 w-4" />
@@ -328,36 +328,36 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
         {!orderComplete ? (
           <>
             {/* Scarcity Banner */}
-            <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white px-5 py-2.5 flex items-center justify-center gap-2 text-xs sm:text-sm font-semibold">
-              <Users className="h-4 w-4 animate-pulse" />
-              <span>এই অফারটি পাবে আর মাত্র <span className="font-black text-base">{scarcityCount}</span> জন!</span>
-              <Clock className="h-3.5 w-3.5" />
+            <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white px-4 sm:px-5 py-2.5 sm:py-2.5 flex items-center justify-center gap-2 text-[11px] sm:text-sm font-semibold rounded-t-3xl sm:rounded-t-3xl">
+              <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-pulse" />
+              <span>এই অফারটি পাবে আর মাত্র <span className="font-black text-sm sm:text-base">{scarcityCount}</span> জন!</span>
+              <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             </div>
 
             {/* Product header */}
-            <div className="p-5 pb-3 border-b border-gray-100">
+            <div className="p-4 sm:p-5 pb-2 sm:pb-3 border-b border-gray-100">
               <div className="flex items-center gap-3">
-                <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
                   {currentItem.image ? (
                     <OptimizedImage src={currentItem.image} alt={currentItem.name} width={64} quality={75} className="w-full h-full object-cover" />
                   ) : (
-                    <ShoppingBag className="h-6 w-6 m-auto mt-5 text-gray-300" />
+                    <ShoppingBag className="h-6 w-6 m-auto mt-4 sm:mt-5 text-gray-300" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-sm truncate">{currentItem.name}</h3>
-                  <p className="text-green-600 font-black text-lg">৳{currentItem.price}</p>
+                  <h3 className="font-bold text-[13px] sm:text-sm truncate">{currentItem.name}</h3>
+                  <p className="text-green-600 font-black text-base sm:text-lg">৳{currentItem.price}</p>
                 </div>
               </div>
               {/* Quantity */}
               <div className="flex items-center justify-between mt-3">
-                <span className="text-sm text-gray-500">পরিমাণ:</span>
+                <span className="text-xs sm:text-sm text-gray-500">পরিমাণ:</span>
                 <div className="flex items-center border rounded-lg overflow-hidden">
-                  <button type="button" onClick={() => setQty(Math.max(1, qty - 1))} className="px-3 py-1.5 hover:bg-gray-100 transition">
+                  <button type="button" onClick={() => setQty(Math.max(1, qty - 1))} className="px-3 py-2 sm:py-1.5 hover:bg-gray-100 active:bg-gray-200 transition">
                     <Minus className="h-3.5 w-3.5" />
                   </button>
                   <span className="px-3 py-1.5 font-bold text-sm min-w-[2.5rem] text-center">{qty}</span>
-                  <button type="button" onClick={() => setQty(qty + 1)} className="px-3 py-1.5 hover:bg-gray-100 transition">
+                  <button type="button" onClick={() => setQty(qty + 1)} className="px-3 py-2 sm:py-1.5 hover:bg-gray-100 active:bg-gray-200 transition">
                     <Plus className="h-3.5 w-3.5" />
                   </button>
                 </div>
@@ -365,28 +365,28 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
             </div>
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="p-5 space-y-3">
+            <form onSubmit={handleSubmit} className="p-4 sm:p-5 space-y-2.5 sm:space-y-3">
               <div>
-                <Label className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 mb-1">
-                  <User className="h-3.5 w-3.5" /> আপনার নাম
+                <Label className="flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold text-gray-600 mb-1">
+                  <User className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> আপনার নাম
                 </Label>
-                <Input placeholder="পুরো নাম লিখুন" value={form.name} onChange={e => updateForm({ name: e.target.value })} className="h-11 rounded-xl" required name="name" autoComplete="name" />
+                <Input placeholder="পুরো নাম লিখুন" value={form.name} onChange={e => updateForm({ name: e.target.value })} className="h-11 sm:h-11 rounded-xl text-sm" required name="name" autoComplete="name" />
               </div>
               <div>
-                <Label className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 mb-1">
-                  <Phone className="h-3.5 w-3.5" /> ফোন নম্বর
+                <Label className="flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold text-gray-600 mb-1">
+                  <Phone className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> ফোন নম্বর
                 </Label>
-                <Input placeholder="01XXXXXXXXX" value={form.phone} onChange={e => updateForm({ phone: e.target.value })} className="h-11 rounded-xl" required name="tel" autoComplete="tel" />
+                <Input placeholder="01XXXXXXXXX" value={form.phone} onChange={e => updateForm({ phone: e.target.value })} className="h-11 sm:h-11 rounded-xl text-sm" required name="tel" autoComplete="tel" inputMode="tel" />
               </div>
               <div>
-                <Label className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 mb-1">
-                  <MapPin className="h-3.5 w-3.5" /> সম্পূর্ণ ঠিকানা
+                <Label className="flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold text-gray-600 mb-1">
+                  <MapPin className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> সম্পূর্ণ ঠিকানা
                 </Label>
-                <Textarea placeholder="বাড়ি নং, রোড, এলাকা, জেলা" value={form.address} onChange={e => updateForm({ address: e.target.value })} className="rounded-xl resize-none" rows={2} required name="address" autoComplete="street-address" />
+                <Textarea placeholder="বাড়ি নং, রোড, এলাকা, জেলা" value={form.address} onChange={e => updateForm({ address: e.target.value })} className="rounded-xl resize-none text-sm" rows={2} required name="address" autoComplete="street-address" />
               </div>
               <div>
-                <Label className="text-xs font-semibold text-gray-600 mb-1">নোট (ঐচ্ছিক)</Label>
-                <Input placeholder="অতিরিক্ত তথ্য..." value={form.notes} onChange={e => updateForm({ notes: e.target.value })} className="h-11 rounded-xl" autoComplete="off" />
+                <Label className="text-[11px] sm:text-xs font-semibold text-gray-600 mb-1">নোট (ঐচ্ছিক)</Label>
+                <Input placeholder="অতিরিক্ত তথ্য..." value={form.notes} onChange={e => updateForm({ notes: e.target.value })} className="h-11 sm:h-11 rounded-xl text-sm" autoComplete="off" />
               </div>
 
               {/* Delivery Area Selector */}
@@ -424,7 +424,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
               <Button
                 type="submit"
                 disabled={submitting}
-                className="w-full h-12 text-base font-bold bg-green-600 hover:bg-green-700 text-white rounded-xl shadow-lg shadow-green-200"
+                className="w-full h-12 sm:h-12 text-sm sm:text-base font-bold bg-green-600 hover:bg-green-700 active:scale-[0.98] text-white rounded-xl shadow-lg shadow-green-200 transition-all"
               >
                 {submitting ? (
                   <><Loader2 className="h-4 w-4 animate-spin mr-2" /> প্রসেসিং...</>
@@ -433,7 +433,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
                 )}
               </Button>
 
-              <p className="text-center text-xs text-gray-400">💳 ক্যাশ অন ডেলিভারি | 🚚 ২-৫ দিনে ডেলিভারি</p>
+              <p className="text-center text-[11px] sm:text-xs text-gray-400 pb-2">💳 ক্যাশ অন ডেলিভারি | 🚚 ২-৫ দিনে ডেলিভারি</p>
             </form>
           </>
         ) : (

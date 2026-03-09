@@ -106,10 +106,10 @@ export function AdminLayout({ children }: { children: ReactNode }) {
         <AdminSidebar />
         <div className="flex-1 flex flex-col min-w-0">
           {/* Top Header */}
-          <header className="h-14 flex items-center border-b border-border/40 px-4 gap-3 bg-card/90 backdrop-blur-md sticky top-0 z-10 transition-colors duration-300">
+          <header className="h-12 sm:h-14 flex items-center border-b border-border/40 px-2 sm:px-4 gap-1.5 sm:gap-3 bg-card/90 backdrop-blur-md sticky top-0 z-10 transition-colors duration-300">
             <SidebarTrigger className="text-muted-foreground hover:text-foreground transition-colors" />
             <div className="flex-1" />
-            {/* Search Trigger */}
+            {/* Search Trigger - desktop only */}
             <div
               onClick={() => setSearchOpen(true)}
               className="hidden md:flex items-center gap-2.5 bg-secondary/70 rounded-xl px-4 py-2 border border-border/50 hover:border-primary/40 hover:shadow-sm transition-all cursor-pointer group relative"
@@ -118,19 +118,23 @@ export function AdminLayout({ children }: { children: ReactNode }) {
               <span className="text-sm text-muted-foreground">Search...</span>
               <kbd className="ml-6 text-[10px] bg-card px-2 py-0.5 rounded-md text-muted-foreground/60 border border-border/60 font-mono">⌘K</kbd>
             </div>
-            <div className="flex items-center gap-0.5">
+            {/* Mobile search button */}
+            <button onClick={() => setSearchOpen(true)} className="md:hidden p-2 rounded-lg hover:bg-secondary text-muted-foreground">
+              <Search className="h-4 w-4" />
+            </button>
+            <div className="flex items-center gap-0">
               {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}
-                className="p-2.5 rounded-xl hover:bg-secondary text-muted-foreground hover:text-foreground transition-all"
+                className="p-2 sm:p-2.5 rounded-xl hover:bg-secondary text-muted-foreground hover:text-foreground transition-all"
                 title={theme === "light" ? "ডার্ক মোড" : "লাইট মোড"}
               >
-                {theme === "light" ? <Moon className="h-[18px] w-[18px]" /> : <Sun className="h-[18px] w-[18px]" />}
+                {theme === "light" ? <Moon className="h-4 w-4 sm:h-[18px] sm:w-[18px]" /> : <Sun className="h-4 w-4 sm:h-[18px] sm:w-[18px]" />}
               </button>
               {/* Go to Store */}
               <button
                 onClick={() => window.open("/", "_blank")}
-                className="p-2.5 rounded-xl hover:bg-secondary text-muted-foreground hover:text-foreground transition-all"
+                className="p-2 sm:p-2.5 rounded-xl hover:bg-secondary text-muted-foreground hover:text-foreground transition-all hidden sm:flex"
                 title="মেইন পেজ দেখুন"
               >
                 <ExternalLink className="h-[18px] w-[18px]" />
@@ -139,9 +143,9 @@ export function AdminLayout({ children }: { children: ReactNode }) {
               <div className="relative">
                 <button
                   onClick={() => { setNotifOpen(!notifOpen); setChatOpen(false); }}
-                  className="p-2.5 rounded-xl hover:bg-secondary text-muted-foreground hover:text-foreground transition-all relative"
+                  className="p-2 sm:p-2.5 rounded-xl hover:bg-secondary text-muted-foreground hover:text-foreground transition-all relative"
                 >
-                  <Bell className="h-[18px] w-[18px]" />
+                  <Bell className="h-4 w-4 sm:h-[18px] sm:w-[18px]" />
                   {unreadCount > 0 && (
                     <span className="absolute top-1 right-1 min-w-[18px] h-[18px] rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center px-1 ring-2 ring-card">
                       {unreadCount > 99 ? "99+" : unreadCount}
@@ -152,7 +156,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
                 {notifOpen && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setNotifOpen(false)} />
-                    <div className="absolute right-0 top-12 z-50 w-80 bg-card rounded-2xl border border-border shadow-2xl overflow-hidden">
+                    <div className="absolute right-0 top-10 sm:top-12 z-50 w-72 sm:w-80 bg-card rounded-2xl border border-border shadow-2xl overflow-hidden">
                       <div className="flex items-center justify-between px-4 py-3 border-b border-border">
                         <h3 className="text-sm font-bold text-foreground">নোটিফিকেশন</h3>
                         {unreadCount > 0 && (
@@ -196,7 +200,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
               <div className="relative">
                 <button
                   onClick={() => { setChatOpen(!chatOpen); setNotifOpen(false); }}
-                  className="p-2.5 rounded-xl hover:bg-secondary text-muted-foreground hover:text-foreground transition-all relative"
+                  className="p-2 sm:p-2.5 rounded-xl hover:bg-secondary text-muted-foreground hover:text-foreground transition-all relative hidden sm:flex"
                 >
                   <MessageSquare className="h-[18px] w-[18px]" />
                   {totalUnread > 0 && (

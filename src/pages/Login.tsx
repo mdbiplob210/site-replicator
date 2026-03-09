@@ -261,11 +261,11 @@ const Login = () => {
       onMouseMove={handleMouseMove}
       style={{ background: "linear-gradient(135deg, #0a0a1e 0%, #1a0a2e 30%, #0a1a2e 60%, #0a0a1e 100%)" }}
     >
-      <canvas ref={canvasRef} className="absolute inset-0 z-0" />
+      <canvas ref={canvasRef} className="absolute inset-0 z-0 hidden sm:block" />
 
-      {/* Custom cursor glow */}
+      {/* Custom cursor glow - desktop only */}
       <div
-        className="pointer-events-none fixed z-50 rounded-full mix-blend-screen"
+        className="pointer-events-none fixed z-50 rounded-full mix-blend-screen hidden sm:block"
         style={{
           left: mousePos.x - 60,
           top: mousePos.y - 60,
@@ -277,14 +277,14 @@ const Login = () => {
       />
 
       {/* Score HUD */}
-      <div className="absolute top-4 left-4 z-30 flex items-center gap-3">
-        <div className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold"
+      <div className="absolute top-3 sm:top-4 left-3 sm:left-4 z-30 flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-2 rounded-full px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-bold"
           style={{ background: "rgba(255,255,255,0.1)", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.15)", color: "#4ECDC4" }}>
-          <Trophy className="h-4 w-4" />
+          <Trophy className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           <span>{score}/5</span>
         </div>
         {combo > 1 && (
-          <div className="animate-bounce rounded-full px-3 py-1 text-xs font-bold"
+          <div className="animate-bounce rounded-full px-2.5 sm:px-3 py-1 text-[10px] sm:text-xs font-bold"
             style={{ background: "linear-gradient(135deg, #FF6B6B, #FFEAA7)", color: "#1a0a2e" }}>
             {combo}x COMBO! 🔥
           </div>
@@ -300,9 +300,9 @@ const Login = () => {
 
       {/* Hint */}
       {showHint && !portalOpen && (
-        <div className="absolute bottom-6 left-1/2 z-30 -translate-x-1/2 animate-pulse rounded-full px-6 py-2 text-sm"
+        <div className="absolute bottom-5 sm:bottom-6 left-1/2 z-30 -translate-x-1/2 animate-pulse rounded-full px-4 sm:px-6 py-2 text-xs sm:text-sm max-w-[90vw] text-center"
           style={{ background: "rgba(255,255,255,0.08)", backdropFilter: "blur(10px)", border: "1px solid rgba(78,205,196,0.3)", color: "#4ECDC4" }}>
-          <Sparkles className="mr-2 inline h-4 w-4" />
+          <Sparkles className="mr-1.5 sm:mr-2 inline h-3.5 w-3.5 sm:h-4 sm:w-4" />
           ঝলমলে অর্বগুলোতে ক্লিক করুন! ৩টি সংগ্রহ করলে পোর্টাল খুলবে
         </div>
       )}
@@ -313,19 +313,19 @@ const Login = () => {
           <button
             key={orb.id}
             onClick={() => collectOrb(orb)}
-            className="absolute z-20 flex items-center justify-center rounded-full transition-transform hover:scale-125"
+            className="absolute z-20 flex items-center justify-center rounded-full transition-transform hover:scale-125 active:scale-90"
             style={{
               left: `${orb.x}%`,
               top: `${orb.y}%`,
-              width: 56,
-              height: 56,
+              width: 48,
+              height: 48,
               background: `radial-gradient(circle at 30% 30%, ${orb.color}dd, ${orb.color}66)`,
-              boxShadow: `0 0 30px ${orb.color}80, 0 0 60px ${orb.color}40, inset 0 0 20px rgba(255,255,255,0.2)`,
+              boxShadow: `0 0 20px ${orb.color}80, 0 0 40px ${orb.color}40, inset 0 0 15px rgba(255,255,255,0.2)`,
               animation: `float-orb-${orb.id} ${3 + orb.id * 0.5}s ease-in-out infinite`,
               cursor: "pointer",
             }}
           >
-            <span className="text-2xl">{orb.emoji}</span>
+            <span className="text-xl sm:text-2xl">{orb.emoji}</span>
           </button>
         ) : null
       )}
@@ -352,9 +352,9 @@ const Login = () => {
         <div
           className={`relative transition-all duration-1000 ${shakePortal ? "animate-[shake_0.6s_ease-in-out]" : ""}`}
           style={{
-            width: portalOpen ? 420 : 160,
-            height: portalOpen ? "auto" : 160,
-            minHeight: portalOpen ? undefined : 160,
+            width: portalOpen ? "min(420px, 92vw)" : 140,
+            height: portalOpen ? "auto" : 140,
+            minHeight: portalOpen ? undefined : 140,
           }}
         >
           {/* Portal ring (before open) */}
@@ -385,16 +385,16 @@ const Login = () => {
           {/* Login Form (after portal opens) */}
           {portalOpen && (
             <div
-              className="animate-[portalReveal_0.8s_ease-out] rounded-2xl p-8"
+              className="animate-[portalReveal_0.8s_ease-out] rounded-2xl p-5 sm:p-8"
               style={{
-                background: "rgba(15, 15, 40, 0.85)",
+                background: "rgba(15, 15, 40, 0.9)",
                 backdropFilter: "blur(20px)",
                 border: "1px solid rgba(78,205,196,0.3)",
                 boxShadow: "0 0 60px rgba(78,205,196,0.15), 0 20px 60px rgba(0,0,0,0.5)",
               }}
             >
-              <div className="mb-6 text-center">
-                <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl text-2xl font-bold"
+              <div className="mb-5 sm:mb-6 text-center">
+                <div className="mx-auto mb-2 sm:mb-3 flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-2xl text-xl sm:text-2xl font-bold"
                   style={{
                     background: "linear-gradient(135deg, #4ECDC4, #45B7D1)",
                     color: "#0a0a1e",
@@ -402,15 +402,15 @@ const Login = () => {
                   }}>
                   Q
                 </div>
-                <h1 className="text-2xl font-bold" style={{ color: "#fff" }}>QUICK SHOP BD</h1>
-                <p className="mt-1 flex items-center justify-center gap-1 text-sm" style={{ color: "rgba(78,205,196,0.8)" }}>
+                <h1 className="text-xl sm:text-2xl font-bold" style={{ color: "#fff" }}>QUICK SHOP BD</h1>
+                <p className="mt-1 flex items-center justify-center gap-1 text-xs sm:text-sm" style={{ color: "rgba(78,205,196,0.8)" }}>
                   <Star className="h-3 w-3" />
                   {isSignUp ? "নতুন অ্যাকাউন্ট তৈরি করুন" : "পোর্টালে প্রবেশ করুন"}
                   <Star className="h-3 w-3" />
                 </p>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
                 {isSignUp && (
                   <div>
                     <Input

@@ -126,7 +126,7 @@ const Template1Classic = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Top announcement bar */}
-      <div className="bg-gradient-to-r from-green-600 to-green-700 text-white text-center py-2 text-xs sm:text-sm font-medium overflow-hidden">
+      <div className="bg-gradient-to-r from-green-600 to-green-700 text-white text-center py-2.5 sm:py-2 text-[11px] sm:text-sm font-medium overflow-hidden">
         <div className="animate-marquee whitespace-nowrap inline-block">
           {marqueeText} হটলাইনঃ {phoneNumber || "01XXXXXXXXX"} &nbsp;&nbsp;&nbsp;
           {marqueeText} হটলাইনঃ {phoneNumber || "01XXXXXXXXX"}
@@ -136,18 +136,18 @@ const Template1Classic = () => {
 
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2 sm:gap-3">
           {/* Mobile menu button */}
-          <button onClick={() => setMobileMenu(!mobileMenu)} className="lg:hidden p-2">
+          <button onClick={() => setMobileMenu(!mobileMenu)} className="lg:hidden p-2 -ml-1 rounded-lg active:bg-gray-100 transition">
             {mobileMenu ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
 
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 flex-shrink-0">
             {siteLogo ? (
-              <img src={siteLogo} alt={siteName} className="h-8 sm:h-10 w-auto object-contain" />
+              <img src={siteLogo} alt={siteName} className="h-7 sm:h-10 w-auto object-contain" />
             ) : (
-              <span className="text-xl sm:text-2xl font-black text-green-600">{siteName}</span>
+              <span className="text-lg sm:text-2xl font-black text-green-600">{siteName}</span>
             )}
           </Link>
 
@@ -166,11 +166,11 @@ const Template1Classic = () => {
           </div>
 
           {/* Right actions */}
-          <div className="flex items-center gap-2">
-            <button onClick={() => setShowSearch(!showSearch)} className="lg:hidden p-2 rounded-full hover:bg-gray-100">
+          <div className="flex items-center gap-1 sm:gap-2">
+            <button onClick={() => setShowSearch(!showSearch)} className="lg:hidden p-2 rounded-lg active:bg-gray-100 transition">
               <Search className="h-5 w-5 text-gray-600" />
             </button>
-            <Link to="/checkout" className="p-2 rounded-full hover:bg-gray-100 relative">
+            <Link to="/checkout" className="p-2 rounded-lg active:bg-gray-100 transition relative">
               <ShoppingCart className="h-5 w-5 text-gray-600" />
               <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-green-600 text-[10px] font-bold text-white flex items-center justify-center">0</span>
             </Link>
@@ -179,14 +179,14 @@ const Template1Classic = () => {
 
         {/* Mobile Search */}
         {showSearch && (
-          <div className="lg:hidden px-4 pb-3">
+          <div className="lg:hidden px-3 pb-3">
             <div className="relative">
               <input
                 type="text"
                 placeholder="প্রোডাক্ট খুঁজুন..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full h-10 pl-4 pr-10 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-500"
+                className="w-full h-11 pl-4 pr-10 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100"
                 autoFocus
               />
               <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -196,10 +196,10 @@ const Template1Classic = () => {
 
         {/* Mobile Menu */}
         {mobileMenu && (
-          <div className="lg:hidden border-t bg-white px-4 py-3 space-y-2">
-            <button onClick={() => { setSelectedCategory(null); setMobileMenu(false); }} className="block w-full text-left py-2 text-sm font-medium hover:text-green-600">সব প্রোডাক্ট</button>
+          <div className="lg:hidden border-t bg-white px-4 py-2 space-y-0.5">
+            <button onClick={() => { setSelectedCategory(null); setMobileMenu(false); }} className="block w-full text-left py-2.5 px-3 text-sm font-medium hover:text-green-600 hover:bg-green-50 rounded-lg transition">সব প্রোডাক্ট</button>
             {categories.map(c => (
-              <button key={c.id} onClick={() => { setSelectedCategory(c.id); setMobileMenu(false); }} className="block w-full text-left py-2 text-sm hover:text-green-600">{c.name}</button>
+              <button key={c.id} onClick={() => { setSelectedCategory(c.id); setMobileMenu(false); }} className="block w-full text-left py-2.5 px-3 text-sm hover:text-green-600 hover:bg-green-50 rounded-lg transition">{c.name}</button>
             ))}
           </div>
         )}
@@ -211,11 +211,11 @@ const Template1Classic = () => {
       {/* Categories horizontal scroll */}
       {categories.length > 0 && (
         <div className="bg-white border-b">
-          <div className="max-w-7xl mx-auto px-4 py-2 flex gap-2 overflow-x-auto no-scrollbar">
+          <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2.5 flex gap-2 overflow-x-auto no-scrollbar">
             <button
               onClick={() => setSelectedCategory(null)}
-              className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold transition ${
-                !selectedCategory ? "bg-green-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-semibold transition ${
+                !selectedCategory ? "bg-green-600 text-white shadow-sm" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
             >
               সব দেখুন
@@ -224,8 +224,8 @@ const Template1Classic = () => {
               <button
                 key={c.id}
                 onClick={() => setSelectedCategory(c.id)}
-                className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold transition ${
-                  selectedCategory === c.id ? "bg-green-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-semibold transition ${
+                  selectedCategory === c.id ? "bg-green-600 text-white shadow-sm" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
               >
                 {c.name}
@@ -237,20 +237,20 @@ const Template1Classic = () => {
 
       {/* Trust badges */}
       <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 py-3 grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
           {[
             { icon: Truck, label: "ফ্রি ডেলিভারি", sub: "৳১৫০০+ অর্ডারে" },
             { icon: ShieldCheck, label: "১০০% অরিজিনাল", sub: "গ্যারান্টিড" },
             { icon: RotateCcw, label: "ইজি রিটার্ন", sub: "৭ দিনে" },
             { icon: Star, label: "সন্তুষ্ট কাস্টমার", sub: "৫০০০+" },
           ].map(b => (
-            <div key={b.label} className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
+            <div key={b.label} className="flex items-center gap-2.5">
+              <div className="h-9 w-9 sm:h-8 sm:w-8 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
                 <b.icon className="h-4 w-4 text-green-600" />
               </div>
               <div>
-                <p className="text-xs font-bold text-gray-800">{b.label}</p>
-                <p className="text-[10px] text-gray-400">{b.sub}</p>
+                <p className="text-xs font-bold text-gray-800 leading-tight">{b.label}</p>
+                <p className="text-[10px] text-gray-400 leading-tight">{b.sub}</p>
               </div>
             </div>
           ))}
@@ -258,13 +258,13 @@ const Template1Classic = () => {
       </div>
 
       {/* Section title */}
-      <div className="max-w-7xl mx-auto px-4 pt-6 pb-3">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 pt-5 sm:pt-6 pb-2 sm:pb-3">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg sm:text-xl font-bold text-gray-800">
+            <h2 className="text-base sm:text-xl font-bold text-gray-800">
               {selectedCategory ? categories.find(c => c.id === selectedCategory)?.name : "হয়তো আপনি এই পণ্যগুলিও পছন্দ করবেন"}
             </h2>
-            <p className="text-xs text-gray-400">আমাদের আরও পণ্য রয়েছে, আপনি চাইলে সেগুলোও দেখতে পারেন</p>
+            <p className="text-[11px] sm:text-xs text-gray-400 mt-0.5">আমাদের আরও পণ্য রয়েছে, আপনি চাইলে সেগুলোও দেখতে পারেন</p>
           </div>
           {selectedCategory && (
             <button onClick={() => setSelectedCategory(null)} className="flex items-center gap-1 text-green-600 text-sm font-semibold hover:underline">
@@ -275,9 +275,9 @@ const Template1Classic = () => {
       </div>
 
       {/* Products Grid */}
-      <section className="max-w-7xl mx-auto px-4 pb-16">
+      <section className="max-w-7xl mx-auto px-2 sm:px-4 pb-20 sm:pb-16">
         {isLoading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
             {[...Array(8)].map((_, i) => (
               <div key={i} className="animate-pulse bg-white rounded-xl p-3">
                 <div className="aspect-square bg-gray-200 rounded-lg" />
@@ -292,7 +292,7 @@ const Template1Classic = () => {
             <p className="text-gray-400 text-lg">কোনো প্রোডাক্ট পাওয়া যায়নি</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
             {filteredProducts.map((p) => {
               const discount = getDiscount(p.original_price, p.selling_price);
               const discountAmount = p.original_price - p.selling_price;
@@ -311,42 +311,42 @@ const Template1Classic = () => {
                     </div>
                     {/* Discount badge */}
                     {discount > 0 && (
-                      <div className="absolute top-2 right-2 w-12 h-12 rounded-full border-2 border-dashed border-red-400 bg-white flex flex-col items-center justify-center">
-                        <span className="text-red-500 font-bold text-[10px] leading-none">{discountAmount}</span>
-                        <span className="text-red-500 font-bold text-[9px] leading-none">টাকা</span>
-                        <span className="text-red-500 font-bold text-[9px] leading-none">ছাড়</span>
+                      <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-dashed border-red-400 bg-white flex flex-col items-center justify-center">
+                        <span className="text-red-500 font-bold text-[9px] sm:text-[10px] leading-none">{discountAmount}</span>
+                        <span className="text-red-500 font-bold text-[8px] sm:text-[9px] leading-none">টাকা</span>
+                        <span className="text-red-500 font-bold text-[8px] sm:text-[9px] leading-none">ছাড়</span>
                       </div>
                     )}
                     {/* Free delivery badge */}
                     {(p as any).free_delivery && (
-                      <div className="absolute top-2 left-2 bg-green-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">
+                      <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 bg-green-600 text-white text-[8px] sm:text-[9px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full">
                         🚚 ফ্রি ডেলিভারি
                       </div>
                     )}
                   </Link>
 
                   {/* Divider */}
-                  <div className="h-px bg-gray-100 mx-3" />
+                  <div className="h-px bg-gray-100 mx-2 sm:mx-3" />
 
                   {/* Info */}
-                  <div className="p-3">
+                  <div className="p-2 sm:p-3">
                     <Link to={`/product/${(p as any).slug || p.id}`}>
-                      <h3 className="text-sm font-semibold text-gray-800 truncate hover:text-green-600 transition">{p.name}</h3>
+                      <h3 className="text-[13px] sm:text-sm font-semibold text-gray-800 truncate hover:text-green-600 transition">{p.name}</h3>
                     </Link>
 
                     {/* Rating */}
-                    <div className="flex items-center gap-1 mt-1">
+                    <div className="flex items-center gap-0.5 mt-1">
                       {[...Array(5)].map((_, i) => (
-                        <Star key={i} className={`h-3 w-3 ${i < 4 ? "fill-amber-400 text-amber-400" : "fill-amber-200 text-amber-200"}`} />
+                        <Star key={i} className={`h-2.5 w-2.5 sm:h-3 sm:w-3 ${i < 4 ? "fill-amber-400 text-amber-400" : "fill-amber-200 text-amber-200"}`} />
                       ))}
-                      <span className="text-[10px] text-gray-400 ml-0.5">(0)</span>
+                      <span className="text-[9px] sm:text-[10px] text-gray-400 ml-0.5">(0)</span>
                     </div>
 
                     {/* Price & Stock */}
-                    <div className="flex items-center gap-2 mt-1.5">
-                      <span className="text-green-600 font-bold text-base">৳{p.selling_price} টাকা</span>
+                    <div className="flex items-center gap-1.5 sm:gap-2 mt-1.5">
+                      <span className="text-green-600 font-bold text-sm sm:text-base">৳{p.selling_price}</span>
                       {discount > 0 && (
-                        <span className="text-xs text-gray-400 line-through">৳{p.original_price} টাকা</span>
+                        <span className="text-[10px] sm:text-xs text-gray-400 line-through">৳{p.original_price}</span>
                       )}
                     </div>
                     {p.stock_quantity !== undefined && p.stock_quantity <= 0 && !(p as any).allow_out_of_stock_orders && (
@@ -355,24 +355,24 @@ const Template1Classic = () => {
                   </div>
 
                   {/* Action buttons */}
-                  <div className="px-3 pb-3 space-y-2">
+                  <div className="px-2 sm:px-3 pb-2 sm:pb-3 space-y-1.5 sm:space-y-2">
                     {orderBtnEnabled && (
                     <button
                       onClick={() => handleOrder(p)}
                       disabled={p.stock_quantity !== undefined && p.stock_quantity <= 0 && !(p as any).allow_out_of_stock_orders}
-                      className="w-full py-2.5 text-white rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="w-full py-2.5 sm:py-2.5 text-white rounded-lg text-[13px] sm:text-sm font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98]"
                       style={{ backgroundColor: orderBtnColor }}
                     >
-                      <ShoppingCart className="h-4 w-4" /> {orderBtnText}
+                      <ShoppingCart className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> {orderBtnText}
                     </button>
                     )}
                     {cartBtnEnabled && (
                     <button
                       onClick={() => navigate(`/product/${(p as any).slug || p.id}`)}
-                      className="w-full py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition border hover:opacity-80"
+                      className="w-full py-2 rounded-lg text-[12px] sm:text-sm font-semibold flex items-center justify-center gap-1.5 sm:gap-2 transition border hover:opacity-80 active:scale-[0.98]"
                       style={{ borderColor: cartBtnColor, color: cartBtnColor }}
                     >
-                      <ShoppingBag className="h-4 w-4" /> {cartBtnText}
+                      <ShoppingBag className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> {cartBtnText}
                     </button>
                     )}
                   </div>
@@ -385,23 +385,25 @@ const Template1Classic = () => {
 
       {/* Contact floating buttons - WhatsApp & Phone */}
       {floatingContactsEnabled && (whatsappNumber || phoneNumber) && (
-        <div className="fixed bottom-20 right-4 z-40 flex flex-col gap-2">
+        <div className="fixed bottom-20 right-3 sm:right-4 z-40 flex flex-col gap-2.5">
           {floatingWhatsappEnabled && whatsappNumber && (
             <a
               href={`https://wa.me/${whatsappNumber}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-12 h-12 rounded-full bg-green-500 text-white flex items-center justify-center shadow-lg hover:bg-green-600 transition"
+              className="w-13 h-13 sm:w-12 sm:h-12 rounded-full bg-green-500 text-white flex items-center justify-center shadow-lg hover:bg-green-600 active:scale-95 transition"
+              style={{ width: 52, height: 52 }}
             >
-              <MessageCircle className="h-5 w-5" />
+              <MessageCircle className="h-5 w-5 sm:h-5 sm:w-5" />
             </a>
           )}
           {floatingCallEnabled && phoneNumber && (
             <a
               href={`tel:${phoneNumber}`}
-              className="w-12 h-12 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-lg hover:bg-blue-600 transition"
+              className="w-13 h-13 sm:w-12 sm:h-12 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-lg hover:bg-blue-600 active:scale-95 transition"
+              style={{ width: 52, height: 52 }}
             >
-              <Phone className="h-5 w-5" />
+              <Phone className="h-5 w-5 sm:h-5 sm:w-5" />
             </a>
           )}
         </div>

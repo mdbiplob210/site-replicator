@@ -82,19 +82,19 @@ const AdminDashboard = () => {
 
   return (
     <AdminLayout>
-      <div className="space-y-6 max-w-[1400px]">
+      <div className="space-y-4 sm:space-y-6 max-w-[1400px]">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground tracking-tight">Dashboard</h1>
-            <p className="text-muted-foreground text-sm mt-0.5">Your business performance at a glance</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">Dashboard</h1>
+            <p className="text-muted-foreground text-xs sm:text-sm mt-0.5">Your business performance at a glance</p>
           </div>
-          <div className="flex items-center gap-0.5 bg-card rounded-xl border border-border/50 p-1 shadow-sm">
+          <div className="flex items-center gap-0.5 bg-card rounded-xl border border-border/50 p-0.5 sm:p-1 shadow-sm overflow-x-auto no-scrollbar">
             {timeFilters.map((filter) => (
               <button
                 key={filter}
                 onClick={() => setActiveFilter(filter)}
-                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                className={`px-2.5 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 whitespace-nowrap ${
                   activeFilter === filter
                     ? "bg-gradient-to-r from-primary to-[hsl(187,85%,53%)] text-white shadow-md"
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary/70"
@@ -116,44 +116,44 @@ const AdminDashboard = () => {
           <>
             {/* Quick Summary Bar - orders visible to order roles */}
             {canSeeOrders && (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <Card className="p-3 border-border/30 bg-gradient-to-br from-blue-50 to-blue-100/50">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">AVG ORDER VALUE</p>
-                <p className="text-xl font-extrabold text-blue-600 mt-0.5">{fmt(orderStats.avgOrderValue)}</p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+              <Card className="p-2.5 sm:p-3 border-border/30 bg-gradient-to-br from-blue-50 to-blue-100/50">
+                <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">AVG ORDER</p>
+                <p className="text-lg sm:text-xl font-extrabold text-blue-600 mt-0.5">{fmt(orderStats.avgOrderValue)}</p>
               </Card>
-              <Card className="p-3 border-border/30 bg-gradient-to-br from-emerald-50 to-emerald-100/50">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">PAID ORDERS</p>
-                <p className="text-xl font-extrabold text-emerald-600 mt-0.5">{salesDetails.paymentStats.paid.count} <span className="text-xs font-medium text-muted-foreground">({fmt(salesDetails.paymentStats.paid.amount)})</span></p>
+              <Card className="p-2.5 sm:p-3 border-border/30 bg-gradient-to-br from-emerald-50 to-emerald-100/50">
+                <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">PAID</p>
+                <p className="text-lg sm:text-xl font-extrabold text-emerald-600 mt-0.5">{salesDetails.paymentStats.paid.count} <span className="text-[10px] sm:text-xs font-medium text-muted-foreground">({fmt(salesDetails.paymentStats.paid.amount)})</span></p>
               </Card>
-              <Card className="p-3 border-border/30 bg-gradient-to-br from-amber-50 to-amber-100/50">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">UNPAID ORDERS</p>
-                <p className="text-xl font-extrabold text-amber-600 mt-0.5">{salesDetails.paymentStats.unpaid.count} <span className="text-xs font-medium text-muted-foreground">({fmt(salesDetails.paymentStats.unpaid.amount)})</span></p>
+              <Card className="p-2.5 sm:p-3 border-border/30 bg-gradient-to-br from-amber-50 to-amber-100/50">
+                <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">UNPAID</p>
+                <p className="text-lg sm:text-xl font-extrabold text-amber-600 mt-0.5">{salesDetails.paymentStats.unpaid.count} <span className="text-[10px] sm:text-xs font-medium text-muted-foreground">({fmt(salesDetails.paymentStats.unpaid.amount)})</span></p>
               </Card>
-              <Card className="p-3 border-border/30 bg-gradient-to-br from-violet-50 to-violet-100/50">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">PARTIAL PAID</p>
-                <p className="text-xl font-extrabold text-violet-600 mt-0.5">{salesDetails.paymentStats.partial.count} <span className="text-xs font-medium text-muted-foreground">({fmt(salesDetails.paymentStats.partial.amount)})</span></p>
+              <Card className="p-2.5 sm:p-3 border-border/30 bg-gradient-to-br from-violet-50 to-violet-100/50">
+                <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">PARTIAL</p>
+                <p className="text-lg sm:text-xl font-extrabold text-violet-600 mt-0.5">{salesDetails.paymentStats.partial.count} <span className="text-[10px] sm:text-xs font-medium text-muted-foreground">({fmt(salesDetails.paymentStats.partial.amount)})</span></p>
               </Card>
             </div>
             )}
 
             {/* Order Status Cards */}
             {canSeeOrders && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-4">
               {orderCards.map((stat) => (
-                <Card key={stat.label} className="p-4 border-border/30 card-hover group overflow-hidden relative">
+                <Card key={stat.label} className="p-3 sm:p-4 border-border/30 card-hover group overflow-hidden relative">
                   <div className={`absolute inset-0 bg-gradient-to-br ${stat.bgGradient} opacity-0 group-hover:opacity-30 transition-opacity duration-300`} />
                   <div className="relative">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className={`p-2.5 rounded-xl bg-gradient-to-br ${stat.bgGradient} transition-transform duration-300 group-hover:scale-110 group-hover:shadow-md`}>
-                        <stat.icon className={`h-5 w-5 ${stat.iconColor}`} />
+                    <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                      <div className={`p-2 sm:p-2.5 rounded-xl bg-gradient-to-br ${stat.bgGradient} transition-transform duration-300 group-hover:scale-110 group-hover:shadow-md`}>
+                        <stat.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${stat.iconColor}`} />
                       </div>
-                      <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground/60">{stat.label}</span>
+                      <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.1em] sm:tracking-[0.14em] text-muted-foreground/60 truncate">{stat.label}</span>
                     </div>
-                    <p className={`text-2xl font-extrabold ${stat.color}`}>
-                      {stat.value} <span className="text-sm font-medium text-muted-foreground">{stat.sub}</span>
-                      {stat.change && <span className="text-xs font-normal text-muted-foreground ml-1">{stat.change}</span>}
+                    <p className={`text-xl sm:text-2xl font-extrabold ${stat.color}`}>
+                      {stat.value} <span className="text-xs sm:text-sm font-medium text-muted-foreground">{stat.sub}</span>
+                      {stat.change && <span className="text-[10px] sm:text-xs font-normal text-muted-foreground ml-1">{stat.change}</span>}
                     </p>
-                    {stat.extra && <p className="text-xs text-muted-foreground mt-1">{stat.extra}</p>}
+                    {stat.extra && <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">{stat.extra}</p>}
                   </div>
                 </Card>
               ))}
@@ -162,21 +162,21 @@ const AdminDashboard = () => {
 
             {/* Delivery Status Cards */}
             {canSeeOrders && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
               {deliveryCards.map((stat) => (
-                <Card key={stat.label} className="p-4 border-border/30 card-hover group overflow-hidden relative">
+                <Card key={stat.label} className="p-3 sm:p-4 border-border/30 card-hover group overflow-hidden relative">
                   <div className={`absolute inset-0 bg-gradient-to-br ${stat.bgGradient} opacity-0 group-hover:opacity-30 transition-opacity duration-300`} />
                   <div className="relative">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className={`p-2.5 rounded-xl bg-gradient-to-br ${stat.bgGradient} transition-transform duration-300 group-hover:scale-110`}>
-                        <stat.icon className={`h-5 w-5 ${stat.iconColor}`} />
+                    <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                      <div className={`p-2 sm:p-2.5 rounded-xl bg-gradient-to-br ${stat.bgGradient} transition-transform duration-300 group-hover:scale-110`}>
+                        <stat.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${stat.iconColor}`} />
                       </div>
-                      <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground/60">{stat.label}</span>
+                      <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.1em] sm:tracking-[0.14em] text-muted-foreground/60 truncate">{stat.label}</span>
                     </div>
-                    <p className={`text-2xl font-extrabold ${stat.color}`}>
-                      {stat.value} <span className="text-xs font-normal text-muted-foreground ml-1">{stat.sub}</span>
+                    <p className={`text-xl sm:text-2xl font-extrabold ${stat.color}`}>
+                      {stat.value} <span className="text-[10px] sm:text-xs font-normal text-muted-foreground ml-1">{stat.sub}</span>
                     </p>
-                    <p className="text-xs text-muted-foreground mt-1">{stat.extra}</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">{stat.extra}</p>
                   </div>
                 </Card>
               ))}
