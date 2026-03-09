@@ -319,6 +319,7 @@ Deno.serve(async (req) => {
         total_amount: totalAmount,
         notes: notes ? `[LP: ${landing_page_slug || "unknown"}] ${notes}` : `[LP: ${landing_page_slug || "unknown"}]`,
         status: "processing",
+        source: "landing_page",
         client_ip: clientIp,
         user_agent: userAgent,
         device_info: deviceInfo,

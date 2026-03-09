@@ -1,12 +1,24 @@
-// Detect client IP using free API
+import { supabase } from "@/integrations/supabase/client";
+
+// Detect client IP using our own edge function (reliable, server-side detection)
 let cachedIp: string | null = null;
 
 export async function getClientIp(): Promise<string> {
   if (cachedIp) return cachedIp;
   try {
+    const { data, error } = await supabase.functions.invoke("get-client-info");
+    if (!error && data?.ip) {
+      cachedIp = data.ip;
+      return cachedIp!;
+    }
+  } catch {
+    // fallback
+  }
+  // Fallback to ipify if our function fails
+  try {
     const res = await fetch("https://api.ipify.org?format=json", { signal: AbortSignal.timeout(3000) });
-    const data = await res.json();
-    cachedIp = data.ip || "unknown";
+    const d = await res.json();
+    cachedIp = d.ip || "unknown";
     return cachedIp!;
   } catch {
     return "unknown";
