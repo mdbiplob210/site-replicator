@@ -97,7 +97,7 @@ export function CampaignBreakdown({ dateRange }: Props) {
             size="sm"
             variant="outline"
             className="gap-1.5 text-xs"
-            onClick={() => syncMutation.mutate(dateRange)}
+            onClick={() => syncMutation.mutate({ dateRange })}
             disabled={syncMutation.isPending}
           >
             {syncMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
