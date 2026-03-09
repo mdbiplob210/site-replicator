@@ -7,10 +7,14 @@ import { useState } from "react";
 import { useTracking } from "@/hooks/useTracking";
 import { PopupCheckout } from "@/components/store/PopupCheckout";
 import { ExitDiscountBanner } from "@/components/store/ExitDiscountBanner";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 const Template2Dark = () => {
   const { data: products = [], isLoading } = usePublicProducts();
+  const { data: settings } = useSiteSettings();
   const { trackAddToCart } = useTracking();
+  const siteName = settings?.site_name || "STORE";
+  const siteLogo = settings?.site_logo || "";
 
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [checkoutItem, setCheckoutItem] = useState<any>(null);
@@ -47,8 +51,12 @@ const Template2Dark = () => {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-gray-950/90 backdrop-blur-lg border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/" className="text-2xl font-black tracking-wider">
-            SOHOZ<span className="text-amber-400">.</span>
+          <Link to="/" className="flex items-center gap-2">
+            {siteLogo ? (
+              <img src={siteLogo} alt={siteName} className="h-8 w-auto object-contain" />
+            ) : (
+              <span className="text-2xl font-black tracking-wider">{siteName}<span className="text-amber-400">.</span></span>
+            )}
           </Link>
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-400">
             <Link to="/" className="hover:text-white transition">Home</Link>
@@ -123,7 +131,7 @@ const Template2Dark = () => {
 
       <footer className="border-t border-gray-800 py-10">
         <div className="max-w-7xl mx-auto px-4 text-center text-sm text-gray-600">
-          © 2026 SOHOZ STORE
+          © 2026 {siteName}
         </div>
       </footer>
 

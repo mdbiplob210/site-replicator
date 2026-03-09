@@ -6,10 +6,14 @@ import { useState } from "react";
 import { useTracking } from "@/hooks/useTracking";
 import { PopupCheckout } from "@/components/store/PopupCheckout";
 import { ExitDiscountBanner } from "@/components/store/ExitDiscountBanner";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 const Template3Minimal = () => {
   const { data: products = [], isLoading } = usePublicProducts();
+  const { data: settings } = useSiteSettings();
   const { trackAddToCart } = useTracking();
+  const siteName = settings?.site_name || "STORE";
+  const siteLogo = settings?.site_logo || "";
 
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [checkoutItem, setCheckoutItem] = useState<any>(null);
@@ -46,7 +50,7 @@ const Template3Minimal = () => {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-stone-50/95 backdrop-blur">
         <div className="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between">
-          <Link to="/" className="text-xl font-normal tracking-[0.3em] uppercase text-stone-800">Sohoz</Link>
+          {siteLogo ? <img src={siteLogo} alt={siteName} className="h-8 w-auto object-contain" /> : <Link to="/" className="text-xl font-normal tracking-[0.3em] uppercase text-stone-800">{siteName}</Link>}
           <div className="hidden md:flex items-center gap-10 text-xs tracking-[0.2em] uppercase text-stone-500">
             <Link to="/" className="hover:text-stone-900 transition">Shop</Link>
             <Link to="/" className="hover:text-stone-900 transition">About</Link>
@@ -100,7 +104,7 @@ const Template3Minimal = () => {
       </section>
 
       <footer className="border-t border-stone-200 py-12">
-        <div className="max-w-6xl mx-auto px-6 text-center text-xs text-stone-400 tracking-widest uppercase">© 2026 Sohoz</div>
+        <div className="max-w-6xl mx-auto px-6 text-center text-xs text-stone-400 tracking-widest uppercase">© 2026 {siteName}</div>
       </footer>
 
       {showDiscountBanner && <ExitDiscountBanner onAccept={handleAcceptDiscount} onReject={handleRejectDiscount} />}

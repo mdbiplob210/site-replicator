@@ -7,10 +7,14 @@ import { useState } from "react";
 import { useTracking } from "@/hooks/useTracking";
 import { PopupCheckout } from "@/components/store/PopupCheckout";
 import { ExitDiscountBanner } from "@/components/store/ExitDiscountBanner";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 const Template4Colorful = () => {
   const { data: products = [], isLoading } = usePublicProducts();
+  const { data: settings } = useSiteSettings();
   const { trackAddToCart } = useTracking();
+  const siteName = settings?.site_name || "STORE";
+  const siteLogo = settings?.site_logo || "";
 
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [checkoutItem, setCheckoutItem] = useState<any>(null);
@@ -47,8 +51,8 @@ const Template4Colorful = () => {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-rose-100">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link to="/" className="text-2xl font-extrabold">
-            <span className="bg-gradient-to-r from-rose-500 via-violet-500 to-indigo-500 bg-clip-text text-transparent">SOHOZ</span>
+          <Link to="/" className="text-2xl font-extrabold flex items-center gap-2">
+            {siteLogo ? <img src={siteLogo} alt={siteName} className="h-8 w-auto object-contain" /> : <span className="bg-gradient-to-r from-rose-500 via-violet-500 to-indigo-500 bg-clip-text text-transparent">{siteName}</span>}
           </Link>
           <div className="hidden md:flex items-center gap-6 text-sm font-semibold text-gray-600">
             <Link to="/" className="hover:text-rose-500 transition">🏠 Home</Link>
@@ -125,7 +129,7 @@ const Template4Colorful = () => {
       </section>
 
       <footer className="bg-white border-t border-rose-100 py-10">
-        <div className="max-w-7xl mx-auto px-4 text-center text-sm text-gray-400">© 2026 SOHOZ — Made with ❤️</div>
+        <div className="max-w-7xl mx-auto px-4 text-center text-sm text-gray-400">© 2026 {siteName} — Made with ❤️</div>
       </footer>
 
       {showDiscountBanner && <ExitDiscountBanner onAccept={handleAcceptDiscount} onReject={handleRejectDiscount} />}

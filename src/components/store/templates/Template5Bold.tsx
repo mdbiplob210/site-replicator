@@ -7,10 +7,14 @@ import { useState } from "react";
 import { useTracking } from "@/hooks/useTracking";
 import { PopupCheckout } from "@/components/store/PopupCheckout";
 import { ExitDiscountBanner } from "@/components/store/ExitDiscountBanner";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 const Template5Bold = () => {
   const { data: products = [], isLoading } = usePublicProducts();
+  const { data: settings } = useSiteSettings();
   const { trackAddToCart } = useTracking();
+  const siteName = settings?.site_name || "STORE";
+  const siteLogo = settings?.site_logo || "";
 
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [checkoutItem, setCheckoutItem] = useState<any>(null);
@@ -47,8 +51,8 @@ const Template5Bold = () => {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-zinc-900 text-white">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/" className="text-3xl font-black tracking-tighter">
-            SOH<span className="text-lime-400">OZ</span>
+          <Link to="/" className="flex items-center gap-2">
+            {siteLogo ? <img src={siteLogo} alt={siteName} className="h-9 w-auto object-contain" /> : <span className="text-3xl font-black tracking-tighter">{siteName}</span>}
           </Link>
           <div className="hidden md:flex items-center gap-8 text-sm font-bold uppercase tracking-widest text-zinc-400">
             <Link to="/" className="hover:text-white transition">Shop</Link>
@@ -122,7 +126,7 @@ const Template5Bold = () => {
       </section>
 
       <footer className="bg-zinc-900 text-white py-10">
-        <div className="max-w-7xl mx-auto px-4 text-center text-sm text-zinc-500 font-bold tracking-widest uppercase">© 2026 SOHOZ</div>
+        <div className="max-w-7xl mx-auto px-4 text-center text-sm text-zinc-500 font-bold tracking-widest uppercase">© 2026 {siteName}</div>
       </footer>
 
       {showDiscountBanner && <ExitDiscountBanner onAccept={handleAcceptDiscount} onReject={handleRejectDiscount} />}
