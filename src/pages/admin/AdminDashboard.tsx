@@ -178,8 +178,10 @@ const AdminDashboard = () => {
                 </Card>
               ))}
             </div>
+            )}
 
             {/* Shipping Stats */}
+            {canSeeOrders && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {shipCards.map((stat) => (
                 <Card key={stat.label} className="p-4 border-border/30 card-hover group overflow-hidden relative">
