@@ -397,8 +397,10 @@ const AdminDashboard = () => {
                 </div>
               </div>
             </Card>
+            )}
 
-            {/* Finance Summary - 2 Rows, 3 per row */}
+            {/* Finance Summary */}
+            {canSeeFinance && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {finCards.map((card) => (
                 <Card key={card.label} className="p-5 border-border/30 card-hover">
