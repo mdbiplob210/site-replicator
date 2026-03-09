@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useLandingPageBySlug } from "@/hooks/useLandingPages";
 import { useEffect, useRef } from "react";
+import { sanitizeHtmlScripts } from "@/lib/htmlSanitizer";
 
 function escapeHtml(str: string): string {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -500,11 +501,13 @@ ttq.page();
 
     const allScripts = richTrackingHelper + trackingScripts + conversionScript + analyticsScript + exitIntentScript;
 
-    if (page.html_content.includes("</head>")) {
-      return page.html_content.replace("</head>", `${allScripts}</head>`);
+    const cleanHtml = sanitizeHtmlScripts(page.html_content);
+
+    if (cleanHtml.includes("</head>")) {
+      return cleanHtml.replace("</head>", `${allScripts}</head>`);
     }
 
-    return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${allScripts}</head><body>${page.html_content}</body></html>`;
+    return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${allScripts}</head><body>${cleanHtml}</body></html>`;
   };
 
   return (

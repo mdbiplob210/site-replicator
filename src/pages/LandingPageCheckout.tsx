@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useLandingPageBySlug } from "@/hooks/useLandingPages";
 import { useRef } from "react";
+import { sanitizeHtmlScripts } from "@/lib/htmlSanitizer";
 
 export default function LandingPageCheckout() {
   const { slug } = useParams<{ slug: string }>();
@@ -336,11 +337,13 @@ ttq.track('InitiateCheckout');
 
     const allScripts = richTrackingHelper + trackingScripts + partialTrackingScript + orderScript;
 
-    if (page.checkout_html!.includes("</head>")) {
-      return page.checkout_html!.replace("</head>", `${allScripts}</head>`);
+    const cleanHtml = sanitizeHtmlScripts(page.checkout_html!);
+
+    if (cleanHtml.includes("</head>")) {
+      return cleanHtml.replace("</head>", `${allScripts}</head>`);
     }
 
-    return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${allScripts}</head><body>${page.checkout_html}</body></html>`;
+    return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${allScripts}</head><body>${sanitizeHtmlScripts(page.checkout_html!)}</body></html>`;
   };
 
   return (
