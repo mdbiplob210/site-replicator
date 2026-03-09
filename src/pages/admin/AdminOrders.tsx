@@ -290,9 +290,13 @@ const AdminOrders = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("courier_providers")
-        .select("id, name, slug, logo_url");
+        .select("id, name, slug, logo_url, is_active, api_configs");
       if (error) throw error;
-      return data;
+      return (data || []).filter((cp: any) => {
+        if (!cp.is_active) return false;
+        const configs = Array.isArray(cp.api_configs) ? cp.api_configs : JSON.parse(cp.api_configs || "[]");
+        return configs.length > 0 && configs.some((c: any) => c.api_key);
+      });
     },
   });
   const { data: categories = [] } = useQuery({
@@ -1389,7 +1393,7 @@ const AdminOrders = () => {
                         <SelectValue placeholder="কুরিয়ার সিলেক্ট করুন" />
                       </SelectTrigger>
                       <SelectContent>
-                        {courierProviders.filter((cp: any) => cp.is_active !== false).map((cp: any) => (
+                        {courierProviders.map((cp: any) => (
                           <SelectItem key={cp.id} value={cp.id}>
                             <div className="flex items-center gap-2">
                               <Truck className="h-3.5 w-3.5" /> {cp.name}
@@ -2864,9 +2868,13 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
   const { data: editCourierProviders = [] } = useQuery({
     queryKey: ["courier-providers-filter"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("courier_providers").select("id, name, slug, is_active");
+      const { data, error } = await supabase.from("courier_providers").select("id, name, slug, is_active, api_configs");
       if (error) throw error;
-      return data;
+      return (data || []).filter((cp: any) => {
+        if (!cp.is_active) return false;
+        const configs = Array.isArray(cp.api_configs) ? cp.api_configs : JSON.parse(cp.api_configs || "[]");
+        return configs.length > 0 && configs.some((c: any) => c.api_key);
+      });
     },
   });
 
@@ -3268,7 +3276,7 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                   <SelectValue placeholder="কুরিয়ার সিলেক্ট করুন" />
                 </SelectTrigger>
                 <SelectContent>
-                  {editCourierProviders.filter((cp: any) => cp.is_active !== false).map((cp: any) => (
+                  {editCourierProviders.map((cp: any) => (
                     <SelectItem key={cp.id} value={cp.id}>
                       <div className="flex items-center gap-2">
                         <Truck className="h-3.5 w-3.5" /> {cp.name}
