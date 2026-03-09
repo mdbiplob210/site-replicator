@@ -1044,9 +1044,11 @@ const AdminUsers = () => {
               <Select value={newRole} onValueChange={(v) => setNewRole(v as any)}>
                 <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="admin">Admin (Full Access)</SelectItem>
-                  <SelectItem value="moderator">Moderator (Limited Access)</SelectItem>
-                  <SelectItem value="user">User (Basic Access)</SelectItem>
+                  <SelectItem value="admin">অ্যাডমিন (Full Access)</SelectItem>
+                  <SelectItem value="manager">ম্যানেজার (Limited Access)</SelectItem>
+                  <SelectItem value="user">ইউজার (Basic Access)</SelectItem>
+                  <SelectItem value="accounting">অ্যাকাউন্টিং (Finance Only)</SelectItem>
+                  <SelectItem value="ad_analytics">অ্যাড অ্যানালিটিক্স (Ads Only)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
