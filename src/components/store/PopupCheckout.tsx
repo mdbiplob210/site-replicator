@@ -360,7 +360,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
                 <Label className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 mb-1">
                   <User className="h-3.5 w-3.5" /> আপনার নাম
                 </Label>
-                <Input placeholder="পুরো নাম লিখুন" value={form.name} onChange={e => updateForm({ name: e.target.value })} className="h-11 rounded-xl" required />
+                <Input placeholder="পুরো নাম লিখুন" value={form.name} onChange={e => updateForm({ name: e.target.value })} className="h-11 rounded-xl" required name="name" autoComplete="name" />
               </div>
               <div>
                 <Label className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 mb-1">
