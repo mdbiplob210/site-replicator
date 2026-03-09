@@ -67,6 +67,7 @@ export const getStatusLabel = (status: OrderStatus): string => {
   const labels: Record<OrderStatus, string> = {
     processing: "New Orders",
     confirmed: "Confirmed",
+    inquiry: "Inquiry",
     cancelled: "Cancelled",
     on_hold: "Hold",
     ship_later: "Ship Later",
