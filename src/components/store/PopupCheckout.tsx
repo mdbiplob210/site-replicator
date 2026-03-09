@@ -329,7 +329,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
               <div className="flex items-center gap-3">
                 <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
                   {currentItem.image ? (
-                    <img src={currentItem.image} alt={currentItem.name} className="w-full h-full object-cover" />
+                    <OptimizedImage src={currentItem.image} alt={currentItem.name} width={64} quality={75} className="w-full h-full object-cover" />
                   ) : (
                     <ShoppingBag className="h-6 w-6 m-auto mt-5 text-gray-300" />
                   )}

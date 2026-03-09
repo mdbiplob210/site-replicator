@@ -38,10 +38,13 @@ const BannerCarousel = () => {
     <div className="relative w-full overflow-hidden bg-gray-100">
       <Wrapper>
         <div className="relative w-full" style={{ aspectRatio: "16/5" }}>
-          <img
+          <OptimizedImage
             src={banner.image_url}
             alt={`Banner ${current + 1}`}
-            className="w-full h-full object-cover transition-opacity duration-500"
+            width={1280}
+            quality={80}
+            eager={current === 0}
+            className="w-full h-full object-cover"
           />
         </div>
       </Wrapper>

@@ -480,7 +480,7 @@ const CheckoutPage = () => {
         <div className="bg-white p-1 mb-6">
           <div className="flex items-center gap-4 p-4 border-2 border-zinc-900">
             <div className="w-20 h-20 bg-zinc-100 flex-shrink-0">
-              {item.image ? <img src={item.image} className="w-full h-full object-cover" /> : <ShoppingBag className="h-6 w-6 m-auto mt-7 text-zinc-300" />}
+              {item.image ? <OptimizedImage src={item.image} alt={item.name} width={80} quality={75} className="w-full h-full object-cover" /> : <ShoppingBag className="h-6 w-6 m-auto mt-7 text-zinc-300" />}
             </div>
             <div className="flex-1">
               <p className="font-black uppercase truncate">{item.name}</p>
