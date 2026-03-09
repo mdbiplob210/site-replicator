@@ -37,26 +37,39 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
+    let initialSessionResolved = false;
+
+    // Set up listener FIRST but only let it control loading after initial session is resolved
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
+          // Use setTimeout to avoid potential deadlock with Supabase client
           setTimeout(() => checkAdminRole(session.user.id), 0);
         } else {
           setIsAdmin(false);
         }
-        setLoading(false);
+        // Only set loading false from listener after initial session has been handled
+        if (initialSessionResolved) {
+          setLoading(false);
+        }
       }
     );
 
+    // Get initial session - this is the single source of truth for first load
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        checkAdminRole(session.user.id);
+        checkAdminRole(session.user.id).finally(() => {
+          initialSessionResolved = true;
+          setLoading(false);
+        });
+      } else {
+        initialSessionResolved = true;
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
