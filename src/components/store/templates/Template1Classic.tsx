@@ -8,6 +8,7 @@ import { useTracking } from "@/hooks/useTracking";
 import { PopupCheckout } from "@/components/store/PopupCheckout";
 import { ExitDiscountBanner } from "@/components/store/ExitDiscountBanner";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
+import BannerCarousel from "@/components/store/BannerCarousel";
 
 const Template1Classic = () => {
   const { data: products = [], isLoading } = usePublicProducts();
