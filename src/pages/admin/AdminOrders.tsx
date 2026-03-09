@@ -1859,7 +1859,75 @@ const AdminOrders = () => {
           </Card>
         )}
 
-        {/* Advanced Filter Panel */}
+        {/* Advanced Filter Panel - Sheet on mobile, Collapsible on desktop */}
+        {/* Mobile Filter Sheet */}
+        <div className="sm:hidden">
+          <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2 rounded-xl border-border/60 shadow-sm hover:shadow w-full justify-between">
+                <div className="flex items-center gap-2">
+                  <SlidersHorizontal className="h-4 w-4 text-primary" />
+                  <span className="font-semibold text-sm">ফিল্টার</span>
+                  {activeFilterCount > 0 && (
+                    <Badge className="h-5 min-w-[20px] px-1.5 text-[10px] font-bold">{activeFilterCount}</Badge>
+                  )}
+                  {activeFilterCount > 0 && (
+                    <Badge variant="secondary" className="h-5 px-1.5 text-[10px] font-bold">
+                      {filteredOrders.length}/{orders.length}
+                    </Badge>
+                  )}
+                </div>
+                <Filter className="h-4 w-4 text-muted-foreground" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="bottom" className="h-[85vh] rounded-t-2xl px-4">
+              <SheetHeader>
+                <SheetTitle className="flex items-center gap-2">
+                  <SlidersHorizontal className="h-5 w-5 text-primary" /> ফিল্টারিং
+                  {activeFilterCount > 0 && <Badge className="text-xs">{activeFilterCount} ফিল্টার</Badge>}
+                </SheetTitle>
+              </SheetHeader>
+              <ScrollArea className="h-[calc(85vh-80px)] mt-4 pr-2">
+                {/* Filter content rendered below via shared component */}
+                <MobileFilterContent
+                  orderDateFilter={orderDateFilter} setOrderDateFilter={setOrderDateFilter}
+                  customDateFrom={customDateFrom} setCustomDateFrom={setCustomDateFrom}
+                  customDateTo={customDateTo} setCustomDateTo={setCustomDateTo}
+                  filterSource={filterSource} setFilterSource={setFilterSource}
+                  filterPhone={filterPhone} setFilterPhone={setFilterPhone}
+                  filterAmountMin={filterAmountMin} setFilterAmountMin={setFilterAmountMin}
+                  filterAmountMax={filterAmountMax} setFilterAmountMax={setFilterAmountMax}
+                  filterDeviceType={filterDeviceType} setFilterDeviceType={setFilterDeviceType}
+                  filterPaymentStatus={filterPaymentStatus} setFilterPaymentStatus={setFilterPaymentStatus}
+                  filterCourierProvider={filterCourierProvider} setFilterCourierProvider={setFilterCourierProvider}
+                  filterCourierStatus={filterCourierStatus} setFilterCourierStatus={setFilterCourierStatus}
+                  filterCategory={filterCategory} setFilterCategory={setFilterCategory}
+                  filterCourierCharged={filterCourierCharged} setFilterCourierCharged={setFilterCourierCharged}
+                  filterSalesType={filterSalesType} setFilterSalesType={setFilterSalesType}
+                  filterAddress={filterAddress} setFilterAddress={setFilterAddress}
+                  filterNotes={filterNotes} setFilterNotes={setFilterNotes}
+                  filterDistrict={filterDistrict} setFilterDistrict={setFilterDistrict}
+                  filterThana={filterThana} setFilterThana={setFilterThana}
+                  filterZone={filterZone} setFilterZone={setFilterZone}
+                  filterProductInput={filterProductInput} setFilterProductInput={setFilterProductInput}
+                  filterProductIds={filterProductIds} setFilterProductIds={setFilterProductIds}
+                  filterProductFocused={filterProductFocused} setFilterProductFocused={setFilterProductFocused}
+                  filteredFilterProducts={filteredFilterProducts}
+                  courierProviders={courierProviders}
+                  categories={categories}
+                  clearAllFilters={clearAllFilters}
+                  activeFilterCount={activeFilterCount}
+                  filteredOrders={filteredOrders}
+                  orders={orders}
+                  onClose={() => setFiltersOpen(false)}
+                />
+              </ScrollArea>
+            </SheetContent>
+          </Sheet>
+        </div>
+
+        {/* Desktop Filter Collapsible */}
+        <div className="hidden sm:block">
         <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
           <CollapsibleTrigger asChild>
             <Button variant="outline" size="sm" className="gap-2 rounded-xl border-border/60 shadow-sm hover:shadow w-full justify-between">
