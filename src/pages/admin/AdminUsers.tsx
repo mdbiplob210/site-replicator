@@ -384,18 +384,21 @@ const AdminUsers = () => {
                               </div>
                             </TableCell>
                             <TableCell>
-                              {user.roles.length > 0 ? (
+                            {user.roles.length > 0 ? (
                                 <div className="flex gap-1 flex-wrap">
-                                  {user.roles.map((role) => (
-                                    <Badge
-                                      key={role}
-                                      variant={role === "admin" ? "default" : "secondary"}
-                                      className="text-xs cursor-pointer"
-                                      onClick={() => removeRole(user.user_id, role as any)}
-                                    >
-                                      {role} ✕
-                                    </Badge>
-                                  ))}
+                                  {user.roles.map((role) => {
+                                    const displayName = role === "moderator" ? "ম্যানেজার" : role === "manager" ? "ম্যানেজার" : role === "accounting" ? "অ্যাকাউন্টিং" : role === "ad_analytics" ? "অ্যাড অ্যানালিটিক্স" : role === "admin" ? "অ্যাডমিন" : "ইউজার";
+                                    return (
+                                      <Badge
+                                        key={role}
+                                        variant={role === "admin" ? "default" : "secondary"}
+                                        className="text-xs cursor-pointer"
+                                        onClick={() => removeRole(user.user_id, role)}
+                                      >
+                                        {displayName} ✕
+                                      </Badge>
+                                    );
+                                  })}
                                 </div>
                               ) : (
                                 <span className="text-muted-foreground text-sm">No role</span>
