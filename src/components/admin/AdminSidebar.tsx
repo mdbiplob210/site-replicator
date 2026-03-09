@@ -248,7 +248,7 @@ export function AdminSidebar() {
               <p className="text-sm font-semibold text-white truncate">{userName}</p>
               <div className="flex items-center gap-1.5">
                 <span className="h-2 w-2 rounded-full bg-emerald-400 pulse-dot" />
-                <span className="text-[11px] text-sidebar-foreground/50 font-medium">Admin</span>
+                <span className="text-[11px] text-sidebar-foreground/50 font-medium">{roleDisplayName}</span>
               </div>
             </div>
           )}
