@@ -6,6 +6,9 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedAdminRoute } from "@/components/admin/ProtectedAdminRoute";
 import { TrackingInitializer } from "./components/TrackingInitializer";
+import { useDynamicMeta } from "@/hooks/useDynamicMeta";
+
+const DynamicMetaProvider = () => { useDynamicMeta(); return null; };
 
 // Critical public pages - eagerly loaded
 import StorePage from "./pages/store/StorePage";
