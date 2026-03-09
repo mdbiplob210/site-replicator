@@ -9,6 +9,7 @@ import { useCourierProviders, useUpdateCourierProvider, type ApiConfig } from "@
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { Truck, Plus, Trash2, Save, Globe, Copy, Shield, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import { CourierBalanceView } from "./CourierBalanceView";
 
 interface CourierSettingsViewProps {
   onBack: () => void;
