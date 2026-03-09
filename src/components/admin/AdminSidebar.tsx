@@ -85,6 +85,7 @@ export function AdminSidebar() {
     if (item.title === "Orders") return canSeeOrders;
     if (item.title === "Products") return canSeeProducts;
     if (item.title === "Website") return canSeeWebsite;
+    if (item.title === "Invoices") return isAdmin || hasRole("accounting");
     if (item.title === "Reports") return canSeeReports;
     if (item.title === "Finance") return canSeeFinance;
     if (item.title === "Planning") return canSeePlanning;
