@@ -111,7 +111,8 @@ const AdminDashboard = () => {
 
         {!isLoading && (
           <>
-            {/* Quick Summary Bar */}
+            {/* Quick Summary Bar - orders visible to order roles */}
+            {canSeeOrders && (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <Card className="p-3 border-border/30 bg-gradient-to-br from-blue-50 to-blue-100/50">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">AVG ORDER VALUE</p>
