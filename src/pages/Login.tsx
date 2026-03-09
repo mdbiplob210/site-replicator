@@ -261,7 +261,7 @@ const Login = () => {
       onMouseMove={handleMouseMove}
       style={{ background: "linear-gradient(135deg, #0a0a1e 0%, #1a0a2e 30%, #0a1a2e 60%, #0a0a1e 100%)" }}
     >
-      <canvas ref={canvasRef} className="absolute inset-0 z-0" />
+      <canvas ref={canvasRef} className="absolute inset-0 z-0 hidden sm:block" />
 
       {/* Custom cursor glow */}
       <div
