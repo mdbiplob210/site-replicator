@@ -100,16 +100,21 @@ const Template2Dark = () => {
           <div className="text-center py-12 text-gray-600">কোন প্রোডাক্ট নেই</div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-            {products.map((p) => (
+            {products.map((p) => {
+              const outOfStock = p.stock_quantity !== undefined && p.stock_quantity <= 0 && !(p as any).allow_out_of_stock_orders;
+              return (
               <div key={p.id} className="group">
                 <Link to={`/product/${(p as any).slug || p.id}`}>
-                  <div className="aspect-square bg-gray-900 rounded-xl overflow-hidden mb-3 border border-gray-800 group-hover:border-amber-500/50 transition">
+                  <div className="aspect-square bg-gray-900 rounded-xl overflow-hidden mb-3 border border-gray-800 group-hover:border-amber-500/50 transition relative">
                     {p.main_image_url ? (
                       <OptimizedImage src={p.main_image_url} alt={p.name} width={400} quality={80} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-gray-700">
                         <ShoppingBag className="h-12 w-12" />
                       </div>
+                    )}
+                    {(p as any).free_delivery && (
+                      <div className="absolute top-2 left-2 bg-amber-500 text-gray-950 text-[9px] font-bold px-2 py-0.5 rounded-full">🚚 ফ্রি ডেলিভারি</div>
                     )}
                   </div>
                   <h3 className="font-bold text-white truncate">{p.name}</h3>
@@ -119,12 +124,14 @@ const Template2Dark = () => {
                       <span className="text-sm text-gray-600 line-through">৳{p.original_price}</span>
                     )}
                   </div>
+                  {outOfStock && <span className="text-[10px] text-red-400 font-semibold">স্টকে নেই</span>}
                 </Link>
-                <button onClick={() => handleOrder(p)} className="w-full mt-2 py-2 bg-amber-500 hover:bg-amber-600 text-gray-950 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition">
+                <button onClick={() => handleOrder(p)} disabled={outOfStock} className="w-full mt-2 py-2 bg-amber-500 hover:bg-amber-600 text-gray-950 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition disabled:opacity-40 disabled:cursor-not-allowed">
                   <ShoppingCart className="h-4 w-4" /> অর্ডার করুন
                 </button>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </section>
