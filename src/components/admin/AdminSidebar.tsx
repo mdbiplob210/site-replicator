@@ -41,6 +41,7 @@ const mainMenuItems = [
   { title: "Orders", url: "/admin/orders", icon: ShoppingCart },
   { title: "Products", url: "/admin/products", icon: Package },
   { title: "Website", url: "/admin/website", icon: Globe, hasSubmenu: true, subItems: websiteSubItems },
+  { title: "Invoices", url: "/admin/invoices", icon: FileText },
   { title: "Reports", url: "/admin/reports", icon: FileText },
   { title: "Finance", url: "/admin/finance", icon: Wallet },
   { title: "Planning", url: "/admin/planning", icon: Lightbulb },
@@ -84,6 +85,7 @@ export function AdminSidebar() {
     if (item.title === "Orders") return canSeeOrders;
     if (item.title === "Products") return canSeeProducts;
     if (item.title === "Website") return canSeeWebsite;
+    if (item.title === "Invoices") return isAdmin || hasRole("accounting");
     if (item.title === "Reports") return canSeeReports;
     if (item.title === "Finance") return canSeeFinance;
     if (item.title === "Planning") return canSeePlanning;
