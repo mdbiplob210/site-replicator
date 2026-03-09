@@ -698,7 +698,7 @@ const AdminOrders = () => {
       </body></html>
     `);
     printWindow.document.close();
-    printWindow.print();
+    setTimeout(() => { printWindow.print(); }, 300);
   }, [filteredOrders]);
 
   const addProductToOrder = (product: any) => {
@@ -2644,7 +2644,10 @@ const AdminOrders = () => {
                             </div>
                           </body></html>`);
                           printW.document.close();
-                          printW.onload = () => { printW.print(); printW.close(); };
+                          setTimeout(() => {
+                            printW.print();
+                            printW.onafterprint = () => printW.close();
+                          }, 300);
                         }}>
                           <FileText className="h-3.5 w-3.5" />
                         </button>

@@ -45,10 +45,10 @@ export function MemoPrint({ order, courierOrder, courierProvider, orderItems }: 
       </html>
     `);
     printWindow.document.close();
-    printWindow.onload = () => {
+    setTimeout(() => {
       printWindow.print();
-      printWindow.close();
-    };
+      printWindow.onafterprint = () => printWindow.close();
+    }, 300);
   };
 
   return (
