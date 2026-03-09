@@ -82,11 +82,11 @@ Deno.serve(async (req) => {
 
     // ─── EXCHANGE TOKEN action: short-lived → long-lived ───
     if (action === "exchange_token") {
-      const FB_APP_ID = Deno.env.get("FB_APP_ID");
-      const FB_APP_SECRET = Deno.env.get("FB_APP_SECRET");
-      const shortToken = body.short_lived_token || Deno.env.get("FB_ACCESS_TOKEN");
+      const FB_APP_ID = await getSettingValue(supabaseAdmin, "fb_app_id", Deno.env.get("FB_APP_ID"));
+      const FB_APP_SECRET = await getSettingValue(supabaseAdmin, "fb_app_secret", Deno.env.get("FB_APP_SECRET"));
+      const shortToken = body.short_lived_token || await getSettingValue(supabaseAdmin, "fb_access_token", Deno.env.get("FB_ACCESS_TOKEN"));
       if (!FB_APP_ID || !FB_APP_SECRET) {
-        return new Response(JSON.stringify({ error: "FB_APP_ID or FB_APP_SECRET not configured" }), {
+        return new Response(JSON.stringify({ error: "FB_APP_ID or FB_APP_SECRET not configured. Website Settings → Tracking ট্যাবে সেট করুন।" }), {
           status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
@@ -98,6 +98,16 @@ Deno.serve(async (req) => {
           status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
+      // Auto-save the new long-lived token to site_settings
+      try {
+        const { data: existing } = await supabaseAdmin.from("site_settings").select("id").eq("key", "fb_access_token").maybeSingle();
+        if (existing) {
+          await supabaseAdmin.from("site_settings").update({ value: exData.access_token, updated_at: new Date().toISOString() }).eq("key", "fb_access_token");
+        } else {
+          await supabaseAdmin.from("site_settings").insert({ key: "fb_access_token", value: exData.access_token, is_public: false });
+        }
+      } catch (e) { console.error("Failed to save exchanged token:", e); }
+
       return new Response(JSON.stringify({
         success: true,
         access_token: exData.access_token,
@@ -108,10 +118,10 @@ Deno.serve(async (req) => {
 
     // ─── SYNC action: fetch from FB API and save to DB ───
     if (action === "sync") {
-      const FB_ACCESS_TOKEN = Deno.env.get("FB_ACCESS_TOKEN");
-      const FB_AD_ACCOUNT_ID = Deno.env.get("FB_AD_ACCOUNT_ID");
+      const FB_ACCESS_TOKEN = await getSettingValue(supabaseAdmin, "fb_access_token", Deno.env.get("FB_ACCESS_TOKEN"));
+      const FB_AD_ACCOUNT_ID = await getSettingValue(supabaseAdmin, "fb_ad_account_id", Deno.env.get("FB_AD_ACCOUNT_ID"));
       if (!FB_ACCESS_TOKEN || !FB_AD_ACCOUNT_ID) {
-        return new Response(JSON.stringify({ error: "Facebook credentials not configured" }), {
+        return new Response(JSON.stringify({ error: "Facebook credentials not configured. Website Settings → Tracking ট্যাবে Access Token ও Ad Account ID সেট করুন।" }), {
           status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
