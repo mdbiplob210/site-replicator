@@ -402,7 +402,7 @@ export default function AdminMetaAds() {
         <ProductAdSpendTable dateRange={dateRange} totalSpendUsd={totalUsd} rate={rate} />
 
         {/* Campaign Breakdown */}
-        <CampaignBreakdown dateRange={dateRange} />
+        <CampaignBreakdown dateRange={dateRange} adAccountId={selectedAccountId && selectedAccountId !== "all" ? selectedAccountId : undefined} />
 
         {/* Daily Spend Chart */}
         {entries.length > 0 && (
