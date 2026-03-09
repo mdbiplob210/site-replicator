@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { validatePassword, isLoginRateLimited, recordLoginAttempt, isValidEmail } from "@/lib/security";
 
 // Floating particle
 interface Particle {
