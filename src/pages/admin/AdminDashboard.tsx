@@ -380,16 +380,16 @@ const AdminDashboard = () => {
             </Card>
 
             {/* Finance Summary - Compact Single Row */}
-            <Card className="p-3 border-border/30">
-              <div className="flex items-center flex-wrap gap-x-1 gap-y-1 divide-x divide-border/40">
+            <Card className="p-4 border-border/30">
+              <div className="flex items-center flex-wrap gap-x-2 gap-y-2 divide-x divide-border/40">
                 {finCards.map((card, i) => (
-                  <div key={card.label} className={`flex items-center gap-2 ${i > 0 ? "pl-3" : ""} pr-3`}>
-                    <div className={`p-1.5 rounded-lg bg-gradient-to-br ${card.bgGradient} shrink-0`}>
-                      <card.icon className={`h-3.5 w-3.5 ${card.iconColor}`} />
+                  <div key={card.label} className={`flex items-center gap-3 ${i > 0 ? "pl-4" : ""} pr-4`}>
+                    <div className={`p-2 rounded-xl bg-gradient-to-br ${card.bgGradient} shrink-0`}>
+                      <card.icon className={`h-4.5 w-4.5 ${card.iconColor}`} />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60 leading-none">{card.label}</p>
-                      <p className="text-sm font-extrabold text-foreground leading-tight mt-0.5">{card.value}</p>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60 leading-none">{card.label}</p>
+                      <p className="text-base font-extrabold text-foreground leading-tight mt-0.5">{card.value}</p>
                     </div>
                   </div>
                 ))}
