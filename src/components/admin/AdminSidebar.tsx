@@ -140,7 +140,7 @@ export function AdminSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="px-2 space-y-0.5">
-              {mainMenuItems.map((item) => (
+              {filteredMainMenu.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   {item.subItems ? (
                     <>
