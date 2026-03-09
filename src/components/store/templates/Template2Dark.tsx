@@ -102,7 +102,7 @@ const Template2Dark = () => {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
             {products.map((p) => (
               <div key={p.id} className="group">
-                <Link to={`/product/${p.id}`}>
+                <Link to={`/product/${(p as any).slug || p.id}`}>
                   <div className="aspect-square bg-gray-900 rounded-xl overflow-hidden mb-3 border border-gray-800 group-hover:border-amber-500/50 transition">
                     {p.main_image_url ? (
                       <OptimizedImage src={p.main_image_url} alt={p.name} width={400} quality={80} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />

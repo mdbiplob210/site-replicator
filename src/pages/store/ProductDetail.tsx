@@ -507,7 +507,7 @@ function SuggestedProducts({ categoryId, currentProductId, onOrder }: { category
                 </div>
               </Link>
               <div className="p-3">
-                <Link to={`/product/${p.id}`}>
+                <Link to={`/product/${p.slug || p.id}`}>
                   <h3 className="font-semibold text-gray-800 text-sm truncate mb-1">{p.name}</h3>
                 </Link>
                 <div className="flex items-baseline gap-2 mb-2">

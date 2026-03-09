@@ -340,7 +340,7 @@ const Template1Classic = () => {
                       <ShoppingCart className="h-4 w-4" /> অর্ডার করুন
                     </button>
                     <button
-                      onClick={() => navigate(`/product/${p.id}`)}
+                      onClick={() => navigate(`/product/${(p as any).slug || p.id}`)}
                       className="w-full py-2 border border-green-600 text-green-600 hover:bg-green-50 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition"
                     >
                       <ShoppingBag className="h-4 w-4" /> বিস্তারিত দেখুন

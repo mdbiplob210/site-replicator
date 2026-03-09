@@ -83,7 +83,7 @@ const Template3Minimal = () => {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-10">
             {products.map((p) => (
               <div key={p.id} className="group">
-                <Link to={`/product/${p.id}`}>
+                <Link to={`/product/${(p as any).slug || p.id}`}>
                   <div className="aspect-[3/4] bg-stone-100 overflow-hidden mb-4">
                     {p.main_image_url ? (
                       <OptimizedImage src={p.main_image_url} alt={p.name} width={400} quality={80} className="w-full h-full object-cover group-hover:scale-102 transition duration-700" />
