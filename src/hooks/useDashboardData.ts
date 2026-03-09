@@ -23,17 +23,19 @@ function getDateRange(filter: TimeFilter) {
 export function useDashboardData(filter: TimeFilter) {
   const { from, to } = getDateRange(filter);
 
+  // Only fetch needed columns instead of SELECT *
   const ordersQuery = useQuery({
     queryKey: ["dashboard-orders", filter],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("orders")
-        .select("*")
+        .select("id, status, total_amount, delivery_charge, product_cost, payment_status, source, cancel_reason, created_at")
         .gte("created_at", from)
         .lte("created_at", to);
       if (error) throw error;
       return data || [];
     },
+    staleTime: 60 * 1000, // 1 min cache for dashboard
   });
 
   const orderItemsQuery = useQuery({
@@ -41,7 +43,6 @@ export function useDashboardData(filter: TimeFilter) {
     queryFn: async () => {
       const orderIds = (ordersQuery.data || []).map((o) => o.id);
       if (orderIds.length === 0) return [];
-      // fetch in batches of 200 ids
       let allItems: any[] = [];
       for (let i = 0; i < orderIds.length; i += 200) {
         const batch = orderIds.slice(i, i + 200);
@@ -55,15 +56,17 @@ export function useDashboardData(filter: TimeFilter) {
       return allItems;
     },
     enabled: !!ordersQuery.data,
+    staleTime: 60 * 1000,
   });
 
   const financeQuery = useQuery({
     queryKey: ["dashboard-finance"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("finance_records").select("*");
+      const { data, error } = await supabase.from("finance_records").select("type, amount");
       if (error) throw error;
       return data || [];
     },
+    staleTime: 5 * 60 * 1000,
   });
 
   const adSpendQuery = useQuery({
@@ -73,12 +76,13 @@ export function useDashboardData(filter: TimeFilter) {
       const toDate = to.split("T")[0];
       const { data, error } = await supabase
         .from("ad_spends")
-        .select("*")
+        .select("amount_bdt, amount_usd")
         .gte("spend_date", fromDate)
         .lte("spend_date", toDate);
       if (error) throw error;
       return data || [];
     },
+    staleTime: 5 * 60 * 1000,
   });
 
   const stockQuery = useQuery({
@@ -90,6 +94,7 @@ export function useDashboardData(filter: TimeFilter) {
       if (error) throw error;
       return data || [];
     },
+    staleTime: 5 * 60 * 1000,
   });
 
   const courierBalanceQuery = useQuery({
@@ -97,12 +102,13 @@ export function useDashboardData(filter: TimeFilter) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("orders")
-        .select("total_amount, status")
+        .select("total_amount")
         .in("status", ["in_courier", "pending_return"] as any);
       if (error) throw error;
       const items = data || [];
       return { amount: items.reduce((s, o) => s + Number(o.total_amount), 0), count: items.length };
     },
+    staleTime: 2 * 60 * 1000,
   });
 
   const orders = ordersQuery.data || [];
@@ -139,13 +145,9 @@ export function useDashboardData(filter: TimeFilter) {
   const pendingReturn = countAndAmount("pending_return");
   const handDelivery = countAndAmount("hand_delivery");
 
-  // Incomplete = processing + confirmed + inquiry + on_hold + cancelled (not yet shipped/delivered)
   const incompleteTotal = processing.count + confirmed.count + inquiry.count + onHold.count + cancelled.count;
-
-  // Average order value
   const avgOrderValue = totalOrders > 0 ? Math.round(totalAmount / totalOrders) : 0;
 
-  // Payment status breakdown
   const paidOrders = orders.filter((o) => o.payment_status === "paid");
   const unpaidOrders = orders.filter((o) => o.payment_status === "unpaid");
   const partialPaidOrders = orders.filter((o) => o.payment_status === "partial");
@@ -155,11 +157,11 @@ export function useDashboardData(filter: TimeFilter) {
     partial: { count: partialPaidOrders.length, amount: partialPaidOrders.reduce((s, o) => s + Number(o.total_amount), 0) },
   };
 
-  // Top selling products (by quantity)
+  // Use Map for O(1) order lookup instead of O(n) find()
+  const orderMap = new Map(orders.map(o => [o.id, o]));
   const productMap = new Map<string, { name: string; qty: number; revenue: number }>();
   for (const item of orderItems) {
-    // Only count items from non-cancelled/returned orders
-    const order = orders.find((o) => o.id === item.order_id);
+    const order = orderMap.get(item.order_id);
     if (!order || ["cancelled", "returned"].includes(order.status)) continue;
     const key = item.product_name || item.product_code || "Unknown";
     const existing = productMap.get(key) || { name: key, qty: 0, revenue: 0 };
@@ -171,14 +173,12 @@ export function useDashboardData(filter: TimeFilter) {
     .sort((a, b) => b.qty - a.qty)
     .slice(0, 5);
 
-  // Hourly order distribution
   const hourlyOrders = Array(24).fill(0);
   for (const o of orders) {
     const hour = new Date(o.created_at).getHours();
     hourlyOrders[hour]++;
   }
 
-  // Source breakdown
   const sourceMap = new Map<string, { count: number; amount: number }>();
   for (const o of orders) {
     const src = o.source || "Unknown";
@@ -191,7 +191,6 @@ export function useDashboardData(filter: TimeFilter) {
     .map(([name, data]) => ({ name, ...data }))
     .sort((a, b) => b.count - a.count);
 
-  // Profit calculation
   const revenue = orders
     .filter((o) => !["cancelled", "returned"].includes(o.status))
     .reduce((s, o) => s + Number(o.total_amount), 0);
@@ -209,7 +208,6 @@ export function useDashboardData(filter: TimeFilter) {
   const estProfit = revenue - productCost - adsCostBdt - deliveryCost;
   const finalProfit = estProfit - returnAmount;
 
-  // Finance
   const bankBalance = finance
     .filter((f) => f.type === "bank")
     .reduce((s, f) => s + Number(f.amount), 0);
@@ -232,7 +230,6 @@ export function useDashboardData(filter: TimeFilter) {
   const moneyIn = totalIncome + finance.filter((f) => f.type === "loan_in").reduce((s, f) => s + Number(f.amount), 0) + finance.filter((f) => f.type === "investment_in").reduce((s, f) => s + Number(f.amount), 0);
   const moneyOut = totalExpense + totalProductPurchase + finance.filter((f) => f.type === "loan_out").reduce((s, f) => s + Number(f.amount), 0) + finance.filter((f) => f.type === "investment_out").reduce((s, f) => s + Number(f.amount), 0);
 
-  // Stock value
   const stockValue = products.reduce(
     (s, p) => s + Number(p.purchase_price) * Number(p.stock_quantity),
     0
@@ -242,61 +239,19 @@ export function useDashboardData(filter: TimeFilter) {
   return {
     isLoading: ordersQuery.isLoading || financeQuery.isLoading || adSpendQuery.isLoading || stockQuery.isLoading,
     orderStats: {
-      totalOrders,
-      totalAmount,
-      avgOrderValue,
-      processing,
-      confirmed,
-      inquiry,
-      cancelled,
-      onHold,
-      delivered,
-      returned,
-      pendingReturn,
-      handDelivery,
+      totalOrders, totalAmount, avgOrderValue,
+      processing, confirmed, inquiry, cancelled, onHold, delivered, returned, pendingReturn, handDelivery,
     },
     shippingStats: {
-      shipLater,
-      inCourier,
-      incompleteTotal,
-      incompleteBadges: {
-        confirmed: confirmed.count,
-        processing: processing.count,
-        hold: onHold.count,
-        cancelled: cancelled.count,
-      },
+      shipLater, inCourier, incompleteTotal,
+      incompleteBadges: { confirmed: confirmed.count, processing: processing.count, hold: onHold.count, cancelled: cancelled.count },
     },
-    profitStats: {
-      revenue,
-      productCost,
-      adsCostBdt,
-      adsCostUsd,
-      deliveryCost,
-      returnAmount,
-      estProfit,
-      finalProfit,
-    },
+    profitStats: { revenue, productCost, adsCostBdt, adsCostUsd, deliveryCost, returnAmount, estProfit, finalProfit },
     financeStats: {
-      bankBalance,
-      stockValue,
-      courierBalance,
-      courierCount,
-      loanCount: loans.length,
-      loanTotal,
-      investmentTotal,
-      totalIncome,
-      totalExpense,
-      totalProductPurchase,
-      moneyIn,
-      moneyOut,
-      netValue,
+      bankBalance, stockValue, courierBalance, courierCount, loanCount: loans.length, loanTotal,
+      investmentTotal, totalIncome, totalExpense, totalProductPurchase, moneyIn, moneyOut, netValue,
     },
-    salesDetails: {
-      paymentStats,
-      topProducts,
-      hourlyOrders,
-      sourceBreakdown,
-    },
+    salesDetails: { paymentStats, topProducts, hourlyOrders, sourceBreakdown },
   };
 }
 
@@ -337,5 +292,6 @@ export function useSalesTrend() {
         return { date: format(d, "dd MMM"), orders: entry.orders, revenue: entry.revenue };
       });
     },
+    staleTime: 2 * 60 * 1000,
   });
 }
