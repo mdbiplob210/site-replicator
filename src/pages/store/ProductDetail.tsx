@@ -46,7 +46,7 @@ const ProductDetail = () => {
         id: product.id,
         name: product.name,
         price: product.selling_price,
-        category: (product.categories as any)?.name || "",
+        category: "",
         productCode: product.product_code,
         image: product.main_image_url || "",
       });
