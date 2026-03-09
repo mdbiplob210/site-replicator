@@ -414,7 +414,10 @@ export default function AdminFinance() {
               <div className="h-9 w-9 rounded-lg bg-destructive/10 flex items-center justify-center"><ArrowUpCircle className="h-4 w-4 text-destructive" /></div>
               <div><p className="font-semibold text-foreground">Amount OUT (Expense)</p><p className="text-xs text-muted-foreground">Record business expenditures</p></div>
             </div>
-            <SelectField label="PurexpenseSources.length > 0 ? expenseSources.map((s: any) => s.name) : pose" value={expensePurpose} onChange={setExpensePurpose} options={["Ads", "Courier", "Product Cost", "Salary", "Rent", "Other"]} />
+            <div className="grid grid-cols-2 gap-4">
+              <SelectField label="Purpose" value={expensePurpose} onChange={setExpensePurpose} options={expenseSources.length > 0 ? expenseSources.map((s: any) => s.name) : ["Ads", "Courier", "Product Cost", "Salary", "Rent", "Other"]} />
+              <SelectField label="ব্যাংক অ্যাকাউন্ট" value={expenseBank} onChange={setExpenseBank} options={bankAccounts.map((b) => b.label)} placeholder="সিলেক্ট করুন (ঐচ্ছিক)" />
+            </div>
             <div>
               <label className="text-xs font-semibold text-muted-foreground uppercase">Amount (৳)</label>
               <Input className="mt-1" type="number" value={expenseAmount} onChange={(e) => setExpenseAmount(e.target.value)} placeholder="0.00" />
