@@ -352,9 +352,9 @@ const Login = () => {
         <div
           className={`relative transition-all duration-1000 ${shakePortal ? "animate-[shake_0.6s_ease-in-out]" : ""}`}
           style={{
-            width: portalOpen ? 420 : 160,
-            height: portalOpen ? "auto" : 160,
-            minHeight: portalOpen ? undefined : 160,
+            width: portalOpen ? "min(420px, 92vw)" : 140,
+            height: portalOpen ? "auto" : 140,
+            minHeight: portalOpen ? undefined : 140,
           }}
         >
           {/* Portal ring (before open) */}
