@@ -53,7 +53,7 @@ const emptyProduct = {
   original_price: "0", additional_cost: "0", stock_quantity: "0",
   short_description: "", detailed_description: "", youtube_url: "",
   internal_note: "", free_delivery: false, allow_out_of_stock_orders: false,
-  category_id: "", status: "active",
+  category_id: "", status: "active", slug: "",
 };
 
 const AdminProducts = () => {
@@ -120,7 +120,7 @@ const AdminProducts = () => {
       return;
     }
     setSaving(true);
-    const payload = {
+    const payload: any = {
       name: form.name,
       product_code: form.product_code,
       purchase_price: parseFloat(form.purchase_price) || 0,
@@ -137,6 +137,13 @@ const AdminProducts = () => {
       category_id: form.category_id || null,
       status: form.status,
     };
+    // Only set slug if user provided one; otherwise let DB trigger auto-generate
+    if (form.slug.trim()) {
+      payload.slug = form.slug.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    } else if (!editingId) {
+      // New product: let DB handle it (slug = null triggers the auto-generate function)
+      payload.slug = null;
+    }
 
     let error;
     if (editingId) {
@@ -175,6 +182,7 @@ const AdminProducts = () => {
       allow_out_of_stock_orders: p.allow_out_of_stock_orders,
       category_id: p.category_id || "",
       status: p.status,
+      slug: (p as any).slug || "",
     });
     setView("edit");
   };
@@ -251,10 +259,15 @@ const AdminProducts = () => {
               </div>
 
               {/* Row 1 */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                   <Label className="text-sm font-semibold">Product Name</Label>
                   <Input placeholder="e.g. Smart Watch" value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="mt-1.5" />
+                </div>
+                <div>
+                  <Label className="text-sm font-semibold">URL Slug</Label>
+                  <Input placeholder="auto-generated if empty" value={form.slug} onChange={e => setForm({...form, slug: e.target.value})} className="mt-1.5 font-mono text-xs" />
+                  <p className="text-[10px] text-muted-foreground mt-1">খালি রাখলে নাম থেকে স্বয়ংক্রিয় তৈরি হবে</p>
                 </div>
                 <div>
                   <Label className="text-sm font-semibold">Product Code <span className="text-destructive">*</span></Label>
