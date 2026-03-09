@@ -606,6 +606,9 @@ function TrackingTab() {
   const [fbAccessToken, setFbAccessToken] = useState("");
   const [fbTestCode, setFbTestCode] = useState("");
   const [tiktokPixelId, setTiktokPixelId] = useState("");
+  const [fbAdAccountId, setFbAdAccountId] = useState("");
+  const [fbAppId, setFbAppId] = useState("");
+  const [fbAppSecret, setFbAppSecret] = useState("");
   const [loaded, setLoaded] = useState(false);
 
   // Load saved values
@@ -616,6 +619,9 @@ function TrackingTab() {
     setFbAccessToken(settings["fb_access_token"] || "");
     setFbTestCode(settings["fb_test_code"] || "");
     setTiktokPixelId(settings["tiktok_pixel_id"] || "");
+    setFbAdAccountId(settings["fb_ad_account_id"] || "");
+    setFbAppId(settings["fb_app_id"] || "");
+    setFbAppSecret(settings["fb_app_secret"] || "");
     setLoaded(true);
   }
 
@@ -627,6 +633,9 @@ function TrackingTab() {
       { key: "fb_access_token", value: fbAccessToken },
       { key: "fb_test_code", value: fbTestCode },
       { key: "tiktok_pixel_id", value: tiktokPixelId },
+      { key: "fb_ad_account_id", value: fbAdAccountId },
+      { key: "fb_app_id", value: fbAppId },
+      { key: "fb_app_secret", value: fbAppSecret },
     ];
     try {
       for (const entry of entries) {
