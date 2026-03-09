@@ -209,3 +209,36 @@
     background: linear-gradient(90deg, transparent, hsl(187 85% 53% / 0.3), transparent);
   }
 }
+
+/* Product description HTML styling */
+.product-description {
+  line-height: 1.8;
+}
+.product-description p {
+  margin-bottom: 0.5rem;
+}
+.product-description ul,
+.product-description ol {
+  padding-left: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+.product-description li {
+  margin-bottom: 0.25rem;
+}
+.product-description h1,
+.product-description h2,
+.product-description h3 {
+  font-weight: 700;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+.product-description a {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+}
+.product-description img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 0.5rem 0;
+}
