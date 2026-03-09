@@ -335,29 +335,29 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
             </div>
 
             {/* Product header */}
-            <div className="p-5 pb-3 border-b border-gray-100">
+            <div className="p-4 sm:p-5 pb-2 sm:pb-3 border-b border-gray-100">
               <div className="flex items-center gap-3">
-                <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
                   {currentItem.image ? (
                     <OptimizedImage src={currentItem.image} alt={currentItem.name} width={64} quality={75} className="w-full h-full object-cover" />
                   ) : (
-                    <ShoppingBag className="h-6 w-6 m-auto mt-5 text-gray-300" />
+                    <ShoppingBag className="h-6 w-6 m-auto mt-4 sm:mt-5 text-gray-300" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-sm truncate">{currentItem.name}</h3>
-                  <p className="text-green-600 font-black text-lg">৳{currentItem.price}</p>
+                  <h3 className="font-bold text-[13px] sm:text-sm truncate">{currentItem.name}</h3>
+                  <p className="text-green-600 font-black text-base sm:text-lg">৳{currentItem.price}</p>
                 </div>
               </div>
               {/* Quantity */}
               <div className="flex items-center justify-between mt-3">
-                <span className="text-sm text-gray-500">পরিমাণ:</span>
+                <span className="text-xs sm:text-sm text-gray-500">পরিমাণ:</span>
                 <div className="flex items-center border rounded-lg overflow-hidden">
-                  <button type="button" onClick={() => setQty(Math.max(1, qty - 1))} className="px-3 py-1.5 hover:bg-gray-100 transition">
+                  <button type="button" onClick={() => setQty(Math.max(1, qty - 1))} className="px-3 py-2 sm:py-1.5 hover:bg-gray-100 active:bg-gray-200 transition">
                     <Minus className="h-3.5 w-3.5" />
                   </button>
                   <span className="px-3 py-1.5 font-bold text-sm min-w-[2.5rem] text-center">{qty}</span>
-                  <button type="button" onClick={() => setQty(qty + 1)} className="px-3 py-1.5 hover:bg-gray-100 transition">
+                  <button type="button" onClick={() => setQty(qty + 1)} className="px-3 py-2 sm:py-1.5 hover:bg-gray-100 active:bg-gray-200 transition">
                     <Plus className="h-3.5 w-3.5" />
                   </button>
                 </div>
