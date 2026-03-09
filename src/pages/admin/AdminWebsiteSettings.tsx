@@ -215,6 +215,14 @@ function GeneralTab() {
       { key: "facebook_url", value: facebookUrl },
       { key: "instagram_url", value: instagramUrl },
       { key: "custom_domain", value: customDomain },
+      { key: "marquee_text", value: marqueeText },
+      { key: "footer_description", value: footerDescription },
+      { key: "footer_quick_links", value: footerQuickLinks },
+      { key: "footer_help_links", value: footerHelpLinks },
+      { key: "footer_address", value: footerAddress },
+      { key: "footer_copyright", value: footerCopyright },
+      { key: "offer_countdown_minutes", value: offerCountdownMinutes },
+      { key: "checkout_scarcity_count", value: checkoutScarcityCount },
     ];
     for (const { key, value } of updates) {
       await updateSetting.mutateAsync({ key, value });
