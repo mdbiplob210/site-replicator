@@ -496,6 +496,33 @@ export type Database = {
         }
         Relationships: []
       }
+      internal_messages: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          receiver_id: string
+          sender_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          receiver_id: string
+          sender_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          receiver_id?: string
+          sender_id?: string
+        }
+        Relationships: []
+      }
       landing_page_events: {
         Row: {
           created_at: string
@@ -834,6 +861,39 @@ export type Database = {
           spend?: number
           status?: string
           synced_at?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          reference_id: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          reference_id?: string | null
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          reference_id?: string | null
+          title?: string
+          type?: string
+          user_id?: string
         }
         Relationships: []
       }
