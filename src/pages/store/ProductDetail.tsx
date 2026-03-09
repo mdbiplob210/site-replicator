@@ -402,4 +402,89 @@ const ProductDetail = () => {
   );
 };
 
+// Suggested Products Component
+function SuggestedProducts({ categoryId, currentProductId, onOrder }: { categoryId: string | null | undefined; currentProductId: string; onOrder: (p: any) => void }) {
+  const { data: products = [], isLoading } = useSuggestedProducts(categoryId, currentProductId);
+
+  if (isLoading || products.length === 0) return null;
+
+  return (
+    <div className="mt-8 mb-8">
+      <div className="text-center mb-6">
+        <h2 className="text-xl font-bold text-gray-800 border-b-2 border-green-500 inline-block pb-1">
+          হয়তো আপনি এই পণ্যগুলিও পছন্দ করবেন
+        </h2>
+        <p className="text-sm text-gray-500 mt-1">আমাদের আরও পণ্য রয়েছে, আপনি চাইলে সেগুলোও দেখতে পারেন</p>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        {products.map((p) => {
+          const pDiscount = p.original_price > p.selling_price
+            ? Math.round(((p.original_price - p.selling_price) / p.original_price) * 100)
+            : 0;
+          const pDiscountAmount = p.original_price - p.selling_price;
+
+          return (
+            <div key={p.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition group">
+              <Link to={`/product/${p.id}`} className="block">
+                <div className="relative aspect-square overflow-hidden bg-gray-50">
+                  {p.main_image_url ? (
+                    <OptimizedImage
+                      src={p.main_image_url}
+                      alt={p.name}
+                      width={300}
+                      quality={80}
+                      className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-300">
+                      <ShoppingBag className="h-10 w-10" />
+                    </div>
+                  )}
+                  {pDiscount > 0 && (
+                    <div className="absolute top-2 right-2 w-12 h-12 rounded-full border-2 border-dashed border-red-400 bg-white flex flex-col items-center justify-center">
+                      <span className="text-red-500 font-bold text-[10px] leading-none">{pDiscountAmount}</span>
+                      <span className="text-red-500 font-bold text-[9px] leading-none">টাকা</span>
+                      <span className="text-red-500 font-bold text-[9px] leading-none">ছাড়</span>
+                    </div>
+                  )}
+                </div>
+              </Link>
+              <div className="p-3">
+                <Link to={`/product/${p.id}`}>
+                  <h3 className="font-semibold text-gray-800 text-sm truncate mb-1">{p.name}</h3>
+                </Link>
+                <div className="flex items-baseline gap-2 mb-2">
+                  <span className="text-green-600 font-bold">{p.selling_price} টাকা</span>
+                  {pDiscount > 0 && (
+                    <span className="text-gray-400 line-through text-xs">{p.original_price} টাকা</span>
+                  )}
+                </div>
+                <button
+                  onClick={() => onOrder(p)}
+                  className="w-full py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-bold flex items-center justify-center gap-1.5 transition"
+                >
+                  🛒 অর্ডার করুন
+                </button>
+                <button
+                  onClick={() => onOrder(p)}
+                  className="w-full mt-1.5 py-2 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition"
+                >
+                  <ShoppingBag className="h-3.5 w-3.5" /> কার্টে যোগ করুন
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="text-right mt-4">
+        <Link to="/" className="inline-flex items-center gap-1 text-green-600 hover:text-green-700 font-semibold text-sm border border-green-500 rounded-full px-4 py-1.5 hover:bg-green-50 transition">
+          সব দেখুন →
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 export default ProductDetail;
