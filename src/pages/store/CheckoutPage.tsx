@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { ShoppingBag, ArrowLeft, Check, Package, CreditCard, MapPin, Phone, User } from "lucide-react";
 import { useTracking } from "@/hooks/useTracking";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 import { getClientIp, parseDeviceInfo } from "@/lib/deviceDetect";
 
 interface CheckoutItem {
@@ -285,7 +286,7 @@ const CheckoutPage = () => {
       <h3 className="font-bold text-lg">অর্ডার সামারি</h3>
       <div className="flex items-center gap-4">
         <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-          {item.image ? <img src={item.image} className="w-full h-full object-cover" /> : <ShoppingBag className="h-6 w-6 m-auto mt-5 text-gray-300" />}
+          {item.image ? <OptimizedImage src={item.image} alt={item.name} width={64} quality={75} className="w-full h-full object-cover" /> : <ShoppingBag className="h-6 w-6 m-auto mt-5 text-gray-300" />}
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-semibold truncate">{item.name}</p>
@@ -384,7 +385,7 @@ const CheckoutPage = () => {
                 <div className="bg-gray-900 rounded-xl p-5 border border-gray-800">
                   <div className="flex items-center gap-4">
                     <div className="w-14 h-14 bg-gray-800 rounded-lg overflow-hidden">
-                      {item.image ? <img src={item.image} className="w-full h-full object-cover" /> : null}
+                      {item.image ? <OptimizedImage src={item.image} alt={item.name} width={56} quality={75} className="w-full h-full object-cover" /> : null}
                     </div>
                     <div className="flex-1"><p className="font-bold">{item.name}</p><p className="text-sm text-gray-500">৳{item.price} × {item.qty}</p></div>
                     <span className="font-bold text-amber-400">৳{total}</span>
@@ -445,7 +446,7 @@ const CheckoutPage = () => {
               <h1 className="text-xl font-bold">🛍️ চেকআউট</h1>
               <div className="flex items-center gap-3 mt-3">
                 <div className="w-12 h-12 bg-white/20 rounded-lg overflow-hidden">
-                  {item.image ? <img src={item.image} className="w-full h-full object-cover" /> : null}
+                  {item.image ? <OptimizedImage src={item.image} alt={item.name} width={48} quality={75} className="w-full h-full object-cover" /> : null}
                 </div>
                 <div>
                   <p className="font-semibold truncate max-w-[200px]">{item.name}</p>
@@ -479,7 +480,7 @@ const CheckoutPage = () => {
         <div className="bg-white p-1 mb-6">
           <div className="flex items-center gap-4 p-4 border-2 border-zinc-900">
             <div className="w-20 h-20 bg-zinc-100 flex-shrink-0">
-              {item.image ? <img src={item.image} className="w-full h-full object-cover" /> : <ShoppingBag className="h-6 w-6 m-auto mt-7 text-zinc-300" />}
+              {item.image ? <OptimizedImage src={item.image} alt={item.name} width={80} quality={75} className="w-full h-full object-cover" /> : <ShoppingBag className="h-6 w-6 m-auto mt-7 text-zinc-300" />}
             </div>
             <div className="flex-1">
               <p className="font-black uppercase truncate">{item.name}</p>
