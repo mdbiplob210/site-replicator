@@ -34,8 +34,9 @@ const AdminProfile = () => {
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
-    if (!file.type.startsWith("image/")) { toast.error("শুধুমাত্র ইমেজ ফাইল আপলোড করুন"); return; }
-    if (file.size > 2 * 1024 * 1024) { toast.error("ফাইল সাইজ ২MB এর বেশি হতে পারবে না"); return; }
+    const { validateFileUpload } = await import("@/lib/security");
+    const fileCheck = validateFileUpload(file, { maxSizeMB: 2, allowedTypes: ["image/jpeg", "image/png", "image/webp"] });
+    if (!fileCheck.valid) { toast.error(fileCheck.message); return; }
 
     setUploading(true);
     try {

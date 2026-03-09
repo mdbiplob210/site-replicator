@@ -195,17 +195,46 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     try {
+      // Input validation
+      if (!isValidEmail(email)) {
+        toast({ title: "ত্রুটি", description: "সঠিক ইমেইল দিন", variant: "destructive" });
+        setLoading(false);
+        return;
+      }
+
       if (isSignUp) {
+        // Strong password validation for signup
+        const pwCheck = validatePassword(password);
+        if (!pwCheck.valid) {
+          toast({ title: "দুর্বল পাসওয়ার্ড", description: pwCheck.message, variant: "destructive" });
+          setLoading(false);
+          return;
+        }
+
         const { error } = await supabase.auth.signUp({
-          email,
+          email: email.trim().toLowerCase(),
           password,
-          options: { data: { full_name: fullName }, emailRedirectTo: window.location.origin },
+          options: { data: { full_name: fullName.trim() }, emailRedirectTo: window.location.origin },
         });
         if (error) throw error;
+        await recordLoginAttempt(email, true);
         toast({ title: "সফল!", description: "অ্যাকাউন্ট তৈরি হয়েছে। ইমেইল ভেরিফাই করুন।" });
       } else {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        // Rate limiting check
+        const rateCheck = await isLoginRateLimited(email);
+        if (rateCheck.limited) {
+          const mins = Math.ceil(rateCheck.remainingSeconds / 60);
+          toast({ title: "🚫 সাময়িক ব্লক", description: `অনেকবার ভুল পাসওয়ার্ড দিয়েছেন। ${mins} মিনিট পর আবার চেষ্টা করুন।`, variant: "destructive" });
+          setLoading(false);
+          return;
+        }
+
+        const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
+        if (error) {
+          await recordLoginAttempt(email, false);
+          throw error;
+        }
+        await recordLoginAttempt(email, true);
         toast({ title: "🏆 সফল!", description: "সফলভাবে লগইন হয়েছে!" });
         const { data: roleData } = await supabase
           .from("user_roles")
