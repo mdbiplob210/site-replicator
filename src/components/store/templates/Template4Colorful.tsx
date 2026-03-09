@@ -15,6 +15,10 @@ const Template4Colorful = () => {
   const { trackAddToCart } = useTracking();
   const siteName = settings?.site_name || "STORE";
   const siteLogo = settings?.site_logo || "";
+  const facebookUrl = settings?.facebook_url || "";
+  const instagramUrl = settings?.instagram_url || "";
+  const contactEmail = settings?.contact_email || "";
+  const phoneNumber = settings?.phone_number || "";
 
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [checkoutItem, setCheckoutItem] = useState<any>(null);
