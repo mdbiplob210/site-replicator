@@ -7,9 +7,14 @@ import { useState } from "react";
 import { useTracking } from "@/hooks/useTracking";
 import { PopupCheckout } from "@/components/store/PopupCheckout";
 import { ExitDiscountBanner } from "@/components/store/ExitDiscountBanner";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 const Template4Colorful = () => {
   const { data: products = [], isLoading } = usePublicProducts();
+  const { data: settings } = useSiteSettings();
+  const { trackAddToCart } = useTracking();
+  const siteName = settings?.site_name || "STORE";
+  const siteLogo = settings?.site_logo || "";
   const { trackAddToCart } = useTracking();
 
   const [checkoutOpen, setCheckoutOpen] = useState(false);

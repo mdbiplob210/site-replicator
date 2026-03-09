@@ -52,8 +52,12 @@ const Template2Dark = () => {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-gray-950/90 backdrop-blur-lg border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/" className="text-2xl font-black tracking-wider">
-            SOHOZ<span className="text-amber-400">.</span>
+          <Link to="/" className="flex items-center gap-2">
+            {siteLogo ? (
+              <img src={siteLogo} alt={siteName} className="h-8 w-auto object-contain" />
+            ) : (
+              <span className="text-2xl font-black tracking-wider">{siteName}<span className="text-amber-400">.</span></span>
+            )}
           </Link>
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-400">
             <Link to="/" className="hover:text-white transition">Home</Link>
