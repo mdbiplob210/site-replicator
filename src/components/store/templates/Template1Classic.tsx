@@ -385,23 +385,25 @@ const Template1Classic = () => {
 
       {/* Contact floating buttons - WhatsApp & Phone */}
       {floatingContactsEnabled && (whatsappNumber || phoneNumber) && (
-        <div className="fixed bottom-20 right-4 z-40 flex flex-col gap-2">
+        <div className="fixed bottom-20 right-3 sm:right-4 z-40 flex flex-col gap-2.5">
           {floatingWhatsappEnabled && whatsappNumber && (
             <a
               href={`https://wa.me/${whatsappNumber}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-12 h-12 rounded-full bg-green-500 text-white flex items-center justify-center shadow-lg hover:bg-green-600 transition"
+              className="w-13 h-13 sm:w-12 sm:h-12 rounded-full bg-green-500 text-white flex items-center justify-center shadow-lg hover:bg-green-600 active:scale-95 transition"
+              style={{ width: 52, height: 52 }}
             >
-              <MessageCircle className="h-5 w-5" />
+              <MessageCircle className="h-5 w-5 sm:h-5 sm:w-5" />
             </a>
           )}
           {floatingCallEnabled && phoneNumber && (
             <a
               href={`tel:${phoneNumber}`}
-              className="w-12 h-12 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-lg hover:bg-blue-600 transition"
+              className="w-13 h-13 sm:w-12 sm:h-12 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-lg hover:bg-blue-600 active:scale-95 transition"
+              style={{ width: 52, height: 52 }}
             >
-              <Phone className="h-5 w-5" />
+              <Phone className="h-5 w-5 sm:h-5 sm:w-5" />
             </a>
           )}
         </div>
