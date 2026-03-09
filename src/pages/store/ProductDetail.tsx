@@ -101,7 +101,34 @@ const ProductDetail = () => {
   const paymentNumber = settings?.payment_number || "";
   const insideDhaka = settings?.delivery_inside_dhaka || "80";
   const outsideDhaka = settings?.delivery_outside_dhaka || "150";
+  const offerCountdownMinutes = Number(settings?.offer_countdown_minutes) || 30;
 
+  // Countdown timer state
+  const [countdown, setCountdown] = useState(() => {
+    const saved = sessionStorage.getItem("offer_countdown_end");
+    if (saved) {
+      const remaining = Math.max(0, Math.floor((Number(saved) - Date.now()) / 1000));
+      return remaining;
+    }
+    const seconds = offerCountdownMinutes * 60;
+    sessionStorage.setItem("offer_countdown_end", String(Date.now() + seconds * 1000));
+    return seconds;
+  });
+
+  useEffect(() => {
+    if (countdown <= 0) return;
+    const timer = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) { clearInterval(timer); return 0; }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [countdown > 0]);
+
+  const countdownHours = Math.floor(countdown / 3600);
+  const countdownMins = Math.floor((countdown % 3600) / 60);
+  const countdownSecs = countdown % 60;
   const handleOrder = () => {
     trackAddToCart({
       id: product.id,
