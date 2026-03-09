@@ -24,11 +24,13 @@ export default function AdminFinance() {
   const [incomeSource, setIncomeSource] = useState("Sales");
   const [incomeAmount, setIncomeAmount] = useState("");
   const [incomeNote, setIncomeNote] = useState("");
+  const [incomeBank, setIncomeBank] = useState("");
 
   // Expense form
   const [expensePurpose, setExpensePurpose] = useState("Ads");
   const [expenseAmount, setExpenseAmount] = useState("");
   const [expenseNote, setExpenseNote] = useState("");
+  const [expenseBank, setExpenseBank] = useState("");
 
   // Banks form
   const [bankName, setBankName] = useState("");
@@ -64,6 +66,9 @@ export default function AdminFinance() {
   const { data: allSources = [] } = useFinanceSources();
   const createSource = useCreateFinanceSource();
   const deleteSource = useDeleteFinanceSource();
+
+  // Bank accounts from finance_records
+  const { data: bankAccounts = [] } = useFinanceRecords("bank");
 
   // Cross-connect: Stock value from products table
   const { data: stockValue = 0 } = useQuery({
@@ -115,21 +120,23 @@ export default function AdminFinance() {
 
   const handleSubmitIncome = () => {
     if (!incomeAmount || Number(incomeAmount) <= 0) return;
+    const bankInfo = incomeBank ? ` [${incomeBank}]` : "";
     createRecord.mutate({
       type: "income",
       label: incomeSource,
       amount: Number(incomeAmount),
-      notes: incomeNote || null,
+      notes: (incomeNote ? incomeNote : "") + bankInfo || null,
     }, { onSuccess: () => { setIncomeAmount(""); setIncomeNote(""); } });
   };
 
   const handleSubmitExpense = () => {
     if (!expenseAmount || Number(expenseAmount) <= 0 || !expenseNote) return;
+    const bankInfo = expenseBank ? ` [${expenseBank}]` : "";
     createRecord.mutate({
       type: "expense",
       label: expensePurpose,
       amount: Number(expenseAmount),
-      notes: expenseNote,
+      notes: expenseNote + bankInfo,
     }, { onSuccess: () => { setExpenseAmount(""); setExpenseNote(""); } });
   };
 
@@ -382,7 +389,10 @@ export default function AdminFinance() {
               <div className="h-9 w-9 rounded-lg bg-secondary flex items-center justify-center"><ArrowDownCircle className="h-4 w-4 text-foreground" /></div>
               <div><p className="font-semibold text-foreground">Amount IN (Income)</p><p className="text-xs text-muted-foreground">Record money received into your business</p></div>
             </div>
-            <SelectField label="Source" value={incomeSource} onChange={setIncomeSource} options={incomeSources.length > 0 ? incomeSources.map((s: any) => s.name) : incomeSources.length > 0 ? incomeSources.map((s: any) => s.name) : ["Sales", "Refund", "Investment", "Loan", "Other"]} />
+            <div className="grid grid-cols-2 gap-4">
+              <SelectField label="Source" value={incomeSource} onChange={setIncomeSource} options={incomeSources.length > 0 ? incomeSources.map((s: any) => s.name) : ["Sales", "Refund", "Investment", "Loan", "Other"]} />
+              <SelectField label="ব্যাংক অ্যাকাউন্ট" value={incomeBank} onChange={setIncomeBank} options={bankAccounts.map((b) => b.label)} placeholder="সিলেক্ট করুন (ঐচ্ছিক)" />
+            </div>
             <div>
               <label className="text-xs font-semibold text-muted-foreground uppercase">Amount (৳)</label>
               <Input className="mt-1" type="number" value={incomeAmount} onChange={(e) => setIncomeAmount(e.target.value)} placeholder="0.00" />
@@ -404,7 +414,10 @@ export default function AdminFinance() {
               <div className="h-9 w-9 rounded-lg bg-destructive/10 flex items-center justify-center"><ArrowUpCircle className="h-4 w-4 text-destructive" /></div>
               <div><p className="font-semibold text-foreground">Amount OUT (Expense)</p><p className="text-xs text-muted-foreground">Record business expenditures</p></div>
             </div>
-            <SelectField label="PurexpenseSources.length > 0 ? expenseSources.map((s: any) => s.name) : pose" value={expensePurpose} onChange={setExpensePurpose} options={["Ads", "Courier", "Product Cost", "Salary", "Rent", "Other"]} />
+            <div className="grid grid-cols-2 gap-4">
+              <SelectField label="Purpose" value={expensePurpose} onChange={setExpensePurpose} options={expenseSources.length > 0 ? expenseSources.map((s: any) => s.name) : ["Ads", "Courier", "Product Cost", "Salary", "Rent", "Other"]} />
+              <SelectField label="ব্যাংক অ্যাকাউন্ট" value={expenseBank} onChange={setExpenseBank} options={bankAccounts.map((b) => b.label)} placeholder="সিলেক্ট করুন (ঐচ্ছিক)" />
+            </div>
             <div>
               <label className="text-xs font-semibold text-muted-foreground uppercase">Amount (৳)</label>
               <Input className="mt-1" type="number" value={expenseAmount} onChange={(e) => setExpenseAmount(e.target.value)} placeholder="0.00" />
