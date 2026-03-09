@@ -728,6 +728,47 @@ function TrackingTab() {
         </div>
       </div>
 
+      {/* Meta Ads API Configuration */}
+      <div className="bg-card rounded-2xl border border-border p-6 space-y-5">
+        <div className="flex items-center gap-2">
+          <Facebook className="h-5 w-5 text-blue-600" />
+          <h3 className="font-bold text-foreground">Meta Ads API Configuration</h3>
+        </div>
+        <p className="text-sm text-muted-foreground">Meta Ads ডাটা সিঙ্ক এবং টোকেন এক্সচেঞ্জের জন্য প্রয়োজনীয় তথ্য দিন</p>
+
+        <div>
+          <label className="text-sm font-medium text-foreground">Ad Account ID</label>
+          <Input className="mt-1.5" placeholder="act_123456789 অথবা 123456789" value={fbAdAccountId} onChange={(e) => setFbAdAccountId(e.target.value)} />
+          <p className="text-xs text-muted-foreground mt-1">Meta Business Suite → Ad Accounts → আপনার Ad Account ID কপি করুন</p>
+        </div>
+
+        <div>
+          <label className="text-sm font-medium text-foreground">App ID</label>
+          <Input className="mt-1.5" placeholder="1234567890" value={fbAppId} onChange={(e) => setFbAppId(e.target.value)} />
+          <p className="text-xs text-muted-foreground mt-1">Meta Developers → Your App → App ID</p>
+        </div>
+
+        <div>
+          <label className="text-sm font-medium text-foreground">App Secret</label>
+          <Input className="mt-1.5" type="password" placeholder="abcdef1234567890..." value={fbAppSecret} onChange={(e) => setFbAppSecret(e.target.value)} />
+          <p className="text-xs text-muted-foreground mt-1">Meta Developers → Your App → Settings → Basic → App Secret</p>
+        </div>
+
+        <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
+          <div className="flex items-start gap-2">
+            <Info className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+            <div className="text-xs text-amber-800 dark:text-amber-300 space-y-1">
+              <p className="font-medium">টোকেন এক্সপায়ার হলে কি করবেন?</p>
+              <ol className="list-decimal list-inside space-y-0.5">
+                <li>নতুন Short-Lived Token জেনারেট করুন (Graph API Explorer থেকে)</li>
+                <li>উপরে "Conversions API Access Token" ফিল্ডে পেস্ট করুন</li>
+                <li>Save করুন — Meta Ads পেজে গিয়ে "Exchange Token" ক্লিক করলে ৬০ দিনের টোকেন পাবেন</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* TikTok Pixel */}
       <div className="bg-card rounded-2xl border border-border p-6 space-y-5">
         <div className="flex items-center gap-2">
