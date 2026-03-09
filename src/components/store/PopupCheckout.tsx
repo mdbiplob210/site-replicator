@@ -360,23 +360,23 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
                 <Label className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 mb-1">
                   <User className="h-3.5 w-3.5" /> আপনার নাম
                 </Label>
-                <Input placeholder="পুরো নাম লিখুন" value={form.name} onChange={e => updateForm({ name: e.target.value })} className="h-11 rounded-xl" required />
+                <Input placeholder="পুরো নাম লিখুন" value={form.name} onChange={e => updateForm({ name: e.target.value })} className="h-11 rounded-xl" required name="name" autoComplete="name" />
               </div>
               <div>
                 <Label className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 mb-1">
                   <Phone className="h-3.5 w-3.5" /> ফোন নম্বর
                 </Label>
-                <Input placeholder="01XXXXXXXXX" value={form.phone} onChange={e => updateForm({ phone: e.target.value })} className="h-11 rounded-xl" required />
+                <Input placeholder="01XXXXXXXXX" value={form.phone} onChange={e => updateForm({ phone: e.target.value })} className="h-11 rounded-xl" required name="tel" autoComplete="tel" />
               </div>
               <div>
                 <Label className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 mb-1">
                   <MapPin className="h-3.5 w-3.5" /> সম্পূর্ণ ঠিকানা
                 </Label>
-                <Textarea placeholder="বাড়ি নং, রোড, এলাকা, জেলা" value={form.address} onChange={e => updateForm({ address: e.target.value })} className="rounded-xl resize-none" rows={2} required />
+                <Textarea placeholder="বাড়ি নং, রোড, এলাকা, জেলা" value={form.address} onChange={e => updateForm({ address: e.target.value })} className="rounded-xl resize-none" rows={2} required name="address" autoComplete="street-address" />
               </div>
               <div>
                 <Label className="text-xs font-semibold text-gray-600 mb-1">নোট (ঐচ্ছিক)</Label>
-                <Input placeholder="অতিরিক্ত তথ্য..." value={form.notes} onChange={e => updateForm({ notes: e.target.value })} className="h-11 rounded-xl" />
+                <Input placeholder="অতিরিক্ত তথ্য..." value={form.notes} onChange={e => updateForm({ notes: e.target.value })} className="h-11 rounded-xl" autoComplete="off" />
               </div>
 
               {/* Summary */}
