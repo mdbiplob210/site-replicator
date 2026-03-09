@@ -1,5 +1,5 @@
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { useInvoices, Invoice } from "@/hooks/useInvoices";
+import { useInvoices, Invoice, InvoiceItem } from "@/hooks/useInvoices";
 import { useCourierProviders } from "@/hooks/useCourier";
 import { FileText, Printer, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -35,6 +35,10 @@ function InvoicePrint({ invoice, courierName }: { invoice: Invoice; courierName:
           .total-row { font-size: 18px; font-weight: bold; background: #f5f5f5; padding: 8px; border-radius: 4px; }
           .courier-badge { display: inline-block; background: #e8f5e9; color: #2e7d32; padding: 4px 12px; border-radius: 4px; font-weight: bold; font-size: 12px; }
           .footer { text-align: center; font-size: 11px; color: #999; margin-top: 16px; padding-top: 8px; border-top: 1px solid #eee; }
+          .items-table { width: 100%; border-collapse: collapse; margin: 6px 0; }
+          .items-table th { text-align: left; font-size: 12px; color: #555; border-bottom: 1px solid #ddd; padding: 4px 2px; }
+          .items-table td { font-size: 13px; padding: 4px 2px; border-bottom: 1px solid #f0f0f0; }
+          .items-table td:last-child, .items-table th:last-child { text-align: right; }
           @media print { body { padding: 0; } }
         </style>
       </head>
@@ -75,6 +79,27 @@ function InvoicePrint({ invoice, courierName }: { invoice: Invoice; courierName:
               <span>{invoice.delivery_date ? new Date(invoice.delivery_date).toLocaleDateString("bn-BD") : "—"}</span>
             </div>
           </div>
+
+          {invoice.items && invoice.items.length > 0 && (
+            <div className="section">
+              <div className="section-title">প্রোডাক্ট তালিকা</div>
+              <table className="items-table">
+                <thead>
+                  <tr><th>প্রোডাক্ট</th><th>কোড</th><th>পরিমাণ</th><th>মূল্য</th></tr>
+                </thead>
+                <tbody>
+                  {(invoice.items as InvoiceItem[]).map((item, i) => (
+                    <tr key={i}>
+                      <td>{item.product_name}</td>
+                      <td>{item.product_code}</td>
+                      <td>{item.quantity}</td>
+                      <td>৳{item.total_price}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
 
           <div className="divider" />
 

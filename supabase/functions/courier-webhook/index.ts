@@ -182,12 +182,17 @@ Deno.serve(async (req) => {
 
         // === AUTO-GENERATE INVOICE ON DELIVERY ===
         if (orderStatus === 'delivered') {
-          // Fetch order details
+          // Fetch order details with items
           const { data: order } = await supabase
             .from('orders')
             .select('*')
             .eq('id', courierOrder.order_id)
             .single()
+
+          const { data: orderItems } = await supabase
+            .from('order_items')
+            .select('product_name, product_code, quantity, unit_price, total_price')
+            .eq('order_id', courierOrder.order_id)
 
           if (order) {
             // Generate invoice number: INV-YYYYMMDD-XXXX
@@ -220,6 +225,7 @@ Deno.serve(async (req) => {
                 total_amount: finalTotal,
                 delivery_date: deliveryDate ? new Date(deliveryDate).toISOString() : now.toISOString(),
                 status: 'generated',
+                items: orderItems || [],
               }, { onConflict: 'order_id' })
           }
         }
