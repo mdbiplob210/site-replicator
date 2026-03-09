@@ -453,29 +453,110 @@ export default function AdminFinance() {
 
         {/* Product Purchase Tab */}
         {tab === "product_purchase" && (
-          <div className="bg-card rounded-2xl border border-border p-6 space-y-5">
-            <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-lg bg-secondary flex items-center justify-center"><Package className="h-4 w-4 text-foreground" /></div>
-              <div><p className="font-semibold text-foreground">প্রোডাক্ট পারচেজ</p><p className="text-xs text-muted-foreground">সাপ্লায়ার থেকে প্রোডাক্ট কেনার হিসাব রাখুন</p></div>
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-muted-foreground uppercase">সাপ্লায়ার নাম</label>
-              <Input className="mt-1" placeholder="e.g. ABC Traders, XYZ Supplier" value={purchaseSupplier} onChange={(e) => setPurchaseSupplier(e.target.value)} />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-xs font-semibold text-muted-foreground uppercase">Amount (৳)</label>
-                <Input className="mt-1" type="number" value={purchaseAmount} onChange={(e) => setPurchaseAmount(e.target.value)} placeholder="0.00" />
+          <div className="space-y-5">
+            {/* Form */}
+            <div className="bg-card rounded-2xl border border-border p-6 space-y-5">
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 rounded-lg bg-secondary flex items-center justify-center"><Package className="h-4 w-4 text-foreground" /></div>
+                <div><p className="font-semibold text-foreground">প্রোডাক্ট পারচেজ</p><p className="text-xs text-muted-foreground">সাপ্লায়ার থেকে প্রোডাক্ট কেনার হিসাব রাখুন</p></div>
               </div>
-              <SelectField label="ব্যাংক অ্যাকাউন্ট" value={purchaseBank} onChange={setPurchaseBank} options={bankAccounts.map((b) => b.label)} placeholder="সিলেক্ট করুন (ঐচ্ছিক)" />
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground uppercase">সাপ্লায়ার নাম</label>
+                <Input className="mt-1" placeholder="e.g. ABC Traders, XYZ Supplier" value={purchaseSupplier} onChange={(e) => setPurchaseSupplier(e.target.value)} />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground uppercase">Amount (৳)</label>
+                  <Input className="mt-1" type="number" value={purchaseAmount} onChange={(e) => setPurchaseAmount(e.target.value)} placeholder="0.00" />
+                </div>
+                <SelectField label="ব্যাংক অ্যাকাউন্ট" value={purchaseBank} onChange={setPurchaseBank} options={bankAccounts.map((b) => b.label)} placeholder="সিলেক্ট করুন (ঐচ্ছিক)" />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground uppercase">Note (Optional)</label>
+                <Textarea className="mt-1" placeholder="কি প্রোডাক্ট কিনলেন, পরিমাণ ইত্যাদি..." value={purchaseNote} onChange={(e) => setPurchaseNote(e.target.value)} />
+              </div>
+              <Button className="w-full h-12 rounded-2xl text-base font-semibold bg-destructive hover:bg-destructive/90 text-destructive-foreground" onClick={handleSubmitPurchase} disabled={createRecord.isPending || !purchaseAmount || !purchaseSupplier}>
+                {createRecord.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Record Purchase"}
+              </Button>
             </div>
-            <div>
-              <label className="text-xs font-semibold text-muted-foreground uppercase">Note (Optional)</label>
-              <Textarea className="mt-1" placeholder="কি প্রোডাক্ট কিনলেন, পরিমাণ ইত্যাদি..." value={purchaseNote} onChange={(e) => setPurchaseNote(e.target.value)} />
-            </div>
-            <Button className="w-full h-12 rounded-2xl text-base font-semibold bg-destructive hover:bg-destructive/90 text-destructive-foreground" onClick={handleSubmitPurchase} disabled={createRecord.isPending || !purchaseAmount || !purchaseSupplier}>
-              {createRecord.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Record Purchase"}
-            </Button>
+
+            {/* Supplier Summary */}
+            {(() => {
+              const purchaseRecords = records.filter(r => r.type === "product_purchase");
+              const supplierMap: Record<string, { totalPurchase: number; records: typeof purchaseRecords }> = {};
+              for (const r of purchaseRecords) {
+                if (!supplierMap[r.label]) {
+                  supplierMap[r.label] = { totalPurchase: 0, records: [] };
+                }
+                supplierMap[r.label].totalPurchase += Number(r.amount);
+                supplierMap[r.label].records.push(r);
+              }
+              const suppliers = Object.entries(supplierMap);
+              const totalPurchaseAll = purchaseRecords.reduce((s, r) => s + Number(r.amount), 0);
+
+              return (
+                <div className="bg-card rounded-2xl border border-border p-6 space-y-5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="h-9 w-9 rounded-lg bg-destructive/10 flex items-center justify-center"><ShoppingCart className="h-4 w-4 text-destructive" /></div>
+                      <div><p className="font-semibold text-foreground">সাপ্লায়ার হিসাব</p><p className="text-xs text-muted-foreground">সাপ্লায়ার অনুযায়ী মোট কেনাকাটার সারাংশ</p></div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[10px] font-semibold text-muted-foreground uppercase">মোট পারচেজ</p>
+                      <p className="text-lg font-bold text-destructive">৳{totalPurchaseAll.toLocaleString()}</p>
+                    </div>
+                  </div>
+
+                  {suppliers.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+                      <Package className="h-10 w-10 mb-3 opacity-30" />
+                      <p className="font-medium">কোনো পারচেজ রেকর্ড নেই</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {suppliers.map(([supplier, data]) => (
+                        <div key={supplier} className="rounded-xl bg-secondary/20 border border-border/40 overflow-hidden">
+                          <div className="flex items-center justify-between p-4">
+                            <div className="flex items-center gap-3">
+                              <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                <span className="text-sm font-bold text-primary">{supplier[0].toUpperCase()}</span>
+                              </div>
+                              <div>
+                                <p className="font-semibold text-sm text-foreground">{supplier}</p>
+                                <p className="text-xs text-muted-foreground">{data.records.length}টি ট্রানজেকশন</p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-[10px] font-semibold text-muted-foreground uppercase">মোট কেনা</p>
+                              <p className="text-base font-bold text-destructive">৳{data.totalPurchase.toLocaleString()}</p>
+                            </div>
+                          </div>
+                          <div className="border-t border-border/30 px-4 py-2 space-y-1.5">
+                            {data.records.slice(0, 5).map((r) => (
+                              <div key={r.id} className="flex items-center justify-between text-xs">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-muted-foreground">{format(new Date(r.created_at), "dd MMM yyyy")}</span>
+                                  {r.notes && <span className="text-muted-foreground/70 truncate max-w-[200px]">— {r.notes}</span>}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-semibold text-destructive">৳{Number(r.amount).toLocaleString()}</span>
+                                  <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive/60 hover:text-destructive" onClick={() => deleteRecord.mutate(r.id)}>
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                            {data.records.length > 5 && (
+                              <p className="text-[10px] text-muted-foreground text-center py-1">+{data.records.length - 5} আরো রেকর্ড</p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </div>
         )}
 
