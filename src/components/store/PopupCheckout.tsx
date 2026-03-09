@@ -376,7 +376,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
               </div>
               <div>
                 <Label className="text-xs font-semibold text-gray-600 mb-1">নোট (ঐচ্ছিক)</Label>
-                <Input placeholder="অতিরিক্ত তথ্য..." value={form.notes} onChange={e => updateForm({ notes: e.target.value })} className="h-11 rounded-xl" />
+                <Input placeholder="অতিরিক্ত তথ্য..." value={form.notes} onChange={e => updateForm({ notes: e.target.value })} className="h-11 rounded-xl" autoComplete="off" />
               </div>
 
               {/* Summary */}
