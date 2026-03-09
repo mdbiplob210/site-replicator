@@ -14,6 +14,10 @@ const Template3Minimal = () => {
   const { trackAddToCart } = useTracking();
   const siteName = settings?.site_name || "STORE";
   const siteLogo = settings?.site_logo || "";
+  const facebookUrl = settings?.facebook_url || "";
+  const instagramUrl = settings?.instagram_url || "";
+  const contactEmail = settings?.contact_email || "";
+  const phoneNumber = settings?.phone_number || "";
 
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [checkoutItem, setCheckoutItem] = useState<any>(null);
@@ -111,7 +115,19 @@ const Template3Minimal = () => {
       </section>
 
       <footer className="border-t border-stone-200 py-12">
-        <div className="max-w-6xl mx-auto px-6 text-center text-xs text-stone-400 tracking-widest uppercase">© 2026 {siteName}</div>
+        <div className="max-w-6xl mx-auto px-6 text-center">
+          <div className="flex items-center justify-center gap-6 mb-4">
+            {facebookUrl && <a href={facebookUrl} target="_blank" rel="noopener noreferrer" className="text-stone-400 hover:text-stone-700 text-xs tracking-widest uppercase transition">Facebook</a>}
+            {instagramUrl && <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="text-stone-400 hover:text-stone-700 text-xs tracking-widest uppercase transition">Instagram</a>}
+          </div>
+          {(contactEmail || phoneNumber) && (
+            <div className="flex items-center justify-center gap-4 mb-4 text-xs text-stone-400">
+              {contactEmail && <a href={`mailto:${contactEmail}`} className="hover:text-stone-700 transition">{contactEmail}</a>}
+              {phoneNumber && <span>{phoneNumber}</span>}
+            </div>
+          )}
+          <div className="text-xs text-stone-400 tracking-widest uppercase">© 2026 {siteName}</div>
+        </div>
       </footer>
 
       {showDiscountBanner && <ExitDiscountBanner onAccept={handleAcceptDiscount} onReject={handleRejectDiscount} />}

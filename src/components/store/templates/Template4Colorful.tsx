@@ -15,6 +15,10 @@ const Template4Colorful = () => {
   const { trackAddToCart } = useTracking();
   const siteName = settings?.site_name || "STORE";
   const siteLogo = settings?.site_logo || "";
+  const facebookUrl = settings?.facebook_url || "";
+  const instagramUrl = settings?.instagram_url || "";
+  const contactEmail = settings?.contact_email || "";
+  const phoneNumber = settings?.phone_number || "";
 
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [checkoutItem, setCheckoutItem] = useState<any>(null);
@@ -136,7 +140,19 @@ const Template4Colorful = () => {
       </section>
 
       <footer className="bg-white border-t border-rose-100 py-10">
-        <div className="max-w-7xl mx-auto px-4 text-center text-sm text-gray-400">© 2026 {siteName} — Made with ❤️</div>
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <div className="flex items-center justify-center gap-4 mb-3">
+            {facebookUrl && <a href={facebookUrl} target="_blank" rel="noopener noreferrer" className="text-rose-400 hover:text-rose-600 text-sm font-semibold transition">Facebook</a>}
+            {instagramUrl && <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="text-violet-400 hover:text-violet-600 text-sm font-semibold transition">Instagram</a>}
+          </div>
+          {(contactEmail || phoneNumber) && (
+            <div className="flex items-center justify-center gap-4 mb-3 text-xs text-gray-400">
+              {contactEmail && <span>{contactEmail}</span>}
+              {phoneNumber && <span>{phoneNumber}</span>}
+            </div>
+          )}
+          <div className="text-sm text-gray-400">© 2026 {siteName} — Made with ❤️</div>
+        </div>
       </footer>
 
       {showDiscountBanner && <ExitDiscountBanner onAccept={handleAcceptDiscount} onReject={handleRejectDiscount} />}

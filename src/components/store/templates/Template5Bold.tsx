@@ -15,6 +15,10 @@ const Template5Bold = () => {
   const { trackAddToCart } = useTracking();
   const siteName = settings?.site_name || "STORE";
   const siteLogo = settings?.site_logo || "";
+  const facebookUrl = settings?.facebook_url || "";
+  const instagramUrl = settings?.instagram_url || "";
+  const contactEmail = settings?.contact_email || "";
+  const phoneNumber = settings?.phone_number || "";
 
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [checkoutItem, setCheckoutItem] = useState<any>(null);
@@ -133,7 +137,19 @@ const Template5Bold = () => {
       </section>
 
       <footer className="bg-zinc-900 text-white py-10">
-        <div className="max-w-7xl mx-auto px-4 text-center text-sm text-zinc-500 font-bold tracking-widest uppercase">© 2026 {siteName}</div>
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <div className="flex items-center justify-center gap-6 mb-4">
+            {facebookUrl && <a href={facebookUrl} target="_blank" rel="noopener noreferrer" className="text-zinc-500 hover:text-white text-xs font-bold tracking-widest uppercase transition">Facebook</a>}
+            {instagramUrl && <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="text-zinc-500 hover:text-white text-xs font-bold tracking-widest uppercase transition">Instagram</a>}
+          </div>
+          {(contactEmail || phoneNumber) && (
+            <div className="flex items-center justify-center gap-4 mb-4 text-xs text-zinc-500">
+              {contactEmail && <span>{contactEmail}</span>}
+              {phoneNumber && <span>{phoneNumber}</span>}
+            </div>
+          )}
+          <div className="text-sm text-zinc-500 font-bold tracking-widest uppercase">© 2026 {siteName}</div>
+        </div>
       </footer>
 
       {showDiscountBanner && <ExitDiscountBanner onAccept={handleAcceptDiscount} onReject={handleRejectDiscount} />}

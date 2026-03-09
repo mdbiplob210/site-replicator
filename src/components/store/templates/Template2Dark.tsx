@@ -15,6 +15,10 @@ const Template2Dark = () => {
   const { trackAddToCart } = useTracking();
   const siteName = settings?.site_name || "STORE";
   const siteLogo = settings?.site_logo || "";
+  const facebookUrl = settings?.facebook_url || "";
+  const instagramUrl = settings?.instagram_url || "";
+  const contactEmail = settings?.contact_email || "";
+  const phoneNumber = settings?.phone_number || "";
 
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [checkoutItem, setCheckoutItem] = useState<any>(null);
@@ -137,8 +141,14 @@ const Template2Dark = () => {
       </section>
 
       <footer className="border-t border-gray-800 py-10">
-        <div className="max-w-7xl mx-auto px-4 text-center text-sm text-gray-600">
-          © 2026 {siteName}
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <div className="flex items-center justify-center gap-4 mb-3">
+            {facebookUrl && <a href={facebookUrl} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-blue-400 text-xs transition">Facebook</a>}
+            {instagramUrl && <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-pink-400 text-xs transition">Instagram</a>}
+            {contactEmail && <a href={`mailto:${contactEmail}`} className="text-gray-500 hover:text-white text-xs transition">{contactEmail}</a>}
+            {phoneNumber && <span className="text-gray-500 text-xs">{phoneNumber}</span>}
+          </div>
+          <div className="text-sm text-gray-600">© 2026 {siteName}</div>
         </div>
       </footer>
 

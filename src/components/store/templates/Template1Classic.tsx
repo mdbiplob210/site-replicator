@@ -418,11 +418,17 @@ const Template1Classic = () => {
                 <span className="text-lg font-black text-green-400">{siteName}</span>
               )}
               <p className="text-xs text-gray-400 mt-2 leading-relaxed">{footerDescription}</p>
+              {(facebookUrl || instagramUrl) && (
+                <div className="flex gap-3 mt-3">
+                  {facebookUrl && <a href={facebookUrl} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-blue-400 transition text-xs">Facebook</a>}
+                  {instagramUrl && <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-pink-400 transition text-xs">Instagram</a>}
+                </div>
+              )}
             </div>
             {[
               { title: "কুইক লিংকস", links: footerQuickLinks },
               { title: "সাহায্য", links: footerHelpLinks },
-              { title: "যোগাযোগ", links: [`ফোন: ${phoneNumber || "01XXXXXXXXX"}`, footerAddress] },
+              { title: "যোগাযোগ", links: [`ফোন: ${phoneNumber || "01XXXXXXXXX"}`, ...(contactEmail ? [`ইমেইল: ${contactEmail}`] : []), footerAddress] },
             ].map(col => (
               <div key={col.title}>
                 <h4 className="text-xs font-bold text-white mb-2 uppercase tracking-wider">{col.title}</h4>
