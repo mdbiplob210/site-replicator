@@ -157,219 +157,201 @@ const AdminRoles = () => {
             </Card>
           </div>
 
-          {/* Permission Summary */}
-          <Card className="border-border/40">
-            <CardContent className="p-5">
-              <p className="text-sm font-bold text-foreground mb-3">পারমিশন ক্যাটাগরি সারাংশ</p>
-              <div className="flex flex-wrap gap-2">
-                {Object.entries(permissionGroups).map(([group, perms]) => {
-                  const GroupIcon = groupIcons[group] || Shield;
-                  const iconColor = groupIconColors[group] || "text-muted-foreground";
-                  return (
-                    <Badge key={group} variant="outline" className="gap-1.5 py-1.5 px-3 text-xs">
-                      <GroupIcon className={`h-3.5 w-3.5 ${iconColor}`} />
-                      {group} ({perms.length})
-                    </Badge>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
+          {/* Tabs for Permissions and Panels */}
+          <Tabs defaultValue="panels" className="space-y-5">
+            <TabsList className="grid w-full grid-cols-2 max-w-md">
+              <TabsTrigger value="panels" className="gap-2">
+                <LayoutGrid className="h-4 w-4" /> অর্ডার প্যানেল
+              </TabsTrigger>
+              <TabsTrigger value="permissions" className="gap-2">
+                <Shield className="h-4 w-4" /> পারমিশন
+              </TabsTrigger>
+            </TabsList>
 
-          {/* Order Distribution Info */}
-          <Card className="border-border/40 bg-gradient-to-r from-primary/5 to-transparent">
-            <CardContent className="p-5">
-              <div className="flex items-start gap-3">
-                <div className="p-2 rounded-lg bg-primary/10 mt-0.5"><ShoppingCart className="h-4 w-4 text-primary" /></div>
-                <div>
-                  <p className="font-bold text-foreground text-sm">অর্ডার অটো-ডিস্ট্রিবিউশন সিস্টেম</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    নতুন অর্ডার আসলে সব এক্টিভ প্যানেলে স্বয়ংক্রিয়ভাবে ভাগ হয়ে যাবে। যার কাছে কম অর্ডার পেন্ডিং আছে তাকে আগে দেওয়া হবে (Round-Robin)।
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+            {/* Panel Tab */}
+            <TabsContent value="panels">
+              <PanelManagement />
+            </TabsContent>
 
-          {/* Employee List */}
-          {isLoading ? (
-            <Card className="border-border/40 p-16 text-center">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mx-auto" />
-              <p className="text-muted-foreground mt-3">লোড হচ্ছে...</p>
-            </Card>
-          ) : employees.length === 0 ? (
-            <Card className="border-border/40 p-16 text-center">
-              <Users className="h-12 w-12 text-muted-foreground/20 mx-auto mb-4" />
-              <p className="text-lg font-semibold text-muted-foreground">কোনো এমপ্লয়ি নেই</p>
-              <p className="text-sm text-muted-foreground/70 mt-1">প্রথমে Users পেজ থেকে এমপ্লয়ি যোগ করুন</p>
-            </Card>
-          ) : (
-            <div className="space-y-4">
-              {employees.map((emp) => {
-                const isExpanded = expandedUser === emp.user_id;
-                const permCount = emp.permissions.length;
-                const isAdmin = (emp as any).role === "admin";
+            {/* Permissions Tab */}
+            <TabsContent value="permissions" className="space-y-5">
+              {/* Permission Summary */}
+              <Card className="border-border/40">
+                <CardContent className="p-5">
+                  <p className="text-sm font-bold text-foreground mb-3">পারমিশন ক্যাটাগরি সারাংশ</p>
+                  <div className="flex flex-wrap gap-2">
+                    {Object.entries(permissionGroups).map(([group, perms]) => {
+                      const GroupIcon = groupIcons[group] || Shield;
+                      const iconColor = groupIconColors[group] || "text-muted-foreground";
+                      return (
+                        <Badge key={group} variant="outline" className="gap-1.5 py-1.5 px-3 text-xs">
+                          <GroupIcon className={`h-3.5 w-3.5 ${iconColor}`} />
+                          {group} ({perms.length})
+                        </Badge>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
 
-                return (
-                  <Card key={emp.user_id} className="border-border/40 overflow-hidden">
-                    {/* Employee Header */}
-                    <div
-                      className="flex items-center justify-between p-5 cursor-pointer hover:bg-secondary/20 transition-colors"
-                      onClick={() => setExpandedUser(isExpanded ? null : emp.user_id)}
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary font-bold text-lg">
-                          {(emp.full_name || "U")[0].toUpperCase()}
-                        </div>
-                        <div>
-                          <p className="font-bold text-foreground">{emp.full_name}</p>
-                          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                            <Badge variant={isAdmin ? "default" : "secondary"} className="text-[10px]">
-                              {isAdmin ? "Admin" : (emp as any).role}
-                            </Badge>
-                            <span className="text-xs text-muted-foreground">{permCount}/{ALL_PERMISSIONS.length} পারমিশন</span>
-                            {emp.panel?.is_active && (
-                              <Badge className="text-[10px] bg-emerald-100 text-emerald-700 border-emerald-200">
-                                <Monitor className="h-3 w-3 mr-1" /> প্যানেল এক্টিভ
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        {!isAdmin && (
-                          <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
-                            <Label className="text-xs text-muted-foreground hidden sm:inline">অর্ডার প্যানেল</Label>
-                            <Switch
-                              checked={emp.panel?.is_active || false}
-                              onCheckedChange={(checked) => handleTogglePanel(emp.user_id, emp.full_name || "Panel", checked)}
-                            />
-                          </div>
-                        )}
-                        {isExpanded ? <ChevronDown className="h-5 w-5 text-muted-foreground" /> : <ChevronRight className="h-5 w-5 text-muted-foreground" />}
-                      </div>
-                    </div>
+              {/* Employee List */}
+              {isLoading ? (
+                <Card className="border-border/40 p-16 text-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mx-auto" />
+                  <p className="text-muted-foreground mt-3">লোড হচ্ছে...</p>
+                </Card>
+              ) : employees.length === 0 ? (
+                <Card className="border-border/40 p-16 text-center">
+                  <Users className="h-12 w-12 text-muted-foreground/20 mx-auto mb-4" />
+                  <p className="text-lg font-semibold text-muted-foreground">কোনো এমপ্লয়ি নেই</p>
+                  <p className="text-sm text-muted-foreground/70 mt-1">প্রথমে Users পেজ থেকে এমপ্লয়ি যোগ করুন</p>
+                </Card>
+              ) : (
+                <div className="space-y-4">
+                  {employees.map((emp) => {
+                    const isExpanded = expandedUser === emp.user_id;
+                    const permCount = emp.permissions.length;
+                    const isAdmin = (emp as any).role === "admin";
 
-                    {/* Expanded Permission Details */}
-                    {isExpanded && !isAdmin && (
-                      <div className="border-t border-border/40 p-5 bg-secondary/5">
-                        {/* Quick Actions */}
-                        <div className="flex items-center justify-between mb-5">
-                          <p className="text-sm font-bold text-foreground">পারমিশন সেট করুন</p>
-                          <div className="flex gap-2">
-                            <Button size="sm" variant="outline" className="gap-1.5 text-xs rounded-lg" onClick={() => handleGrantAll(emp.user_id)}>
-                              <Check className="h-3 w-3" /> সব দিন
-                            </Button>
-                            <Button size="sm" variant="outline" className="gap-1.5 text-xs rounded-lg text-destructive" onClick={() => handleRevokeAll(emp.user_id)}>
-                              <X className="h-3 w-3" /> সব সরান
-                            </Button>
-                          </div>
-                        </div>
-
-                        {/* Permission Groups */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                          {Object.entries(permissionGroups).map(([group, perms]) => {
-                            const GroupIcon = groupIcons[group] || Shield;
-                            const grantedInGroup = perms.filter(p => emp.permissions.includes(p.key)).length;
-                            const allGranted = grantedInGroup === perms.length;
-                            const colorClass = groupColors[group] || "from-muted/10 to-muted/5 border-border/40";
-                            const iconColor = groupIconColors[group] || "text-muted-foreground";
-
-                            return (
-                              <div key={group} className={`bg-gradient-to-br ${colorClass} rounded-xl border p-4`}>
-                                <div className="flex items-center gap-2 mb-3">
-                                  <GroupIcon className={`h-4 w-4 ${iconColor}`} />
-                                  <p className="text-xs font-bold text-foreground uppercase tracking-wide flex-1">{group}</p>
-                                  <Badge variant="secondary" className="text-[10px]">{grantedInGroup}/{perms.length}</Badge>
-                                </div>
-
-                                {/* Group toggle all */}
-                                <div className="flex gap-1 mb-3">
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    className="h-6 text-[10px] px-2"
-                                    onClick={() => handleGrantGroup(emp.user_id, group)}
-                                    disabled={allGranted}
-                                  >
-                                    সব দিন
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    className="h-6 text-[10px] px-2 text-destructive"
-                                    onClick={() => handleRevokeGroup(emp.user_id, group)}
-                                    disabled={grantedInGroup === 0}
-                                  >
-                                    সব সরান
-                                  </Button>
-                                </div>
-
-                                <div className="space-y-1.5">
-                                  {perms.map((perm) => {
-                                    const isGranted = emp.permissions.includes(perm.key);
-                                    return (
-                                      <div key={perm.key} className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-background/50 transition-colors">
-                                        <div className="flex items-center gap-1.5">
-                                          <span className="text-sm text-foreground">{perm.label}</span>
-                                          {perm.description && (
-                                            <Tooltip>
-                                              <TooltipTrigger asChild>
-                                                <Info className="h-3 w-3 text-muted-foreground/50 cursor-help" />
-                                              </TooltipTrigger>
-                                              <TooltipContent side="top" className="max-w-[200px] text-xs">
-                                                {perm.description}
-                                              </TooltipContent>
-                                            </Tooltip>
-                                          )}
-                                        </div>
-                                        <Switch
-                                          checked={isGranted}
-                                          onCheckedChange={() => handleTogglePermission(emp.user_id, perm.key, isGranted)}
-                                          className="scale-90"
-                                        />
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-
-                        {/* Panel Settings */}
-                        {emp.panel && (
-                          <div className="mt-5 bg-card rounded-xl border border-border/40 p-4">
-                            <div className="flex items-center gap-2 mb-3">
-                              <Monitor className="h-4 w-4 text-muted-foreground" />
-                              <p className="text-xs font-bold text-foreground uppercase tracking-wide">অর্ডার প্যানেল সেটিংস</p>
+                    return (
+                      <Card key={emp.user_id} className="border-border/40 overflow-hidden">
+                        {/* Employee Header */}
+                        <div
+                          className="flex items-center justify-between p-5 cursor-pointer hover:bg-secondary/20 transition-colors"
+                          onClick={() => setExpandedUser(isExpanded ? null : emp.user_id)}
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary font-bold text-lg">
+                              {(emp.full_name || "U")[0].toUpperCase()}
                             </div>
-                            <p className="text-xs text-muted-foreground">
-                              এই এমপ্লয়ির প্যানেল {emp.panel.is_active ? "এক্টিভ আছে" : "বন্ধ আছে"}।
-                              এক্টিভ থাকলে নতুন অর্ডার স্বয়ংক্রিয়ভাবে এই প্যানেলে আসবে।
-                            </p>
+                            <div>
+                              <p className="font-bold text-foreground">{emp.full_name}</p>
+                              <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                                <Badge variant={isAdmin ? "default" : "secondary"} className="text-[10px]">
+                                  {isAdmin ? "Admin" : (emp as any).role}
+                                </Badge>
+                                <span className="text-xs text-muted-foreground">{permCount}/{ALL_PERMISSIONS.length} পারমিশন</span>
+                                {emp.panel?.is_active && (
+                                  <Badge className="text-[10px] bg-emerald-100 text-emerald-700 border-emerald-200">
+                                    <Monitor className="h-3 w-3 mr-1" /> প্যানেল এক্টিভ
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
                           </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Admin notice */}
-                    {isExpanded && isAdmin && (
-                      <div className="border-t border-border/40 p-5 bg-secondary/5">
-                        <div className="flex items-center gap-3 p-4 rounded-xl bg-primary/5 border border-primary/20">
-                          <Shield className="h-5 w-5 text-primary" />
-                          <div>
-                            <p className="text-sm font-bold text-foreground">অ্যাডমিন ইউজার</p>
-                            <p className="text-xs text-muted-foreground">অ্যাডমিনের সব পারমিশন স্বয়ংক্রিয়ভাবে থাকে। আলাদাভাবে পারমিশন সেট করার দরকার নেই।</p>
+                          <div className="flex items-center gap-3">
+                            {isExpanded ? <ChevronDown className="h-5 w-5 text-muted-foreground" /> : <ChevronRight className="h-5 w-5 text-muted-foreground" />}
                           </div>
                         </div>
-                      </div>
-                    )}
-                  </Card>
-                );
-              })}
-            </div>
-          )}
+
+                        {/* Expanded Permission Details */}
+                        {isExpanded && !isAdmin && (
+                          <div className="border-t border-border/40 p-5 bg-secondary/5">
+                            {/* Quick Actions */}
+                            <div className="flex items-center justify-between mb-5">
+                              <p className="text-sm font-bold text-foreground">পারমিশন সেট করুন</p>
+                              <div className="flex gap-2">
+                                <Button size="sm" variant="outline" className="gap-1.5 text-xs rounded-lg" onClick={() => handleGrantAll(emp.user_id)}>
+                                  <Check className="h-3 w-3" /> সব দিন
+                                </Button>
+                                <Button size="sm" variant="outline" className="gap-1.5 text-xs rounded-lg text-destructive" onClick={() => handleRevokeAll(emp.user_id)}>
+                                  <X className="h-3 w-3" /> সব সরান
+                                </Button>
+                              </div>
+                            </div>
+
+                            {/* Permission Groups */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                              {Object.entries(permissionGroups).map(([group, perms]) => {
+                                const GroupIcon = groupIcons[group] || Shield;
+                                const grantedInGroup = perms.filter(p => emp.permissions.includes(p.key)).length;
+                                const allGranted = grantedInGroup === perms.length;
+                                const colorClass = groupColors[group] || "from-muted/10 to-muted/5 border-border/40";
+                                const iconColor = groupIconColors[group] || "text-muted-foreground";
+
+                                return (
+                                  <div key={group} className={`bg-gradient-to-br ${colorClass} rounded-xl border p-4`}>
+                                    <div className="flex items-center gap-2 mb-3">
+                                      <GroupIcon className={`h-4 w-4 ${iconColor}`} />
+                                      <p className="text-xs font-bold text-foreground uppercase tracking-wide flex-1">{group}</p>
+                                      <Badge variant="secondary" className="text-[10px]">{grantedInGroup}/{perms.length}</Badge>
+                                    </div>
+
+                                    {/* Group toggle all */}
+                                    <div className="flex gap-1 mb-3">
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-6 text-[10px] px-2"
+                                        onClick={() => handleGrantGroup(emp.user_id, group)}
+                                        disabled={allGranted}
+                                      >
+                                        সব দিন
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-6 text-[10px] px-2 text-destructive"
+                                        onClick={() => handleRevokeGroup(emp.user_id, group)}
+                                        disabled={grantedInGroup === 0}
+                                      >
+                                        সব সরান
+                                      </Button>
+                                    </div>
+
+                                    <div className="space-y-1.5">
+                                      {perms.map((perm) => {
+                                        const isGranted = emp.permissions.includes(perm.key);
+                                        return (
+                                          <div key={perm.key} className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-background/50 transition-colors">
+                                            <div className="flex items-center gap-1.5">
+                                              <span className="text-sm text-foreground">{perm.label}</span>
+                                              {perm.description && (
+                                                <Tooltip>
+                                                  <TooltipTrigger asChild>
+                                                    <Info className="h-3 w-3 text-muted-foreground/50 cursor-help" />
+                                                  </TooltipTrigger>
+                                                  <TooltipContent side="top" className="max-w-[200px] text-xs">
+                                                    {perm.description}
+                                                  </TooltipContent>
+                                                </Tooltip>
+                                              )}
+                                            </div>
+                                            <Switch
+                                              checked={isGranted}
+                                              onCheckedChange={() => handleTogglePermission(emp.user_id, perm.key, isGranted)}
+                                              className="scale-90"
+                                            />
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Admin notice */}
+                        {isExpanded && isAdmin && (
+                          <div className="border-t border-border/40 p-5 bg-secondary/5">
+                            <div className="flex items-center gap-3 p-4 rounded-xl bg-primary/5 border border-primary/20">
+                              <Shield className="h-5 w-5 text-primary" />
+                              <div>
+                                <p className="text-sm font-bold text-foreground">অ্যাডমিন ইউজার</p>
+                                <p className="text-xs text-muted-foreground">অ্যাডমিনের সব পারমিশন স্বয়ংক্রিয়ভাবে থাকে।</p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         </div>
       </TooltipProvider>
     </AdminLayout>
