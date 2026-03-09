@@ -446,7 +446,7 @@ const CheckoutPage = () => {
               <h1 className="text-xl font-bold">🛍️ চেকআউট</h1>
               <div className="flex items-center gap-3 mt-3">
                 <div className="w-12 h-12 bg-white/20 rounded-lg overflow-hidden">
-                  {item.image ? <img src={item.image} className="w-full h-full object-cover" /> : null}
+                  {item.image ? <OptimizedImage src={item.image} alt={item.name} width={48} quality={75} className="w-full h-full object-cover" /> : null}
                 </div>
                 <div>
                   <p className="font-semibold truncate max-w-[200px]">{item.name}</p>
