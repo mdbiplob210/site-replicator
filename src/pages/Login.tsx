@@ -300,9 +300,9 @@ const Login = () => {
 
       {/* Hint */}
       {showHint && !portalOpen && (
-        <div className="absolute bottom-6 left-1/2 z-30 -translate-x-1/2 animate-pulse rounded-full px-6 py-2 text-sm"
+        <div className="absolute bottom-5 sm:bottom-6 left-1/2 z-30 -translate-x-1/2 animate-pulse rounded-full px-4 sm:px-6 py-2 text-xs sm:text-sm max-w-[90vw] text-center"
           style={{ background: "rgba(255,255,255,0.08)", backdropFilter: "blur(10px)", border: "1px solid rgba(78,205,196,0.3)", color: "#4ECDC4" }}>
-          <Sparkles className="mr-2 inline h-4 w-4" />
+          <Sparkles className="mr-1.5 sm:mr-2 inline h-3.5 w-3.5 sm:h-4 sm:w-4" />
           ঝলমলে অর্বগুলোতে ক্লিক করুন! ৩টি সংগ্রহ করলে পোর্টাল খুলবে
         </div>
       )}
