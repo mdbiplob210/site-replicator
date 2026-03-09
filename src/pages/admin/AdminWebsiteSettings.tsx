@@ -15,10 +15,13 @@ import { useSiteSettings, useUpdateSiteSetting } from "@/hooks/useSiteSettings";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-type SettingsTab = "general" | "buttons" | "buy_domain" | "tracking" | "data_reset";
+import BannerSettings from "@/components/admin/BannerSettings";
+
+type SettingsTab = "general" | "banners" | "buttons" | "buy_domain" | "tracking" | "data_reset";
 
 const tabs: { id: SettingsTab; label: string; icon: any }[] = [
   { id: "general", label: "General", icon: Home },
+  { id: "banners", label: "Banners", icon: Image },
   { id: "buttons", label: "Buttons", icon: Sparkles },
   { id: "buy_domain", label: "Buy Domain", icon: Globe },
   { id: "tracking", label: "Tracking", icon: Code },
