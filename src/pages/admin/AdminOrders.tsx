@@ -698,7 +698,7 @@ const AdminOrders = () => {
       </body></html>
     `);
     printWindow.document.close();
-    printWindow.print();
+    setTimeout(() => { printWindow.print(); }, 300);
   }, [filteredOrders]);
 
   const addProductToOrder = (product: any) => {
