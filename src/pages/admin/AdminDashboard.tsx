@@ -116,22 +116,22 @@ const AdminDashboard = () => {
           <>
             {/* Quick Summary Bar - orders visible to order roles */}
             {canSeeOrders && (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <Card className="p-3 border-border/30 bg-gradient-to-br from-blue-50 to-blue-100/50">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">AVG ORDER VALUE</p>
-                <p className="text-xl font-extrabold text-blue-600 mt-0.5">{fmt(orderStats.avgOrderValue)}</p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+              <Card className="p-2.5 sm:p-3 border-border/30 bg-gradient-to-br from-blue-50 to-blue-100/50">
+                <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">AVG ORDER</p>
+                <p className="text-lg sm:text-xl font-extrabold text-blue-600 mt-0.5">{fmt(orderStats.avgOrderValue)}</p>
               </Card>
-              <Card className="p-3 border-border/30 bg-gradient-to-br from-emerald-50 to-emerald-100/50">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">PAID ORDERS</p>
-                <p className="text-xl font-extrabold text-emerald-600 mt-0.5">{salesDetails.paymentStats.paid.count} <span className="text-xs font-medium text-muted-foreground">({fmt(salesDetails.paymentStats.paid.amount)})</span></p>
+              <Card className="p-2.5 sm:p-3 border-border/30 bg-gradient-to-br from-emerald-50 to-emerald-100/50">
+                <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">PAID</p>
+                <p className="text-lg sm:text-xl font-extrabold text-emerald-600 mt-0.5">{salesDetails.paymentStats.paid.count} <span className="text-[10px] sm:text-xs font-medium text-muted-foreground">({fmt(salesDetails.paymentStats.paid.amount)})</span></p>
               </Card>
-              <Card className="p-3 border-border/30 bg-gradient-to-br from-amber-50 to-amber-100/50">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">UNPAID ORDERS</p>
-                <p className="text-xl font-extrabold text-amber-600 mt-0.5">{salesDetails.paymentStats.unpaid.count} <span className="text-xs font-medium text-muted-foreground">({fmt(salesDetails.paymentStats.unpaid.amount)})</span></p>
+              <Card className="p-2.5 sm:p-3 border-border/30 bg-gradient-to-br from-amber-50 to-amber-100/50">
+                <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">UNPAID</p>
+                <p className="text-lg sm:text-xl font-extrabold text-amber-600 mt-0.5">{salesDetails.paymentStats.unpaid.count} <span className="text-[10px] sm:text-xs font-medium text-muted-foreground">({fmt(salesDetails.paymentStats.unpaid.amount)})</span></p>
               </Card>
-              <Card className="p-3 border-border/30 bg-gradient-to-br from-violet-50 to-violet-100/50">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">PARTIAL PAID</p>
-                <p className="text-xl font-extrabold text-violet-600 mt-0.5">{salesDetails.paymentStats.partial.count} <span className="text-xs font-medium text-muted-foreground">({fmt(salesDetails.paymentStats.partial.amount)})</span></p>
+              <Card className="p-2.5 sm:p-3 border-border/30 bg-gradient-to-br from-violet-50 to-violet-100/50">
+                <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">PARTIAL</p>
+                <p className="text-lg sm:text-xl font-extrabold text-violet-600 mt-0.5">{salesDetails.paymentStats.partial.count} <span className="text-[10px] sm:text-xs font-medium text-muted-foreground">({fmt(salesDetails.paymentStats.partial.amount)})</span></p>
               </Card>
             </div>
             )}
