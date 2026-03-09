@@ -185,6 +185,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
         total_amount: total,
         product_cost: subtotal,
         discount: discount,
+        delivery_charge: deliveryCharge,
         status: "processing",
         source: "website",
         client_ip: clientIp,

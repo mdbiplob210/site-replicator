@@ -325,9 +325,14 @@ const ProductDetail = () => {
                   <Plus className="h-4 w-4" />
                 </button>
               </div>
+            {/* Stock & Free Delivery */}
+            <div className="flex items-center gap-3 flex-wrap">
               <span className={`text-sm ${product.stock_quantity > 0 ? "text-green-600" : "text-red-500"}`}>
                 {product.stock_quantity > 0 ? `✓ স্টকে আছে` : "✗ স্টকে নেই"}
               </span>
+              {product.free_delivery && (
+                <span className="text-sm text-green-600 font-semibold bg-green-50 px-2 py-0.5 rounded-full">🚚 ফ্রি ডেলিভারি</span>
+              )}
             </div>
 
             {/* Action buttons */}

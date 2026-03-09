@@ -359,7 +359,8 @@ const Template1Classic = () => {
                     {orderBtnEnabled && (
                     <button
                       onClick={() => handleOrder(p)}
-                      className="w-full py-2.5 text-white rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition hover:opacity-90"
+                      disabled={p.stock_quantity !== undefined && p.stock_quantity <= 0 && !(p as any).allow_out_of_stock_orders}
+                      className="w-full py-2.5 text-white rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
                       style={{ backgroundColor: orderBtnColor }}
                     >
                       <ShoppingCart className="h-4 w-4" /> {orderBtnText}
