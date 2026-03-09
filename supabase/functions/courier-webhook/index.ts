@@ -149,7 +149,7 @@ Deno.serve(async (req) => {
           courier_response: { ...extendedData, raw_status: newStatus, last_webhook: new Date().toISOString() }
         })
         .or(`tracking_id.eq.${trackingId},consignment_id.eq.${trackingId}`)
-        .select('order_id')
+        .select('order_id, courier_provider_id')
         .maybeSingle()
 
       // Map courier status to order status
@@ -178,6 +178,50 @@ Deno.serve(async (req) => {
             .from('orders')
             .update({ delivery_charge: deliveryFee })
             .eq('id', courierOrder.order_id)
+        }
+
+        // === AUTO-GENERATE INVOICE ON DELIVERY ===
+        if (orderStatus === 'delivered') {
+          // Fetch order details
+          const { data: order } = await supabase
+            .from('orders')
+            .select('*')
+            .eq('id', courierOrder.order_id)
+            .single()
+
+          if (order) {
+            // Generate invoice number: INV-YYYYMMDD-XXXX
+            const now = new Date()
+            const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '')
+            const random = Math.floor(Math.random() * 9000) + 1000
+            const invoiceNumber = `INV-${dateStr}-${random}`
+
+            const subtotal = Number(order.product_cost) || 0
+            const finalDeliveryCharge = deliveryFee ?? Number(order.delivery_charge) || 0
+            const finalDiscount = Number(order.discount) || 0
+            const finalTotal = Number(order.total_amount) || 0
+            const finalCod = codAmount ?? finalTotal
+
+            // Upsert invoice (one per order)
+            await supabase
+              .from('invoices')
+              .upsert({
+                order_id: courierOrder.order_id,
+                invoice_number: invoiceNumber,
+                courier_provider_id: courierOrder.courier_provider_id,
+                courier_tracking_id: trackingId,
+                customer_name: order.customer_name,
+                customer_phone: order.customer_phone,
+                customer_address: order.customer_address,
+                subtotal,
+                delivery_charge: finalDeliveryCharge,
+                discount: finalDiscount,
+                cod_amount: finalCod,
+                total_amount: finalTotal,
+                delivery_date: deliveryDate ? new Date(deliveryDate).toISOString() : now.toISOString(),
+                status: 'generated',
+              }, { onConflict: 'order_id' })
+          }
         }
       }
 
