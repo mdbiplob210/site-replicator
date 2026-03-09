@@ -81,6 +81,8 @@ const Template1Classic = () => {
 
   const whatsappNumber = settings?.whatsapp_number || "";
   const phoneNumber = settings?.phone_number || "";
+  const siteName = settings?.site_name || "QUICK SHOP BD";
+  const siteLogo = settings?.site_logo || "";
 
   const handleExitIntent = () => {
     if (appliedDiscount >= 50) return;
@@ -119,9 +121,12 @@ const Template1Classic = () => {
           </button>
 
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-1 flex-shrink-0">
-            <span className="text-xl sm:text-2xl font-black text-green-600">QUICK SHOP</span>
-            <span className="text-xl sm:text-2xl font-black text-gray-800">BD</span>
+          <Link to="/" className="flex items-center gap-2 flex-shrink-0">
+            {siteLogo ? (
+              <img src={siteLogo} alt={siteName} className="h-8 sm:h-10 w-auto object-contain" />
+            ) : (
+              <span className="text-xl sm:text-2xl font-black text-green-600">{siteName}</span>
+            )}
           </Link>
 
           {/* Desktop Search */}
@@ -369,8 +374,11 @@ const Template1Classic = () => {
         <div className="max-w-7xl mx-auto px-4 py-10">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
             <div className="col-span-2 md:col-span-1">
-              <span className="text-lg font-black text-green-400">QUICK SHOP</span>
-              <span className="text-lg font-black text-white"> BD</span>
+              {siteLogo ? (
+                <img src={siteLogo} alt={siteName} className="h-8 w-auto object-contain mb-2" />
+              ) : (
+                <span className="text-lg font-black text-green-400">{siteName}</span>
+              )}
               <p className="text-xs text-gray-400 mt-2 leading-relaxed">বাংলাদেশের সেরা অনলাইন শপিং ডেস্টিনেশন।</p>
             </div>
             {[
