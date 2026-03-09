@@ -559,7 +559,7 @@ const Login = () => {
         @keyframes portalReveal { 0% { transform: scale(0.3) rotate(-10deg); opacity: 0; filter: blur(20px); } 100% { transform: scale(1) rotate(0); opacity: 1; filter: blur(0); } }
         @keyframes burst { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(0) translate(var(--tx, 20px), var(--ty, -20px)); opacity: 0; } }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-10px); } 40% { transform: translateX(10px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(5px); } }
-        input::placeholder { color: rgba(255,255,255,0.35) !important; }
+        input::placeholder { color: rgba(0,0,0,0.5) !important; font-weight: 700 !important; }
       `}</style>
     </div>
   );
