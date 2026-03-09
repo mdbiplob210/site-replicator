@@ -30,7 +30,6 @@ export function useUpdateSiteSetting() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["site-settings"] });
-      toast.success("সেটিং আপডেট হয়েছে!");
     },
     onError: (e: Error) => toast.error(e.message),
   });

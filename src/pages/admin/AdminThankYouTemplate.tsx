@@ -1,5 +1,6 @@
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Heart, Save, CheckCircle2, Eye } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useSiteSettings, useUpdateSiteSetting } from "@/hooks/useSiteSettings";
 
@@ -41,7 +42,7 @@ export default function AdminThankYouTemplate() {
             {thankYouTemplates.map((t) => (
               <button
                 key={t.id}
-                onClick={() => updateSetting.mutate({ key: "active_thankyou_template", value: t.id })}
+                onClick={() => updateSetting.mutate({ key: "active_thankyou_template", value: t.id }, { onSuccess: () => toast.success("টেমপ্লেট আপডেট হয়েছে!") })}
                 className={`relative rounded-2xl overflow-hidden border-2 transition-all text-left ${
                   active === t.id ? "border-primary ring-2 ring-primary/20 shadow-lg" : "border-border hover:border-primary/50"
                 }`}

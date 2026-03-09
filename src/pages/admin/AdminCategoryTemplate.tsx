@@ -1,5 +1,6 @@
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Grid3X3, Save, CheckCircle2, Eye, Sparkles } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useSiteSettings, useUpdateSiteSetting } from "@/hooks/useSiteSettings";
 
@@ -42,7 +43,7 @@ export default function AdminCategoryTemplate() {
             {categoryTemplates.map((t) => (
               <button
                 key={t.id}
-                onClick={() => updateSetting.mutate({ key: "active_category_template", value: t.id })}
+                onClick={() => updateSetting.mutate({ key: "active_category_template", value: t.id }, { onSuccess: () => toast.success("টেমপ্লেট আপডেট হয়েছে!") })}
                 className={`relative rounded-2xl overflow-hidden border-2 transition-all text-left ${
                   active === t.id ? "border-primary ring-2 ring-primary/20 shadow-lg" : "border-border hover:border-primary/50"
                 }`}

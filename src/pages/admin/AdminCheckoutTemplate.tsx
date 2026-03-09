@@ -1,5 +1,6 @@
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { ShoppingBag, Save, CheckCircle2, Settings } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useSiteSettings, useUpdateSiteSetting } from "@/hooks/useSiteSettings";
 
@@ -49,7 +50,7 @@ export default function AdminCheckoutTemplate() {
             {checkouts.map((c) => (
               <button
                 key={c.id}
-                onClick={() => updateSetting.mutate({ key: "active_checkout", value: c.id })}
+                onClick={() => updateSetting.mutate({ key: "active_checkout", value: c.id }, { onSuccess: () => toast.success("টেমপ্লেট আপডেট হয়েছে!") })}
                 className={`relative rounded-2xl overflow-hidden border-2 transition-all text-left ${
                   activeCheckout === c.id
                     ? "border-primary ring-2 ring-primary/20 shadow-lg"
