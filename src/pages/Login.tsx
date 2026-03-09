@@ -385,9 +385,9 @@ const Login = () => {
           {/* Login Form (after portal opens) */}
           {portalOpen && (
             <div
-              className="animate-[portalReveal_0.8s_ease-out] rounded-2xl p-8"
+              className="animate-[portalReveal_0.8s_ease-out] rounded-2xl p-5 sm:p-8"
               style={{
-                background: "rgba(15, 15, 40, 0.85)",
+                background: "rgba(15, 15, 40, 0.9)",
                 backdropFilter: "blur(20px)",
                 border: "1px solid rgba(78,205,196,0.3)",
                 boxShadow: "0 0 60px rgba(78,205,196,0.15), 0 20px 60px rgba(0,0,0,0.5)",
