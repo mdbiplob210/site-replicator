@@ -13,7 +13,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 
-type FinanceTab = "income" | "expense" | "banks" | "loans" | "investments" | "history";
+type FinanceTab = "income" | "expense" | "product_purchase" | "banks" | "loans" | "investments" | "history";
 type Period = "today" | "this_week" | "this_month" | "last_month" | "custom";
 
 export default function AdminFinance() {
