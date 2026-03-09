@@ -126,7 +126,7 @@ const Template1Classic = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Top announcement bar */}
-      <div className="bg-gradient-to-r from-green-600 to-green-700 text-white text-center py-2.5 sm:py-2 text-[11px] sm:text-sm font-medium overflow-hidden">
+      <div className="bg-gradient-to-r from-green-600 to-green-700 text-white text-center h-[34px] sm:h-[32px] flex items-center justify-center text-[11px] sm:text-sm font-medium overflow-hidden">
         <div className="animate-marquee whitespace-nowrap inline-block">
           {marqueeText} হটলাইনঃ {phoneNumber || "01XXXXXXXXX"} &nbsp;&nbsp;&nbsp;
           {marqueeText} হটলাইনঃ {phoneNumber || "01XXXXXXXXX"}
