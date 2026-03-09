@@ -27,7 +27,7 @@ import {
   Trash2, Copy, X, ShoppingCart, ArrowLeft, Clock, CheckCircle2,
   GitMerge, PauseCircle, XCircle, Trash, Smartphone, BarChart3,
   MessageSquare, Filter, Loader2, Package, Globe, SlidersHorizontal, AlertTriangle, History,
-  Hand, RotateCcw, CalendarClock, Phone, Pencil, Activity
+  Hand, RotateCcw, CalendarClock, Phone, Pencil, Activity, FileText
 } from "lucide-react";
 import {
   useOrders, useOrderCounts, useCreateOrder, useUpdateOrderStatus,
