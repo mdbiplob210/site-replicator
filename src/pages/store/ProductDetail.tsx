@@ -17,7 +17,7 @@ const ProductDetail = () => {
   const [qty, setQty] = useState(1);
   const { trackViewContent, trackAddToCart, trackCustomEvent } = useTracking();
   useEngagementTracking();
-  const viewTracked = useState(false);
+  const viewTrackedRef = useRef(false);
 
   // Image gallery state
   const [selectedImage, setSelectedImage] = useState(0);
@@ -40,8 +40,8 @@ const ProductDetail = () => {
   const exitShownRef = useRef(false);
 
   useEffect(() => {
-    if (product && !viewTracked[0]) {
-      viewTracked[1](true);
+    if (product && !viewTrackedRef.current) {
+      viewTrackedRef.current = true;
       trackViewContent({
         id: product.id,
         name: product.name,
@@ -51,7 +51,7 @@ const ProductDetail = () => {
         image: product.main_image_url || "",
       });
     }
-  }, [product, trackViewContent, viewTracked]);
+  }, [product, trackViewContent]);
 
   // Exit intent detection
   useEffect(() => {
