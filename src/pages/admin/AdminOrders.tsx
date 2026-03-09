@@ -42,9 +42,11 @@ import {
 import { usePublicProducts } from "@/hooks/usePublicProducts";
 import { CourierSettingsView } from "@/components/admin/courier/CourierSettingsView";
 import { FakeOrderDetection } from "@/components/admin/fraud/FakeOrderDetection";
+import { useBulkMemoPrint } from "@/components/admin/courier/BulkMemoPrint";
 import { useCourierCities, useCourierZones, useCourierAreas } from "@/hooks/useCourierLocations";
 import { ApiKeysView } from "@/components/admin/api/ApiKeysView";
 import { Constants } from "@/integrations/supabase/types";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 import * as XLSX from "@datalens-tech/xlsx";
 import { toast } from "sonner";
 
@@ -542,6 +544,29 @@ const AdminOrders = () => {
     + (filterProductIds.length > 0 ? 1 : (filterProductSearch ? 1 : 0))
     + [filterDeviceType, filterPaymentStatus, filterCourierProvider, filterCourierStatus, filterCategory, filterCourierCharged, filterSalesType, filterDistrict, filterThana, filterZone].filter(v => v !== "all").length
     + (orderDateFilter !== "all" ? 1 : 0);
+
+  // Site settings for shop name
+  const { data: siteSettings } = useSiteSettings();
+  const shopName = siteSettings?.site_name || "SOHOZ";
+
+  // Bulk memo print
+  const selectedOrdersForPrint = useMemo(() => filteredOrders.filter(o => selectedOrderIds.has(o.id)), [filteredOrders, selectedOrderIds]);
+  
+  const handleMarkPrinted = useCallback(async (orderIds: string[]) => {
+    for (const id of orderIds) {
+      await supabase.from("orders").update({ memo_printed: true } as any).eq("id", id);
+    }
+    queryClient.invalidateQueries({ queryKey: ["orders"] });
+    toast.success(`${orderIds.length}টি অর্ডারের মেমো প্রিন্টেড হয়েছে!`);
+  }, [queryClient]);
+
+  const bulkPrint = useBulkMemoPrint({
+    orders: selectedOrdersForPrint,
+    courierByOrderId,
+    orderItemsByOrderId,
+    siteName: shopName,
+    onPrinted: handleMarkPrinted,
+  });
 
   const clearAllFilters = () => {
     setFilterSource(""); setFilterPhone(""); setFilterAmountMin(""); setFilterAmountMax("");
@@ -1808,6 +1833,14 @@ const AdminOrders = () => {
                 ))}
               </SelectContent>
             </Select>
+            {/* Bulk Print */}
+            <Button variant="outline" size="sm" className="gap-1.5 h-8 rounded-xl text-xs border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100 dark:bg-violet-900/20 dark:border-violet-700 dark:text-violet-400" onClick={() => {
+              const selectedOrders = filteredOrders.filter(o => selectedOrderIds.has(o.id));
+              if (selectedOrders.length === 0) return;
+              bulkPrint.handleBulkPrint();
+            }}>
+              <Printer className="h-3.5 w-3.5" /> মেমো প্রিন্ট ({selectedOrderIds.size})
+            </Button>
             {/* Bulk Delete */}
             <Button variant="destructive" size="sm" className="gap-1.5 h-8 rounded-xl text-xs" onClick={handleBulkDelete}>
               <Trash2 className="h-3.5 w-3.5" /> ডিলিট
@@ -2332,7 +2365,14 @@ const AdminOrders = () => {
                     </TableCell>
                     {/* ORDER: number, date, time */}
                     <TableCell className="px-3 py-3">
-                      <p className="font-bold text-primary text-sm">{order.order_number.replace(/^ORD-0*/, '')}</p>
+                      <div className="flex items-center gap-1.5">
+                        <p className="font-bold text-primary text-sm">#{order.order_number.replace(/^ORD-0*/, '')}</p>
+                        {(order as any).memo_printed && (
+                          <span className="inline-flex items-center justify-center h-4 w-4 rounded-full bg-emerald-500/20 text-emerald-600" title="মেমো প্রিন্টেড">
+                            <Printer className="h-2.5 w-2.5" />
+                          </span>
+                        )}
+                      </div>
                       <p className="text-[11px] text-muted-foreground mt-0.5">{format(new Date(order.created_at), "dd MMM yy")}</p>
                       <p className="text-[10px] text-muted-foreground">{format(new Date(order.created_at), "hh:mm a")}</p>
                     </TableCell>
@@ -2637,7 +2677,14 @@ const AdminOrders = () => {
                           setSelectedOrderIds(newSet);
                         }} onClick={(e) => e.stopPropagation()} />
                         <div>
-                          <span className="font-bold text-primary text-sm">{order.order_number.replace(/^ORD-0*/, '')}</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-bold text-primary text-sm">#{order.order_number.replace(/^ORD-0*/, '')}</span>
+                            {(order as any).memo_printed && (
+                              <span className="inline-flex items-center justify-center h-4 w-4 rounded-full bg-emerald-500/20 text-emerald-600" title="মেমো প্রিন্টেড">
+                                <Printer className="h-2.5 w-2.5" />
+                              </span>
+                            )}
+                          </div>
                           <p className="text-[10px] text-muted-foreground">{format(new Date(order.created_at), "dd MMM yy, hh:mm a")}</p>
                         </div>
                       </div>
