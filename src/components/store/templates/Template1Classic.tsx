@@ -3,7 +3,7 @@ import { ShoppingBag, Search, Star, Truck, ShieldCheck, RotateCcw, ChevronRight,
 import { Button } from "@/components/ui/button";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
 import { OptimizedImage } from "@/components/ui/optimized-image";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useTracking } from "@/hooks/useTracking";
 import { PopupCheckout } from "@/components/store/PopupCheckout";
 import { ExitDiscountBanner } from "@/components/store/ExitDiscountBanner";
@@ -83,6 +83,40 @@ const Template1Classic = () => {
   const phoneNumber = settings?.phone_number || "";
   const siteName = settings?.site_name || "QUICK SHOP BD";
   const siteLogo = settings?.site_logo || "";
+  const marqueeText = settings?.marquee_text || "🚚 সারা দেশে ক্যাশ অন ডেলিভারি (৪৮ থেকে ৭২ ঘণ্টার মধ্যে নিশ্চিত ডেলিভারি)";
+  const footerDescription = settings?.footer_description || "বাংলাদেশের সেরা অনলাইন শপিং ডেস্টিনেশন।";
+  const footerQuickLinks = (settings?.footer_quick_links || "হোম,সব প্রোডাক্ট,অফার,যোগাযোগ").split(",").map(s => s.trim()).filter(Boolean);
+  const footerHelpLinks = (settings?.footer_help_links || "ডেলিভারি তথ্য,রিটার্ন পলিসি,প্রাইভেসি পলিসি").split(",").map(s => s.trim()).filter(Boolean);
+  const footerAddress = settings?.footer_address || "ঢাকা, বাংলাদেশ";
+  const footerCopyright = settings?.footer_copyright || "© 2026 QUICK SHOP BD — All rights reserved";
+  const offerCountdownMinutes = Number(settings?.offer_countdown_minutes) || 30;
+
+  // Countdown timer state
+  const [countdown, setCountdown] = useState(() => {
+    const saved = sessionStorage.getItem("offer_countdown_end");
+    if (saved) {
+      const remaining = Math.max(0, Math.floor((Number(saved) - Date.now()) / 1000));
+      return remaining;
+    }
+    const seconds = offerCountdownMinutes * 60;
+    sessionStorage.setItem("offer_countdown_end", String(Date.now() + seconds * 1000));
+    return seconds;
+  });
+
+  useEffect(() => {
+    if (countdown <= 0) return;
+    const timer = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) { clearInterval(timer); return 0; }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [countdown > 0]);
+
+  const countdownHours = Math.floor(countdown / 3600);
+  const countdownMins = Math.floor((countdown % 3600) / 60);
+  const countdownSecs = countdown % 60;
 
   const handleExitIntent = () => {
     if (appliedDiscount >= 50) return;
@@ -107,10 +141,38 @@ const Template1Classic = () => {
       {/* Top announcement bar */}
       <div className="bg-gradient-to-r from-green-600 to-green-700 text-white text-center py-2 text-xs sm:text-sm font-medium overflow-hidden">
         <div className="animate-marquee whitespace-nowrap inline-block">
-          🚚 সারা দেশে ক্যাশ অন ডেলিভারি (৪৮ থেকে ৭২ ঘণ্টার মধ্যে নিশ্চিত ডেলিভারি) হটলাইনঃ {phoneNumber || "01XXXXXXXXX"} &nbsp;&nbsp;&nbsp;
-          🚚 সারা দেশে ক্যাশ অন ডেলিভারি (৪৮ থেকে ৭২ ঘণ্টার মধ্যে নিশ্চিত ডেলিভারি) হটলাইনঃ {phoneNumber || "01XXXXXXXXX"}
+          {marqueeText} হটলাইনঃ {phoneNumber || "01XXXXXXXXX"} &nbsp;&nbsp;&nbsp;
+          {marqueeText} হটলাইনঃ {phoneNumber || "01XXXXXXXXX"}
         </div>
       </div>
+
+      {/* Urgency Countdown Timer */}
+      {countdown > 0 && (
+        <div className="bg-gradient-to-r from-red-600 to-orange-500 text-white py-2.5 px-4">
+          <div className="max-w-7xl mx-auto flex items-center justify-center gap-3">
+            <span className="text-xs sm:text-sm font-semibold animate-pulse">🔥 এই অফারটি শেষ হবে আর মাত্র</span>
+            <div className="flex items-center gap-1">
+              {countdownHours > 0 && (
+                <div className="bg-white/20 rounded-md px-2 py-1 text-center min-w-[2.5rem]">
+                  <span className="text-sm sm:text-base font-black">{String(countdownHours).padStart(2, "0")}</span>
+                  <span className="text-[9px] block -mt-0.5">ঘণ্টা</span>
+                </div>
+              )}
+              <span className="font-bold text-lg">:</span>
+              <div className="bg-white/20 rounded-md px-2 py-1 text-center min-w-[2.5rem]">
+                <span className="text-sm sm:text-base font-black">{String(countdownMins).padStart(2, "0")}</span>
+                <span className="text-[9px] block -mt-0.5">মিনিট</span>
+              </div>
+              <span className="font-bold text-lg">:</span>
+              <div className="bg-white/20 rounded-md px-2 py-1 text-center min-w-[2.5rem]">
+                <span className="text-sm sm:text-base font-black">{String(countdownSecs).padStart(2, "0")}</span>
+                <span className="text-[9px] block -mt-0.5">সেকেন্ড</span>
+              </div>
+            </div>
+            <span className="text-xs sm:text-sm font-semibold hidden sm:inline">এর মধ্যে! ⏰</span>
+          </div>
+        </div>
+      )}
 
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white shadow-sm">
@@ -379,12 +441,12 @@ const Template1Classic = () => {
               ) : (
                 <span className="text-lg font-black text-green-400">{siteName}</span>
               )}
-              <p className="text-xs text-gray-400 mt-2 leading-relaxed">বাংলাদেশের সেরা অনলাইন শপিং ডেস্টিনেশন।</p>
+              <p className="text-xs text-gray-400 mt-2 leading-relaxed">{footerDescription}</p>
             </div>
             {[
-              { title: "কুইক লিংকস", links: ["হোম", "সব প্রোডাক্ট", "অফার", "যোগাযোগ"] },
-              { title: "সাহায্য", links: ["ডেলিভারি তথ্য", "রিটার্ন পলিসি", "প্রাইভেসি পলিসি"] },
-              { title: "যোগাযোগ", links: [`ফোন: ${phoneNumber || "01XXXXXXXXX"}`, "ঢাকা, বাংলাদেশ"] },
+              { title: "কুইক লিংকস", links: footerQuickLinks },
+              { title: "সাহায্য", links: footerHelpLinks },
+              { title: "যোগাযোগ", links: [`ফোন: ${phoneNumber || "01XXXXXXXXX"}`, footerAddress] },
             ].map(col => (
               <div key={col.title}>
                 <h4 className="text-xs font-bold text-white mb-2 uppercase tracking-wider">{col.title}</h4>
@@ -397,7 +459,7 @@ const Template1Classic = () => {
             ))}
           </div>
           <div className="border-t border-white/10 pt-4 text-center text-xs text-gray-500">
-            © 2026 QUICK SHOP BD — All rights reserved
+            {footerCopyright}
           </div>
         </div>
       </footer>

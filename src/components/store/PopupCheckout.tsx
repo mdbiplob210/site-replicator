@@ -5,11 +5,12 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { X, ShoppingBag, User, Phone, MapPin, Minus, Plus, CheckCircle2, Loader2 } from "lucide-react";
+import { X, ShoppingBag, User, Phone, MapPin, Minus, Plus, CheckCircle2, Loader2, Users, Clock } from "lucide-react";
 import { useTracking } from "@/hooks/useTracking";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
 import { OptimizedImage } from "@/components/ui/optimized-image";
 import { getClientIp, parseDeviceInfo } from "@/lib/deviceDetect";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 interface CheckoutItem {
   productId: string;
@@ -44,6 +45,25 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
 
   const { trackInitiateCheckout, trackAddPaymentInfo, trackPurchase, trackAddToCart, trackCustomEvent } = useTracking();
   const { data: allProducts = [] } = usePublicProducts();
+  const { data: settings } = useSiteSettings();
+
+  // Scarcity counter - fake "people viewing" countdown
+  const scarcityStart = Number(settings?.checkout_scarcity_count) || 47;
+  const [scarcityCount, setScarcityCount] = useState(scarcityStart);
+
+  useEffect(() => {
+    if (!open) {
+      setScarcityCount(scarcityStart);
+      return;
+    }
+    const timer = setInterval(() => {
+      setScarcityCount(prev => {
+        if (prev <= 3) return scarcityStart; // reset when too low
+        return prev - 1;
+      });
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [open, scarcityStart]);
 
   // Same-category suggestions
   const suggestedProducts = allProducts.filter(
@@ -296,6 +316,13 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
 
         {!orderComplete ? (
           <>
+            {/* Scarcity Banner */}
+            <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white px-5 py-2.5 flex items-center justify-center gap-2 text-xs sm:text-sm font-semibold">
+              <Users className="h-4 w-4 animate-pulse" />
+              <span>এই অফারটি পাবে আর মাত্র <span className="font-black text-base">{scarcityCount}</span> জন!</span>
+              <Clock className="h-3.5 w-3.5" />
+            </div>
+
             {/* Product header */}
             <div className="p-5 pb-3 border-b border-gray-100">
               <div className="flex items-center gap-3">

@@ -110,6 +110,15 @@ function GeneralTab() {
   const [loaded, setLoaded] = useState(false);
   const [logoUrl, setLogoUrl] = useState("");
   const [uploading, setUploading] = useState(false);
+  // New fields
+  const [marqueeText, setMarqueeText] = useState("");
+  const [footerDescription, setFooterDescription] = useState("");
+  const [footerQuickLinks, setFooterQuickLinks] = useState("");
+  const [footerHelpLinks, setFooterHelpLinks] = useState("");
+  const [footerAddress, setFooterAddress] = useState("");
+  const [footerCopyright, setFooterCopyright] = useState("");
+  const [offerCountdownMinutes, setOfferCountdownMinutes] = useState("30");
+  const [checkoutScarcityCount, setCheckoutScarcityCount] = useState("47");
 
   // Load saved values
   if (!loaded && !isLoading && settings) {
@@ -129,6 +138,14 @@ function GeneralTab() {
     setInstagramUrl(settings["instagram_url"] || "");
     setCustomDomain(settings["custom_domain"] || "");
     setLogoUrl(settings["site_logo"] || "");
+    setMarqueeText(settings["marquee_text"] || "");
+    setFooterDescription(settings["footer_description"] || "");
+    setFooterQuickLinks(settings["footer_quick_links"] || "");
+    setFooterHelpLinks(settings["footer_help_links"] || "");
+    setFooterAddress(settings["footer_address"] || "");
+    setFooterCopyright(settings["footer_copyright"] || "");
+    setOfferCountdownMinutes(settings["offer_countdown_minutes"] || "30");
+    setCheckoutScarcityCount(settings["checkout_scarcity_count"] || "47");
     setLoaded(true);
   }
 
@@ -198,6 +215,14 @@ function GeneralTab() {
       { key: "facebook_url", value: facebookUrl },
       { key: "instagram_url", value: instagramUrl },
       { key: "custom_domain", value: customDomain },
+      { key: "marquee_text", value: marqueeText },
+      { key: "footer_description", value: footerDescription },
+      { key: "footer_quick_links", value: footerQuickLinks },
+      { key: "footer_help_links", value: footerHelpLinks },
+      { key: "footer_address", value: footerAddress },
+      { key: "footer_copyright", value: footerCopyright },
+      { key: "offer_countdown_minutes", value: offerCountdownMinutes },
+      { key: "checkout_scarcity_count", value: checkoutScarcityCount },
     ];
     for (const { key, value } of updates) {
       await updateSetting.mutateAsync({ key, value });
@@ -403,6 +428,57 @@ function GeneralTab() {
         <p className="text-xs text-destructive flex items-center gap-1">
           <Info className="h-3.5 w-3.5" /> Your store is not published yet. Enable "Publish Website" below to make it live.
         </p>
+      </div>
+
+      {/* Marquee & Urgency Settings */}
+      <div className="bg-card rounded-2xl border border-border p-6 space-y-5">
+        <h3 className="font-bold text-foreground">📢 হেডার মার্কি ও আর্জেন্সি সেটিংস</h3>
+        <div>
+          <label className="text-sm font-medium text-foreground">মার্কি টেক্সট (হেডারে চলমান লেখা)</label>
+          <p className="text-xs text-muted-foreground">স্টোরের উপরে যে লেখা স্ক্রল হয়ে যায়</p>
+          <Input className="mt-1.5" placeholder="🚚 সারা দেশে ক্যাশ অন ডেলিভারি..." value={marqueeText} onChange={(e) => setMarqueeText(e.target.value)} />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-sm font-medium text-foreground">অফার কাউন্টডাউন (মিনিট)</label>
+            <p className="text-xs text-muted-foreground">স্টোর পেজে কতক্ষণের কাউন্টডাউন দেখাবে</p>
+            <Input className="mt-1.5" type="number" placeholder="30" value={offerCountdownMinutes} onChange={(e) => setOfferCountdownMinutes(e.target.value)} />
+          </div>
+          <div>
+            <label className="text-sm font-medium text-foreground">চেকআউট স্কার্সিটি কাউন্ট</label>
+            <p className="text-xs text-muted-foreground">চেকআউটে "আর মাত্র X জন" শুরুর সংখ্যা</p>
+            <Input className="mt-1.5" type="number" placeholder="47" value={checkoutScarcityCount} onChange={(e) => setCheckoutScarcityCount(e.target.value)} />
+          </div>
+        </div>
+      </div>
+
+      {/* Footer Settings */}
+      <div className="bg-card rounded-2xl border border-border p-6 space-y-5">
+        <h3 className="font-bold text-foreground">📋 ফুটার সেটিংস</h3>
+        <div>
+          <label className="text-sm font-medium text-foreground">ফুটার বর্ণনা</label>
+          <Input className="mt-1.5" placeholder="বাংলাদেশের সেরা অনলাইন শপিং..." value={footerDescription} onChange={(e) => setFooterDescription(e.target.value)} />
+        </div>
+        <div>
+          <label className="text-sm font-medium text-foreground">কুইক লিংকস</label>
+          <p className="text-xs text-muted-foreground">কমা দিয়ে আলাদা করুন (যেমন: হোম,সব প্রোডাক্ট,অফার,যোগাযোগ)</p>
+          <Input className="mt-1.5" placeholder="হোম,সব প্রোডাক্ট,অফার,যোগাযোগ" value={footerQuickLinks} onChange={(e) => setFooterQuickLinks(e.target.value)} />
+        </div>
+        <div>
+          <label className="text-sm font-medium text-foreground">সাহায্য লিংকস</label>
+          <p className="text-xs text-muted-foreground">কমা দিয়ে আলাদা করুন</p>
+          <Input className="mt-1.5" placeholder="ডেলিভারি তথ্য,রিটার্ন পলিসি,প্রাইভেসি পলিসি" value={footerHelpLinks} onChange={(e) => setFooterHelpLinks(e.target.value)} />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-sm font-medium text-foreground">ঠিকানা</label>
+            <Input className="mt-1.5" placeholder="ঢাকা, বাংলাদেশ" value={footerAddress} onChange={(e) => setFooterAddress(e.target.value)} />
+          </div>
+          <div>
+            <label className="text-sm font-medium text-foreground">কপিরাইট টেক্সট</label>
+            <Input className="mt-1.5" placeholder="© 2026 SHOP BD — All rights reserved" value={footerCopyright} onChange={(e) => setFooterCopyright(e.target.value)} />
+          </div>
+        </div>
       </div>
     </div>
   );
