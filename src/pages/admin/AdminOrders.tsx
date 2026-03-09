@@ -1393,7 +1393,7 @@ const AdminOrders = () => {
                         <SelectValue placeholder="কুরিয়ার সিলেক্ট করুন" />
                       </SelectTrigger>
                       <SelectContent>
-                        {courierProviders.filter((cp: any) => cp.is_active !== false).map((cp: any) => (
+                        {courierProviders.map((cp: any) => (
                           <SelectItem key={cp.id} value={cp.id}>
                             <div className="flex items-center gap-2">
                               <Truck className="h-3.5 w-3.5" /> {cp.name}
