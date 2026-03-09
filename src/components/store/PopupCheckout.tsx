@@ -309,11 +309,8 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
   // Determine if product has free delivery
   const productHasFreeDelivery = currentItem ? allProducts.find(p => p.id === currentItem.productId)?.free_delivery : false;
 
-  // Default delivery charge (inside dhaka), user can pick area later
-  const [deliveryArea, setDeliveryArea] = useState<"inside" | "outside">("inside");
-  const deliveryCharge = productHasFreeDelivery ? 0 : (freeDeliveryAbove > 0 && subtotal >= freeDeliveryAbove) ? 0 : (deliveryArea === "inside" ? insideDhaka : outsideDhaka);
-
   const subtotal = currentItem.price * qty;
+  const deliveryCharge = productHasFreeDelivery ? 0 : (freeDeliveryAbove > 0 && subtotal >= freeDeliveryAbove) ? 0 : (deliveryArea === "inside" ? insideDhaka : outsideDhaka);
   const total = Math.max(0, subtotal + deliveryCharge - discount);
 
   return (

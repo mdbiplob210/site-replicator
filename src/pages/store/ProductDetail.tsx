@@ -325,8 +325,7 @@ const ProductDetail = () => {
                   <Plus className="h-4 w-4" />
                 </button>
               </div>
-            {/* Stock & Free Delivery */}
-            <div className="flex items-center gap-3 flex-wrap">
+              {/* Stock & Free Delivery */}
               <span className={`text-sm ${product.stock_quantity > 0 ? "text-green-600" : "text-red-500"}`}>
                 {product.stock_quantity > 0 ? `✓ স্টকে আছে` : "✗ স্টকে নেই"}
               </span>
