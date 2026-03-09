@@ -617,7 +617,7 @@ export default function AdminFinance() {
                     </div>
                     <div className="flex items-center gap-3">
                       <p className={`font-bold text-sm ${getTypeColor(r.type)}`}>
-                        {r.type === "expense" || r.type === "loan_out" || r.type === "investment_out" ? "-" : "+"}৳{Number(r.amount).toLocaleString()}
+                        {r.type === "expense" || r.type === "loan_out" || r.type === "investment_out" || r.type === "product_purchase" ? "-" : "+"}৳{Number(r.amount).toLocaleString()}
                       </p>
                       <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => deleteRecord.mutate(r.id)}>
                         <Trash2 className="h-4 w-4" />
