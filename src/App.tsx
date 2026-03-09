@@ -6,6 +6,9 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedAdminRoute } from "@/components/admin/ProtectedAdminRoute";
 import { TrackingInitializer } from "./components/TrackingInitializer";
+import { useDynamicMeta } from "@/hooks/useDynamicMeta";
+
+const DynamicMetaProvider = () => { useDynamicMeta(); return null; };
 
 // Critical public pages - eagerly loaded
 import StorePage from "./pages/store/StorePage";
@@ -85,9 +88,12 @@ const Admin = ({ children }: { children: React.ReactNode }) => (
   </ProtectedAdminRoute>
 );
 
-const App = () => (
+const App = () => {
+  // Import and use dynamic meta hook at app level
+  return (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
+      <DynamicMetaProvider />
       <Toaster />
       <Sonner />
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
@@ -145,5 +151,6 @@ const App = () => (
     </AuthProvider>
   </QueryClientProvider>
 );
+};
 
 export default App;
