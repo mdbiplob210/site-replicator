@@ -3463,6 +3463,7 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                   { value: "on_hold", label: "Hold", color: "bg-yellow-500", icon: PauseCircle },
                   { value: "hand_delivery", label: "Hand Delivery", color: "bg-cyan-500", icon: Hand },
                   { value: "cancelled", label: "Cancelled", color: "bg-red-500", icon: XCircle },
+                  ...(order.status === "pending_return" ? [{ value: "returned", label: "Return", color: "bg-red-400", icon: RotateCcw }] : []),
                 ].map((s) => (
                   <button
                     key={s.value}
