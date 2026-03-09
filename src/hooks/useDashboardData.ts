@@ -236,6 +236,7 @@ export function useDashboardData(filter: TimeFilter) {
       avgOrderValue,
       processing,
       confirmed,
+      inquiry,
       cancelled,
       onHold,
       delivered,
