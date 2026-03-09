@@ -637,18 +637,19 @@ function TrackingTab() {
       { key: "fb_app_id", value: fbAppId },
       { key: "fb_app_secret", value: fbAppSecret },
     ];
+    const sensitiveKeys = ["fb_access_token", "fb_app_secret", "fb_app_id", "fb_ad_account_id"];
     try {
       for (const entry of entries) {
-        // Upsert: try update first, if no rows affected then insert
-        const { data, error } = await supabase
+        const isPublic = !sensitiveKeys.includes(entry.key);
+        const { data } = await supabase
           .from("site_settings")
           .select("id")
           .eq("key", entry.key)
           .maybeSingle();
         if (data) {
-          await supabase.from("site_settings").update({ value: entry.value, updated_at: new Date().toISOString() } as any).eq("key", entry.key);
+          await supabase.from("site_settings").update({ value: entry.value, is_public: isPublic, updated_at: new Date().toISOString() } as any).eq("key", entry.key);
         } else {
-          await supabase.from("site_settings").insert({ key: entry.key, value: entry.value } as any);
+          await supabase.from("site_settings").insert({ key: entry.key, value: entry.value, is_public: isPublic } as any);
         }
       }
       toast.success("ট্র্যাকিং সেটিংস সেভ হয়েছে!");
