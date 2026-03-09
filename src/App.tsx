@@ -51,6 +51,7 @@ const AdminLandingPageAnalytics = lazy(() => import("./pages/admin/AdminLandingP
 const AdminPayment = lazy(() => import("./pages/admin/AdminPayment"));
 const AdminInvoices = lazy(() => import("./pages/admin/AdminInvoices"));
 const AdminPages = lazy(() => import("./pages/admin/AdminPages"));
+const AdminProfile = lazy(() => import("./pages/admin/AdminProfile"));
 
 // Minimal loading fallback
 const PageLoader = () => (
@@ -131,6 +132,7 @@ const App = () => (
             <Route path="/admin/automation" element={<Admin><AdminAutomation /></Admin>} />
             <Route path="/admin/backup" element={<Admin><AdminBackup /></Admin>} />
             <Route path="/admin/invoices" element={<Admin><AdminInvoices /></Admin>} />
+            <Route path="/admin/profile" element={<Admin><AdminProfile /></Admin>} />
             <Route path="/admin/support" element={P("Support", "Customer support")} />
             <Route path="/admin/coming-soon" element={<Admin><AdminComingSoon /></Admin>} />
             <Route path="/admin/plan" element={P("Plan", "Subscription management")} />

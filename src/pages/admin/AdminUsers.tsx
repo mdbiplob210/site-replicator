@@ -66,6 +66,58 @@ const AdminUsers = () => {
   const [newRole, setNewRole] = useState<string>("manager");
   const [creating, setCreating] = useState(false);
 
+  // Edit user dialog
+  const [editOpen, setEditOpen] = useState(false);
+  const [editUserId, setEditUserId] = useState("");
+  const [editName, setEditName] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [editPassword, setEditPassword] = useState("");
+  const [editLoading, setEditLoading] = useState(false);
+  const [editFetching, setEditFetching] = useState(false);
+
+  const openEditDialog = async (userId: string, fullName: string | null) => {
+    setEditUserId(userId);
+    setEditName(fullName || "");
+    setEditPassword("");
+    setEditEmail("");
+    setEditOpen(true);
+    setEditFetching(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-update-user`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ action: "get_user_email", target_user_id: userId }),
+      });
+      const data = await res.json();
+      if (data.email) setEditEmail(data.email);
+    } catch {} finally { setEditFetching(false); }
+  };
+
+  const handleEditUser = async () => {
+    if (!editName && !editEmail && !editPassword) { toast.error("কিছু পরিবর্তন করুন"); return; }
+    setEditLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-update-user`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({
+          action: "update_auth",
+          target_user_id: editUserId,
+          email: editEmail || undefined,
+          password: editPassword || undefined,
+          full_name: editName || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      toast.success("ইউজার আপডেট হয়েছে!");
+      setEditOpen(false);
+      fetchUsers();
+    } catch (err: any) { toast.error(err.message); } finally { setEditLoading(false); }
+  };
+
   // Rules tab
   const { data: employees = [], isLoading: employeesLoading } = useEmployees();
   const togglePermission = useTogglePermission();
@@ -436,6 +488,13 @@ const AdminUsers = () => {
                             </TableCell>
                             <TableCell>
                               <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => openEditDialog(user.user_id, user.full_name)}
+                                  className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+                                  title="Edit User"
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </button>
                                 <button
                                   onClick={() => { setActiveTab("tracking"); setTrackingSubTab("live"); }}
                                   className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
@@ -1055,6 +1114,35 @@ const AdminUsers = () => {
             <Button className="w-full h-11 gap-2" onClick={handleCreateAdmin} disabled={creating}>
               {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
               Create Account
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      {/* ===== EDIT USER DIALOG ===== */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <div className="p-2 rounded-xl bg-primary/10"><Edit className="h-5 w-5 text-primary" /></div>
+              ইউজার তথ্য পরিবর্তন
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label className="text-xs font-semibold text-muted-foreground uppercase">নাম</Label>
+              <Input className="mt-1" placeholder="Full Name" value={editName} onChange={(e) => setEditName(e.target.value)} />
+            </div>
+            <div>
+              <Label className="text-xs font-semibold text-muted-foreground uppercase">ইমেইল</Label>
+              <Input className="mt-1" type="email" placeholder={editFetching ? "লোড হচ্ছে..." : "email@example.com"} value={editEmail} onChange={(e) => setEditEmail(e.target.value)} disabled={editFetching} />
+            </div>
+            <div>
+              <Label className="text-xs font-semibold text-muted-foreground uppercase">নতুন পাসওয়ার্ড</Label>
+              <Input className="mt-1" type="password" placeholder="খালি রাখলে আগেরটাই থাকবে" value={editPassword} onChange={(e) => setEditPassword(e.target.value)} />
+            </div>
+            <Button className="w-full h-11 gap-2" onClick={handleEditUser} disabled={editLoading}>
+              {editLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+              আপডেট করুন
             </Button>
           </div>
         </DialogContent>

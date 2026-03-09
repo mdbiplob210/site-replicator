@@ -4,7 +4,7 @@ import {
   Lightbulb, ListChecks, BarChart3, Megaphone, Zap, Database,
   Users, HeadphonesIcon, Sparkles, CreditCard, LogOut, ChevronDown,
   Layout, ShoppingBag, Gift, Grid3X3, Heart, Layers, CreditCard as PaymentIcon,
-  File, Settings, PieChart
+  File, Settings, PieChart, UserCog
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -239,7 +239,7 @@ export function AdminSidebar() {
 
       {/* User Footer */}
       <SidebarFooter className="border-t border-sidebar-border/50 sidebar-gradient p-2">
-        <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-sidebar-accent/50 transition-all">
+        <NavLink to="/admin/profile" className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-sidebar-accent/50 transition-all cursor-pointer">
           <Avatar className="h-9 w-9 ring-2 ring-[hsl(187,85%,53%)]/30">
             <AvatarFallback className="bg-gradient-to-br from-[hsl(187,85%,53%)]/20 to-[hsl(210,100%,50%)]/20 text-[hsl(187,85%,53%)] font-bold text-sm">
               {initials}
@@ -256,14 +256,14 @@ export function AdminSidebar() {
           )}
           {!collapsed && (
             <button
-              onClick={signOut}
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); signOut(); }}
               className="p-2 rounded-lg hover:bg-red-500/10 text-sidebar-foreground/40 hover:text-red-400 transition-all duration-200"
               title="Sign out"
             >
               <LogOut className="h-4 w-4" />
             </button>
           )}
-        </div>
+        </NavLink>
       </SidebarFooter>
     </Sidebar>
   );
