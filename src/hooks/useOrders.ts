@@ -154,13 +154,12 @@ export function useOrderCounts(dateFilter: OrderDateFilter = "all", customFrom?:
   return useQuery({
     queryKey: ["order-counts", dateFilter, customFrom?.toISOString(), customTo?.toISOString()],
     queryFn: async () => {
-      let allData: { status: OrderStatus; created_at: string }[] = [];
+      const range = getOrderDateRange(dateFilter, customFrom, customTo);
+      let allData: { status: OrderStatus }[] = [];
       let from = 0;
       const pageSize = 1000;
       while (true) {
         let query = supabase.from("orders").select("status").range(from, from + pageSize - 1);
-
-        const range = getOrderDateRange(dateFilter, customFrom, customTo);
         if (range.from) query = query.gte("created_at", range.from);
         if (range.to) query = query.lt("created_at", range.to);
 
