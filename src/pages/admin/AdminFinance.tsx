@@ -67,6 +67,9 @@ export default function AdminFinance() {
   const createSource = useCreateFinanceSource();
   const deleteSource = useDeleteFinanceSource();
 
+  // Bank accounts from finance_records
+  const { data: bankAccounts = [] } = useFinanceRecords("bank");
+
   // Cross-connect: Stock value from products table
   const { data: stockValue = 0 } = useQuery({
     queryKey: ["finance-stock-value"],
