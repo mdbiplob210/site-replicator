@@ -2365,7 +2365,14 @@ const AdminOrders = () => {
                     </TableCell>
                     {/* ORDER: number, date, time */}
                     <TableCell className="px-3 py-3">
-                      <p className="font-bold text-primary text-sm">{order.order_number.replace(/^ORD-0*/, '')}</p>
+                      <div className="flex items-center gap-1.5">
+                        <p className="font-bold text-primary text-sm">#{order.order_number.replace(/^ORD-0*/, '')}</p>
+                        {(order as any).memo_printed && (
+                          <span className="inline-flex items-center justify-center h-4 w-4 rounded-full bg-emerald-500/20 text-emerald-600" title="মেমো প্রিন্টেড">
+                            <Printer className="h-2.5 w-2.5" />
+                          </span>
+                        )}
+                      </div>
                       <p className="text-[11px] text-muted-foreground mt-0.5">{format(new Date(order.created_at), "dd MMM yy")}</p>
                       <p className="text-[10px] text-muted-foreground">{format(new Date(order.created_at), "hh:mm a")}</p>
                     </TableCell>
