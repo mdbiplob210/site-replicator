@@ -9,13 +9,13 @@ import { useTracking } from "@/hooks/useTracking";
 export function TrackingInitializer() {
   const { trackPageView, isReady } = useTracking();
   const location = useLocation();
-  const lastPath = useRef("");
+  const lastTrackedPath = useRef<string | null>(null);
 
   useEffect(() => {
     if (!isReady) return;
-    // Only fire if path actually changed
-    if (location.pathname !== lastPath.current) {
-      lastPath.current = location.pathname;
+    // Fire if path changed OR if this is the first fire after isReady
+    if (location.pathname !== lastTrackedPath.current) {
+      lastTrackedPath.current = location.pathname;
       // Small delay to let page title update
       setTimeout(() => trackPageView(document.title), 100);
     }
