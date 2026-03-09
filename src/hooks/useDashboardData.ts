@@ -110,7 +110,8 @@ export function useDashboardData(filter: TimeFilter) {
   const finance = financeQuery.data || [];
   const adSpends = adSpendQuery.data || [];
   const products = stockQuery.data || [];
-  const courierBalance = courierBalanceQuery.data || 0;
+  const courierBalance = courierBalanceQuery.data?.amount || 0;
+  const courierCount = courierBalanceQuery.data?.count || 0;
 
   // Order stats
   const totalOrders = orders.length;
