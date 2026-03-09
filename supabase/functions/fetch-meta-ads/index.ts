@@ -58,7 +58,6 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Verify admin role
       const userId = data.claims.sub as string;
       const { data: roleData } = await supabaseAdmin
         .from("user_roles")
@@ -98,7 +97,6 @@ Deno.serve(async (req) => {
           status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      // Auto-save the new long-lived token to site_settings
       try {
         const { data: existing } = await supabaseAdmin.from("site_settings").select("id").eq("key", "fb_access_token").maybeSingle();
         if (existing) {
@@ -116,17 +114,90 @@ Deno.serve(async (req) => {
       }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // ─── SYNC action: fetch from FB API and save to DB ───
-    if (action === "sync") {
+    // ─── LIST AD ACCOUNTS from Business Manager ───
+    if (action === "list_accounts") {
       const FB_ACCESS_TOKEN = await getSettingValue(supabaseAdmin, "fb_access_token", Deno.env.get("FB_ACCESS_TOKEN"));
-      const FB_AD_ACCOUNT_ID = await getSettingValue(supabaseAdmin, "fb_ad_account_id", Deno.env.get("FB_AD_ACCOUNT_ID"));
-      if (!FB_ACCESS_TOKEN || !FB_AD_ACCOUNT_ID) {
-        return new Response(JSON.stringify({ error: "Facebook credentials not configured. Website Settings → Tracking ট্যাবে Access Token ও Ad Account ID সেট করুন।" }), {
+      if (!FB_ACCESS_TOKEN) {
+        return new Response(JSON.stringify({ error: "Facebook Access Token not configured." }), {
           status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
-      const adAccountId = FB_AD_ACCOUNT_ID.startsWith("act_") ? FB_AD_ACCOUNT_ID : `act_${FB_AD_ACCOUNT_ID}`;
+      // First get all businesses the token has access to
+      const meUrl = `${FB_GRAPH_URL}/me/businesses?fields=id,name&access_token=${FB_ACCESS_TOKEN}&limit=100`;
+      const meRes = await fetch(meUrl);
+      const meData = await meRes.json();
+
+      const accounts: any[] = [];
+
+      if (meData.data && meData.data.length > 0) {
+        // For each business, get ad accounts
+        for (const biz of meData.data) {
+          const acUrl = `${FB_GRAPH_URL}/${biz.id}/owned_ad_accounts?fields=id,name,account_id,account_status,currency,timezone_name,business_name&access_token=${FB_ACCESS_TOKEN}&limit=100`;
+          const acRes = await fetch(acUrl);
+          const acData = await acRes.json();
+          if (acData.data) {
+            for (const ac of acData.data) {
+              accounts.push({
+                id: ac.account_id || ac.id.replace("act_", ""),
+                act_id: ac.id.startsWith("act_") ? ac.id : `act_${ac.id}`,
+                name: ac.name || "Unnamed",
+                business_id: biz.id,
+                business_name: biz.name || ac.business_name || "",
+                currency: ac.currency || "USD",
+                timezone: ac.timezone_name || "",
+                status: ac.account_status,
+              });
+            }
+          }
+        }
+      }
+
+      // Fallback: also try /me/adaccounts for personal accounts
+      if (accounts.length === 0) {
+        const personalUrl = `${FB_GRAPH_URL}/me/adaccounts?fields=id,name,account_id,account_status,currency,timezone_name&access_token=${FB_ACCESS_TOKEN}&limit=100`;
+        const personalRes = await fetch(personalUrl);
+        const personalData = await personalRes.json();
+        if (personalData.data) {
+          for (const ac of personalData.data) {
+            accounts.push({
+              id: ac.account_id || ac.id.replace("act_", ""),
+              act_id: ac.id.startsWith("act_") ? ac.id : `act_${ac.id}`,
+              name: ac.name || "Unnamed",
+              business_id: "",
+              business_name: "Personal",
+              currency: ac.currency || "USD",
+              timezone: ac.timezone_name || "",
+              status: ac.account_status,
+            });
+          }
+        }
+        if (personalData.error) {
+          return new Response(JSON.stringify({ error: `FB API Error: ${personalData.error.message}` }), {
+            status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+      }
+
+      return new Response(JSON.stringify({ success: true, accounts }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ─── SYNC action: fetch from FB API and save to DB ───
+    if (action === "sync") {
+      const FB_ACCESS_TOKEN = await getSettingValue(supabaseAdmin, "fb_access_token", Deno.env.get("FB_ACCESS_TOKEN"));
+      
+      // Support single account or multiple accounts
+      const requestedAccountId = body.ad_account_id || await getSettingValue(supabaseAdmin, "fb_ad_account_id", Deno.env.get("FB_AD_ACCOUNT_ID"));
+      const accountIds: string[] = body.ad_account_ids || (requestedAccountId ? [requestedAccountId] : []);
+
+      if (!FB_ACCESS_TOKEN || accountIds.length === 0) {
+        return new Response(JSON.stringify({ error: "Facebook credentials not configured. Access Token ও Ad Account ID সেট করুন।" }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       let timeParams = "";
       if (timeRange?.since && timeRange?.until) {
         timeParams = `&time_range={"since":"${timeRange.since}","until":"${timeRange.until}"}`;
@@ -134,127 +205,148 @@ Deno.serve(async (req) => {
         timeParams = `&date_preset=${datePreset}`;
       }
 
-      // 1. Fetch campaigns
-      const campaignsUrl = `${FB_GRAPH_URL}/${adAccountId}/campaigns?fields=id,name,status,objective,daily_budget,lifetime_budget&access_token=${FB_ACCESS_TOKEN}&limit=100`;
-      const campaignsRes = await fetch(campaignsUrl);
-      const campaignsData = await campaignsRes.json();
-      if (campaignsData.error) throw new Error(`FB API: ${campaignsData.error.message}`);
+      let grandTotalCampaigns = 0;
+      let grandTotalAdsets = 0;
+      let grandTotalAds = 0;
+      const syncedAccounts: string[] = [];
 
-      // Campaign insights
-      const cInsightsUrl = `${FB_GRAPH_URL}/${adAccountId}/insights?fields=campaign_id,campaign_name,spend,impressions,clicks,ctr,cpc,actions,action_values,cost_per_action_type&level=campaign${timeParams}&access_token=${FB_ACCESS_TOKEN}&limit=500`;
-      const cInsightsRes = await fetch(cInsightsUrl);
-      const cInsightsData = await cInsightsRes.json();
-      const cInsightsMap = new Map();
-      if (cInsightsData.data) {
-        for (const i of cInsightsData.data) cInsightsMap.set(i.campaign_id, i);
-      }
+      for (const rawAccountId of accountIds) {
+        const adAccountId = rawAccountId.startsWith("act_") ? rawAccountId : `act_${rawAccountId}`;
+        const accountIdClean = rawAccountId.replace("act_", "");
 
-      const campaignRows = (campaignsData.data || []).map((c: any) => {
-        const ins = cInsightsMap.get(c.id) || {};
-        const purchases = ins.actions?.find((a: any) => a.action_type === "purchase")?.value || 0;
-        const purchaseValue = ins.action_values?.find((a: any) => a.action_type === "purchase")?.value || 0;
-        const costPerPurchase = ins.cost_per_action_type?.find((a: any) => a.action_type === "purchase")?.value || 0;
-        const spend = parseFloat(ins.spend || "0");
-        const roas = spend > 0 ? parseFloat(purchaseValue) / spend : 0;
-        return {
-          id: c.id, name: c.name, status: c.status, objective: c.objective || null,
-          daily_budget: c.daily_budget ? parseFloat(c.daily_budget) / 100 : null,
-          lifetime_budget: c.lifetime_budget ? parseFloat(c.lifetime_budget) / 100 : null,
-          spend, impressions: parseInt(ins.impressions || "0"), clicks: parseInt(ins.clicks || "0"),
-          ctr: parseFloat(ins.ctr || "0"), purchases: parseInt(purchases),
-          purchase_value: parseFloat(purchaseValue), cost_per_purchase: parseFloat(costPerPurchase),
-          roas: parseFloat(roas.toFixed(2)), date_preset: datePreset, synced_at: new Date().toISOString(),
-        };
-      });
+        try {
+          // 1. Fetch campaigns
+          const campaignsUrl = `${FB_GRAPH_URL}/${adAccountId}/campaigns?fields=id,name,status,objective,daily_budget,lifetime_budget&access_token=${FB_ACCESS_TOKEN}&limit=100`;
+          const campaignsRes = await fetch(campaignsUrl);
+          const campaignsData = await campaignsRes.json();
+          if (campaignsData.error) {
+            console.error(`Campaign fetch error for ${adAccountId}:`, campaignsData.error);
+            continue;
+          }
 
-      // Upsert campaigns
-      if (campaignRows.length > 0) {
-        const { error: cErr } = await supabaseAdmin.from("meta_campaigns").upsert(campaignRows, { onConflict: "id" });
-        if (cErr) console.error("Campaign upsert error:", cErr);
-      }
+          // Campaign insights
+          const cInsightsUrl = `${FB_GRAPH_URL}/${adAccountId}/insights?fields=campaign_id,campaign_name,spend,impressions,clicks,ctr,cpc,actions,action_values,cost_per_action_type&level=campaign${timeParams}&access_token=${FB_ACCESS_TOKEN}&limit=500`;
+          const cInsightsRes = await fetch(cInsightsUrl);
+          const cInsightsData = await cInsightsRes.json();
+          const cInsightsMap = new Map();
+          if (cInsightsData.data) {
+            for (const i of cInsightsData.data) cInsightsMap.set(i.campaign_id, i);
+          }
 
-      // 2. For each campaign, fetch ad sets
-      let totalAdsets = 0;
-      let totalAds = 0;
-      for (const camp of campaignRows) {
-        const adsetsUrl = `${FB_GRAPH_URL}/${camp.id}/adsets?fields=id,name,status,targeting,daily_budget,lifetime_budget&access_token=${FB_ACCESS_TOKEN}&limit=100`;
-        const adsetsRes = await fetch(adsetsUrl);
-        const adsetsData = await adsetsRes.json();
-        if (adsetsData.error) { console.error(`Adset fetch error for ${camp.id}:`, adsetsData.error); continue; }
-
-        const asInsightsUrl = `${FB_GRAPH_URL}/${camp.id}/insights?fields=adset_id,spend,impressions,clicks,ctr,actions,action_values,cost_per_action_type&level=adset${timeParams}&access_token=${FB_ACCESS_TOKEN}&limit=500`;
-        const asInsightsRes = await fetch(asInsightsUrl);
-        const asInsightsData = await asInsightsRes.json();
-        const asMap = new Map();
-        if (asInsightsData.data) { for (const i of asInsightsData.data) asMap.set(i.adset_id, i); }
-
-        const adsetRows = (adsetsData.data || []).map((a: any) => {
-          const ins = asMap.get(a.id) || {};
-          const purchases = ins.actions?.find((x: any) => x.action_type === "purchase")?.value || 0;
-          const purchaseValue = ins.action_values?.find((x: any) => x.action_type === "purchase")?.value || 0;
-          const costPerPurchase = ins.cost_per_action_type?.find((x: any) => x.action_type === "purchase")?.value || 0;
-          const spend = parseFloat(ins.spend || "0");
-          const roas = spend > 0 ? parseFloat(purchaseValue) / spend : 0;
-          const targeting = a.targeting || {};
-          const audience = `${targeting.age_min || ""}-${targeting.age_max || ""} · ${targeting.geo_locations?.countries?.join(", ") || ""}`;
-          return {
-            id: a.id, campaign_id: camp.id, name: a.name, status: a.status, audience,
-            spend, clicks: parseInt(ins.clicks || "0"), ctr: parseFloat(ins.ctr || "0"),
-            purchases: parseInt(purchases), cost_per_purchase: parseFloat(costPerPurchase),
-            roas: parseFloat(roas.toFixed(2)), date_preset: datePreset, synced_at: new Date().toISOString(),
-          };
-        });
-
-        if (adsetRows.length > 0) {
-          const { error: asErr } = await supabaseAdmin.from("meta_adsets").upsert(adsetRows, { onConflict: "id" });
-          if (asErr) console.error("Adset upsert error:", asErr);
-          totalAdsets += adsetRows.length;
-        }
-
-        // 3. For each ad set, fetch ads
-        for (const adset of adsetRows) {
-          const adsUrl = `${FB_GRAPH_URL}/${adset.id}/ads?fields=id,name,status&access_token=${FB_ACCESS_TOKEN}&limit=100`;
-          const adsRes = await fetch(adsUrl);
-          const adsData = await adsRes.json();
-          if (adsData.error) { console.error(`Ad fetch error for ${adset.id}:`, adsData.error); continue; }
-
-          const adInsUrl = `${FB_GRAPH_URL}/${adset.id}/insights?fields=ad_id,spend,clicks,ctr,actions,action_values,cost_per_action_type&level=ad${timeParams}&access_token=${FB_ACCESS_TOKEN}&limit=500`;
-          const adInsRes = await fetch(adInsUrl);
-          const adInsData = await adInsRes.json();
-          const adMap = new Map();
-          if (adInsData.data) { for (const i of adInsData.data) adMap.set(i.ad_id, i); }
-
-          const adRows = (adsData.data || []).map((ad: any) => {
-            const ins = adMap.get(ad.id) || {};
-            const purchases = ins.actions?.find((x: any) => x.action_type === "purchase")?.value || 0;
-            const purchaseValue = ins.action_values?.find((x: any) => x.action_type === "purchase")?.value || 0;
-            const costPerResult = ins.cost_per_action_type?.find((x: any) => x.action_type === "purchase")?.value || 0;
+          const campaignRows = (campaignsData.data || []).map((c: any) => {
+            const ins = cInsightsMap.get(c.id) || {};
+            const purchases = ins.actions?.find((a: any) => a.action_type === "purchase")?.value || 0;
+            const purchaseValue = ins.action_values?.find((a: any) => a.action_type === "purchase")?.value || 0;
+            const costPerPurchase = ins.cost_per_action_type?.find((a: any) => a.action_type === "purchase")?.value || 0;
             const spend = parseFloat(ins.spend || "0");
             const roas = spend > 0 ? parseFloat(purchaseValue) / spend : 0;
             return {
-              id: ad.id, adset_id: adset.id, name: ad.name, status: ad.status,
-              spend, clicks: parseInt(ins.clicks || "0"), ctr: parseFloat(ins.ctr || "0"),
-              purchases: parseInt(purchases), cost_per_result: parseFloat(costPerResult),
+              id: c.id, name: c.name, status: c.status, objective: c.objective || null,
+              daily_budget: c.daily_budget ? parseFloat(c.daily_budget) / 100 : null,
+              lifetime_budget: c.lifetime_budget ? parseFloat(c.lifetime_budget) / 100 : null,
+              spend, impressions: parseInt(ins.impressions || "0"), clicks: parseInt(ins.clicks || "0"),
+              ctr: parseFloat(ins.ctr || "0"), purchases: parseInt(purchases),
+              purchase_value: parseFloat(purchaseValue), cost_per_purchase: parseFloat(costPerPurchase),
               roas: parseFloat(roas.toFixed(2)), date_preset: datePreset, synced_at: new Date().toISOString(),
+              ad_account_id: accountIdClean,
             };
           });
 
-          if (adRows.length > 0) {
-            const { error: adErr } = await supabaseAdmin.from("meta_ads").upsert(adRows, { onConflict: "id" });
-            if (adErr) console.error("Ad upsert error:", adErr);
-            totalAds += adRows.length;
+          if (campaignRows.length > 0) {
+            const { error: cErr } = await supabaseAdmin.from("meta_campaigns").upsert(campaignRows, { onConflict: "id" });
+            if (cErr) console.error("Campaign upsert error:", cErr);
+            grandTotalCampaigns += campaignRows.length;
           }
+
+          // 2. For each campaign, fetch ad sets
+          for (const camp of campaignRows) {
+            const adsetsUrl = `${FB_GRAPH_URL}/${camp.id}/adsets?fields=id,name,status,targeting,daily_budget,lifetime_budget&access_token=${FB_ACCESS_TOKEN}&limit=100`;
+            const adsetsRes = await fetch(adsetsUrl);
+            const adsetsData = await adsetsRes.json();
+            if (adsetsData.error) { console.error(`Adset fetch error for ${camp.id}:`, adsetsData.error); continue; }
+
+            const asInsightsUrl = `${FB_GRAPH_URL}/${camp.id}/insights?fields=adset_id,spend,impressions,clicks,ctr,actions,action_values,cost_per_action_type&level=adset${timeParams}&access_token=${FB_ACCESS_TOKEN}&limit=500`;
+            const asInsightsRes = await fetch(asInsightsUrl);
+            const asInsightsData = await asInsightsRes.json();
+            const asMap = new Map();
+            if (asInsightsData.data) { for (const i of asInsightsData.data) asMap.set(i.adset_id, i); }
+
+            const adsetRows = (adsetsData.data || []).map((a: any) => {
+              const ins = asMap.get(a.id) || {};
+              const purchases = ins.actions?.find((x: any) => x.action_type === "purchase")?.value || 0;
+              const purchaseValue = ins.action_values?.find((x: any) => x.action_type === "purchase")?.value || 0;
+              const costPerPurchase = ins.cost_per_action_type?.find((x: any) => x.action_type === "purchase")?.value || 0;
+              const spend = parseFloat(ins.spend || "0");
+              const roas = spend > 0 ? parseFloat(purchaseValue) / spend : 0;
+              const targeting = a.targeting || {};
+              const audience = `${targeting.age_min || ""}-${targeting.age_max || ""} · ${targeting.geo_locations?.countries?.join(", ") || ""}`;
+              return {
+                id: a.id, campaign_id: camp.id, name: a.name, status: a.status, audience,
+                spend, clicks: parseInt(ins.clicks || "0"), ctr: parseFloat(ins.ctr || "0"),
+                purchases: parseInt(purchases), cost_per_purchase: parseFloat(costPerPurchase),
+                roas: parseFloat(roas.toFixed(2)), date_preset: datePreset, synced_at: new Date().toISOString(),
+                ad_account_id: accountIdClean,
+              };
+            });
+
+            if (adsetRows.length > 0) {
+              const { error: asErr } = await supabaseAdmin.from("meta_adsets").upsert(adsetRows, { onConflict: "id" });
+              if (asErr) console.error("Adset upsert error:", asErr);
+              grandTotalAdsets += adsetRows.length;
+            }
+
+            // 3. For each ad set, fetch ads
+            for (const adset of adsetRows) {
+              const adsUrl = `${FB_GRAPH_URL}/${adset.id}/ads?fields=id,name,status&access_token=${FB_ACCESS_TOKEN}&limit=100`;
+              const adsRes = await fetch(adsUrl);
+              const adsData = await adsRes.json();
+              if (adsData.error) { console.error(`Ad fetch error for ${adset.id}:`, adsData.error); continue; }
+
+              const adInsUrl = `${FB_GRAPH_URL}/${adset.id}/insights?fields=ad_id,spend,clicks,ctr,actions,action_values,cost_per_action_type&level=ad${timeParams}&access_token=${FB_ACCESS_TOKEN}&limit=500`;
+              const adInsRes = await fetch(adInsUrl);
+              const adInsData = await adInsRes.json();
+              const adMap = new Map();
+              if (adInsData.data) { for (const i of adInsData.data) adMap.set(i.ad_id, i); }
+
+              const adRows = (adsData.data || []).map((ad: any) => {
+                const ins = adMap.get(ad.id) || {};
+                const purchases = ins.actions?.find((x: any) => x.action_type === "purchase")?.value || 0;
+                const purchaseValue = ins.action_values?.find((x: any) => x.action_type === "purchase")?.value || 0;
+                const costPerResult = ins.cost_per_action_type?.find((x: any) => x.action_type === "purchase")?.value || 0;
+                const spend = parseFloat(ins.spend || "0");
+                const roas = spend > 0 ? parseFloat(purchaseValue) / spend : 0;
+                return {
+                  id: ad.id, adset_id: adset.id, name: ad.name, status: ad.status,
+                  spend, clicks: parseInt(ins.clicks || "0"), ctr: parseFloat(ins.ctr || "0"),
+                  purchases: parseInt(purchases), cost_per_result: parseFloat(costPerResult),
+                  roas: parseFloat(roas.toFixed(2)), date_preset: datePreset, synced_at: new Date().toISOString(),
+                  ad_account_id: accountIdClean,
+                };
+              });
+
+              if (adRows.length > 0) {
+                const { error: adErr } = await supabaseAdmin.from("meta_ads").upsert(adRows, { onConflict: "id" });
+                if (adErr) console.error("Ad upsert error:", adErr);
+                grandTotalAds += adRows.length;
+              }
+            }
+          }
+
+          syncedAccounts.push(accountIdClean);
+        } catch (accErr) {
+          console.error(`Error syncing account ${adAccountId}:`, accErr);
         }
       }
 
       return new Response(JSON.stringify({
         success: true,
-        synced: { campaigns: campaignRows.length, adsets: totalAdsets, ads: totalAds },
+        synced: { campaigns: grandTotalCampaigns, adsets: grandTotalAdsets, ads: grandTotalAds },
+        synced_accounts: syncedAccounts,
         date_preset: datePreset,
       }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    return new Response(JSON.stringify({ error: "Invalid action. Use 'sync'." }), {
+    return new Response(JSON.stringify({ error: "Invalid action. Use 'sync', 'list_accounts', or 'exchange_token'." }), {
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
