@@ -300,8 +300,19 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
 
   if (!open || !currentItem) return null;
 
+  const insideDhaka = Number(settings?.delivery_inside_dhaka) || 80;
+  const outsideDhaka = Number(settings?.delivery_outside_dhaka) || 150;
+  const freeDeliveryAbove = Number(settings?.free_delivery_above) || 0;
+
+  // Determine if product has free delivery
+  const productHasFreeDelivery = currentItem ? allProducts.find(p => p.id === currentItem.productId)?.free_delivery : false;
+
+  // Default delivery charge (inside dhaka), user can pick area later
+  const [deliveryArea, setDeliveryArea] = useState<"inside" | "outside">("inside");
+  const deliveryCharge = productHasFreeDelivery ? 0 : (freeDeliveryAbove > 0 && subtotal >= freeDeliveryAbove) ? 0 : (deliveryArea === "inside" ? insideDhaka : outsideDhaka);
+
   const subtotal = currentItem.price * qty;
-  const total = Math.max(0, subtotal - discount);
+  const total = Math.max(0, subtotal + deliveryCharge - discount);
 
   return (
     <div className="fixed inset-0 z-[999] flex items-end sm:items-center justify-center">
