@@ -177,6 +177,17 @@ export default function AdminFinance() {
     }, { onSuccess: () => { setInvestAmount(""); setInvestSource(""); setInvestNote(""); } });
   };
 
+  const handleSubmitPurchase = () => {
+    if (!purchaseAmount || Number(purchaseAmount) <= 0 || !purchaseSupplier) return;
+    const bankInfo = purchaseBank ? ` [${purchaseBank}]` : "";
+    createRecord.mutate({
+      type: "product_purchase",
+      label: purchaseSupplier,
+      amount: Number(purchaseAmount),
+      notes: (purchaseNote ? purchaseNote : "") + bankInfo || null,
+    }, { onSuccess: () => { setPurchaseAmount(""); setPurchaseSupplier(""); setPurchaseNote(""); } });
+  };
+
   const getTypeLabel = (type: string) => {
     const map: Record<string, string> = {
       income: "Income", expense: "Expense", bank: "Bank",
