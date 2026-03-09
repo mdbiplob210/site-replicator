@@ -200,7 +200,7 @@ export default function AdminFinance() {
 
   const getTypeColor = (type: string) => {
     if (type === "income" || type === "loan_in" || type === "investment_in") return "text-emerald-600";
-    if (type === "expense" || type === "loan_out" || type === "investment_out") return "text-destructive";
+    if (type === "expense" || type === "loan_out" || type === "investment_out" || type === "product_purchase") return "text-destructive";
     return "text-primary";
   };
 
