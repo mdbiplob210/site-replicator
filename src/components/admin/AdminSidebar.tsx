@@ -41,6 +41,7 @@ const mainMenuItems = [
   { title: "Orders", url: "/admin/orders", icon: ShoppingCart },
   { title: "Products", url: "/admin/products", icon: Package },
   { title: "Website", url: "/admin/website", icon: Globe, hasSubmenu: true, subItems: websiteSubItems },
+  { title: "Invoices", url: "/admin/invoices", icon: FileText },
   { title: "Reports", url: "/admin/reports", icon: FileText },
   { title: "Finance", url: "/admin/finance", icon: Wallet },
   { title: "Planning", url: "/admin/planning", icon: Lightbulb },
