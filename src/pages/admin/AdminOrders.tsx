@@ -566,6 +566,7 @@ const AdminOrders = () => {
     courierByOrderId,
     orderItemsByOrderId,
     siteName: shopName,
+    siteLogo: shopLogo,
     onPrinted: handleMarkPrinted,
   });
 
