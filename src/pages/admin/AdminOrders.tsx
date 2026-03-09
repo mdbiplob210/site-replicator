@@ -2748,7 +2748,7 @@ const AdminOrders = () => {
                 const custStats = order.customer_phone ? customerStatsByPhone[order.customer_phone] : null;
                 const courierInfo = courierByOrderId[order.id];
                 return (
-                  <div key={order.id} className="p-3 space-y-2 active:bg-secondary/30" onClick={() => setDetailOrderId(order.id)}>
+                  <div key={order.id} className="p-3 space-y-2 active:bg-secondary/30 border-b border-border/20 last:border-b-0" onClick={() => setDetailOrderId(order.id)}>
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
                         <Checkbox checked={selectedOrderIds.has(order.id)} onCheckedChange={(checked) => {
@@ -2760,7 +2760,7 @@ const AdminOrders = () => {
                           <div className="flex items-center gap-1.5">
                             <span className="font-bold text-primary text-sm">#{order.order_number.replace(/^ORD-0*/, '')}</span>
                             {(order as any).memo_printed && (
-                              <span className="inline-flex items-center justify-center h-4 w-4 rounded-full bg-emerald-500/20 text-emerald-600" title="মেমো প্রিন্টেড">
+                              <span className="inline-flex items-center justify-center h-4 w-4 rounded-full bg-emerald-500/20 text-emerald-600">
                                 <Printer className="h-2.5 w-2.5" />
                               </span>
                             )}
@@ -2774,15 +2774,20 @@ const AdminOrders = () => {
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-semibold text-foreground truncate">{order.customer_name}</p>
                         {order.customer_phone && (
-                          <div className="flex items-center gap-2 mt-0.5">
+                          <div className="flex items-center gap-1.5 mt-0.5" onClick={(e) => e.stopPropagation()}>
                             <span className="text-xs font-mono text-primary">{order.customer_phone}</span>
-                            {custStats && <span className="text-[10px] text-muted-foreground">({custStats.total} orders)</span>}
+                            <a href={`tel:${order.customer_phone}`} className="h-5 w-5 rounded flex items-center justify-center bg-emerald-500/10 text-emerald-600">
+                              <Phone className="h-3 w-3" />
+                            </a>
+                            <button onClick={() => { navigator.clipboard.writeText(order.customer_phone || ""); toast.success("কপি!"); }} className="h-5 w-5 rounded flex items-center justify-center bg-secondary text-muted-foreground">
+                              <Copy className="h-3 w-3" />
+                            </button>
                           </div>
                         )}
                       </div>
                       <div onClick={(e) => e.stopPropagation()}>
                         <Select value={order.status} onValueChange={(value) => handleStatusChange(order.id, value, order.status)}>
-                          <SelectTrigger className="w-[110px] h-7 rounded-full text-[10px] border-0 px-2 font-semibold"
+                          <SelectTrigger className="w-[105px] h-7 rounded-full text-[10px] border-0 px-2 font-semibold"
                             style={{ backgroundColor: order.status === 'processing' ? '#3b82f6' : order.status === 'confirmed' ? '#059669' : order.status === 'cancelled' ? '#ef4444' : order.status === 'delivered' ? '#10b981' : order.status === 'in_courier' ? '#8b5cf6' : order.status === 'on_hold' ? '#eab308' : order.status === 'returned' ? '#f97316' : '#6b7280', color: 'white' }}>
                             <SelectValue />
                           </SelectTrigger>
@@ -2797,17 +2802,34 @@ const AdminOrders = () => {
                             ))}
                           </SelectContent>
                         </Select>
-                        {order.status === "cancelled" && (order as any).cancel_reason && (
-                          <p className="text-[10px] text-destructive truncate max-w-[110px]" title={(order as any).cancel_reason}>
-                            {(order as any).cancel_reason}
-                          </p>
-                        )}
                       </div>
                     </div>
+                    {/* Items + courier + payment row */}
                     <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-                      <span>{items.length} {items.length === 1 ? 'item' : 'items'} · {courierInfo ? courierInfo.provider_name : 'No courier'}</span>
-                      {order.source && <span className="bg-secondary/60 px-1.5 py-0.5 rounded text-[10px]">{order.source}</span>}
+                      <div className="flex items-center gap-1.5">
+                        <span>{items.length} items</span>
+                        <span>·</span>
+                        {courierInfo ? (
+                          <span className="flex items-center gap-1">
+                            <Truck className="h-3 w-3 text-violet-500" />
+                            {courierInfo.provider_name}
+                          </span>
+                        ) : (
+                          <span>No courier</span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        {((order as any).payment_status || "unpaid") === "paid" && (
+                          <Badge variant="outline" className="text-[9px] h-4 border-emerald-300 text-emerald-600 bg-emerald-50 px-1">✅ Paid</Badge>
+                        )}
+                        {order.source && <span className="bg-secondary/60 px-1.5 py-0.5 rounded text-[10px]">{order.source}</span>}
+                      </div>
                     </div>
+                    {order.status === "cancelled" && (order as any).cancel_reason && (
+                      <p className="text-[10px] text-destructive bg-destructive/5 px-2 py-1 rounded-lg truncate">
+                        {(order as any).cancel_reason}
+                      </p>
+                    )}
                   </div>
                 );
               })}
