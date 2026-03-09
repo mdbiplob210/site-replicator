@@ -523,6 +523,84 @@ export type Database = {
         }
         Relationships: []
       }
+      invoices: {
+        Row: {
+          cod_amount: number
+          courier_provider_id: string | null
+          courier_tracking_id: string | null
+          created_at: string
+          customer_address: string | null
+          customer_name: string
+          customer_phone: string | null
+          delivery_charge: number
+          delivery_date: string | null
+          discount: number
+          id: string
+          invoice_number: string
+          notes: string | null
+          order_id: string
+          status: string
+          subtotal: number
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          cod_amount?: number
+          courier_provider_id?: string | null
+          courier_tracking_id?: string | null
+          created_at?: string
+          customer_address?: string | null
+          customer_name: string
+          customer_phone?: string | null
+          delivery_charge?: number
+          delivery_date?: string | null
+          discount?: number
+          id?: string
+          invoice_number: string
+          notes?: string | null
+          order_id: string
+          status?: string
+          subtotal?: number
+          total_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          cod_amount?: number
+          courier_provider_id?: string | null
+          courier_tracking_id?: string | null
+          created_at?: string
+          customer_address?: string | null
+          customer_name?: string
+          customer_phone?: string | null
+          delivery_charge?: number
+          delivery_date?: string | null
+          discount?: number
+          id?: string
+          invoice_number?: string
+          notes?: string | null
+          order_id?: string
+          status?: string
+          subtotal?: number
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_courier_provider_id_fkey"
+            columns: ["courier_provider_id"]
+            isOneToOne: false
+            referencedRelation: "courier_providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       landing_page_events: {
         Row: {
           created_at: string
