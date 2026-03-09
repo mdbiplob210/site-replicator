@@ -152,6 +152,7 @@ export function useCreateFinanceRecord() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["finance-records"] });
       queryClient.invalidateQueries({ queryKey: ["finance-summary"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard-finance"] });
       toast.success("রেকর্ড সফলভাবে সেভ হয়েছে!");
     },
     onError: (error: Error) => {
