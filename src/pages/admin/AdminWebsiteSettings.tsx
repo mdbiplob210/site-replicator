@@ -3,7 +3,7 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 import {
   Settings, Home, Sparkles, Globe, Code, RotateCcw,
   Save, Upload, ImageIcon, Phone, Mail, Link, Facebook,
-  Instagram, Trash2, Clock, Search, Info, CheckCircle2
+  Instagram, Trash2, Clock, Search, Info, CheckCircle2, Image
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,10 +15,13 @@ import { useSiteSettings, useUpdateSiteSetting } from "@/hooks/useSiteSettings";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-type SettingsTab = "general" | "buttons" | "buy_domain" | "tracking" | "data_reset";
+import BannerSettings from "@/components/admin/BannerSettings";
+
+type SettingsTab = "general" | "banners" | "buttons" | "buy_domain" | "tracking" | "data_reset";
 
 const tabs: { id: SettingsTab; label: string; icon: any }[] = [
   { id: "general", label: "General", icon: Home },
+  { id: "banners", label: "Banners", icon: Image },
   { id: "buttons", label: "Buttons", icon: Sparkles },
   { id: "buy_domain", label: "Buy Domain", icon: Globe },
   { id: "tracking", label: "Tracking", icon: Code },
@@ -74,6 +77,7 @@ export default function AdminWebsiteSettings() {
 
         {/* Tab Content */}
         {activeTab === "general" && <GeneralTab />}
+        {activeTab === "banners" && <BannerSettings />}
         {activeTab === "buttons" && <ButtonsTab />}
         {activeTab === "buy_domain" && <BuyDomainTab />}
         {activeTab === "tracking" && <TrackingTab />}
