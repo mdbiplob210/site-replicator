@@ -46,7 +46,10 @@ function InvoicePrint({ invoice, courierName }: { invoice: Invoice; courierName:
       </html>
     `);
     printWindow.document.close();
-    printWindow.onload = () => { printWindow.print(); printWindow.close(); };
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.onafterprint = () => printWindow.close();
+    }, 300);
   };
 
   return (

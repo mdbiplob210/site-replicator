@@ -260,12 +260,13 @@ export function useBulkMemoPrint({ orders, courierByOrderId, orderItemsByOrderId
     `);
     
     printWindow.document.close();
-    printWindow.onload = () => {
+    setTimeout(() => {
       printWindow.print();
-      // Mark as printed after print dialog
-      onPrinted(orderIds);
-      printWindow.close();
-    };
+      printWindow.onafterprint = () => {
+        onPrinted(orderIds);
+        printWindow.close();
+      };
+    }, 300);
   }, [orders, courierByOrderId, orderItemsByOrderId, siteName, onPrinted]);
 
   return { handleBulkPrint };
