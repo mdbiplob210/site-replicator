@@ -365,28 +365,28 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
             </div>
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="p-5 space-y-3">
+            <form onSubmit={handleSubmit} className="p-4 sm:p-5 space-y-2.5 sm:space-y-3">
               <div>
-                <Label className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 mb-1">
-                  <User className="h-3.5 w-3.5" /> আপনার নাম
+                <Label className="flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold text-gray-600 mb-1">
+                  <User className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> আপনার নাম
                 </Label>
-                <Input placeholder="পুরো নাম লিখুন" value={form.name} onChange={e => updateForm({ name: e.target.value })} className="h-11 rounded-xl" required name="name" autoComplete="name" />
+                <Input placeholder="পুরো নাম লিখুন" value={form.name} onChange={e => updateForm({ name: e.target.value })} className="h-11 sm:h-11 rounded-xl text-sm" required name="name" autoComplete="name" />
               </div>
               <div>
-                <Label className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 mb-1">
-                  <Phone className="h-3.5 w-3.5" /> ফোন নম্বর
+                <Label className="flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold text-gray-600 mb-1">
+                  <Phone className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> ফোন নম্বর
                 </Label>
-                <Input placeholder="01XXXXXXXXX" value={form.phone} onChange={e => updateForm({ phone: e.target.value })} className="h-11 rounded-xl" required name="tel" autoComplete="tel" />
+                <Input placeholder="01XXXXXXXXX" value={form.phone} onChange={e => updateForm({ phone: e.target.value })} className="h-11 sm:h-11 rounded-xl text-sm" required name="tel" autoComplete="tel" inputMode="tel" />
               </div>
               <div>
-                <Label className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 mb-1">
-                  <MapPin className="h-3.5 w-3.5" /> সম্পূর্ণ ঠিকানা
+                <Label className="flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold text-gray-600 mb-1">
+                  <MapPin className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> সম্পূর্ণ ঠিকানা
                 </Label>
-                <Textarea placeholder="বাড়ি নং, রোড, এলাকা, জেলা" value={form.address} onChange={e => updateForm({ address: e.target.value })} className="rounded-xl resize-none" rows={2} required name="address" autoComplete="street-address" />
+                <Textarea placeholder="বাড়ি নং, রোড, এলাকা, জেলা" value={form.address} onChange={e => updateForm({ address: e.target.value })} className="rounded-xl resize-none text-sm" rows={2} required name="address" autoComplete="street-address" />
               </div>
               <div>
-                <Label className="text-xs font-semibold text-gray-600 mb-1">নোট (ঐচ্ছিক)</Label>
-                <Input placeholder="অতিরিক্ত তথ্য..." value={form.notes} onChange={e => updateForm({ notes: e.target.value })} className="h-11 rounded-xl" autoComplete="off" />
+                <Label className="text-[11px] sm:text-xs font-semibold text-gray-600 mb-1">নোট (ঐচ্ছিক)</Label>
+                <Input placeholder="অতিরিক্ত তথ্য..." value={form.notes} onChange={e => updateForm({ notes: e.target.value })} className="h-11 sm:h-11 rounded-xl text-sm" autoComplete="off" />
               </div>
 
               {/* Delivery Area Selector */}
