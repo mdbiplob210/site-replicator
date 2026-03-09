@@ -140,15 +140,117 @@
     font-weight: 600;
   }
 
-  /* Dark mode card glow effects */
-  .dark .border-border\/40 {
-    border-color: hsl(230 18% 22%);
-    background-image: linear-gradient(135deg, hsl(260 20% 14%) 0%, hsl(228 22% 12%) 50%, hsl(200 20% 13%) 100%);
+  /* Dark mode card glass effect */
+  .dark .border-border\/40,
+  .dark [class*="rounded"][class*="border"][class*="bg-card"] {
+    border-color: hsl(230 20% 24% / 0.6);
+    background: linear-gradient(135deg, hsl(260 18% 15% / 0.7) 0%, hsl(228 22% 12% / 0.8) 50%, hsl(200 18% 14% / 0.7) 100%);
+    backdrop-filter: blur(12px) saturate(150%);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
+    box-shadow: 0 1px 2px hsl(0 0% 0% / 0.3), inset 0 1px 0 hsl(0 0% 100% / 0.03);
   }
 
-  /* Dark mode subtle ambient glow on hover */
-  .dark .card-hover:hover {
-    box-shadow: 0 8px 32px hsl(200 100% 60% / 0.08), 0 2px 8px hsl(260 60% 50% / 0.06);
+  /* Dark mode card hover glow */
+  .dark .card-hover:hover,
+  .dark .border-border\/40:hover {
+    border-color: hsl(200 80% 50% / 0.25);
+    box-shadow: 
+      0 8px 32px hsl(200 100% 60% / 0.08),
+      0 2px 12px hsl(260 60% 50% / 0.06),
+      inset 0 1px 0 hsl(0 0% 100% / 0.05);
+  }
+
+  /* Dark mode table glass */
+  .dark table {
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .dark thead tr {
+    background: linear-gradient(90deg, hsl(260 20% 16% / 0.6), hsl(230 22% 15% / 0.6), hsl(200 18% 16% / 0.6));
+    backdrop-filter: blur(8px);
+  }
+
+  .dark thead th {
+    border-bottom: 1px solid hsl(200 60% 40% / 0.15);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    color: hsl(200 60% 70%);
+  }
+
+  .dark tbody tr {
+    transition: all 0.2s ease;
+    border-bottom: 1px solid hsl(230 18% 18% / 0.5);
+  }
+
+  .dark tbody tr:hover {
+    background: linear-gradient(90deg, hsl(260 25% 18% / 0.4), hsl(200 20% 17% / 0.3));
+    box-shadow: inset 0 0 30px hsl(200 80% 50% / 0.03);
+  }
+
+  /* Dark mode sidebar glass */
+  .dark .sidebar-gradient {
+    background: linear-gradient(180deg, 
+      hsl(228 30% 9% / 0.95) 0%,
+      hsl(240 25% 7% / 0.95) 40%,
+      hsl(260 20% 8% / 0.95) 100%
+    );
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-right: 1px solid hsl(260 20% 20% / 0.3);
+    box-shadow: 4px 0 24px hsl(0 0% 0% / 0.3);
+  }
+
+  /* Dark mode sidebar menu items */
+  .dark [data-sidebar="menu-button"]:hover {
+    background: linear-gradient(90deg, hsl(200 60% 30% / 0.12), hsl(260 40% 30% / 0.08));
+    backdrop-filter: blur(4px);
+  }
+
+  /* Dark mode badges glow */
+  .dark .bg-primary {
+    box-shadow: 0 0 12px hsl(200 100% 60% / 0.2);
+  }
+
+  /* Dark mode input fields glass */
+  .dark input, .dark textarea, .dark select {
+    background: hsl(230 20% 13% / 0.6) !important;
+    border-color: hsl(230 18% 24% / 0.5) !important;
+    backdrop-filter: blur(4px);
+  }
+
+  .dark input:focus, .dark textarea:focus, .dark select:focus {
+    border-color: hsl(200 100% 60% / 0.4) !important;
+    box-shadow: 0 0 0 2px hsl(200 100% 60% / 0.1), 0 0 16px hsl(200 100% 60% / 0.05) !important;
+  }
+
+  /* Dark mode tabs glass effect */
+  .dark [role="tablist"] {
+    background: hsl(230 20% 13% / 0.5);
+    backdrop-filter: blur(8px);
+    border: 1px solid hsl(230 18% 22% / 0.4);
+  }
+
+  .dark [role="tab"][data-state="active"] {
+    background: linear-gradient(135deg, hsl(200 60% 25% / 0.3), hsl(260 40% 25% / 0.2)) !important;
+    box-shadow: 0 0 12px hsl(200 80% 50% / 0.08);
+    border-color: hsl(200 60% 40% / 0.2) !important;
+  }
+
+  /* Dark mode popover / dropdown glass */
+  .dark [data-radix-popper-content-wrapper] > div {
+    background: hsl(228 22% 13% / 0.9) !important;
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border-color: hsl(230 20% 24% / 0.5) !important;
+    box-shadow: 0 16px 48px hsl(0 0% 0% / 0.4), 0 0 1px hsl(0 0% 100% / 0.05);
+  }
+
+  /* Dark mode switch enhanced */
+  .dark [role="switch"][data-state="checked"] {
+    box-shadow: 0 0 8px hsl(200 100% 60% / 0.3);
   }
 }
 
