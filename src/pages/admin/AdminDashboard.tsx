@@ -416,8 +416,17 @@ const AdminDashboard = () => {
                 </Card>
               ))}
             </div>
-          </>
-        )}
+            )}
+
+            {/* Role-specific empty state */}
+            {!canSeeOrders && !canSeeFinance && !canSeeProfit && (
+              <Card className="p-12 text-center border-border/30">
+                <p className="text-lg font-bold text-foreground mb-2">স্বাগতম! 👋</p>
+                <p className="text-sm text-muted-foreground">
+                  আপনার রোল অনুযায়ী সংশ্লিষ্ট সেকশনে যান — সাইডবার থেকে নেভিগেট করুন।
+                </p>
+              </Card>
+            )}
       </div>
     </AdminLayout>
   );
