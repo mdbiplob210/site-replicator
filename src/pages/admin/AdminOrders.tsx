@@ -42,6 +42,7 @@ import {
 import { usePublicProducts } from "@/hooks/usePublicProducts";
 import { CourierSettingsView } from "@/components/admin/courier/CourierSettingsView";
 import { FakeOrderDetection } from "@/components/admin/fraud/FakeOrderDetection";
+import { useBulkMemoPrint } from "@/components/admin/courier/BulkMemoPrint";
 import { useCourierCities, useCourierZones, useCourierAreas } from "@/hooks/useCourierLocations";
 import { ApiKeysView } from "@/components/admin/api/ApiKeysView";
 import { Constants } from "@/integrations/supabase/types";
