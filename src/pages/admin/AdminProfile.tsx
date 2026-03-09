@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { User, Mail, Lock, Loader2, Save } from "lucide-react";
+import { User, Mail, Lock, Loader2, Save, Camera } from "lucide-react";
 
 const AdminProfile = () => {
   const { user } = useAuth();
@@ -17,15 +17,45 @@ const AdminProfile = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [nameLoading, setNameLoading] = useState(true);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!user) return;
     setEmail(user.email || "");
-    supabase.from("profiles").select("full_name").eq("user_id", user.id).single().then(({ data }) => {
+    supabase.from("profiles").select("full_name, avatar_url").eq("user_id", user.id).single().then(({ data }) => {
       setFullName(data?.full_name || "");
+      setAvatarUrl(data?.avatar_url || null);
       setNameLoading(false);
     });
   }, [user]);
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    if (!file.type.startsWith("image/")) { toast.error("শুধুমাত্র ইমেজ ফাইল আপলোড করুন"); return; }
+    if (file.size > 2 * 1024 * 1024) { toast.error("ফাইল সাইজ ২MB এর বেশি হতে পারবে না"); return; }
+
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `avatars/${user.id}.${ext}`;
+      const { error: uploadError } = await supabase.storage.from("site-assets").upload(path, file, { upsert: true });
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage.from("site-assets").getPublicUrl(path);
+      const url = `${publicUrl}?t=${Date.now()}`;
+
+      await supabase.from("profiles").update({ avatar_url: url }).eq("user_id", user.id);
+      setAvatarUrl(url);
+      toast.success("প্রোফাইল ছবি আপলোড হয়েছে!");
+    } catch (err: any) {
+      toast.error(err.message || "আপলোড ব্যর্থ হয়েছে");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleUpdateProfile = async () => {
     if (!user) return;
@@ -66,6 +96,8 @@ const AdminProfile = () => {
     }
   };
 
+  const initials = fullName ? fullName.charAt(0).toUpperCase() : (email ? email.charAt(0).toUpperCase() : "?");
+
   return (
     <AdminLayout>
       <div className="max-w-xl space-y-6">
@@ -73,6 +105,34 @@ const AdminProfile = () => {
           <h1 className="text-2xl font-bold text-foreground">আমার প্রোফাইল</h1>
           <p className="text-muted-foreground text-sm mt-0.5">আপনার নাম, ইমেইল এবং পাসওয়ার্ড পরিবর্তন করুন</p>
         </div>
+
+        {/* Avatar Section */}
+        <Card className="border-border/40">
+          <CardContent className="pt-6 flex flex-col items-center gap-4">
+            <div className="relative group">
+              <div className="h-24 w-24 rounded-full overflow-hidden border-4 border-primary/20 bg-muted flex items-center justify-center">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="Avatar" className="h-full w-full object-cover" />
+                ) : (
+                  <span className="text-3xl font-bold text-muted-foreground">{initials}</span>
+                )}
+              </div>
+              <button
+                onClick={() => fileRef.current?.click()}
+                disabled={uploading}
+                className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+              >
+                {uploading ? (
+                  <Loader2 className="h-6 w-6 text-white animate-spin" />
+                ) : (
+                  <Camera className="h-6 w-6 text-white" />
+                )}
+              </button>
+              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+            </div>
+            <p className="text-xs text-muted-foreground">ছবি পরিবর্তন করতে ক্লিক করুন (সর্বোচ্চ ২MB)</p>
+          </CardContent>
+        </Card>
 
         <Card className="border-border/40">
           <CardHeader>
@@ -86,50 +146,26 @@ const AdminProfile = () => {
               <Label className="text-xs font-semibold text-muted-foreground uppercase flex items-center gap-1.5">
                 <User className="h-3.5 w-3.5" /> নাম
               </Label>
-              <Input
-                className="mt-1.5"
-                placeholder={nameLoading ? "লোড হচ্ছে..." : "আপনার নাম"}
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                disabled={nameLoading}
-              />
+              <Input className="mt-1.5" placeholder={nameLoading ? "লোড হচ্ছে..." : "আপনার নাম"} value={fullName} onChange={(e) => setFullName(e.target.value)} disabled={nameLoading} />
             </div>
             <div>
               <Label className="text-xs font-semibold text-muted-foreground uppercase flex items-center gap-1.5">
                 <Mail className="h-3.5 w-3.5" /> ইমেইল
               </Label>
-              <Input
-                className="mt-1.5"
-                type="email"
-                placeholder="your@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
+              <Input className="mt-1.5" type="email" placeholder="your@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
             <div className="pt-2 border-t border-border/40">
               <Label className="text-xs font-semibold text-muted-foreground uppercase flex items-center gap-1.5">
                 <Lock className="h-3.5 w-3.5" /> নতুন পাসওয়ার্ড
               </Label>
-              <Input
-                className="mt-1.5"
-                type="password"
-                placeholder="খালি রাখলে আগেরটাই থাকবে"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-              />
+              <Input className="mt-1.5" type="password" placeholder="খালি রাখলে আগেরটাই থাকবে" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
             </div>
             {newPassword && (
               <div>
                 <Label className="text-xs font-semibold text-muted-foreground uppercase flex items-center gap-1.5">
                   <Lock className="h-3.5 w-3.5" /> পাসওয়ার্ড নিশ্চিত করুন
                 </Label>
-                <Input
-                  className="mt-1.5"
-                  type="password"
-                  placeholder="আবার পাসওয়ার্ড লিখুন"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                />
+                <Input className="mt-1.5" type="password" placeholder="আবার পাসওয়ার্ড লিখুন" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
               </div>
             )}
             <Button className="w-full h-11 gap-2" onClick={handleUpdateProfile} disabled={loading}>
