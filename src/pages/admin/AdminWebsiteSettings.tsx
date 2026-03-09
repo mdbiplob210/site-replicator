@@ -138,20 +138,16 @@ function GeneralTab() {
     setInstagramUrl(settings["instagram_url"] || "");
     setCustomDomain(settings["custom_domain"] || "");
     setLogoUrl(settings["site_logo"] || "");
+    setMarqueeText(settings["marquee_text"] || "");
+    setFooterDescription(settings["footer_description"] || "");
+    setFooterQuickLinks(settings["footer_quick_links"] || "");
+    setFooterHelpLinks(settings["footer_help_links"] || "");
+    setFooterAddress(settings["footer_address"] || "");
+    setFooterCopyright(settings["footer_copyright"] || "");
+    setOfferCountdownMinutes(settings["offer_countdown_minutes"] || "30");
+    setCheckoutScarcityCount(settings["checkout_scarcity_count"] || "47");
     setLoaded(true);
   }
-
-  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error("ফাইল সাইজ সর্বোচ্চ 2MB হতে হবে");
-      return;
-    }
-    if (!["image/png", "image/webp", "image/jpeg", "image/svg+xml"].includes(file.type)) {
-      toast.error("শুধুমাত্র PNG, WebP, JPG বা SVG ফরম্যাট সাপোর্টেড");
-      return;
-    }
     setUploading(true);
     try {
       const ext = file.name.split(".").pop();
