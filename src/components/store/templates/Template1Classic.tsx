@@ -441,12 +441,12 @@ const Template1Classic = () => {
               ) : (
                 <span className="text-lg font-black text-green-400">{siteName}</span>
               )}
-              <p className="text-xs text-gray-400 mt-2 leading-relaxed">বাংলাদেশের সেরা অনলাইন শপিং ডেস্টিনেশন।</p>
+              <p className="text-xs text-gray-400 mt-2 leading-relaxed">{footerDescription}</p>
             </div>
             {[
-              { title: "কুইক লিংকস", links: ["হোম", "সব প্রোডাক্ট", "অফার", "যোগাযোগ"] },
-              { title: "সাহায্য", links: ["ডেলিভারি তথ্য", "রিটার্ন পলিসি", "প্রাইভেসি পলিসি"] },
-              { title: "যোগাযোগ", links: [`ফোন: ${phoneNumber || "01XXXXXXXXX"}`, "ঢাকা, বাংলাদেশ"] },
+              { title: "কুইক লিংকস", links: footerQuickLinks },
+              { title: "সাহায্য", links: footerHelpLinks },
+              { title: "যোগাযোগ", links: [`ফোন: ${phoneNumber || "01XXXXXXXXX"}`, footerAddress] },
             ].map(col => (
               <div key={col.title}>
                 <h4 className="text-xs font-bold text-white mb-2 uppercase tracking-wider">{col.title}</h4>
@@ -459,7 +459,7 @@ const Template1Classic = () => {
             ))}
           </div>
           <div className="border-t border-white/10 pt-4 text-center text-xs text-gray-500">
-            © 2026 QUICK SHOP BD — All rights reserved
+            {footerCopyright}
           </div>
         </div>
       </footer>
