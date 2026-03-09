@@ -34,6 +34,9 @@ export function AdminLayout({ children }: { children: ReactNode }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
+  // Track user presence
+  useUserPresence();
+
   // ⌘K shortcut
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
