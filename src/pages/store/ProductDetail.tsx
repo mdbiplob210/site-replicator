@@ -482,7 +482,7 @@ function SuggestedProducts({ categoryId, currentProductId, onOrder }: { category
 
           return (
             <div key={p.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition group">
-              <Link to={`/product/${p.id}`} className="block">
+              <Link to={`/product/${p.slug || p.id}`} className="block">
                 <div className="relative aspect-square overflow-hidden bg-gray-50">
                   {p.main_image_url ? (
                     <OptimizedImage
