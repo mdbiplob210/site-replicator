@@ -63,7 +63,7 @@ const AdminUsers = () => {
   const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [newName, setNewName] = useState("");
-  const [newRole, setNewRole] = useState<string>("manager setCreating] = useState(false);
+  const [newRole, setNewRole] = useState<string>("managerte(false);
 
   // Rules tab
   const { data: employees = [], isLoading: employeesLoading } = useEmployees();
@@ -118,8 +118,7 @@ const AdminUsers = () => {
     fetchUsers();
   }, []);
 
-  const assignRole = async (userId: string, role: "admin" | "moderator" stringor } = await supabase
-      .from("user_roles")
+  const assignRole = async (userId: string, role: "admin" | "moderator" stringor } = await supstring)
       .upsert({ user_id: userId, role } as any, { onConflict: "user_id,role" });
 
     if (error) {
@@ -131,7 +130,7 @@ const AdminUsers = () => {
   };
 
   const removeRole = async (userId: string, role: "admin" | "moderator" | "user") => {
-    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    conststring } = await supabase.auth.getUser();
     if (currentUser && currentUser.id === userId && role === "admin") {
       toast.error("⚠️ নিজের অ্যাডমিন রোল ডিলিট করা যাবে না!");
       return;
