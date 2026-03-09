@@ -208,7 +208,7 @@ export default function AdminFinance() {
           </div>
         </div>
 
-        {/* Period Filter */}
+        {/* Period Filter + Source Manager Button */}
         <div className="flex items-center justify-between">
           <div className="flex gap-2">
             {periods.map((p) => (
@@ -224,8 +224,114 @@ export default function AdminFinance() {
               </button>
             ))}
           </div>
-          <span className="text-sm text-muted-foreground">{dateRange}</span>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-full gap-1.5"
+              onClick={() => setShowSourceManager(!showSourceManager)}
+            >
+              <Tags className="h-3.5 w-3.5" />
+              সোর্স ম্যানেজ
+            </Button>
+            <span className="text-sm text-muted-foreground">{dateRange}</span>
+          </div>
         </div>
+
+        {/* Source Manager Panel */}
+        {showSourceManager && (
+          <div className="bg-card rounded-2xl border border-border p-6 space-y-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Tags className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <p className="font-semibold text-foreground">সোর্স ম্যানেজমেন্ট</p>
+                  <p className="text-xs text-muted-foreground">Income ও Expense এর জন্য কাস্টম সোর্স তৈরি করুন</p>
+                </div>
+              </div>
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setShowSourceManager(false)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+
+            {/* Add new source */}
+            <div className="flex items-end gap-3">
+              <div className="flex-1">
+                <label className="text-xs font-semibold text-muted-foreground uppercase">সোর্সের নাম</label>
+                <Input
+                  className="mt-1"
+                  placeholder="e.g. Facebook Sales, Office Rent"
+                  value={newSourceName}
+                  onChange={(e) => setNewSourceName(e.target.value)}
+                />
+              </div>
+              <div className="w-40">
+                <label className="text-xs font-semibold text-muted-foreground uppercase">টাইপ</label>
+                <select
+                  value={newSourceType}
+                  onChange={(e) => setNewSourceType(e.target.value as "income" | "expense")}
+                  className="mt-1 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  <option value="income">Income</option>
+                  <option value="expense">Expense</option>
+                </select>
+              </div>
+              <Button
+                className="h-10 rounded-xl gap-1.5"
+                onClick={() => {
+                  if (!newSourceName.trim()) return;
+                  createSource.mutate({ name: newSourceName.trim(), type: newSourceType });
+                  setNewSourceName("");
+                }}
+                disabled={createSource.isPending || !newSourceName.trim()}
+              >
+                <Plus className="h-4 w-4" />
+                যোগ করুন
+              </Button>
+            </div>
+
+            {/* Source lists */}
+            <div className="grid grid-cols-2 gap-4">
+              {/* Income Sources */}
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground uppercase flex items-center gap-1.5">
+                  <ArrowDownCircle className="h-3.5 w-3.5" /> Income সোর্স
+                </p>
+                {allSources.filter((s: any) => s.type === "income").map((s: any) => (
+                  <div key={s.id} className="flex items-center justify-between px-3 py-2 rounded-xl bg-secondary/30 border border-border/40">
+                    <span className="text-sm font-medium text-foreground">{s.name}</span>
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => deleteSource.mutate(s.id)}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                ))}
+                {allSources.filter((s: any) => s.type === "income").length === 0 && (
+                  <p className="text-xs text-muted-foreground py-2">কোনো সোর্স নেই</p>
+                )}
+              </div>
+
+              {/* Expense Sources */}
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground uppercase flex items-center gap-1.5">
+                  <ArrowUpCircle className="h-3.5 w-3.5" /> Expense সোর্স
+                </p>
+                {allSources.filter((s: any) => s.type === "expense").map((s: any) => (
+                  <div key={s.id} className="flex items-center justify-between px-3 py-2 rounded-xl bg-secondary/30 border border-border/40">
+                    <span className="text-sm font-medium text-foreground">{s.name}</span>
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => deleteSource.mutate(s.id)}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                ))}
+                {allSources.filter((s: any) => s.type === "expense").length === 0 && (
+                  <p className="text-xs text-muted-foreground py-2">কোনো সোর্স নেই</p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Top Stats */}
         <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
