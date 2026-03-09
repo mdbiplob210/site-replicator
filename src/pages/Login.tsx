@@ -263,9 +263,9 @@ const Login = () => {
     >
       <canvas ref={canvasRef} className="absolute inset-0 z-0 hidden sm:block" />
 
-      {/* Custom cursor glow */}
+      {/* Custom cursor glow - desktop only */}
       <div
-        className="pointer-events-none fixed z-50 rounded-full mix-blend-screen"
+        className="pointer-events-none fixed z-50 rounded-full mix-blend-screen hidden sm:block"
         style={{
           left: mousePos.x - 60,
           top: mousePos.y - 60,
