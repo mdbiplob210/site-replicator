@@ -3,7 +3,7 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
 export function ProtectedAdminRoute({ children }: { children: ReactNode }) {
-  const { user, isAdmin, loading } = useAuth();
+  const { user, userRoles, loading } = useAuth();
 
   if (loading) {
     return (
@@ -14,7 +14,9 @@ export function ProtectedAdminRoute({ children }: { children: ReactNode }) {
   }
 
   if (!user) return <Navigate to="/login" replace />;
-  if (!isAdmin) return <Navigate to="/" replace />;
+  
+  // Allow any user with at least one role to access admin panel
+  if (userRoles.length === 0) return <Navigate to="/" replace />;
 
   return <>{children}</>;
 }
