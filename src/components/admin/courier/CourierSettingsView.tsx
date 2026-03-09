@@ -9,6 +9,7 @@ import { useCourierProviders, useUpdateCourierProvider, type ApiConfig } from "@
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { Truck, Plus, Trash2, Save, Globe, Copy, Shield, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import { CourierBalanceView } from "./CourierBalanceView";
 
 interface CourierSettingsViewProps {
   onBack: () => void;
@@ -39,6 +40,9 @@ export function CourierSettingsView({ onBack }: CourierSettingsViewProps) {
           <p className="text-sm text-muted-foreground">API কনফিগারেশন, ওয়েবহুক ও অথোরাইজেশন টোকেন</p>
         </div>
       </div>
+
+      {/* COD Balance Section */}
+      <CourierBalanceView />
 
       {/* Webhook URL section */}
       <Card className="border-border/40">
