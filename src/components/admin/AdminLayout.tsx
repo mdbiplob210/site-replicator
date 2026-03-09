@@ -143,9 +143,9 @@ export function AdminLayout({ children }: { children: ReactNode }) {
               <div className="relative">
                 <button
                   onClick={() => { setNotifOpen(!notifOpen); setChatOpen(false); }}
-                  className="p-2.5 rounded-xl hover:bg-secondary text-muted-foreground hover:text-foreground transition-all relative"
+                  className="p-2 sm:p-2.5 rounded-xl hover:bg-secondary text-muted-foreground hover:text-foreground transition-all relative"
                 >
-                  <Bell className="h-[18px] w-[18px]" />
+                  <Bell className="h-4 w-4 sm:h-[18px] sm:w-[18px]" />
                   {unreadCount > 0 && (
                     <span className="absolute top-1 right-1 min-w-[18px] h-[18px] rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center px-1 ring-2 ring-card">
                       {unreadCount > 99 ? "99+" : unreadCount}
