@@ -121,9 +121,12 @@ const Template1Classic = () => {
           </button>
 
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-1 flex-shrink-0">
-            <span className="text-xl sm:text-2xl font-black text-green-600">QUICK SHOP</span>
-            <span className="text-xl sm:text-2xl font-black text-gray-800">BD</span>
+          <Link to="/" className="flex items-center gap-2 flex-shrink-0">
+            {siteLogo ? (
+              <img src={siteLogo} alt={siteName} className="h-8 sm:h-10 w-auto object-contain" />
+            ) : (
+              <span className="text-xl sm:text-2xl font-black text-green-600">{siteName}</span>
+            )}
           </Link>
 
           {/* Desktop Search */}
