@@ -200,7 +200,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
               <div className="relative">
                 <button
                   onClick={() => { setChatOpen(!chatOpen); setNotifOpen(false); }}
-                  className="p-2.5 rounded-xl hover:bg-secondary text-muted-foreground hover:text-foreground transition-all relative"
+                  className="p-2 sm:p-2.5 rounded-xl hover:bg-secondary text-muted-foreground hover:text-foreground transition-all relative hidden sm:flex"
                 >
                   <MessageSquare className="h-[18px] w-[18px]" />
                   {totalUnread > 0 && (

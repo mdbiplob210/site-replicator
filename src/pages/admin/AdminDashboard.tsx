@@ -164,19 +164,19 @@ const AdminDashboard = () => {
             {canSeeOrders && (
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
               {deliveryCards.map((stat) => (
-                <Card key={stat.label} className="p-4 border-border/30 card-hover group overflow-hidden relative">
+                <Card key={stat.label} className="p-3 sm:p-4 border-border/30 card-hover group overflow-hidden relative">
                   <div className={`absolute inset-0 bg-gradient-to-br ${stat.bgGradient} opacity-0 group-hover:opacity-30 transition-opacity duration-300`} />
                   <div className="relative">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className={`p-2.5 rounded-xl bg-gradient-to-br ${stat.bgGradient} transition-transform duration-300 group-hover:scale-110`}>
-                        <stat.icon className={`h-5 w-5 ${stat.iconColor}`} />
+                    <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                      <div className={`p-2 sm:p-2.5 rounded-xl bg-gradient-to-br ${stat.bgGradient} transition-transform duration-300 group-hover:scale-110`}>
+                        <stat.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${stat.iconColor}`} />
                       </div>
-                      <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground/60">{stat.label}</span>
+                      <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.1em] sm:tracking-[0.14em] text-muted-foreground/60 truncate">{stat.label}</span>
                     </div>
-                    <p className={`text-2xl font-extrabold ${stat.color}`}>
-                      {stat.value} <span className="text-xs font-normal text-muted-foreground ml-1">{stat.sub}</span>
+                    <p className={`text-xl sm:text-2xl font-extrabold ${stat.color}`}>
+                      {stat.value} <span className="text-[10px] sm:text-xs font-normal text-muted-foreground ml-1">{stat.sub}</span>
                     </p>
-                    <p className="text-xs text-muted-foreground mt-1">{stat.extra}</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">{stat.extra}</p>
                   </div>
                 </Card>
               ))}
