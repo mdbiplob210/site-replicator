@@ -38,7 +38,11 @@ export const ALL_PERMISSIONS = [
   { key: "manage_courier", label: "কুরিয়ার ম্যানেজ", group: "কুরিয়ার", description: "কুরিয়ার সার্ভিস ও শিপমেন্ট ম্যানেজ করতে পারবে" },
 
   // System - সিস্টেম অ্যাডমিন
-  { key: "manage_users", label: "ইউজার ম্যানেজ", group: "সিস্টেম", description: "ইউজার ও এমপ্লয়ি তৈরি/এডিট করতে পারবে" },
+  { key: "manage_users", label: "ইউজার ম্যানেজ", group: "সিস্টেম", description: "ইউজার ও এমপ্লয়ি এডিট/ডিলিট করতে পারবে" },
+  { key: "create_users", label: "ইউজার তৈরি", group: "সিস্টেম", description: "নতুন ইউজার অ্যাকাউন্ট তৈরি করতে পারবে" },
+  { key: "create_admin_users", label: "অ্যাডমিন তৈরি", group: "সিস্টেম", description: "অ্যাডমিন রোলের ইউজার তৈরি করতে পারবে" },
+  { key: "create_moderator_users", label: "মডারেটর তৈরি", group: "সিস্টেম", description: "মডারেটর রোলের ইউজার তৈরি করতে পারবে" },
+  { key: "create_basic_users", label: "সাধারণ ইউজার তৈরি", group: "সিস্টেম", description: "সাধারণ (user) রোলের ইউজার তৈরি করতে পারবে" },
   { key: "manage_settings", label: "সেটিংস ম্যানেজ", group: "সিস্টেম", description: "সাইট সেটিংস পরিবর্তন করতে পারবে" },
   { key: "manage_automation", label: "অটোমেশন ম্যানেজ", group: "সিস্টেম", description: "অটোমেশন রুল তৈরি/পরিবর্তন করতে পারবে" },
   { key: "manage_backup", label: "ব্যাকআপ ম্যানেজ", group: "সিস্টেম", description: "ডেটা ব্যাকআপ ও রিস্টোর করতে পারবে" },
