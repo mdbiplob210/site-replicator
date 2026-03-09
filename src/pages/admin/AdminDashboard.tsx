@@ -6,7 +6,7 @@ import {
   CalendarClock, Truck, PhoneOff, TrendingUp, DollarSign,
   Target, Package, AlertTriangle, Landmark, Layers, HandCoins,
   PiggyBank, Receipt, Loader2, BarChart3, CreditCard, Undo2,
-  Hand, ShoppingBag, Hash
+  Hand, ShoppingBag, Hash, ArrowDownCircle, ArrowUpCircle
 } from "lucide-react";
 import { useDashboardData, useSalesTrend } from "@/hooks/useDashboardData";
 import { useAuth } from "@/contexts/AuthContext";
