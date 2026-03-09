@@ -85,9 +85,12 @@ const Admin = ({ children }: { children: React.ReactNode }) => (
   </ProtectedAdminRoute>
 );
 
-const App = () => (
+const App = () => {
+  // Import and use dynamic meta hook at app level
+  return (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
+      <DynamicMetaProvider />
       <Toaster />
       <Sonner />
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
