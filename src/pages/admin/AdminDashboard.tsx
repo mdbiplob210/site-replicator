@@ -20,6 +20,13 @@ const AdminDashboard = () => {
   const [activeFilter, setActiveFilter] = useState<typeof timeFilters[number]>("Today");
   const { isLoading, orderStats, shippingStats, profitStats, financeStats, salesDetails } = useDashboardData(activeFilter);
   const { data: salesTrend } = useSalesTrend();
+  const { isAdmin, userRoles } = useAuth();
+
+  const hasRole = (role: string) => userRoles.includes(role as any);
+  const canSeeOrders = isAdmin || hasRole("manager") || hasRole("moderator") || hasRole("user");
+  const canSeeFinance = isAdmin || hasRole("accounting");
+  const canSeeProfit = isAdmin || hasRole("accounting");
+  const canSeeAdAnalytics = isAdmin || hasRole("ad_analytics");
 
   const orderCards = [
     { label: "TOTAL ORDERS", value: String(orderStats.totalOrders), sub: "Orders", change: `(${fmt(orderStats.totalAmount)})`, icon: ShoppingCart, color: "text-foreground", bgGradient: "from-slate-100 to-slate-50", iconColor: "text-slate-500" },
