@@ -8,6 +8,7 @@ import {
   Globe, Settings, Zap, Database
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useUserPresence } from "@/hooks/useUserTracking";
 
 const searchPages = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
@@ -32,6 +33,9 @@ export function AdminLayout({ children }: { children: ReactNode }) {
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
+
+  // Track user presence
+  useUserPresence();
 
   // ⌘K shortcut
   useEffect(() => {
