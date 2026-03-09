@@ -208,7 +208,7 @@ const AdminUsers = () => {
   };
 
   const adminCount = users.filter(u => u.roles.includes("admin")).length;
-  const modCount = users.filter(u => u.roles.includes("moderator")).length;
+  const modCount = users.filter(u => u.roles.includes("moderator") || u.roles.includes("manager")).length;
   const onlineCount = presenceList.filter((p: any) => {
     const lastSeen = new Date(p.last_seen_at);
     return (Date.now() - lastSeen.getTime()) < 60000 && p.is_online;
