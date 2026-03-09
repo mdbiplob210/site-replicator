@@ -18,7 +18,7 @@ import * as XLSX from "@datalens-tech/xlsx";
 import { ProductAdSpendTable } from "@/components/admin/meta-ads/ProductAdSpendTable";
 import { CampaignBreakdown } from "@/components/admin/meta-ads/CampaignBreakdown";
 import { ManualCampaignEntry } from "@/components/admin/meta-ads/ManualCampaignEntry";
-import { useExchangeToken } from "@/hooks/useMetaAds";
+import { useExchangeToken, useAdAccounts, useSyncMetaAds } from "@/hooks/useMetaAds";
 
 type View = "main" | "import" | "manual-campaign";
 
