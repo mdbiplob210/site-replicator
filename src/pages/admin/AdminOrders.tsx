@@ -290,9 +290,13 @@ const AdminOrders = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("courier_providers")
-        .select("id, name, slug, logo_url");
+        .select("id, name, slug, logo_url, is_active, api_configs");
       if (error) throw error;
-      return data;
+      return (data || []).filter((cp: any) => {
+        if (!cp.is_active) return false;
+        const configs = Array.isArray(cp.api_configs) ? cp.api_configs : JSON.parse(cp.api_configs || "[]");
+        return configs.length > 0 && configs.some((c: any) => c.api_key);
+      });
     },
   });
   const { data: categories = [] } = useQuery({
