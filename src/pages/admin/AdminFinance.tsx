@@ -191,6 +191,7 @@ export default function AdminFinance() {
   const getTypeLabel = (type: string) => {
     const map: Record<string, string> = {
       income: "Income", expense: "Expense", bank: "Bank",
+      product_purchase: "Product Purchase",
       loan_in: "Loan (In)", loan_out: "Loan (Out)",
       investment_in: "Investment (In)", investment_out: "Investment (Out)",
     };
