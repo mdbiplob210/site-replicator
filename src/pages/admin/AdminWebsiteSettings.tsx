@@ -92,6 +92,10 @@ function GeneralTab() {
   const [siteUrl, setSiteUrl] = useState("");
   const [tagline, setTagline] = useState("");
   const [contactPhone, setContactPhone] = useState("");
+  const [contactPhone2, setContactPhone2] = useState("");
+  const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [messengerLink, setMessengerLink] = useState("");
+  const [paymentNumber, setPaymentNumber] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [insideDhaka, setInsideDhaka] = useState("0");
   const [outsideDhaka, setOutsideDhaka] = useState("0");
