@@ -1,5 +1,6 @@
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Layout, Globe, CheckCircle2, Save } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useSiteSettings, useUpdateSiteSetting } from "@/hooks/useSiteSettings";
 
