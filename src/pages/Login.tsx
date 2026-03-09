@@ -313,19 +313,19 @@ const Login = () => {
           <button
             key={orb.id}
             onClick={() => collectOrb(orb)}
-            className="absolute z-20 flex items-center justify-center rounded-full transition-transform hover:scale-125"
+            className="absolute z-20 flex items-center justify-center rounded-full transition-transform hover:scale-125 active:scale-90"
             style={{
               left: `${orb.x}%`,
               top: `${orb.y}%`,
-              width: 56,
-              height: 56,
+              width: 48,
+              height: 48,
               background: `radial-gradient(circle at 30% 30%, ${orb.color}dd, ${orb.color}66)`,
-              boxShadow: `0 0 30px ${orb.color}80, 0 0 60px ${orb.color}40, inset 0 0 20px rgba(255,255,255,0.2)`,
+              boxShadow: `0 0 20px ${orb.color}80, 0 0 40px ${orb.color}40, inset 0 0 15px rgba(255,255,255,0.2)`,
               animation: `float-orb-${orb.id} ${3 + orb.id * 0.5}s ease-in-out infinite`,
               cursor: "pointer",
             }}
           >
-            <span className="text-2xl">{orb.emoji}</span>
+            <span className="text-xl sm:text-2xl">{orb.emoji}</span>
           </button>
         ) : null
       )}
