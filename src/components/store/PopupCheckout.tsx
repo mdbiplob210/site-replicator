@@ -372,7 +372,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
                 <Label className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 mb-1">
                   <MapPin className="h-3.5 w-3.5" /> সম্পূর্ণ ঠিকানা
                 </Label>
-                <Textarea placeholder="বাড়ি নং, রোড, এলাকা, জেলা" value={form.address} onChange={e => updateForm({ address: e.target.value })} className="rounded-xl resize-none" rows={2} required />
+                <Textarea placeholder="বাড়ি নং, রোড, এলাকা, জেলা" value={form.address} onChange={e => updateForm({ address: e.target.value })} className="rounded-xl resize-none" rows={2} required name="address" autoComplete="street-address" />
               </div>
               <div>
                 <Label className="text-xs font-semibold text-gray-600 mb-1">নোট (ঐচ্ছিক)</Label>
