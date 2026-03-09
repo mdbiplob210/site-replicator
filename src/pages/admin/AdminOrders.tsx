@@ -1170,24 +1170,21 @@ const AdminOrders = () => {
             <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">Orders</h1>
             <p className="text-muted-foreground text-xs sm:text-sm">Manage and track all orders</p>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            {/* Date Filter removed - moved to advanced filter panel */}
-
-            <a href="/admin/orders/backfill-items">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+            {/* Mobile: compact icon buttons, Desktop: full buttons */}
+            <a href="/admin/orders/backfill-items" className="hidden sm:block">
               <Button variant="outline" size="sm" className="gap-2 rounded-xl border-border/60 shadow-sm hover:shadow">
-                <Package className="h-4 w-4 text-primary" /> Backfill Items
+                <Package className="h-4 w-4 text-primary" /> Backfill
               </Button>
             </a>
-            <Button variant="outline" size="sm" className="gap-2 rounded-xl border-border/60 shadow-sm hover:shadow" onClick={() => setCurrentView("incomplete")}>
-              <AlertCircle className="h-4 w-4 text-amber-500" /> Incomplete
+            <Button variant="outline" size="sm" className="gap-1.5 sm:gap-2 rounded-xl border-border/60 shadow-sm hover:shadow text-xs sm:text-sm" onClick={() => setCurrentView("incomplete")}>
+              <AlertCircle className="h-3.5 sm:h-4 w-3.5 sm:w-4 text-amber-500" /> <span className="hidden xs:inline">Incomplete</span><span className="xs:hidden">Inc.</span>
             </Button>
-            <Button variant="outline" size="sm" className="gap-2 rounded-xl border-border/60 shadow-sm hover:shadow" onClick={() => setCurrentView("fakeOrder")}>
-              <ShieldAlert className="h-4 w-4 text-red-500" /> Fake Order
+            <Button variant="outline" size="sm" className="gap-1.5 sm:gap-2 rounded-xl border-border/60 shadow-sm hover:shadow text-xs sm:text-sm" onClick={() => setCurrentView("fakeOrder")}>
+              <ShieldAlert className="h-3.5 sm:h-4 w-3.5 sm:w-4 text-red-500" /> <span className="hidden sm:inline">Fake Order</span><span className="sm:hidden">Fake</span>
             </Button>
-
-            {/* Courier Button */}
-            <Button variant="outline" size="sm" className="gap-2 rounded-xl border-border/60 shadow-sm hover:shadow" onClick={() => setCurrentView("courier")}>
-              <Truck className="h-4 w-4 text-violet-500" /> Courier
+            <Button variant="outline" size="sm" className="gap-1.5 sm:gap-2 rounded-xl border-border/60 shadow-sm hover:shadow text-xs sm:text-sm" onClick={() => setCurrentView("courier")}>
+              <Truck className="h-3.5 sm:h-4 w-3.5 sm:w-4 text-violet-500" /> <span className="hidden sm:inline">Courier</span>
             </Button>
 
             <Button variant="outline" size="sm" className="gap-2 rounded-xl border-border/60 shadow-sm hover:shadow" onClick={() => setCurrentView("api")}>
