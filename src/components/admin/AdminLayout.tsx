@@ -126,15 +126,15 @@ export function AdminLayout({ children }: { children: ReactNode }) {
               {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}
-                className="p-2.5 rounded-xl hover:bg-secondary text-muted-foreground hover:text-foreground transition-all"
+                className="p-2 sm:p-2.5 rounded-xl hover:bg-secondary text-muted-foreground hover:text-foreground transition-all"
                 title={theme === "light" ? "ডার্ক মোড" : "লাইট মোড"}
               >
-                {theme === "light" ? <Moon className="h-[18px] w-[18px]" /> : <Sun className="h-[18px] w-[18px]" />}
+                {theme === "light" ? <Moon className="h-4 w-4 sm:h-[18px] sm:w-[18px]" /> : <Sun className="h-4 w-4 sm:h-[18px] sm:w-[18px]" />}
               </button>
               {/* Go to Store */}
               <button
                 onClick={() => window.open("/", "_blank")}
-                className="p-2.5 rounded-xl hover:bg-secondary text-muted-foreground hover:text-foreground transition-all"
+                className="p-2 sm:p-2.5 rounded-xl hover:bg-secondary text-muted-foreground hover:text-foreground transition-all hidden sm:flex"
                 title="মেইন পেজ দেখুন"
               >
                 <ExternalLink className="h-[18px] w-[18px]" />
