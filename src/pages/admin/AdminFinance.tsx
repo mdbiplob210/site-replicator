@@ -451,7 +451,34 @@ export default function AdminFinance() {
           </div>
         )}
 
-        {/* Banks Tab */}
+        {/* Product Purchase Tab */}
+        {tab === "product_purchase" && (
+          <div className="bg-card rounded-2xl border border-border p-6 space-y-5">
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-lg bg-secondary flex items-center justify-center"><Package className="h-4 w-4 text-foreground" /></div>
+              <div><p className="font-semibold text-foreground">প্রোডাক্ট পারচেজ</p><p className="text-xs text-muted-foreground">সাপ্লায়ার থেকে প্রোডাক্ট কেনার হিসাব রাখুন</p></div>
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground uppercase">সাপ্লায়ার নাম</label>
+              <Input className="mt-1" placeholder="e.g. ABC Traders, XYZ Supplier" value={purchaseSupplier} onChange={(e) => setPurchaseSupplier(e.target.value)} />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground uppercase">Amount (৳)</label>
+                <Input className="mt-1" type="number" value={purchaseAmount} onChange={(e) => setPurchaseAmount(e.target.value)} placeholder="0.00" />
+              </div>
+              <SelectField label="ব্যাংক অ্যাকাউন্ট" value={purchaseBank} onChange={setPurchaseBank} options={bankAccounts.map((b) => b.label)} placeholder="সিলেক্ট করুন (ঐচ্ছিক)" />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground uppercase">Note (Optional)</label>
+              <Textarea className="mt-1" placeholder="কি প্রোডাক্ট কিনলেন, পরিমাণ ইত্যাদি..." value={purchaseNote} onChange={(e) => setPurchaseNote(e.target.value)} />
+            </div>
+            <Button className="w-full h-12 rounded-2xl text-base font-semibold bg-destructive hover:bg-destructive/90 text-destructive-foreground" onClick={handleSubmitPurchase} disabled={createRecord.isPending || !purchaseAmount || !purchaseSupplier}>
+              {createRecord.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Record Purchase"}
+            </Button>
+          </div>
+        )}
+
         {tab === "banks" && (
           <div className="bg-card rounded-2xl border border-border p-6 space-y-5">
             <div className="flex items-center gap-3">
