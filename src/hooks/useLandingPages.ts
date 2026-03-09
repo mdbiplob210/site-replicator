@@ -32,6 +32,7 @@ export function useLandingPages() {
       if (error) throw error;
       return data as unknown as LandingPage[];
     },
+    staleTime: 2 * 60 * 1000,
   });
 }
 
@@ -49,6 +50,7 @@ export function useLandingPageBySlug(slug: string) {
       return data as unknown as LandingPage;
     },
     enabled: !!slug,
+    staleTime: 5 * 60 * 1000,
   });
 }
 
