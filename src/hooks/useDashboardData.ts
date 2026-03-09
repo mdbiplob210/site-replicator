@@ -97,8 +97,8 @@ export function useDashboardData(filter: TimeFilter) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("orders")
-        .select("total_amount")
-        .eq("status", "in_courier" as any);
+        .select("total_amount, status")
+        .in("status", ["in_courier", "pending_return"] as any);
       if (error) throw error;
       const items = data || [];
       return { amount: items.reduce((s, o) => s + Number(o.total_amount), 0), count: items.length };
