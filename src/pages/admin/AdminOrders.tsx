@@ -52,7 +52,7 @@ const statusTabs = [
   { label: "All Orders", color: "bg-primary", icon: ShoppingCart },
   { label: "New Orders", color: "bg-blue-500", icon: CheckCircle2 },
   { label: "Confirmed", color: "bg-emerald-600", icon: CheckCircle2 },
-  { label: "Inquiry", color: "bg-amber-600", icon: Clock },
+  
   { label: "In Courier", color: "bg-violet-500", icon: Truck },
   { label: "Delivered", color: "bg-emerald-500", icon: CheckCircle2 },
   { label: "Hold", color: "bg-yellow-500", icon: PauseCircle },
