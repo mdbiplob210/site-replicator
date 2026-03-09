@@ -106,6 +106,7 @@ export function useFinanceSummary() {
             moneyIn += amt;
             break;
           case "expense":
+          case "product_purchase":
             moneyOut += amt;
             break;
           case "loan_in":
