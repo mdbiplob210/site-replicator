@@ -80,6 +80,27 @@ function InvoicePrint({ invoice, courierName }: { invoice: Invoice; courierName:
             </div>
           </div>
 
+          {invoice.items && invoice.items.length > 0 && (
+            <div className="section">
+              <div className="section-title">প্রোডাক্ট তালিকা</div>
+              <table className="items-table">
+                <thead>
+                  <tr><th>প্রোডাক্ট</th><th>কোড</th><th>পরিমাণ</th><th>মূল্য</th></tr>
+                </thead>
+                <tbody>
+                  {(invoice.items as InvoiceItem[]).map((item, i) => (
+                    <tr key={i}>
+                      <td>{item.product_name}</td>
+                      <td>{item.product_code}</td>
+                      <td>{item.quantity}</td>
+                      <td>৳{item.total_price}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
           <div className="divider" />
 
           <div className="section">
