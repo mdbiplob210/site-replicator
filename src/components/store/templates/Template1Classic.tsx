@@ -126,7 +126,7 @@ const Template1Classic = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Top announcement bar */}
-      <div className="bg-gradient-to-r from-green-600 to-green-700 text-white text-center py-2.5 sm:py-2 text-[11px] sm:text-sm font-medium overflow-hidden">
+      <div className="bg-gradient-to-r from-green-600 to-green-700 text-white text-center h-[34px] sm:h-[32px] flex items-center justify-center text-[11px] sm:text-sm font-medium overflow-hidden">
         <div className="animate-marquee whitespace-nowrap inline-block">
           {marqueeText} হটলাইনঃ {phoneNumber || "01XXXXXXXXX"} &nbsp;&nbsp;&nbsp;
           {marqueeText} হটলাইনঃ {phoneNumber || "01XXXXXXXXX"}
@@ -279,7 +279,7 @@ const Template1Classic = () => {
         {isLoading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
             {[...Array(8)].map((_, i) => (
-              <div key={i} className="animate-pulse bg-white rounded-xl p-3">
+              <div key={i} className="animate-pulse bg-white rounded-xl p-3 h-[280px] sm:h-[340px]">
                 <div className="aspect-square bg-gray-200 rounded-lg" />
                 <div className="mt-3 h-3 bg-gray-200 rounded w-3/4" />
                 <div className="mt-2 h-3 bg-gray-200 rounded w-1/2" />

@@ -22,7 +22,7 @@ const BannerCarousel = () => {
     return () => clearInterval(interval);
   }, [next, banners.length]);
 
-  if (banners.length === 0) return null;
+  if (banners.length === 0) return <div className="w-full" style={{ aspectRatio: "16/5" }} />;
 
   const banner = banners[current];
 
@@ -35,7 +35,7 @@ const BannerCarousel = () => {
     : ({ children }: { children: React.ReactNode }) => <>{children}</>;
 
   return (
-    <div className="relative w-full overflow-hidden bg-gray-100">
+    <div className="relative w-full overflow-hidden bg-gray-100" style={{ aspectRatio: "16/5", minHeight: "120px" }}>
       <Wrapper>
         <div className="relative w-full" style={{ aspectRatio: "16/5" }}>
           <OptimizedImage
