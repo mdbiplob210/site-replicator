@@ -53,7 +53,7 @@ const emptyProduct = {
   original_price: "0", additional_cost: "0", stock_quantity: "0",
   short_description: "", detailed_description: "", youtube_url: "",
   internal_note: "", free_delivery: false, allow_out_of_stock_orders: false,
-  category_id: "", status: "active",
+  category_id: "", status: "active", slug: "",
 };
 
 const AdminProducts = () => {
