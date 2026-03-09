@@ -164,7 +164,6 @@ function GeneralTab() {
     try {
       const ext = file.name.split(".").pop();
       const filePath = `logo.${ext}`;
-      // Remove old logo if exists
       await supabase.storage.from("site-assets").remove([filePath]);
       const { error: uploadError } = await supabase.storage
         .from("site-assets")
@@ -278,60 +277,63 @@ function GeneralTab() {
           {/* Site Name */}
           <div>
             <label className="text-sm font-medium text-foreground">Site Name <span className="text-destructive">*</span></label>
-            <p className="text-xs text-muted-foreground">Product Feed এ ব্যবহার হবে</p>
+            <p className="text-xs text-muted-foreground">Product Feed, SEO ও ট্যাব টাইটেলে ব্যবহার হবে</p>
             <Input className="mt-1.5" placeholder="Your Store Name" value={siteName} onChange={(e) => setSiteName(e.target.value)} />
           </div>
 
           {/* Site URL */}
           <div>
             <label className="text-sm font-medium text-foreground">Site URL <span className="text-destructive">*</span></label>
-            <p className="text-xs text-muted-foreground">Product Feed এ প্রোডাক্ট লিংক তৈরিতে ব্যবহার হবে</p>
+            <p className="text-xs text-muted-foreground">SEO canonical URL, sitemap ও product feed-এ ব্যবহার হবে</p>
             <Input className="mt-1.5" placeholder="https://yourstore.com" value={siteUrl} onChange={(e) => setSiteUrl(e.target.value)} />
           </div>
 
           {/* Tagline */}
           <div>
             <label className="text-sm font-medium text-foreground">Tagline</label>
+            <p className="text-xs text-muted-foreground">ফুটারে এবং SEO description-এ দেখাবে</p>
             <Input className="mt-1.5" placeholder="Welcome to our store" value={tagline} onChange={(e) => setTagline(e.target.value)} />
           </div>
 
           {/* Contact Phone */}
           <div>
             <label className="text-sm font-medium text-foreground">Contact Phone</label>
+            <p className="text-xs text-muted-foreground">হেডার মার্কি, ফুটার ও প্রোডাক্ট পেজে দেখাবে</p>
             <Input className="mt-1.5" placeholder="+880..." value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} />
           </div>
 
           {/* Contact Phone 2 */}
           <div>
             <label className="text-sm font-medium text-foreground">Contact Phone 2</label>
-            <p className="text-xs text-muted-foreground">দ্বিতীয় ফোন নম্বর (প্রোডাক্ট পেজে দেখাবে)</p>
+            <p className="text-xs text-muted-foreground">প্রোডাক্ট পেজে দ্বিতীয় কল বাটনে দেখাবে</p>
             <Input className="mt-1.5" placeholder="01XXXXXXXXX" value={contactPhone2} onChange={(e) => setContactPhone2(e.target.value)} />
           </div>
 
           {/* WhatsApp Number */}
           <div>
             <label className="text-sm font-medium text-foreground">WhatsApp Number</label>
-            <p className="text-xs text-muted-foreground">কান্ট্রি কোড সহ (যেমন: 8801XXXXXXXXX)</p>
+            <p className="text-xs text-muted-foreground">প্রোডাক্ট পেজ ও ফ্লোটিং বাটনে ব্যবহার হবে (কান্ট্রি কোডসহ)</p>
             <Input className="mt-1.5" placeholder="8801XXXXXXXXX" value={whatsappNumber} onChange={(e) => setWhatsappNumber(e.target.value)} />
           </div>
 
           {/* Messenger Link */}
           <div>
             <label className="text-sm font-medium text-foreground">Messenger Link</label>
-            <p className="text-xs text-muted-foreground">Facebook Messenger লিংক (যেমন: https://m.me/pagename)</p>
+            <p className="text-xs text-muted-foreground">প্রোডাক্ট পেজে Messenger বাটনে ব্যবহার হবে</p>
             <Input className="mt-1.5" placeholder="https://m.me/yourpage" value={messengerLink} onChange={(e) => setMessengerLink(e.target.value)} />
           </div>
 
           {/* Payment Number */}
           <div>
             <label className="text-sm font-medium text-foreground">Payment Number</label>
-            <p className="text-xs text-muted-foreground">বিকাশ/নগদ পেমেন্ট নম্বর (ডেলিভারি টেবিলে দেখাবে)</p>
+            <p className="text-xs text-muted-foreground">চেকআউটে বিকাশ/নগদ পেমেন্ট নম্বর দেখাবে</p>
             <Input className="mt-1.5" placeholder="01XXXXXXXXX" value={paymentNumber} onChange={(e) => setPaymentNumber(e.target.value)} />
           </div>
 
           {/* Contact Email */}
           <div>
             <label className="text-sm font-medium text-foreground">Contact Email</label>
+            <p className="text-xs text-muted-foreground">ফুটারে ইমেইল অ্যাড্রেস দেখাবে</p>
             <Input className="mt-1.5" placeholder="support@store.com" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} />
           </div>
         </div>
@@ -344,6 +346,7 @@ function GeneralTab() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium text-foreground">ঢাকার ভিতরে (৳)</label>
+                <p className="text-xs text-muted-foreground">চেকআউটে ডেলিভারি চার্জ</p>
                 <Input 
                   className="mt-1.5" 
                   value={insideDhaka}
@@ -352,6 +355,7 @@ function GeneralTab() {
               </div>
               <div>
                 <label className="text-sm font-medium text-foreground">ঢাকার বাইরে (৳)</label>
+                <p className="text-xs text-muted-foreground">চেকআউটে ডেলিভারি চার্জ</p>
                 <Input 
                   className="mt-1.5" 
                   value={outsideDhaka}
@@ -362,6 +366,7 @@ function GeneralTab() {
 
             <div>
               <label className="text-sm font-medium text-foreground">Free Delivery Above (৳)</label>
+              <p className="text-xs text-muted-foreground">এই পরিমাণের বেশি অর্ডারে ডেলিভারি ফ্রি হবে</p>
               <Input 
                 className="mt-1.5" 
                 placeholder="Leave empty to disable"
@@ -372,6 +377,7 @@ function GeneralTab() {
 
             <div>
               <label className="text-sm font-medium text-foreground">Facebook Page URL</label>
+              <p className="text-xs text-muted-foreground">ফুটারে Facebook লিংক দেখাবে</p>
               <Input 
                 className="mt-1.5" 
                 placeholder="https://facebook.com/..."
@@ -382,6 +388,7 @@ function GeneralTab() {
 
             <div>
               <label className="text-sm font-medium text-foreground">Instagram URL</label>
+              <p className="text-xs text-muted-foreground">ফুটারে Instagram লিংক দেখাবে</p>
               <Input 
                 className="mt-1.5" 
                 placeholder="https://instagram.com/..."
@@ -425,9 +432,6 @@ function GeneralTab() {
             toast.success("কপি হয়েছে!");
           }}><Link className="h-4 w-4" /></Button>
         </div>
-        <p className="text-xs text-destructive flex items-center gap-1">
-          <Info className="h-3.5 w-3.5" /> Your store is not published yet. Enable "Publish Website" below to make it live.
-        </p>
       </div>
 
       {/* Marquee & Urgency Settings */}
@@ -441,7 +445,7 @@ function GeneralTab() {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="text-sm font-medium text-foreground">অফার কাউন্টডাউন (মিনিট)</label>
-            <p className="text-xs text-muted-foreground">স্টোর পেজে কতক্ষণের কাউন্টডাউন দেখাবে</p>
+            <p className="text-xs text-muted-foreground">প্রোডাক্ট পেজে কতক্ষণের কাউন্টডাউন দেখাবে</p>
             <Input className="mt-1.5" type="number" placeholder="30" value={offerCountdownMinutes} onChange={(e) => setOfferCountdownMinutes(e.target.value)} />
           </div>
           <div>
@@ -486,41 +490,114 @@ function GeneralTab() {
 
 /* ===================== Buttons Tab ===================== */
 function ButtonsTab() {
+  const { data: settings = {}, isLoading } = useSiteSettings();
+  const updateSetting = useUpdateSiteSetting();
+  const [loaded, setLoaded] = useState(false);
+
   const [orderBtn, setOrderBtn] = useState(true);
+  const [orderBtnText, setOrderBtnText] = useState("অর্ডার করুন");
+  const [orderBtnColor, setOrderBtnColor] = useState("#16a34a");
+  
   const [cartBtn, setCartBtn] = useState(true);
+  const [cartBtnText, setCartBtnText] = useState("কার্টে যোগ করুন");
+  const [cartBtnColor, setCartBtnColor] = useState("#2563eb");
+  
   const [whatsappBtn, setWhatsappBtn] = useState(true);
+  const [whatsappBtnText, setWhatsappBtnText] = useState("WhatsApp");
+  const [whatsappBtnColor, setWhatsappBtnColor] = useState("#25d366");
+
   const [floatingContacts, setFloatingContacts] = useState(true);
   const [floatingWhatsapp, setFloatingWhatsapp] = useState(true);
   const [floatingCall, setFloatingCall] = useState(true);
   const [stickyProduct, setStickyProduct] = useState(false);
 
+  if (!loaded && !isLoading && settings) {
+    setOrderBtn(settings["btn_order_enabled"] !== "false");
+    setOrderBtnText(settings["btn_order_text"] || "অর্ডার করুন");
+    setOrderBtnColor(settings["btn_order_color"] || "#16a34a");
+    setCartBtn(settings["btn_cart_enabled"] !== "false");
+    setCartBtnText(settings["btn_cart_text"] || "কার্টে যোগ করুন");
+    setCartBtnColor(settings["btn_cart_color"] || "#2563eb");
+    setWhatsappBtn(settings["btn_whatsapp_enabled"] !== "false");
+    setWhatsappBtnText(settings["btn_whatsapp_text"] || "WhatsApp");
+    setWhatsappBtnColor(settings["btn_whatsapp_color"] || "#25d366");
+    setFloatingContacts(settings["floating_contacts_enabled"] !== "false");
+    setFloatingWhatsapp(settings["floating_whatsapp_enabled"] !== "false");
+    setFloatingCall(settings["floating_call_enabled"] !== "false");
+    setStickyProduct(settings["sticky_order_btn"] === "true");
+    setLoaded(true);
+  }
+
+  const handleSave = async () => {
+    const entries = [
+      { key: "btn_order_enabled", value: String(orderBtn) },
+      { key: "btn_order_text", value: orderBtnText },
+      { key: "btn_order_color", value: orderBtnColor },
+      { key: "btn_cart_enabled", value: String(cartBtn) },
+      { key: "btn_cart_text", value: cartBtnText },
+      { key: "btn_cart_color", value: cartBtnColor },
+      { key: "btn_whatsapp_enabled", value: String(whatsappBtn) },
+      { key: "btn_whatsapp_text", value: whatsappBtnText },
+      { key: "btn_whatsapp_color", value: whatsappBtnColor },
+      { key: "floating_contacts_enabled", value: String(floatingContacts) },
+      { key: "floating_whatsapp_enabled", value: String(floatingWhatsapp) },
+      { key: "floating_call_enabled", value: String(floatingCall) },
+      { key: "sticky_order_btn", value: String(stickyProduct) },
+    ];
+    try {
+      for (const entry of entries) {
+        const { data } = await supabase
+          .from("site_settings")
+          .select("id")
+          .eq("key", entry.key)
+          .maybeSingle();
+        if (data) {
+          await supabase.from("site_settings").update({ value: entry.value, updated_at: new Date().toISOString() } as any).eq("key", entry.key);
+        } else {
+          await supabase.from("site_settings").insert({ key: entry.key, value: entry.value, is_public: true } as any);
+        }
+      }
+      toast.success("বাটন সেটিংস সেভ হয়েছে!");
+    } catch (e: any) {
+      toast.error("সেভ করতে সমস্যা: " + e.message);
+    }
+  };
+
   const buttons = [
     {
       label: "Order Now Button", enabled: orderBtn, setEnabled: setOrderBtn,
-      text: "অর্ডার করুন", color: "#16a34a"
+      text: orderBtnText, setText: setOrderBtnText,
+      color: orderBtnColor, setColor: setOrderBtnColor,
     },
     {
       label: "Add to Cart Button", enabled: cartBtn, setEnabled: setCartBtn,
-      text: "কার্টে যোগ করুন", color: "#2563eb"
+      text: cartBtnText, setText: setCartBtnText,
+      color: cartBtnColor, setColor: setCartBtnColor,
     },
     {
       label: "WhatsApp Button", enabled: whatsappBtn, setEnabled: setWhatsappBtn,
-      text: "WhatsApp", color: "#25d366"
+      text: whatsappBtnText, setText: setWhatsappBtnText,
+      color: whatsappBtnColor, setColor: setWhatsappBtnColor,
     },
   ];
 
   return (
     <div className="space-y-5">
-      <div>
-        <h2 className="text-lg font-bold text-foreground">Button Settings</h2>
-        <p className="text-sm text-muted-foreground">Customize storefront buttons and floating contact options</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-bold text-foreground">Button Settings</h2>
+          <p className="text-sm text-muted-foreground">Customize storefront buttons and floating contact options</p>
+        </div>
+        <Button onClick={handleSave} className="gap-2">
+          <Save className="h-4 w-4" /> Save Button Settings
+        </Button>
       </div>
 
       {/* Button Customization */}
       <div className="bg-card rounded-2xl border border-border p-6 space-y-5">
         <div>
           <h3 className="font-bold text-foreground">Button Customization</h3>
-          <p className="text-sm text-muted-foreground">Customize the text and color of action buttons on your storefront. Toggle off to hide a button globally. Use page visibility checkboxes to control per-page.</p>
+          <p className="text-sm text-muted-foreground">টগল অফ করলে বাটন ওয়েবসাইট থেকে লুকানো হবে</p>
         </div>
 
         <div className="grid grid-cols-3 gap-6">
@@ -533,40 +610,21 @@ function ButtonsTab() {
 
               <div>
                 <label className="text-xs text-muted-foreground">Button Text</label>
-                <Input className="mt-1" defaultValue={btn.text} />
+                <Input className="mt-1" value={btn.text} onChange={e => btn.setText(e.target.value)} />
               </div>
 
               <div>
                 <label className="text-xs text-muted-foreground">Button Color</label>
                 <div className="flex items-center gap-2 mt-1">
-                  <div className="h-8 w-8 rounded-lg border border-border" style={{ backgroundColor: btn.color }} />
-                  <Input defaultValue={btn.color} className="flex-1" />
+                  <input type="color" value={btn.color} onChange={e => btn.setColor(e.target.value)} className="h-8 w-8 rounded-lg border border-border cursor-pointer" />
+                  <Input value={btn.color} onChange={e => btn.setColor(e.target.value)} className="flex-1" />
                 </div>
               </div>
-
-              <div>
-                <label className="text-xs text-muted-foreground">Page Visibility</label>
-                <div className="space-y-1.5 mt-1.5">
-                  {["Main Website", "Category Page", "Product Page"].map((page) => (
-                    <label key={page} className="flex items-center gap-2 text-sm">
-                      <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                      {page}
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {i === 0 && (
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">Sticky on Product Page</span>
-                  <Switch checked={stickyProduct} onCheckedChange={setStickyProduct} />
-                </div>
-              )}
 
               {/* Preview button */}
               <button
                 className="px-4 py-2 rounded-lg text-white text-sm font-medium"
-                style={{ backgroundColor: btn.color }}
+                style={{ backgroundColor: btn.color, opacity: btn.enabled ? 1 : 0.4 }}
               >
                 {btn.text}
               </button>
@@ -580,39 +638,37 @@ function ButtonsTab() {
         <div className="flex items-center justify-between">
           <div>
             <h3 className="font-bold text-foreground">Floating Contact Buttons</h3>
-            <p className="text-sm text-muted-foreground">Show Messenger, WhatsApp & Phone floating buttons on your storefront</p>
+            <p className="text-sm text-muted-foreground">স্টোরের নিচে ফ্লোটিং WhatsApp ও Phone বাটন দেখানো হবে</p>
           </div>
           <Switch checked={floatingContacts} onCheckedChange={setFloatingContacts} />
         </div>
 
-        {/* Floating WhatsApp */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div>
               <h4 className="font-medium text-foreground">Floating WhatsApp Button</h4>
-              <p className="text-xs text-muted-foreground">Always-visible WhatsApp icon on the right side</p>
+              <p className="text-xs text-muted-foreground">General ট্যাবে দেওয়া WhatsApp নম্বর ব্যবহার হবে</p>
             </div>
             <Switch checked={floatingWhatsapp} onCheckedChange={setFloatingWhatsapp} />
           </div>
-          <div>
-            <label className="text-sm text-muted-foreground">WhatsApp Number (with country code)</label>
-            <Input className="mt-1.5" placeholder="8801XXXXXXXXX" />
-          </div>
         </div>
 
-        {/* Floating Call */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div>
               <h4 className="font-medium text-foreground">Floating Call Button</h4>
-              <p className="text-xs text-muted-foreground">Always-visible Phone icon on the right side</p>
+              <p className="text-xs text-muted-foreground">General ট্যাবে দেওয়া Phone নম্বর ব্যবহার হবে</p>
             </div>
             <Switch checked={floatingCall} onCheckedChange={setFloatingCall} />
           </div>
+        </div>
+
+        <div className="flex items-center justify-between border-t border-border pt-4">
           <div>
-            <label className="text-sm text-muted-foreground">Phone Number</label>
-            <Input className="mt-1.5" placeholder="01XXXXXXXXX" />
+            <h4 className="font-medium text-foreground">Sticky Order Button</h4>
+            <p className="text-xs text-muted-foreground">প্রোডাক্ট পেজে স্ক্রল করলেও অর্ডার বাটন দেখা যাবে</p>
           </div>
+          <Switch checked={stickyProduct} onCheckedChange={setStickyProduct} />
         </div>
       </div>
     </div>
@@ -879,13 +935,14 @@ function TrackingTab() {
 function DataResetTab() {
   const [showDialog, setShowDialog] = useState(false);
   const [selectedSegments, setSelectedSegments] = useState<string[]>([]);
+  const [resetting, setResetting] = useState(false);
 
   const segments = [
-    { id: "orders", label: "অর্ডার", desc: "সব অর্ডার, অর্ডার আইটেম, ব্লক অর্ডার, ইনকমপ্লিট অর্ডার" },
-    { id: "finance", label: "ফাইন্যান্স", desc: "আয়/ব্যয় রেকর্ড, ব্যাংক একাউন্ট, লোন" },
-    { id: "reports", label: "রিপোর্ট", desc: "ডেইলি রিপোর্ট" },
-    { id: "ad_spend", label: "অ্যাড স্পেন্ড", desc: "অ্যাড খরচ ট্র্যাকিং, ক্যাম্পেইন ম্যাপিং" },
-    { id: "planning", label: "প্ল্যানিং ও টাস্ক", desc: "কন্টেন্ট আইডিয়া, কন্টেন্ট প্ল্যান, মার্কেটিং প্ল্যান, টাস্ক" },
+    { id: "orders", label: "অর্ডার", desc: "সব অর্ডার, অর্ডার আইটেম, ব্লক অর্ডার, ইনকমপ্লিট অর্ডার", tables: ["order_activity_logs", "order_assignments", "order_items", "courier_orders", "invoices", "incomplete_orders", "orders"] },
+    { id: "finance", label: "ফাইন্যান্স", desc: "আয়/ব্যয় রেকর্ড", tables: ["finance_records"] },
+    { id: "reports", label: "রিপোর্ট", desc: "অ্যাড স্পেন্ড রেকর্ড", tables: ["ad_spends"] },
+    { id: "ad_spend", label: "মেটা অ্যাডস ডেটা", desc: "ক্যাম্পেইন, অ্যাড সেট, অ্যাড ডেটা", tables: ["meta_ads", "meta_adsets", "meta_campaigns"] },
+    { id: "planning", label: "প্ল্যানিং ও টাস্ক", desc: "টাস্ক ডেটা", tables: ["tasks"] },
   ];
 
   const toggleSegment = (id: string) => {
@@ -902,6 +959,35 @@ function DataResetTab() {
     }
   };
 
+  const handleReset = async () => {
+    if (selectedSegments.length === 0) return;
+    setResetting(true);
+    try {
+      // Collect all tables to delete from
+      const tablesToDelete: string[] = [];
+      for (const segId of selectedSegments) {
+        const seg = segments.find(s => s.id === segId);
+        if (seg) tablesToDelete.push(...seg.tables);
+      }
+
+      // Delete in order (child tables first due to foreign keys)
+      for (const table of tablesToDelete) {
+        const { error } = await supabase.from(table as any).delete().neq("id", "00000000-0000-0000-0000-000000000000");
+        if (error) {
+          console.error(`Error deleting ${table}:`, error);
+        }
+      }
+
+      toast.success(`${selectedSegments.length}টি সেগমেন্টের ডাটা মুছে ফেলা হয়েছে!`);
+      setShowDialog(false);
+      setSelectedSegments([]);
+    } catch (e: any) {
+      toast.error("রিসেট করতে সমস্যা: " + e.message);
+    } finally {
+      setResetting(false);
+    }
+  };
+
   return (
     <div className="space-y-5">
       <div className="bg-card rounded-2xl border border-destructive/30 p-6 space-y-4">
@@ -911,21 +997,11 @@ function DataResetTab() {
           </div>
           <h3 className="text-xl font-bold text-foreground">ডাটা রিসেট</h3>
         </div>
-        <p className="text-sm text-muted-foreground">বিজনেসের নির্দিষ্ট সেগমেন্টের ডাটা মুছে ফেলুন। রিসেটের আগে স্বয়ংক্রিয়ভাবে ব্যাকআপ নেওয়া হবে।</p>
+        <p className="text-sm text-muted-foreground">বিজনেসের নির্দিষ্ট সেগমেন্টের ডাটা মুছে ফেলুন। এই কাজ অপরিবর্তনীয়।</p>
 
         <Button variant="destructive" className="gap-2" onClick={() => setShowDialog(true)}>
           <Trash2 className="h-4 w-4" /> ডাটা রিসেট করুন
         </Button>
-
-        <div className="mt-4">
-          <div className="flex items-center gap-2 mb-3">
-            <Clock className="h-4 w-4 text-muted-foreground" />
-            <h4 className="font-medium text-foreground">রিসেট হিস্ট্রি</h4>
-          </div>
-          <div className="bg-secondary/30 rounded-xl p-6 text-center">
-            <p className="text-sm text-muted-foreground">কোনো রিসেট হিস্ট্রি নেই</p>
-          </div>
-        </div>
       </div>
 
       {/* Reset Confirmation Dialog */}
@@ -986,8 +1062,8 @@ function DataResetTab() {
               <Button variant="outline" onClick={() => { setShowDialog(false); setSelectedSegments([]); }}>
                 বাতিল
               </Button>
-              <Button variant="destructive" className="gap-2" disabled={selectedSegments.length === 0}>
-                <Trash2 className="h-4 w-4" /> রিসেট করুন ({selectedSegments.length})
+              <Button variant="destructive" className="gap-2" disabled={selectedSegments.length === 0 || resetting} onClick={handleReset}>
+                <Trash2 className="h-4 w-4" /> {resetting ? "রিসেট হচ্ছে..." : `রিসেট করুন (${selectedSegments.length})`}
               </Button>
             </div>
           </div>

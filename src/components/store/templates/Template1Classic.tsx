@@ -84,12 +84,26 @@ const Template1Classic = () => {
   const siteName = settings?.site_name || "QUICK SHOP BD";
   const siteLogo = settings?.site_logo || "";
   const marqueeText = settings?.marquee_text || "🚚 সারা দেশে ক্যাশ অন ডেলিভারি (৪৮ থেকে ৭২ ঘণ্টার মধ্যে নিশ্চিত ডেলিভারি)";
-  const footerDescription = settings?.footer_description || "বাংলাদেশের সেরা অনলাইন শপিং ডেস্টিনেশন।";
+  const footerDescription = settings?.footer_description || settings?.tagline || "বাংলাদেশের সেরা অনলাইন শপিং ডেস্টিনেশন।";
   const footerQuickLinks = (settings?.footer_quick_links || "হোম,সব প্রোডাক্ট,অফার,যোগাযোগ").split(",").map(s => s.trim()).filter(Boolean);
   const footerHelpLinks = (settings?.footer_help_links || "ডেলিভারি তথ্য,রিটার্ন পলিসি,প্রাইভেসি পলিসি").split(",").map(s => s.trim()).filter(Boolean);
   const footerAddress = settings?.footer_address || "ঢাকা, বাংলাদেশ";
   const footerCopyright = settings?.footer_copyright || "© 2026 QUICK SHOP BD — All rights reserved";
-  // Countdown moved to ProductDetail page
+  const contactEmail = settings?.contact_email || "";
+  const facebookUrl = settings?.facebook_url || "";
+  const instagramUrl = settings?.instagram_url || "";
+  const freeDeliveryAbove = Number(settings?.free_delivery_above) || 0;
+
+  // Button settings
+  const orderBtnEnabled = settings?.btn_order_enabled !== "false";
+  const orderBtnText = settings?.btn_order_text || "অর্ডার করুন";
+  const orderBtnColor = settings?.btn_order_color || "#16a34a";
+  const cartBtnEnabled = settings?.btn_cart_enabled !== "false";
+  const cartBtnText = settings?.btn_cart_text || "বিস্তারিত দেখুন";
+  const cartBtnColor = settings?.btn_cart_color || "#2563eb";
+  const floatingContactsEnabled = settings?.floating_contacts_enabled !== "false";
+  const floatingWhatsappEnabled = settings?.floating_whatsapp_enabled !== "false";
+  const floatingCallEnabled = settings?.floating_call_enabled !== "false";
 
   const handleExitIntent = () => {
     if (appliedDiscount >= 50) return;
@@ -333,18 +347,24 @@ const Template1Classic = () => {
 
                   {/* Action buttons */}
                   <div className="px-3 pb-3 space-y-2">
+                    {orderBtnEnabled && (
                     <button
                       onClick={() => handleOrder(p)}
-                      className="w-full py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition"
+                      className="w-full py-2.5 text-white rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition hover:opacity-90"
+                      style={{ backgroundColor: orderBtnColor }}
                     >
-                      <ShoppingCart className="h-4 w-4" /> অর্ডার করুন
+                      <ShoppingCart className="h-4 w-4" /> {orderBtnText}
                     </button>
+                    )}
+                    {cartBtnEnabled && (
                     <button
                       onClick={() => navigate(`/product/${(p as any).slug || p.id}`)}
-                      className="w-full py-2 border border-green-600 text-green-600 hover:bg-green-50 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition"
+                      className="w-full py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition border hover:opacity-80"
+                      style={{ borderColor: cartBtnColor, color: cartBtnColor }}
                     >
-                      <ShoppingBag className="h-4 w-4" /> বিস্তারিত দেখুন
+                      <ShoppingBag className="h-4 w-4" /> {cartBtnText}
                     </button>
+                    )}
                   </div>
                 </div>
               );
@@ -354,9 +374,9 @@ const Template1Classic = () => {
       </section>
 
       {/* Contact floating buttons - WhatsApp & Phone */}
-      {(whatsappNumber || phoneNumber) && (
+      {floatingContactsEnabled && (whatsappNumber || phoneNumber) && (
         <div className="fixed bottom-20 right-4 z-40 flex flex-col gap-2">
-          {whatsappNumber && (
+          {floatingWhatsappEnabled && whatsappNumber && (
             <a
               href={`https://wa.me/${whatsappNumber}`}
               target="_blank"
@@ -366,7 +386,7 @@ const Template1Classic = () => {
               <MessageCircle className="h-5 w-5" />
             </a>
           )}
-          {phoneNumber && (
+          {floatingCallEnabled && phoneNumber && (
             <a
               href={`tel:${phoneNumber}`}
               className="w-12 h-12 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-lg hover:bg-blue-600 transition"
