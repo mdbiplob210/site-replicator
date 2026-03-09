@@ -185,6 +185,10 @@ const CheckoutPage = () => {
       const total = item.price * item.qty;
       
       // Create the order
+      // Detect IP and device
+      const clientIp = await getClientIp();
+      const { deviceInfo } = parseDeviceInfo();
+
       const { data: orderData, error } = await supabase.from("orders").insert({
         order_number: orderNumber,
         customer_name: form.name,
@@ -195,8 +199,9 @@ const CheckoutPage = () => {
         product_cost: item.price * item.qty,
         status: "processing",
         source: "website",
-        device_info: /Mobi|Android/i.test(navigator.userAgent) ? "Mobile" : "Desktop",
-        user_agent: navigator.userAgent.substring(0, 200),
+        client_ip: clientIp,
+        device_info: deviceInfo,
+        user_agent: navigator.userAgent,
       } as any).select().single();
       if (error) throw error;
 
