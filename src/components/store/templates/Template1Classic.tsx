@@ -279,7 +279,7 @@ const Template1Classic = () => {
         {isLoading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
             {[...Array(8)].map((_, i) => (
-              <div key={i} className="animate-pulse bg-white rounded-xl p-3">
+              <div key={i} className="animate-pulse bg-white rounded-xl p-3 h-[280px] sm:h-[340px]">
                 <div className="aspect-square bg-gray-200 rounded-lg" />
                 <div className="mt-3 h-3 bg-gray-200 rounded w-3/4" />
                 <div className="mt-2 h-3 bg-gray-200 rounded w-1/2" />
