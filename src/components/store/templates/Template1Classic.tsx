@@ -347,18 +347,24 @@ const Template1Classic = () => {
 
                   {/* Action buttons */}
                   <div className="px-3 pb-3 space-y-2">
+                    {orderBtnEnabled && (
                     <button
                       onClick={() => handleOrder(p)}
-                      className="w-full py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition"
+                      className="w-full py-2.5 text-white rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition hover:opacity-90"
+                      style={{ backgroundColor: orderBtnColor }}
                     >
-                      <ShoppingCart className="h-4 w-4" /> অর্ডার করুন
+                      <ShoppingCart className="h-4 w-4" /> {orderBtnText}
                     </button>
+                    )}
+                    {cartBtnEnabled && (
                     <button
                       onClick={() => navigate(`/product/${(p as any).slug || p.id}`)}
-                      className="w-full py-2 border border-green-600 text-green-600 hover:bg-green-50 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition"
+                      className="w-full py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition border hover:opacity-80"
+                      style={{ borderColor: cartBtnColor, color: cartBtnColor }}
                     >
-                      <ShoppingBag className="h-4 w-4" /> বিস্তারিত দেখুন
+                      <ShoppingBag className="h-4 w-4" /> {cartBtnText}
                     </button>
+                    )}
                   </div>
                 </div>
               );
