@@ -10,8 +10,8 @@ import { ExitDiscountBanner } from "@/components/store/ExitDiscountBanner";
 import { OptimizedImage } from "@/components/ui/optimized-image";
 
 const ProductDetail = () => {
-  const { id } = useParams<{ id: string }>();
-  const { data: product, isLoading } = useProduct(id || "");
+  const { slug } = useParams<{ slug: string }>();
+  const { data: product, isLoading } = useProduct(slug || "");
   const { data: settings } = useSiteSettings();
   const navigate = useNavigate();
   const [qty, setQty] = useState(1);
