@@ -3,12 +3,12 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 import {
   Wallet, ArrowDownCircle, ArrowUpCircle, Landmark, PiggyBank,
   TrendingUp, Clock, ShoppingCart, Calendar, CircleDollarSign,
-  Package, Trash2, Loader2
+  Package, Trash2, Loader2, Plus, Tags, X
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { useFinanceRecords, useFinanceSummary, useCreateFinanceRecord, useDeleteFinanceRecord } from "@/hooks/useFinance";
+import { useFinanceRecords, useFinanceSummary, useCreateFinanceRecord, useDeleteFinanceRecord, useFinanceSources, useCreateFinanceSource, useDeleteFinanceSource } from "@/hooks/useFinance";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
