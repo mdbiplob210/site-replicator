@@ -629,6 +629,48 @@ export type Database = {
         }
         Relationships: []
       }
+      login_activity: {
+        Row: {
+          browser: string | null
+          created_at: string
+          device_type: string | null
+          email: string | null
+          fail_reason: string | null
+          id: string
+          ip_address: string | null
+          os: string | null
+          status: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          browser?: string | null
+          created_at?: string
+          device_type?: string | null
+          email?: string | null
+          fail_reason?: string | null
+          id?: string
+          ip_address?: string | null
+          os?: string | null
+          status?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          browser?: string | null
+          created_at?: string
+          device_type?: string | null
+          email?: string | null
+          fail_reason?: string | null
+          id?: string
+          ip_address?: string | null
+          os?: string | null
+          status?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       meta_ads: {
         Row: {
           adset_id: string
@@ -1168,6 +1210,36 @@ export type Database = {
           key?: string
           updated_at?: string
           value?: string
+        }
+        Relationships: []
+      }
+      user_presence: {
+        Row: {
+          current_page: string | null
+          device_info: string | null
+          id: string
+          ip_address: string | null
+          is_online: boolean | null
+          last_seen_at: string
+          user_id: string
+        }
+        Insert: {
+          current_page?: string | null
+          device_info?: string | null
+          id?: string
+          ip_address?: string | null
+          is_online?: boolean | null
+          last_seen_at?: string
+          user_id: string
+        }
+        Update: {
+          current_page?: string | null
+          device_info?: string | null
+          id?: string
+          ip_address?: string | null
+          is_online?: boolean | null
+          last_seen_at?: string
+          user_id?: string
         }
         Relationships: []
       }
