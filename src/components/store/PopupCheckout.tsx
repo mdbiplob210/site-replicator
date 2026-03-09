@@ -38,6 +38,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
   const [completedOrderNumber, setCompletedOrderNumber] = useState("");
   const [currentItem, setCurrentItem] = useState<CheckoutItem | null>(null);
   const [qty, setQty] = useState(1);
+  const [deliveryArea, setDeliveryArea] = useState<"inside" | "outside">("inside");
   const formInteracted = useRef(false);
   const abandonedSaved = useRef(false);
   const orderSubmitted = useRef(false);
