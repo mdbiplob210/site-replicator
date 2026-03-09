@@ -122,7 +122,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
             <button onClick={() => setSearchOpen(true)} className="md:hidden p-2 rounded-lg hover:bg-secondary text-muted-foreground">
               <Search className="h-4 w-4" />
             </button>
-            <div className="flex items-center gap-0.5">
+            <div className="flex items-center gap-0">
               {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}
