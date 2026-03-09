@@ -1,6 +1,9 @@
 project_id = "hogejkqzynixmjwodkoi"
 
-[functions.capture-screenshot]
+[functions.courier-balance]
+verify_jwt = false
+
+[functions.get-client-info]
 verify_jwt = false
 
 [functions.fetch-meta-ads]
