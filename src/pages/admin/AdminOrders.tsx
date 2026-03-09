@@ -4150,3 +4150,149 @@ function ActivityLogPopover({ orderId }: { orderId: string }) {
     </div>
   );
 }
+
+// Mobile Filter Drawer Content
+function MobileFilterContent(props: any) {
+  const {
+    orderDateFilter, setOrderDateFilter, filterSource, setFilterSource,
+    filterPhone, setFilterPhone, filterAmountMin, setFilterAmountMin,
+    filterAmountMax, setFilterAmountMax, filterDeviceType, setFilterDeviceType,
+    filterPaymentStatus, setFilterPaymentStatus, filterCourierProvider, setFilterCourierProvider,
+    filterCourierStatus, setFilterCourierStatus, filterCategory, setFilterCategory,
+    filterCourierCharged, setFilterCourierCharged, filterSalesType, setFilterSalesType,
+    filterAddress, setFilterAddress, filterNotes, setFilterNotes,
+    filterDistrict, setFilterDistrict, filterThana, setFilterThana,
+    filterZone, setFilterZone, courierProviders, categories,
+    clearAllFilters, activeFilterCount, filteredOrders, orders, onClose,
+  } = props;
+
+  return (
+    <div className="space-y-4 pb-6">
+      {/* Date Filter */}
+      <div className="space-y-1.5">
+        <Label className="text-xs font-semibold text-muted-foreground">📅 তারিখ ফিল্টার</Label>
+        <Select value={orderDateFilter} onValueChange={(v: any) => setOrderDateFilter(v)}>
+          <SelectTrigger className="rounded-xl h-10 text-sm"><SelectValue placeholder="All Time" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Time</SelectItem>
+            <SelectItem value="today">Today</SelectItem>
+            <SelectItem value="yesterday">Yesterday</SelectItem>
+            <SelectItem value="7days">Last 7 Days</SelectItem>
+            <SelectItem value="30days">Last 30 Days</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Two column grid for compact filters */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-muted-foreground">📱 Device</Label>
+          <Select value={filterDeviceType} onValueChange={setFilterDeviceType}>
+            <SelectTrigger className="rounded-xl h-10 text-sm"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="mobile">Mobile</SelectItem>
+              <SelectItem value="desktop">Desktop</SelectItem>
+              <SelectItem value="tablet">Tablet</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-muted-foreground">💰 Payment</Label>
+          <Select value={filterPaymentStatus} onValueChange={setFilterPaymentStatus}>
+            <SelectTrigger className="rounded-xl h-10 text-sm"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="paid">✅ Paid</SelectItem>
+              <SelectItem value="unpaid">💰 Unpaid</SelectItem>
+              <SelectItem value="free_delivery">🆓 Free</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-muted-foreground">🚚 Courier</Label>
+          <Select value={filterCourierProvider} onValueChange={setFilterCourierProvider}>
+            <SelectTrigger className="rounded-xl h-10 text-sm"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="no_courier">No Courier</SelectItem>
+              {courierProviders.map((cp: any) => <SelectItem key={cp.id} value={cp.id}>{cp.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-muted-foreground">📦 Category</Label>
+          <Select value={filterCategory} onValueChange={setFilterCategory}>
+            <SelectTrigger className="rounded-xl h-10 text-sm"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              {categories.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-muted-foreground">💵 Min Amount</Label>
+          <Input type="number" placeholder="0" className="rounded-xl h-10 text-sm" value={filterAmountMin} onChange={(e: any) => setFilterAmountMin(e.target.value)} />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-muted-foreground">💵 Max Amount</Label>
+          <Input type="number" placeholder="∞" className="rounded-xl h-10 text-sm" value={filterAmountMax} onChange={(e: any) => setFilterAmountMax(e.target.value)} />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-muted-foreground">🏷️ Sales Type</Label>
+          <Select value={filterSalesType} onValueChange={setFilterSalesType}>
+            <SelectTrigger className="rounded-xl h-10 text-sm"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="api">API/Website</SelectItem>
+              <SelectItem value="manual">Manual</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-muted-foreground">🚛 Delivery</Label>
+          <Select value={filterCourierCharged} onValueChange={setFilterCourierCharged}>
+            <SelectTrigger className="rounded-xl h-10 text-sm"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="charged">Charged</SelectItem>
+              <SelectItem value="free">Free</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Text filters */}
+      <div className="space-y-3">
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-muted-foreground">📞 Phone</Label>
+          <Input placeholder="ফোন নম্বর..." className="rounded-xl h-10 text-sm" value={filterPhone} onChange={(e: any) => setFilterPhone(e.target.value)} inputMode="tel" />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-muted-foreground">🌐 Source</Label>
+          <Input placeholder="Source..." className="rounded-xl h-10 text-sm" value={filterSource} onChange={(e: any) => setFilterSource(e.target.value)} />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-muted-foreground">📍 Address</Label>
+          <Input placeholder="ঠিকানা..." className="rounded-xl h-10 text-sm" value={filterAddress} onChange={(e: any) => setFilterAddress(e.target.value)} />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-muted-foreground">📝 Notes</Label>
+          <Input placeholder="Notes..." className="rounded-xl h-10 text-sm" value={filterNotes} onChange={(e: any) => setFilterNotes(e.target.value)} />
+        </div>
+      </div>
+
+      {/* Action buttons */}
+      <div className="flex gap-2 pt-2 border-t border-border/30 sticky bottom-0 bg-background pb-2">
+        {activeFilterCount > 0 && (
+          <Button variant="destructive" className="flex-1 rounded-xl gap-1.5" onClick={() => { clearAllFilters(); onClose(); }}>
+            <X className="h-4 w-4" /> ক্লিয়ার ({activeFilterCount})
+          </Button>
+        )}
+        <Button className="flex-1 rounded-xl gap-1.5" onClick={onClose}>
+          ফলাফল দেখুন ({filteredOrders.length})
+        </Button>
+      </div>
+    </div>
+  );
+}
