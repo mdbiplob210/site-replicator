@@ -104,7 +104,7 @@ const Template3Minimal = () => {
       </section>
 
       <footer className="border-t border-stone-200 py-12">
-        <div className="max-w-6xl mx-auto px-6 text-center text-xs text-stone-400 tracking-widest uppercase">© 2026 Sohoz</div>
+        <div className="max-w-6xl mx-auto px-6 text-center text-xs text-stone-400 tracking-widest uppercase">© 2026 {siteName}</div>
       </footer>
 
       {showDiscountBanner && <ExitDiscountBanner onAccept={handleAcceptDiscount} onReject={handleRejectDiscount} />}
