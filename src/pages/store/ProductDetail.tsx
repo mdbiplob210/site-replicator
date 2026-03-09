@@ -372,6 +372,13 @@ const ProductDetail = () => {
             )}
           </div>
         )}
+
+        {/* Suggested Products */}
+        <SuggestedProducts categoryId={product.category_id} currentProductId={product.id} onOrder={(p: any) => {
+          trackAddToCart({ id: p.id, name: p.name, price: p.selling_price, qty: 1, productCode: p.product_code });
+          setCheckoutItem({ productId: p.id, name: p.name, price: p.selling_price, qty: 1, image: p.main_image_url, productCode: p.product_code, categoryId: p.category_id });
+          setCheckoutOpen(true);
+        }} />
       </div>
 
       {showDiscountBanner && (
