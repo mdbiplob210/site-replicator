@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useLandingPageBySlug } from "@/hooks/useLandingPages";
 import { useRef } from "react";
+import { sanitizeHtmlScripts } from "@/lib/htmlSanitizer";
 
 export default function LandingPageCheckout() {
   const { slug } = useParams<{ slug: string }>();
