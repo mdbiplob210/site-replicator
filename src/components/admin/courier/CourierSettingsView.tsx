@@ -41,6 +41,9 @@ export function CourierSettingsView({ onBack }: CourierSettingsViewProps) {
         </div>
       </div>
 
+      {/* COD Balance Section */}
+      <CourierBalanceView />
+
       {/* Webhook URL section */}
       <Card className="border-border/40">
         <CardHeader className="pb-3">
