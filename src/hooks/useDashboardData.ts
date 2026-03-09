@@ -284,6 +284,11 @@ export function useDashboardData(filter: TimeFilter) {
       loanCount: loans.length,
       loanTotal,
       investmentTotal,
+      totalIncome,
+      totalExpense,
+      totalProductPurchase,
+      moneyIn,
+      moneyOut,
       netValue,
     },
     salesDetails: {
