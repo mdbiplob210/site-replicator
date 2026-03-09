@@ -1,5 +1,5 @@
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { useInvoices, Invoice } from "@/hooks/useInvoices";
+import { useInvoices, Invoice, InvoiceItem } from "@/hooks/useInvoices";
 import { useCourierProviders } from "@/hooks/useCourier";
 import { FileText, Printer, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
