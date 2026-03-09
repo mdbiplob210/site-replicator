@@ -37,7 +37,7 @@ export function useSuggestedProducts(categoryId: string | null | undefined, curr
     queryKey: ["suggested-products", categoryId, currentProductId],
     queryFn: async () => {
       let query = supabase
-        .from("products")
+        .from("products_public")
         .select("id, name, product_code, selling_price, original_price, main_image_url, category_id, stock_quantity, allow_out_of_stock_orders")
         .eq("status", "active")
         .neq("id", currentProductId || "")
