@@ -27,7 +27,7 @@ import {
   Trash2, Copy, X, ShoppingCart, ArrowLeft, Clock, CheckCircle2,
   GitMerge, PauseCircle, XCircle, Trash, Smartphone, BarChart3,
   MessageSquare, Filter, Loader2, Package, Globe, SlidersHorizontal, AlertTriangle, History,
-  Hand, RotateCcw, CalendarClock, Phone, Pencil, Activity
+  Hand, RotateCcw, CalendarClock, Phone, Pencil, Activity, FileText
 } from "lucide-react";
 import {
   useOrders, useOrderCounts, useCreateOrder, useUpdateOrderStatus,
@@ -2556,6 +2556,58 @@ const AdminOrders = () => {
                             </button>
                           );
                         })()}
+                        {/* Bill Print */}
+                        <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground" title="বিল প্রিন্ট" onClick={async () => {
+                          const { data: items } = await supabase.from("order_items").select("product_name, product_code, quantity, unit_price, total_price").eq("order_id", order.id);
+                          const printW = window.open("", "_blank");
+                          if (!printW) return;
+                          const itemRows = (items || []).map((it: any) => `<tr><td>${it.product_name}</td><td style="text-align:center">${it.quantity}</td><td style="text-align:right">৳${it.unit_price}</td><td style="text-align:right">৳${it.total_price}</td></tr>`).join("");
+                          printW.document.write(`<html><head><title>Bill - ${order.order_number}</title><style>
+                            *{margin:0;padding:0;box-sizing:border-box}
+                            body{font-family:'Segoe UI',sans-serif;padding:20px;font-size:13px;color:#111}
+                            .bill{border:2px solid #000;max-width:400px;margin:auto;padding:20px}
+                            .header{text-align:center;border-bottom:2px solid #000;padding-bottom:10px;margin-bottom:12px}
+                            .header h2{font-size:18px;margin-bottom:2px}
+                            .order-no{font-size:14px;font-weight:bold;color:#333}
+                            .info{margin-bottom:10px}
+                            .info .row{display:flex;justify-content:space-between;padding:2px 0}
+                            .info .label{font-weight:600}
+                            table{width:100%;border-collapse:collapse;margin:8px 0}
+                            th{text-align:left;font-size:11px;color:#555;border-bottom:1px solid #999;padding:4px 2px}
+                            td{padding:4px 2px;border-bottom:1px solid #eee;font-size:12px}
+                            .divider{border-top:2px dashed #999;margin:10px 0}
+                            .total{font-size:16px;font-weight:bold;background:#f5f5f5;padding:8px;border-radius:4px;display:flex;justify-content:space-between}
+                            .footer{text-align:center;font-size:10px;color:#999;margin-top:12px;padding-top:6px;border-top:1px solid #eee}
+                            @media print{body{padding:0}}
+                          </style></head><body>
+                            <div class="bill">
+                              <div class="header">
+                                <h2>কাস্টমার বিল</h2>
+                                <div class="order-no">#${order.order_number}</div>
+                                <div style="font-size:11px;color:#666">${format(new Date(order.created_at), "dd MMM yyyy, hh:mm a")}</div>
+                              </div>
+                              <div class="info">
+                                <div class="row"><span class="label">নাম:</span><span>${order.customer_name}</span></div>
+                                <div class="row"><span class="label">ফোন:</span><span>${order.customer_phone || "—"}</span></div>
+                                <div class="row"><span class="label">ঠিকানা:</span><span>${order.customer_address || "—"}</span></div>
+                              </div>
+                              <table><thead><tr><th>প্রোডাক্ট</th><th style="text-align:center">পরিমাণ</th><th style="text-align:right">দাম</th><th style="text-align:right">মোট</th></tr></thead><tbody>${itemRows || '<tr><td colspan="4" style="text-align:center;color:#999">কোনো আইটেম নেই</td></tr>'}</tbody></table>
+                              <div class="divider"></div>
+                              <div class="info">
+                                <div class="row"><span class="label">সাবটোটাল:</span><span>৳${order.product_cost || 0}</span></div>
+                                <div class="row"><span class="label">ডেলিভারি চার্জ:</span><span>৳${order.delivery_charge}</span></div>
+                                ${Number(order.discount) > 0 ? `<div class="row"><span class="label">ডিসকাউন্ট:</span><span>-৳${order.discount}</span></div>` : ""}
+                              </div>
+                              <div class="divider"></div>
+                              <div class="total"><span>মোট:</span><span>৳${order.total_amount}</span></div>
+                              <div class="footer">ধন্যবাদ আপনার অর্ডারের জন্য!<br/>তারিখ: ${format(new Date(), "dd/MM/yyyy")}</div>
+                            </div>
+                          </body></html>`);
+                          printW.document.close();
+                          printW.onload = () => { printW.print(); printW.close(); };
+                        }}>
+                          <FileText className="h-3.5 w-3.5" />
+                        </button>
                         {/* Delete */}
                         <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-destructive/10 transition-colors text-muted-foreground hover:text-destructive" title="Delete" onClick={() => { if (confirm("অর্ডারটি ডিলিট করবেন?")) deleteOrder.mutate(order.id); }}>
                           <Trash2 className="h-3.5 w-3.5" />
