@@ -3,7 +3,7 @@ import { ShoppingBag, Search, Star, Truck, ShieldCheck, RotateCcw, ChevronRight,
 import { Button } from "@/components/ui/button";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
 import { OptimizedImage } from "@/components/ui/optimized-image";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useTracking } from "@/hooks/useTracking";
 import { PopupCheckout } from "@/components/store/PopupCheckout";
 import { ExitDiscountBanner } from "@/components/store/ExitDiscountBanner";
