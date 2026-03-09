@@ -189,47 +189,47 @@ const ProductDetail = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Top bar */}
-      <div className="bg-gradient-to-r from-green-600 to-green-700 text-white text-center py-2 text-xs font-medium">
+      <div className="bg-gradient-to-r from-green-600 to-green-700 text-white text-center py-2 sm:py-2 text-[11px] sm:text-xs font-medium">
         🚚 সারা দেশে ক্যাশ অন ডেলিভারি | ২-৫ দিনে ডেলিভারি
       </div>
 
       {/* Urgency Countdown Timer */}
       {countdown > 0 && (
-        <div className="bg-gradient-to-r from-red-600 to-orange-500 text-white py-2.5 px-4">
-          <div className="max-w-7xl mx-auto flex items-center justify-center gap-3">
-            <span className="text-xs sm:text-sm font-semibold animate-pulse">🔥 এই অফারটি শেষ হবে আর মাত্র</span>
+        <div className="bg-gradient-to-r from-red-600 to-orange-500 text-white py-2 sm:py-2.5 px-3 sm:px-4">
+          <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 sm:gap-3">
+            <span className="text-[11px] sm:text-sm font-semibold animate-pulse">🔥 অফার শেষ হবে</span>
             <div className="flex items-center gap-1">
               {countdownHours > 0 && (
-                <div className="bg-white/20 rounded-md px-2 py-1 text-center min-w-[2.5rem]">
-                  <span className="text-sm sm:text-base font-black">{String(countdownHours).padStart(2, "0")}</span>
-                  <span className="text-[9px] block -mt-0.5">ঘণ্টা</span>
+                <div className="bg-white/20 rounded-md px-1.5 sm:px-2 py-0.5 sm:py-1 text-center min-w-[2rem] sm:min-w-[2.5rem]">
+                  <span className="text-xs sm:text-base font-black">{String(countdownHours).padStart(2, "0")}</span>
+                  <span className="text-[8px] sm:text-[9px] block -mt-0.5">ঘণ্টা</span>
                 </div>
               )}
-              <span className="font-bold text-lg">:</span>
-              <div className="bg-white/20 rounded-md px-2 py-1 text-center min-w-[2.5rem]">
-                <span className="text-sm sm:text-base font-black">{String(countdownMins).padStart(2, "0")}</span>
-                <span className="text-[9px] block -mt-0.5">মিনিট</span>
+              <span className="font-bold text-sm sm:text-lg">:</span>
+              <div className="bg-white/20 rounded-md px-1.5 sm:px-2 py-0.5 sm:py-1 text-center min-w-[2rem] sm:min-w-[2.5rem]">
+                <span className="text-xs sm:text-base font-black">{String(countdownMins).padStart(2, "0")}</span>
+                <span className="text-[8px] sm:text-[9px] block -mt-0.5">মিনিট</span>
               </div>
-              <span className="font-bold text-lg">:</span>
-              <div className="bg-white/20 rounded-md px-2 py-1 text-center min-w-[2.5rem]">
-                <span className="text-sm sm:text-base font-black">{String(countdownSecs).padStart(2, "0")}</span>
-                <span className="text-[9px] block -mt-0.5">সেকেন্ড</span>
+              <span className="font-bold text-sm sm:text-lg">:</span>
+              <div className="bg-white/20 rounded-md px-1.5 sm:px-2 py-0.5 sm:py-1 text-center min-w-[2rem] sm:min-w-[2.5rem]">
+                <span className="text-xs sm:text-base font-black">{String(countdownSecs).padStart(2, "0")}</span>
+                <span className="text-[8px] sm:text-[9px] block -mt-0.5">সেকেন্ড</span>
               </div>
             </div>
-            <span className="text-xs font-medium hidden sm:inline">⏰ তাড়াতাড়ি করুন!</span>
+            <span className="text-[10px] sm:text-xs font-medium hidden sm:inline">⏰ তাড়াতাড়ি!</span>
           </div>
         </div>
       )}
 
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          <button onClick={() => navigate(-1)} className="p-2">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between">
+          <button onClick={() => navigate(-1)} className="p-2 -ml-1 rounded-lg active:bg-gray-100 transition">
             <ArrowLeft className="h-5 w-5" />
           </button>
           <Link to="/" className="flex items-center gap-1">
-            <span className="text-xl font-black text-green-600">QUICK SHOP</span>
-            <span className="text-xl font-black text-gray-800">BD</span>
+            <span className="text-lg sm:text-xl font-black text-green-600">QUICK SHOP</span>
+            <span className="text-lg sm:text-xl font-black text-gray-800">BD</span>
           </Link>
           <div className="w-10" />
         </div>
