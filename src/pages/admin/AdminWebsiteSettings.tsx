@@ -92,6 +92,10 @@ function GeneralTab() {
   const [siteUrl, setSiteUrl] = useState("");
   const [tagline, setTagline] = useState("");
   const [contactPhone, setContactPhone] = useState("");
+  const [contactPhone2, setContactPhone2] = useState("");
+  const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [messengerLink, setMessengerLink] = useState("");
+  const [paymentNumber, setPaymentNumber] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [insideDhaka, setInsideDhaka] = useState("0");
   const [outsideDhaka, setOutsideDhaka] = useState("0");
@@ -109,6 +113,10 @@ function GeneralTab() {
     setSiteUrl(settings["site_url"] || "");
     setTagline(settings["tagline"] || "");
     setContactPhone(settings["phone_number"] || "");
+    setContactPhone2(settings["phone_number_2"] || "");
+    setWhatsappNumber(settings["whatsapp_number"] || "");
+    setMessengerLink(settings["messenger_link"] || "");
+    setPaymentNumber(settings["payment_number"] || "");
     setContactEmail(settings["contact_email"] || "");
     setInsideDhaka(settings["delivery_inside_dhaka"] || "0");
     setOutsideDhaka(settings["delivery_outside_dhaka"] || "0");
@@ -175,6 +183,10 @@ function GeneralTab() {
       { key: "site_url", value: siteUrl },
       { key: "tagline", value: tagline },
       { key: "phone_number", value: contactPhone },
+      { key: "phone_number_2", value: contactPhone2 },
+      { key: "whatsapp_number", value: whatsappNumber },
+      { key: "messenger_link", value: messengerLink },
+      { key: "payment_number", value: paymentNumber },
       { key: "contact_email", value: contactEmail },
       { key: "delivery_inside_dhaka", value: insideDhaka },
       { key: "delivery_outside_dhaka", value: outsideDhaka },
@@ -258,6 +270,34 @@ function GeneralTab() {
           <div>
             <label className="text-sm font-medium text-foreground">Contact Phone</label>
             <Input className="mt-1.5" placeholder="+880..." value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} />
+          </div>
+
+          {/* Contact Phone 2 */}
+          <div>
+            <label className="text-sm font-medium text-foreground">Contact Phone 2</label>
+            <p className="text-xs text-muted-foreground">দ্বিতীয় ফোন নম্বর (প্রোডাক্ট পেজে দেখাবে)</p>
+            <Input className="mt-1.5" placeholder="01XXXXXXXXX" value={contactPhone2} onChange={(e) => setContactPhone2(e.target.value)} />
+          </div>
+
+          {/* WhatsApp Number */}
+          <div>
+            <label className="text-sm font-medium text-foreground">WhatsApp Number</label>
+            <p className="text-xs text-muted-foreground">কান্ট্রি কোড সহ (যেমন: 8801XXXXXXXXX)</p>
+            <Input className="mt-1.5" placeholder="8801XXXXXXXXX" value={whatsappNumber} onChange={(e) => setWhatsappNumber(e.target.value)} />
+          </div>
+
+          {/* Messenger Link */}
+          <div>
+            <label className="text-sm font-medium text-foreground">Messenger Link</label>
+            <p className="text-xs text-muted-foreground">Facebook Messenger লিংক (যেমন: https://m.me/pagename)</p>
+            <Input className="mt-1.5" placeholder="https://m.me/yourpage" value={messengerLink} onChange={(e) => setMessengerLink(e.target.value)} />
+          </div>
+
+          {/* Payment Number */}
+          <div>
+            <label className="text-sm font-medium text-foreground">Payment Number</label>
+            <p className="text-xs text-muted-foreground">বিকাশ/নগদ পেমেন্ট নম্বর (ডেলিভারি টেবিলে দেখাবে)</p>
+            <Input className="mt-1.5" placeholder="01XXXXXXXXX" value={paymentNumber} onChange={(e) => setPaymentNumber(e.target.value)} />
           </div>
 
           {/* Contact Email */}
