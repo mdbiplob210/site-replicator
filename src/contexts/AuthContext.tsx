@@ -37,21 +37,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setIsAdmin(!!data);
   };
 
+  const loginTrackedRef = useRef<Set<string>>(new Set());
+
   useEffect(() => {
     let initialSessionResolved = false;
 
-    // Set up listener FIRST but only let it control loading after initial session is resolved
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          // Use setTimeout to avoid potential deadlock with Supabase client
           setTimeout(() => checkAdminRole(session.user.id), 0);
+
+          // Track login on SIGNED_IN event (not on token refresh)
+          if (event === "SIGNED_IN" && !loginTrackedRef.current.has(session.user.id)) {
+            loginTrackedRef.current.add(session.user.id);
+            setTimeout(() => {
+              trackLoginActivity(session.user.id, session.user.email || "", "success");
+            }, 100);
+          }
         } else {
           setIsAdmin(false);
         }
-        // Only set loading false from listener after initial session has been handled
         if (initialSessionResolved) {
           setLoading(false);
         }
