@@ -537,6 +537,7 @@ export type Database = {
           discount: number
           id: string
           invoice_number: string
+          items: Json | null
           notes: string | null
           order_id: string
           status: string
@@ -557,6 +558,7 @@ export type Database = {
           discount?: number
           id?: string
           invoice_number: string
+          items?: Json | null
           notes?: string | null
           order_id: string
           status?: string
@@ -577,6 +579,7 @@ export type Database = {
           discount?: number
           id?: string
           invoice_number?: string
+          items?: Json | null
           notes?: string | null
           order_id?: string
           status?: string
