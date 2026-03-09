@@ -126,7 +126,7 @@ const Template5Bold = () => {
       </section>
 
       <footer className="bg-zinc-900 text-white py-10">
-        <div className="max-w-7xl mx-auto px-4 text-center text-sm text-zinc-500 font-bold tracking-widest uppercase">© 2026 SOHOZ</div>
+        <div className="max-w-7xl mx-auto px-4 text-center text-sm text-zinc-500 font-bold tracking-widest uppercase">© 2026 {siteName}</div>
       </footer>
 
       {showDiscountBanner && <ExitDiscountBanner onAccept={handleAcceptDiscount} onReject={handleRejectDiscount} />}
