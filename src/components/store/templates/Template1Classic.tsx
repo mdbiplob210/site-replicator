@@ -342,13 +342,16 @@ const Template1Classic = () => {
                       <span className="text-[10px] text-gray-400 ml-0.5">(0)</span>
                     </div>
 
-                    {/* Price */}
+                    {/* Price & Stock */}
                     <div className="flex items-center gap-2 mt-1.5">
                       <span className="text-green-600 font-bold text-base">৳{p.selling_price} টাকা</span>
                       {discount > 0 && (
                         <span className="text-xs text-gray-400 line-through">৳{p.original_price} টাকা</span>
                       )}
                     </div>
+                    {p.stock_quantity !== undefined && p.stock_quantity <= 0 && !(p as any).allow_out_of_stock_orders && (
+                      <span className="text-[10px] text-red-500 font-semibold">স্টকে নেই</span>
+                    )}
                   </div>
 
                   {/* Action buttons */}
