@@ -126,7 +126,7 @@ const Template1Classic = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Top announcement bar */}
-      <div className="bg-gradient-to-r from-green-600 to-green-700 text-white text-center py-2 text-xs sm:text-sm font-medium overflow-hidden">
+      <div className="bg-gradient-to-r from-green-600 to-green-700 text-white text-center py-2.5 sm:py-2 text-[11px] sm:text-sm font-medium overflow-hidden">
         <div className="animate-marquee whitespace-nowrap inline-block">
           {marqueeText} হটলাইনঃ {phoneNumber || "01XXXXXXXXX"} &nbsp;&nbsp;&nbsp;
           {marqueeText} হটলাইনঃ {phoneNumber || "01XXXXXXXXX"}
@@ -136,18 +136,18 @@ const Template1Classic = () => {
 
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2 sm:gap-3">
           {/* Mobile menu button */}
-          <button onClick={() => setMobileMenu(!mobileMenu)} className="lg:hidden p-2">
+          <button onClick={() => setMobileMenu(!mobileMenu)} className="lg:hidden p-2 -ml-1 rounded-lg active:bg-gray-100 transition">
             {mobileMenu ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
 
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 flex-shrink-0">
             {siteLogo ? (
-              <img src={siteLogo} alt={siteName} className="h-8 sm:h-10 w-auto object-contain" />
+              <img src={siteLogo} alt={siteName} className="h-7 sm:h-10 w-auto object-contain" />
             ) : (
-              <span className="text-xl sm:text-2xl font-black text-green-600">{siteName}</span>
+              <span className="text-lg sm:text-2xl font-black text-green-600">{siteName}</span>
             )}
           </Link>
 
@@ -166,11 +166,11 @@ const Template1Classic = () => {
           </div>
 
           {/* Right actions */}
-          <div className="flex items-center gap-2">
-            <button onClick={() => setShowSearch(!showSearch)} className="lg:hidden p-2 rounded-full hover:bg-gray-100">
+          <div className="flex items-center gap-1 sm:gap-2">
+            <button onClick={() => setShowSearch(!showSearch)} className="lg:hidden p-2 rounded-lg active:bg-gray-100 transition">
               <Search className="h-5 w-5 text-gray-600" />
             </button>
-            <Link to="/checkout" className="p-2 rounded-full hover:bg-gray-100 relative">
+            <Link to="/checkout" className="p-2 rounded-lg active:bg-gray-100 transition relative">
               <ShoppingCart className="h-5 w-5 text-gray-600" />
               <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-green-600 text-[10px] font-bold text-white flex items-center justify-center">0</span>
             </Link>
@@ -179,14 +179,14 @@ const Template1Classic = () => {
 
         {/* Mobile Search */}
         {showSearch && (
-          <div className="lg:hidden px-4 pb-3">
+          <div className="lg:hidden px-3 pb-3">
             <div className="relative">
               <input
                 type="text"
                 placeholder="প্রোডাক্ট খুঁজুন..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full h-10 pl-4 pr-10 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-500"
+                className="w-full h-11 pl-4 pr-10 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100"
                 autoFocus
               />
               <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -196,10 +196,10 @@ const Template1Classic = () => {
 
         {/* Mobile Menu */}
         {mobileMenu && (
-          <div className="lg:hidden border-t bg-white px-4 py-3 space-y-2">
-            <button onClick={() => { setSelectedCategory(null); setMobileMenu(false); }} className="block w-full text-left py-2 text-sm font-medium hover:text-green-600">সব প্রোডাক্ট</button>
+          <div className="lg:hidden border-t bg-white px-4 py-2 space-y-0.5">
+            <button onClick={() => { setSelectedCategory(null); setMobileMenu(false); }} className="block w-full text-left py-2.5 px-3 text-sm font-medium hover:text-green-600 hover:bg-green-50 rounded-lg transition">সব প্রোডাক্ট</button>
             {categories.map(c => (
-              <button key={c.id} onClick={() => { setSelectedCategory(c.id); setMobileMenu(false); }} className="block w-full text-left py-2 text-sm hover:text-green-600">{c.name}</button>
+              <button key={c.id} onClick={() => { setSelectedCategory(c.id); setMobileMenu(false); }} className="block w-full text-left py-2.5 px-3 text-sm hover:text-green-600 hover:bg-green-50 rounded-lg transition">{c.name}</button>
             ))}
           </div>
         )}
@@ -211,11 +211,11 @@ const Template1Classic = () => {
       {/* Categories horizontal scroll */}
       {categories.length > 0 && (
         <div className="bg-white border-b">
-          <div className="max-w-7xl mx-auto px-4 py-2 flex gap-2 overflow-x-auto no-scrollbar">
+          <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2.5 flex gap-2 overflow-x-auto no-scrollbar">
             <button
               onClick={() => setSelectedCategory(null)}
-              className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold transition ${
-                !selectedCategory ? "bg-green-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-semibold transition ${
+                !selectedCategory ? "bg-green-600 text-white shadow-sm" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
             >
               সব দেখুন
@@ -224,8 +224,8 @@ const Template1Classic = () => {
               <button
                 key={c.id}
                 onClick={() => setSelectedCategory(c.id)}
-                className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold transition ${
-                  selectedCategory === c.id ? "bg-green-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-semibold transition ${
+                  selectedCategory === c.id ? "bg-green-600 text-white shadow-sm" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
               >
                 {c.name}
@@ -237,20 +237,20 @@ const Template1Classic = () => {
 
       {/* Trust badges */}
       <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 py-3 grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
           {[
             { icon: Truck, label: "ফ্রি ডেলিভারি", sub: "৳১৫০০+ অর্ডারে" },
             { icon: ShieldCheck, label: "১০০% অরিজিনাল", sub: "গ্যারান্টিড" },
             { icon: RotateCcw, label: "ইজি রিটার্ন", sub: "৭ দিনে" },
             { icon: Star, label: "সন্তুষ্ট কাস্টমার", sub: "৫০০০+" },
           ].map(b => (
-            <div key={b.label} className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
+            <div key={b.label} className="flex items-center gap-2.5">
+              <div className="h-9 w-9 sm:h-8 sm:w-8 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
                 <b.icon className="h-4 w-4 text-green-600" />
               </div>
               <div>
-                <p className="text-xs font-bold text-gray-800">{b.label}</p>
-                <p className="text-[10px] text-gray-400">{b.sub}</p>
+                <p className="text-xs font-bold text-gray-800 leading-tight">{b.label}</p>
+                <p className="text-[10px] text-gray-400 leading-tight">{b.sub}</p>
               </div>
             </div>
           ))}
