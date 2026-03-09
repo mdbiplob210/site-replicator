@@ -196,3 +196,46 @@ export function useOrderAssignments(userId?: string) {
     enabled: !!userId || userId === undefined,
   });
 }
+
+export function usePanelStats() {
+  return useQuery({
+    queryKey: ["panel-stats"],
+    queryFn: async () => {
+      // Get all active panels
+      const { data: panels, error: panelError } = await supabase
+        .from("employee_panels")
+        .select("*");
+      if (panelError) throw panelError;
+
+      // Get all assignments with order status
+      const { data: assignments, error: assignError } = await supabase
+        .from("order_assignments")
+        .select("assigned_to, status, orders(status)")
+        .order("assigned_at", { ascending: false });
+      if (assignError) throw assignError;
+
+      // Get profiles for panel users
+      const userIds = panels?.map(p => p.user_id) || [];
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, full_name")
+        .in("user_id", userIds.length > 0 ? userIds : ["__none__"]);
+
+      return (panels || []).map(panel => {
+        const panelAssignments = assignments?.filter(a => a.assigned_to === panel.user_id) || [];
+        const pendingCount = panelAssignments.filter(a => a.status === "pending").length;
+        const completedCount = panelAssignments.filter(a => a.status === "completed").length;
+        const totalCount = panelAssignments.length;
+        const profile = profiles?.find(p => p.user_id === panel.user_id);
+
+        return {
+          ...panel,
+          full_name: profile?.full_name || panel.panel_name,
+          pending_orders: pendingCount,
+          completed_orders: completedCount,
+          total_orders: totalCount,
+        };
+      });
+    },
+  });
+}
