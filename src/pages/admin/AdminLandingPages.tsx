@@ -164,6 +164,16 @@ export default function AdminLandingPages() {
       toast.error("টাইটেল ও স্লাগ আবশ্যক!");
       return;
     }
+
+    // Warn about cdn.tailwindcss.com
+    const cdnPattern = /cdn\.tailwindcss\.com/i;
+    const hasCdnInHtml = cdnPattern.test(form.html_content || "");
+    const hasCdnInCheckout = cdnPattern.test(form.checkout_html || "");
+    const hasCdnInScripts = cdnPattern.test(form.custom_head_scripts || "");
+    if (hasCdnInHtml || hasCdnInCheckout || hasCdnInScripts) {
+      toast.warning("⚠️ আপনার HTML এ cdn.tailwindcss.com পাওয়া গেছে। এটি production এ console warning তৈরি করে। সেভ করা হচ্ছে, তবে এটি রিমুভ করা উচিত।", { duration: 8000 });
+    }
+
     const cleanSlug = form.slug!.replace(/[^a-z0-9-]/g, "").toLowerCase();
     const payload = { ...form, slug: cleanSlug };
 
