@@ -131,7 +131,7 @@ const Template2Dark = () => {
 
       <footer className="border-t border-gray-800 py-10">
         <div className="max-w-7xl mx-auto px-4 text-center text-sm text-gray-600">
-          © 2026 SOHOZ STORE
+          © 2026 {siteName}
         </div>
       </footer>
 
