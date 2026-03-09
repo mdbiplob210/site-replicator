@@ -84,6 +84,7 @@ export const getStatusColor = (status: OrderStatus): string => {
   const colors: Record<OrderStatus, string> = {
     processing: "bg-blue-500",
     confirmed: "bg-emerald-600",
+    inquiry: "bg-amber-600",
     cancelled: "bg-red-500",
     on_hold: "bg-yellow-500",
     ship_later: "bg-teal-500",
