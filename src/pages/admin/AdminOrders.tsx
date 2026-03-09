@@ -2418,7 +2418,7 @@ const AdminOrders = () => {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {(["processing", "confirmed", "on_hold", "hand_delivery", "cancelled"] as const).map((s) => (
+                          {([...["processing", "confirmed", "on_hold", "hand_delivery", "cancelled"] as const, ...(order.status === "pending_return" ? ["returned" as const] : [])]).map((s) => (
                             <SelectItem key={s} value={s}>
                               <div className="flex items-center gap-2">
                                 <span className={`h-2 w-2 rounded-full ${getStatusColor(s as OrderStatus)}`} />
@@ -2606,7 +2606,7 @@ const AdminOrders = () => {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            {(["processing", "confirmed", "on_hold", "hand_delivery", "cancelled"] as const).map((s) => (
+                            {([...["processing", "confirmed", "on_hold", "hand_delivery", "cancelled"] as const, ...(order.status === "pending_return" ? ["returned" as const] : [])]).map((s) => (
                               <SelectItem key={s} value={s}>
                                 <div className="flex items-center gap-2">
                                   <span className={`h-2 w-2 rounded-full ${getStatusColor(s as OrderStatus)}`} />
@@ -3463,6 +3463,7 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                   { value: "on_hold", label: "Hold", color: "bg-yellow-500", icon: PauseCircle },
                   { value: "hand_delivery", label: "Hand Delivery", color: "bg-cyan-500", icon: Hand },
                   { value: "cancelled", label: "Cancelled", color: "bg-red-500", icon: XCircle },
+                  ...(order.status === "pending_return" ? [{ value: "returned", label: "Return", color: "bg-red-400", icon: RotateCcw }] : []),
                 ].map((s) => (
                   <button
                     key={s.value}
