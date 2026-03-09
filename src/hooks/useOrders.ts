@@ -47,6 +47,7 @@ const STATUS_MAP: Record<string, OrderStatus> = {
   "All Orders": "processing",
   "New Orders": "processing",
   "Confirmed": "confirmed",
+  "Inquiry": "inquiry",
   "In Courier": "in_courier",
   "Delivered": "delivered",
   "Cancelled": "cancelled",
