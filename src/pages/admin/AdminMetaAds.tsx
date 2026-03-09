@@ -32,7 +32,10 @@ export default function AdminMetaAds() {
   const [dateRange, setDateRange] = useState("today");
   const [trendMode, setTrendMode] = useState<"weekly" | "monthly">("weekly");
   const [fbConnected, setFbConnected] = useState(true);
+  const [selectedAccountId, setSelectedAccountId] = useState<string>("");
   const exchangeToken = useExchangeToken();
+  const { data: adAccounts = [], isLoading: accountsLoading } = useAdAccounts();
+  const syncMutation = useSyncMetaAds();
 
   // Site settings for dollar rate
   const { data: settings, isLoading: settingsLoading } = useSiteSettings();
