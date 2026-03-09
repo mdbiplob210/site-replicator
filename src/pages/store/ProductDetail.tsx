@@ -298,15 +298,15 @@ const ProductDetail = () => {
           </div>
 
           {/* Right: Product Info */}
-          <div className="w-full lg:w-1/2 space-y-4">
+          <div className="w-full lg:w-1/2 space-y-3 sm:space-y-4">
             {/* Title */}
-            <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">{product.name}</h1>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 leading-tight">{product.name}</h1>
 
             {/* Price */}
-            <div className="flex items-baseline gap-3">
-              <span className="text-green-600 font-black text-3xl">মূল্য: ৳{product.selling_price} টাকা</span>
+            <div className="flex items-baseline gap-2 sm:gap-3 flex-wrap">
+              <span className="text-green-600 font-black text-2xl sm:text-3xl">৳{product.selling_price} টাকা</span>
               {discount > 0 && (
-                <span className="text-gray-400 line-through text-lg">মূল্য: ৳{product.original_price} টাকা</span>
+                <span className="text-gray-400 line-through text-base sm:text-lg">৳{product.original_price} টাকা</span>
               )}
             </div>
 
@@ -315,13 +315,13 @@ const ProductDetail = () => {
             )}
 
             {/* Quantity */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
               <div className="flex items-center border rounded-full overflow-hidden">
-                <button onClick={() => setQty(Math.max(1, qty - 1))} className="px-3 py-2 hover:bg-gray-100 transition">
+                <button onClick={() => setQty(Math.max(1, qty - 1))} className="px-3 py-2.5 sm:py-2 hover:bg-gray-100 active:bg-gray-200 transition">
                   <Minus className="h-4 w-4" />
                 </button>
                 <span className="px-4 py-2 font-bold min-w-[3rem] text-center">{qty}</span>
-                <button onClick={() => setQty(qty + 1)} className="px-3 py-2 hover:bg-gray-100 transition">
+                <button onClick={() => setQty(qty + 1)} className="px-3 py-2.5 sm:py-2 hover:bg-gray-100 active:bg-gray-200 transition">
                   <Plus className="h-4 w-4" />
                 </button>
               </div>
