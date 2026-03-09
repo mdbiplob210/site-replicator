@@ -51,6 +51,7 @@ const AdminLandingPageAnalytics = lazy(() => import("./pages/admin/AdminLandingP
 const AdminPayment = lazy(() => import("./pages/admin/AdminPayment"));
 const AdminInvoices = lazy(() => import("./pages/admin/AdminInvoices"));
 const AdminPages = lazy(() => import("./pages/admin/AdminPages"));
+const AdminProfile = lazy(() => import("./pages/admin/AdminProfile"));
 
 // Minimal loading fallback
 const PageLoader = () => (
