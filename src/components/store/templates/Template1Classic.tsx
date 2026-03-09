@@ -374,8 +374,11 @@ const Template1Classic = () => {
         <div className="max-w-7xl mx-auto px-4 py-10">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
             <div className="col-span-2 md:col-span-1">
-              <span className="text-lg font-black text-green-400">QUICK SHOP</span>
-              <span className="text-lg font-black text-white"> BD</span>
+              {siteLogo ? (
+                <img src={siteLogo} alt={siteName} className="h-8 w-auto object-contain mb-2" />
+              ) : (
+                <span className="text-lg font-black text-green-400">{siteName}</span>
+              )}
               <p className="text-xs text-gray-400 mt-2 leading-relaxed">বাংলাদেশের সেরা অনলাইন শপিং ডেস্টিনেশন।</p>
             </div>
             {[
