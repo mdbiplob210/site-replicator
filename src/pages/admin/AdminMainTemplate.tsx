@@ -52,7 +52,7 @@ export default function AdminMainTemplate() {
             {templates.map((t) => (
               <button
                 key={t.id}
-                onClick={() => updateSetting.mutate({ key: "active_template", value: t.id })}
+                onClick={() => updateSetting.mutate({ key: "active_template", value: t.id }, { onSuccess: () => toast.success("টেমপ্লেট আপডেট হয়েছে!") })}
                 className={`relative rounded-2xl overflow-hidden border-2 transition-all text-left group ${
                   activeTemplate === t.id
                     ? "border-primary ring-2 ring-primary/20 shadow-lg"
