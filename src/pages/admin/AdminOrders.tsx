@@ -1691,20 +1691,21 @@ const AdminOrders = () => {
         )}
 
         {/* Search & Filters */}
-        <Card className="p-3 border-border/40 flex items-center gap-3 flex-wrap shadow-sm">
-          <div className="relative flex-1 min-w-[250px]">
+        <Card className="p-2 sm:p-3 border-border/40 flex items-center gap-2 sm:gap-3 flex-wrap shadow-sm">
+          <div className="relative flex-1 min-w-0">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search order, phone, name..."
-              className="pl-10 border-0 bg-transparent shadow-none focus-visible:ring-0 text-sm"
+              placeholder="Search..."
+              className="pl-10 border-0 bg-transparent shadow-none focus-visible:ring-0 text-sm h-9"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" className="h-9 w-9 rounded-xl border-border/60" onClick={handleRefresh} title="রিফ্রেশ"><RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} /></Button>
-            <Button variant="outline" size="sm" className="gap-1.5 h-9 rounded-xl border-border/60" onClick={handleExport}><Download className="h-4 w-4" /> Export</Button>
-            <Button variant="outline" size="sm" className="gap-1.5 h-9 rounded-xl border-border/60" onClick={handlePrint}><Printer className="h-4 w-4" /> Print</Button>
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <Button variant="outline" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl border-border/60" onClick={handleRefresh} title="রিফ্রেশ"><RefreshCw className={cn("h-3.5 sm:h-4 w-3.5 sm:w-4", isLoading && "animate-spin")} /></Button>
+            <Button variant="outline" size="icon" className="h-8 w-8 sm:hidden rounded-xl border-border/60" onClick={handleExport} title="Export"><Download className="h-3.5 w-3.5" /></Button>
+            <Button variant="outline" size="sm" className="gap-1.5 h-9 rounded-xl border-border/60 hidden sm:flex" onClick={handleExport}><Download className="h-4 w-4" /> Export</Button>
+            <Button variant="outline" size="sm" className="gap-1.5 h-9 rounded-xl border-border/60 hidden sm:flex" onClick={handlePrint}><Printer className="h-4 w-4" /> Print</Button>
           </div>
         </Card>
 
