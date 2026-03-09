@@ -172,6 +172,7 @@ export function useDeleteFinanceRecord() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["finance-records"] });
       queryClient.invalidateQueries({ queryKey: ["finance-summary"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard-finance"] });
       toast.success("রেকর্ড ডিলিট হয়েছে!");
     },
     onError: (error: Error) => {
