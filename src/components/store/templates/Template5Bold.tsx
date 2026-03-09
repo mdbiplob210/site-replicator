@@ -94,14 +94,19 @@ const Template5Bold = () => {
           <div className="text-center py-12 text-zinc-400">No products yet</div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {products.map((p) => (
+            {products.map((p) => {
+              const outOfStock = p.stock_quantity !== undefined && p.stock_quantity <= 0 && !(p as any).allow_out_of_stock_orders;
+              return (
               <div key={p.id} className="group bg-white overflow-hidden hover:shadow-2xl transition-all duration-300">
                 <Link to={`/product/${(p as any).slug || p.id}`}>
-                  <div className="aspect-square bg-zinc-50 overflow-hidden">
+                  <div className="aspect-square bg-zinc-50 overflow-hidden relative">
                     {p.main_image_url ? (
                       <OptimizedImage src={p.main_image_url} alt={p.name} width={400} quality={80} className="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-zinc-300"><ShoppingBag className="h-12 w-12" /></div>
+                    )}
+                    {(p as any).free_delivery && (
+                      <div className="absolute top-2 left-2 bg-lime-400 text-zinc-900 text-[9px] font-black px-2 py-0.5 uppercase tracking-wider">ফ্রি ডেলিভারি</div>
                     )}
                   </div>
                   <div className="p-4 pb-2">
@@ -112,15 +117,17 @@ const Template5Bold = () => {
                         <span className="text-xs text-zinc-400 line-through">৳{p.original_price}</span>
                       )}
                     </div>
+                    {outOfStock && <span className="text-[10px] text-red-500 font-bold uppercase">স্টকে নেই</span>}
                   </div>
                 </Link>
                 <div className="px-4 pb-4">
-                  <button onClick={() => handleOrder(p)} className="w-full py-2.5 bg-zinc-900 hover:bg-lime-400 hover:text-zinc-900 text-white text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 transition">
+                  <button onClick={() => handleOrder(p)} disabled={outOfStock} className="w-full py-2.5 bg-zinc-900 hover:bg-lime-400 hover:text-zinc-900 text-white text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 transition disabled:opacity-40 disabled:cursor-not-allowed">
                     <ShoppingCart className="h-4 w-4" /> অর্ডার করুন
                   </button>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </section>

@@ -94,7 +94,9 @@ const Template4Colorful = () => {
           <div className="text-center py-12 text-gray-400">কোন প্রোডাক্ট নেই</div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-            {products.map((p) => (
+            {products.map((p) => {
+              const outOfStock = p.stock_quantity !== undefined && p.stock_quantity <= 0 && !(p as any).allow_out_of_stock_orders;
+              return (
               <div key={p.id} className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-rose-50">
                 <Link to={`/product/${(p as any).slug || p.id}`}>
                   <div className="aspect-square bg-gray-50 relative overflow-hidden">
@@ -106,6 +108,9 @@ const Template4Colorful = () => {
                     <button className="absolute top-3 right-3 p-2 bg-white/80 rounded-full opacity-0 group-hover:opacity-100 transition">
                       <Heart className="h-4 w-4 text-rose-500" />
                     </button>
+                    {(p as any).free_delivery && (
+                      <div className="absolute top-3 left-3 bg-gradient-to-r from-rose-500 to-violet-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">🚚 ফ্রি ডেলিভারি</div>
+                    )}
                   </div>
                   <div className="p-4 pb-2">
                     <h3 className="font-bold text-gray-900 truncate text-sm">{p.name}</h3>
@@ -115,15 +120,17 @@ const Template4Colorful = () => {
                         <span className="text-xs text-gray-400 line-through">৳{p.original_price}</span>
                       )}
                     </div>
+                    {outOfStock && <span className="text-[10px] text-red-500 font-semibold">স্টকে নেই</span>}
                   </div>
                 </Link>
                 <div className="px-4 pb-4">
-                  <button onClick={() => handleOrder(p)} className="w-full py-2 bg-gradient-to-r from-rose-500 to-violet-500 hover:from-rose-600 hover:to-violet-600 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition">
+                  <button onClick={() => handleOrder(p)} disabled={outOfStock} className="w-full py-2 bg-gradient-to-r from-rose-500 to-violet-500 hover:from-rose-600 hover:to-violet-600 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition disabled:opacity-40 disabled:cursor-not-allowed">
                     <ShoppingCart className="h-4 w-4" /> অর্ডার করুন
                   </button>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </section>

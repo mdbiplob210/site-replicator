@@ -81,24 +81,31 @@ const Template3Minimal = () => {
           <div className="text-center py-12 text-stone-400 text-sm">No products available</div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-10">
-            {products.map((p) => (
+            {products.map((p) => {
+              const outOfStock = p.stock_quantity !== undefined && p.stock_quantity <= 0 && !(p as any).allow_out_of_stock_orders;
+              return (
               <div key={p.id} className="group">
                 <Link to={`/product/${(p as any).slug || p.id}`}>
-                  <div className="aspect-[3/4] bg-stone-100 overflow-hidden mb-4">
+                  <div className="aspect-[3/4] bg-stone-100 overflow-hidden mb-4 relative">
                     {p.main_image_url ? (
                       <OptimizedImage src={p.main_image_url} alt={p.name} width={400} quality={80} className="w-full h-full object-cover group-hover:scale-102 transition duration-700" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-stone-300"><ShoppingBag className="h-10 w-10" /></div>
                     )}
+                    {(p as any).free_delivery && (
+                      <div className="absolute top-2 left-2 bg-stone-800 text-white text-[9px] font-medium px-2 py-0.5 rounded-full tracking-wide">ফ্রি ডেলিভারি</div>
+                    )}
                   </div>
                   <h3 className="text-sm font-normal text-stone-800">{p.name}</h3>
                   <p className="text-sm text-stone-500 mt-1">৳{p.selling_price}</p>
+                  {outOfStock && <p className="text-xs text-red-500 mt-0.5">স্টকে নেই</p>}
                 </Link>
-                <button onClick={() => handleOrder(p)} className="mt-2 inline-flex items-center gap-1.5 text-xs tracking-[0.1em] uppercase text-stone-600 hover:text-stone-900 border-b border-stone-300 pb-0.5 transition">
+                <button onClick={() => handleOrder(p)} disabled={outOfStock} className="mt-2 inline-flex items-center gap-1.5 text-xs tracking-[0.1em] uppercase text-stone-600 hover:text-stone-900 border-b border-stone-300 pb-0.5 transition disabled:opacity-40 disabled:cursor-not-allowed">
                   <ShoppingCart className="h-3 w-3" /> অর্ডার করুন
                 </button>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </section>
