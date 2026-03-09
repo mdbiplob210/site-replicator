@@ -18,7 +18,7 @@ import * as XLSX from "@datalens-tech/xlsx";
 import { ProductAdSpendTable } from "@/components/admin/meta-ads/ProductAdSpendTable";
 import { CampaignBreakdown } from "@/components/admin/meta-ads/CampaignBreakdown";
 import { ManualCampaignEntry } from "@/components/admin/meta-ads/ManualCampaignEntry";
-import { useExchangeToken } from "@/hooks/useMetaAds";
+import { useExchangeToken, useAdAccounts, useSyncMetaAds } from "@/hooks/useMetaAds";
 
 type View = "main" | "import" | "manual-campaign";
 
@@ -32,7 +32,10 @@ export default function AdminMetaAds() {
   const [dateRange, setDateRange] = useState("today");
   const [trendMode, setTrendMode] = useState<"weekly" | "monthly">("weekly");
   const [fbConnected, setFbConnected] = useState(true);
+  const [selectedAccountId, setSelectedAccountId] = useState<string>("");
   const exchangeToken = useExchangeToken();
+  const { data: adAccounts = [], isLoading: accountsLoading } = useAdAccounts();
+  const syncMutation = useSyncMetaAds();
 
   // Site settings for dollar rate
   const { data: settings, isLoading: settingsLoading } = useSiteSettings();
@@ -341,10 +344,66 @@ export default function AdminMetaAds() {
                 </SelectContent>
               </Select>
             </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Ad Account</label>
+              <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
+                <SelectTrigger className="w-56 mt-1.5">
+                  <SelectValue placeholder={accountsLoading ? "Loading..." : "সব অ্যাকাউন্ট"} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">সব অ্যাকাউন্ট</SelectItem>
+                  {adAccounts.map((ac) => (
+                    <SelectItem key={ac.id} value={ac.id}>
+                      {ac.name} ({ac.currency})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-end">
+              <Button
+                size="sm"
+                variant="default"
+                className="gap-1.5"
+                onClick={() => {
+                  const ids = selectedAccountId && selectedAccountId !== "all"
+                    ? [selectedAccountId]
+                    : adAccounts.map(a => a.id);
+                  syncMutation.mutate({ dateRange, adAccountIds: ids.length > 0 ? ids : undefined });
+                }}
+                disabled={syncMutation.isPending}
+              >
+                {syncMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+                {syncMutation.isPending ? "Syncing..." : "Sync All"}
+              </Button>
+            </div>
           </div>
         </div>
 
-        {/* Stats */}
+        {/* Connected Ad Accounts */}
+        {adAccounts.length > 0 && (
+          <div className="bg-card rounded-2xl border border-border p-4">
+            <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
+              <Facebook className="h-4 w-4 text-blue-600" /> {adAccounts.length}টি Ad Account পাওয়া গেছে
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {adAccounts.map(ac => (
+                <button
+                  key={ac.id}
+                  onClick={() => setSelectedAccountId(ac.id === selectedAccountId ? "all" : ac.id)}
+                  className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
+                    ac.id === selectedAccountId
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-secondary text-muted-foreground border-border hover:bg-secondary/80"
+                  }`}
+                >
+                  {ac.name} · {ac.business_name} ({ac.currency})
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { icon: DollarSign, label: "Spend (USD)", value: `$${totalUsd.toFixed(2)}` },
@@ -366,7 +425,7 @@ export default function AdminMetaAds() {
         <ProductAdSpendTable dateRange={dateRange} totalSpendUsd={totalUsd} rate={rate} />
 
         {/* Campaign Breakdown */}
-        <CampaignBreakdown dateRange={dateRange} />
+        <CampaignBreakdown dateRange={dateRange} adAccountId={selectedAccountId && selectedAccountId !== "all" ? selectedAccountId : undefined} />
 
         {/* Daily Spend Chart */}
         {entries.length > 0 && (

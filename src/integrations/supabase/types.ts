@@ -829,6 +829,7 @@ export type Database = {
       }
       meta_ads: {
         Row: {
+          ad_account_id: string
           adset_id: string
           clicks: number
           cost_per_result: number
@@ -843,6 +844,7 @@ export type Database = {
           synced_at: string
         }
         Insert: {
+          ad_account_id?: string
           adset_id: string
           clicks?: number
           cost_per_result?: number
@@ -857,6 +859,7 @@ export type Database = {
           synced_at?: string
         }
         Update: {
+          ad_account_id?: string
           adset_id?: string
           clicks?: number
           cost_per_result?: number
@@ -882,6 +885,7 @@ export type Database = {
       }
       meta_adsets: {
         Row: {
+          ad_account_id: string
           audience: string | null
           campaign_id: string
           clicks: number
@@ -897,6 +901,7 @@ export type Database = {
           synced_at: string
         }
         Insert: {
+          ad_account_id?: string
           audience?: string | null
           campaign_id: string
           clicks?: number
@@ -912,6 +917,7 @@ export type Database = {
           synced_at?: string
         }
         Update: {
+          ad_account_id?: string
           audience?: string | null
           campaign_id?: string
           clicks?: number
@@ -938,6 +944,7 @@ export type Database = {
       }
       meta_campaigns: {
         Row: {
+          ad_account_id: string
           clicks: number
           cost_per_purchase: number
           ctr: number
@@ -956,6 +963,7 @@ export type Database = {
           synced_at: string
         }
         Insert: {
+          ad_account_id?: string
           clicks?: number
           cost_per_purchase?: number
           ctr?: number
@@ -974,6 +982,7 @@ export type Database = {
           synced_at?: string
         }
         Update: {
+          ad_account_id?: string
           clicks?: number
           cost_per_purchase?: number
           ctr?: number

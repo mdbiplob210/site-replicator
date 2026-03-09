@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 
 interface Props {
   dateRange: string;
+  adAccountId?: string;
 }
 
 const statusBadge = (s: string) => {
@@ -35,11 +36,11 @@ const perfBadge = (roas: number, spend: number) => {
   return "border border-red-300 text-red-600 dark:border-red-700 dark:text-red-400";
 };
 
-export function CampaignBreakdown({ dateRange }: Props) {
+export function CampaignBreakdown({ dateRange, adAccountId }: Props) {
   const [expandedCampaigns, setExpandedCampaigns] = useState<Set<string>>(new Set());
   const [expandedAdSets, setExpandedAdSets] = useState<Set<string>>(new Set());
 
-  const { data: campaigns = [], isLoading, error } = useMetaCampaigns(dateRange);
+  const { data: campaigns = [], isLoading, error } = useMetaCampaigns(dateRange, adAccountId);
   const syncMutation = useSyncMetaAds();
 
   // Summary stats
@@ -97,7 +98,7 @@ export function CampaignBreakdown({ dateRange }: Props) {
             size="sm"
             variant="outline"
             className="gap-1.5 text-xs"
-            onClick={() => syncMutation.mutate(dateRange)}
+            onClick={() => syncMutation.mutate({ dateRange })}
             disabled={syncMutation.isPending}
           >
             {syncMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
@@ -154,7 +155,7 @@ export function CampaignBreakdown({ dateRange }: Props) {
             <Button
               size="sm"
               className="gap-2"
-              onClick={() => syncMutation.mutate(dateRange)}
+              onClick={() => syncMutation.mutate({ dateRange })}
               disabled={syncMutation.isPending}
             >
               {syncMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}

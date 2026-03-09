@@ -13,18 +13,57 @@ function dateRangeToPreset(range: string): DatePreset {
   }
 }
 
+// ─── List Ad Accounts from Business Manager ───
+
+export type AdAccount = {
+  id: string;
+  act_id: string;
+  name: string;
+  business_id: string;
+  business_name: string;
+  currency: string;
+  timezone: string;
+  status: number;
+};
+
+export function useAdAccounts() {
+  return useQuery({
+    queryKey: ["meta_ad_accounts"],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
+
+      const res = await supabase.functions.invoke("fetch-meta-ads", {
+        body: { action: "list_accounts" },
+      });
+
+      if (res.error) throw new Error(res.error.message || "Failed to fetch accounts");
+      if (res.data?.error) throw new Error(res.data.error);
+      return (res.data?.accounts || []) as AdAccount[];
+    },
+    staleTime: 5 * 60 * 1000, // 5 min cache
+    retry: 1,
+  });
+}
+
 // ─── Read from DB ───
 
-export function useMetaCampaigns(dateRange: string) {
+export function useMetaCampaigns(dateRange: string, adAccountId?: string) {
   const preset = dateRangeToPreset(dateRange);
   return useQuery({
-    queryKey: ["meta_campaigns_db", preset],
+    queryKey: ["meta_campaigns_db", preset, adAccountId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("meta_campaigns" as any)
         .select("*")
         .eq("date_preset", preset)
         .order("spend", { ascending: false });
+      
+      if (adAccountId) {
+        query = query.eq("ad_account_id", adAccountId);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       return data || [];
     },
@@ -95,29 +134,36 @@ export function useExchangeToken() {
   });
 }
 
-// ─── Sync from Facebook API → DB ───
+// ─── Sync from Facebook API → DB (supports multi-account) ───
 
 export function useSyncMetaAds() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (dateRange: string) => {
+    mutationFn: async ({ dateRange, adAccountIds }: { dateRange: string; adAccountIds?: string[] }) => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("Not authenticated");
 
+      const bodyObj: any = { action: "sync", date_preset: dateRangeToPreset(dateRange) };
+      if (adAccountIds && adAccountIds.length > 0) {
+        bodyObj.ad_account_ids = adAccountIds;
+      }
+
       const res = await supabase.functions.invoke("fetch-meta-ads", {
-        body: { action: "sync", date_preset: dateRangeToPreset(dateRange) },
+        body: bodyObj,
       });
 
       if (res.error) throw new Error(res.error.message || "Sync failed");
+      if (res.data?.error) throw new Error(res.data.error);
       return res.data;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["meta_campaigns_db"] });
       queryClient.invalidateQueries({ queryKey: ["meta_adsets_db"] });
       queryClient.invalidateQueries({ queryKey: ["meta_ads_db"] });
+      const acCount = data.synced_accounts?.length || 0;
       toast.success(
-        `সিঙ্ক সফল! ${data.synced?.campaigns || 0} campaigns, ${data.synced?.adsets || 0} ad sets, ${data.synced?.ads || 0} ads`
+        `সিঙ্ক সফল! ${acCount} account, ${data.synced?.campaigns || 0} campaigns, ${data.synced?.adsets || 0} ad sets, ${data.synced?.ads || 0} ads`
       );
     },
     onError: (err: Error) => {
