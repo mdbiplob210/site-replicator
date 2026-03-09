@@ -67,9 +67,12 @@ const AdminDashboard = () => {
   ];
 
   const finCards = [
+    { label: "MONEY IN", value: fmt(financeStats.moneyIn), icon: ArrowDownCircle, iconColor: "text-emerald-600", bgGradient: "from-emerald-100 to-emerald-50" },
+    { label: "MONEY OUT", value: fmt(financeStats.moneyOut), icon: ArrowUpCircle, iconColor: "text-red-500", bgGradient: "from-red-100 to-red-50" },
     { label: "BANK BALANCE", value: fmt(financeStats.bankBalance), icon: Landmark, iconColor: "text-blue-600", bgGradient: "from-blue-100 to-blue-50" },
     { label: "STOCK VALUE", value: fmt(financeStats.stockValue), icon: Layers, iconColor: "text-emerald-600", bgGradient: "from-emerald-100 to-emerald-50" },
     { label: `COURIER BALANCE (${financeStats.courierCount})`, value: fmt(financeStats.courierBalance), icon: Truck, iconColor: "text-violet-600", bgGradient: "from-violet-100 to-violet-50" },
+    { label: "PRODUCT PURCHASE", value: fmt(financeStats.totalProductPurchase), icon: ShoppingBag, iconColor: "text-orange-600", bgGradient: "from-orange-100 to-orange-50" },
     { label: `LOANS (${financeStats.loanCount})`, value: fmt(financeStats.loanTotal), icon: HandCoins, iconColor: "text-red-500", bgGradient: "from-red-100 to-red-50" },
     { label: "INVESTMENTS", value: fmt(financeStats.investmentTotal), icon: PiggyBank, iconColor: "text-amber-600", bgGradient: "from-amber-100 to-amber-50" },
     { label: "NET VALUE", value: fmt(financeStats.netValue), icon: Receipt, iconColor: "text-emerald-600", bgGradient: "from-emerald-100 to-emerald-50" },
