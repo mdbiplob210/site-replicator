@@ -309,12 +309,18 @@ const Template1Classic = () => {
                         </div>
                       )}
                     </div>
-                    {/* Discount badge - circular like reference */}
+                    {/* Discount badge */}
                     {discount > 0 && (
                       <div className="absolute top-2 right-2 w-12 h-12 rounded-full border-2 border-dashed border-red-400 bg-white flex flex-col items-center justify-center">
                         <span className="text-red-500 font-bold text-[10px] leading-none">{discountAmount}</span>
                         <span className="text-red-500 font-bold text-[9px] leading-none">টাকা</span>
                         <span className="text-red-500 font-bold text-[9px] leading-none">ছাড়</span>
+                      </div>
+                    )}
+                    {/* Free delivery badge */}
+                    {(p as any).free_delivery && (
+                      <div className="absolute top-2 left-2 bg-green-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">
+                        🚚 ফ্রি ডেলিভারি
                       </div>
                     )}
                   </Link>
