@@ -309,12 +309,18 @@ const Template1Classic = () => {
                         </div>
                       )}
                     </div>
-                    {/* Discount badge - circular like reference */}
+                    {/* Discount badge */}
                     {discount > 0 && (
                       <div className="absolute top-2 right-2 w-12 h-12 rounded-full border-2 border-dashed border-red-400 bg-white flex flex-col items-center justify-center">
                         <span className="text-red-500 font-bold text-[10px] leading-none">{discountAmount}</span>
                         <span className="text-red-500 font-bold text-[9px] leading-none">টাকা</span>
                         <span className="text-red-500 font-bold text-[9px] leading-none">ছাড়</span>
+                      </div>
+                    )}
+                    {/* Free delivery badge */}
+                    {(p as any).free_delivery && (
+                      <div className="absolute top-2 left-2 bg-green-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">
+                        🚚 ফ্রি ডেলিভারি
                       </div>
                     )}
                   </Link>
@@ -336,13 +342,16 @@ const Template1Classic = () => {
                       <span className="text-[10px] text-gray-400 ml-0.5">(0)</span>
                     </div>
 
-                    {/* Price */}
+                    {/* Price & Stock */}
                     <div className="flex items-center gap-2 mt-1.5">
                       <span className="text-green-600 font-bold text-base">৳{p.selling_price} টাকা</span>
                       {discount > 0 && (
                         <span className="text-xs text-gray-400 line-through">৳{p.original_price} টাকা</span>
                       )}
                     </div>
+                    {p.stock_quantity !== undefined && p.stock_quantity <= 0 && !(p as any).allow_out_of_stock_orders && (
+                      <span className="text-[10px] text-red-500 font-semibold">স্টকে নেই</span>
+                    )}
                   </div>
 
                   {/* Action buttons */}
@@ -350,7 +359,8 @@ const Template1Classic = () => {
                     {orderBtnEnabled && (
                     <button
                       onClick={() => handleOrder(p)}
-                      className="w-full py-2.5 text-white rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition hover:opacity-90"
+                      disabled={p.stock_quantity !== undefined && p.stock_quantity <= 0 && !(p as any).allow_out_of_stock_orders}
+                      className="w-full py-2.5 text-white rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
                       style={{ backgroundColor: orderBtnColor }}
                     >
                       <ShoppingCart className="h-4 w-4" /> {orderBtnText}

@@ -38,6 +38,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
   const [completedOrderNumber, setCompletedOrderNumber] = useState("");
   const [currentItem, setCurrentItem] = useState<CheckoutItem | null>(null);
   const [qty, setQty] = useState(1);
+  const [deliveryArea, setDeliveryArea] = useState<"inside" | "outside">("inside");
   const formInteracted = useRef(false);
   const abandonedSaved = useRef(false);
   const orderSubmitted = useRef(false);
@@ -185,6 +186,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
         total_amount: total,
         product_cost: subtotal,
         discount: discount,
+        delivery_charge: deliveryCharge,
         status: "processing",
         source: "website",
         client_ip: clientIp,
@@ -300,8 +302,16 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
 
   if (!open || !currentItem) return null;
 
+  const insideDhaka = Number(settings?.delivery_inside_dhaka) || 80;
+  const outsideDhaka = Number(settings?.delivery_outside_dhaka) || 150;
+  const freeDeliveryAbove = Number(settings?.free_delivery_above) || 0;
+
+  // Determine if product has free delivery
+  const productHasFreeDelivery = currentItem ? allProducts.find(p => p.id === currentItem.productId)?.free_delivery : false;
+
   const subtotal = currentItem.price * qty;
-  const total = Math.max(0, subtotal - discount);
+  const deliveryCharge = productHasFreeDelivery ? 0 : (freeDeliveryAbove > 0 && subtotal >= freeDeliveryAbove) ? 0 : (deliveryArea === "inside" ? insideDhaka : outsideDhaka);
+  const total = Math.max(0, subtotal + deliveryCharge - discount);
 
   return (
     <div className="fixed inset-0 z-[999] flex items-end sm:items-center justify-center">
@@ -379,6 +389,21 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
                 <Input placeholder="অতিরিক্ত তথ্য..." value={form.notes} onChange={e => updateForm({ notes: e.target.value })} className="h-11 rounded-xl" autoComplete="off" />
               </div>
 
+              {/* Delivery Area Selector */}
+              <div className="bg-gray-50 rounded-xl p-3 space-y-2">
+                <label className="text-xs font-semibold text-gray-600">ডেলিভারি এরিয়া:</label>
+                <div className="flex gap-2">
+                  <button type="button" onClick={() => setDeliveryArea("inside")}
+                    className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition ${deliveryArea === "inside" ? "border-green-500 bg-green-50 text-green-700" : "border-gray-200 text-gray-500"}`}>
+                    ঢাকার ভিতরে (৳{insideDhaka})
+                  </button>
+                  <button type="button" onClick={() => setDeliveryArea("outside")}
+                    className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition ${deliveryArea === "outside" ? "border-green-500 bg-green-50 text-green-700" : "border-gray-200 text-gray-500"}`}>
+                    ঢাকার বাইরে (৳{outsideDhaka})
+                  </button>
+                </div>
+              </div>
+
               {/* Summary */}
               <div className="bg-gray-50 rounded-xl p-3 space-y-1.5 text-sm">
                 <div className="flex justify-between"><span className="text-gray-500">সাবটোটাল</span><span>৳{subtotal}</span></div>
@@ -387,7 +412,12 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
                     <span>🎁 বিশেষ ছাড়</span><span>-৳{discount}</span>
                   </div>
                 )}
-                <div className="flex justify-between"><span className="text-gray-500">ডেলিভারি চার্জ</span><span className="text-green-600">ফ্রি</span></div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">ডেলিভারি চার্জ</span>
+                  <span className={deliveryCharge === 0 ? "text-green-600 font-semibold" : ""}>
+                    {deliveryCharge === 0 ? "ফ্রি" : `৳${deliveryCharge}`}
+                  </span>
+                </div>
                 <div className="flex justify-between font-bold text-base border-t pt-1.5"><span>মোট</span><span className="text-green-600">৳{total}</span></div>
               </div>
 
