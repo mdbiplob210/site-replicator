@@ -63,9 +63,13 @@ const AdminProfile = () => {
       toast.error("পাসওয়ার্ড মিলছে না!");
       return;
     }
-    if (newPassword && newPassword.length < 6) {
-      toast.error("পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে");
-      return;
+    if (newPassword) {
+      const { validatePassword } = await import("@/lib/security");
+      const pwCheck = validatePassword(newPassword);
+      if (!pwCheck.valid) {
+        toast.error(pwCheck.message);
+        return;
+      }
     }
     setLoading(true);
     try {
