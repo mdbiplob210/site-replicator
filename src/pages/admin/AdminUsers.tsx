@@ -11,17 +11,24 @@ import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import {
   Shield, Trash2, Users, UserPlus, Lock, Eye, Edit,
   Activity, Clock, AlertCircle, XCircle, Monitor, RefreshCw,
   Search, ChevronDown, ShoppingCart, CheckCircle2, RotateCcw, Truck, BarChart3,
-  Settings, Package, DollarSign, FileText, ChevronRight, Loader2, X, Check
+  Settings, Package, DollarSign, FileText, ChevronRight, Loader2, X, Check,
+  Ban, Calendar, Smartphone, Laptop, Globe, MapPin
 } from "lucide-react";
 import {
   useEmployees, useTogglePermission, useTogglePanel,
   ALL_PERMISSIONS, type PermissionKey
 } from "@/hooks/useEmployeePermissions";
+import {
+  useUserPresenceList, useLoginActivity, useUserPerformance
+} from "@/hooks/useUserTracking";
+import { formatDistanceToNow } from "date-fns";
+import { bn } from "date-fns/locale";
 
 interface UserProfile {
   id: string;
@@ -35,12 +42,14 @@ type TabType = "users" | "rules" | "tracking" | "activity";
 type TrackingSubTab = "live" | "performance";
 
 const groupIcons: Record<string, any> = {
-  Orders: ShoppingCart,
-  Products: Package,
-  Finance: DollarSign,
-  Analytics: BarChart3,
-  Reports: FileText,
-  Admin: Settings,
+  "অর্ডার": ShoppingCart,
+  "প্রোডাক্ট": Package,
+  "ফিন্যান্স": DollarSign,
+  "ড্যাশবোর্ড ও রিপোর্ট": BarChart3,
+  "ওয়েবসাইট": Globe,
+  "মার্কেটিং": ShoppingCart,
+  "কুরিয়ার": Truck,
+  "সিস্টেম": Settings,
 };
 
 const AdminUsers = () => {
@@ -62,6 +71,21 @@ const AdminUsers = () => {
   const togglePermission = useTogglePermission();
   const togglePanel = useTogglePanel();
   const [expandedUser, setExpandedUser] = useState<string | null>(null);
+
+  // Tracking
+  const { data: presenceList = [] } = useUserPresenceList();
+  const [perfDateRange, setPerfDateRange] = useState("today");
+  const { data: perfData = [], isLoading: perfLoading } = useUserPerformance(perfDateRange);
+
+  // Activity
+  const [activityDateRange, setActivityDateRange] = useState("today");
+  const [activityStatus, setActivityStatus] = useState("all");
+  const [activitySearch, setActivitySearch] = useState("");
+  const { data: loginLogs = [], isLoading: activityLoading, refetch: refetchActivity } = useLoginActivity({
+    dateRange: activityDateRange,
+    status: activityStatus,
+    search: activitySearch,
+  });
 
   const permissionGroups = ALL_PERMISSIONS.reduce((acc, perm) => {
     if (!acc[perm.group]) acc[perm.group] = [];
@@ -109,7 +133,6 @@ const AdminUsers = () => {
   };
 
   const removeRole = async (userId: string, role: "admin" | "moderator" | "user") => {
-    // Self-protection: prevent removing own admin role
     const { data: { user: currentUser } } = await supabase.auth.getUser();
     if (currentUser && currentUser.id === userId && role === "admin") {
       toast.error("⚠️ নিজের অ্যাডমিন রোল ডিলিট করা যাবে না!");
@@ -137,7 +160,6 @@ const AdminUsers = () => {
     }
     setCreating(true);
     try {
-      // Sign up user
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: newEmail,
         password: newPassword,
@@ -146,7 +168,6 @@ const AdminUsers = () => {
       if (signUpError) throw signUpError;
 
       if (signUpData.user) {
-        // Assign role
         const { error: roleError } = await supabase
           .from("user_roles")
           .insert({ user_id: signUpData.user.id, role: newRole } as any);
@@ -174,20 +195,27 @@ const AdminUsers = () => {
     togglePanel.mutate({ userId, panelName: name, isActive });
   };
 
-  const handleGrantAll = async (userId: string) => {
-    for (const perm of ALL_PERMISSIONS) {
+  const handleGrantAll = (userId: string) => {
+    ALL_PERMISSIONS.forEach(perm => {
       togglePermission.mutate({ userId, permission: perm.key, grant: true });
-    }
+    });
   };
 
-  const handleRevokeAll = async (userId: string) => {
-    for (const perm of ALL_PERMISSIONS) {
-      togglePermission.mutate({ userId, permission: perm.key, grant: false });
-    }
+  const handleRevokeAll = (userId: string) => {
+    ALL_PERMISSIONS.forEach(perm => {
+      const emp = employees.find(e => e.user_id === userId);
+      if (emp && emp.permissions.includes(perm.key)) {
+        togglePermission.mutate({ userId, permission: perm.key, grant: false });
+      }
+    });
   };
 
   const adminCount = users.filter(u => u.roles.includes("admin")).length;
   const modCount = users.filter(u => u.roles.includes("moderator")).length;
+  const onlineCount = presenceList.filter((p: any) => {
+    const lastSeen = new Date(p.last_seen_at);
+    return (Date.now() - lastSeen.getTime()) < 60000 && p.is_online;
+  }).length;
 
   const tabs = [
     { id: "users" as TabType, label: "Users", icon: Users },
@@ -195,6 +223,42 @@ const AdminUsers = () => {
     { id: "tracking" as TabType, label: "User Tracking", icon: Activity },
     { id: "activity" as TabType, label: "Login Activity", icon: Clock },
   ];
+
+  const dateFilterOptions = [
+    { value: "today", label: "আজকে" },
+    { value: "yesterday", label: "গতকাল" },
+    { value: "last7", label: "গত ৭ দিন" },
+    { value: "last30", label: "গত ৩০ দিন" },
+    { value: "thisMonth", label: "এই মাস" },
+    { value: "lastMonth", label: "গত মাস" },
+    { value: "thisYear", label: "এই বছর" },
+    { value: "all", label: "সর্বকালীন" },
+  ];
+
+  // Helper: get user name from profiles or presence
+  const getUserName = (userId: string) => {
+    const user = users.find(u => u.user_id === userId);
+    return user?.full_name || `User (${userId.slice(0, 8)})`;
+  };
+
+  const getPresenceStatus = (userId: string) => {
+    const presence = presenceList.find((p: any) => p.user_id === userId);
+    if (!presence) return { status: "offline", label: "Offline", page: null, device: null, lastSeen: null };
+    const lastSeen = new Date((presence as any).last_seen_at);
+    const diffMs = Date.now() - lastSeen.getTime();
+    if (diffMs < 60000 && (presence as any).is_online) {
+      return { status: "online", label: "Online", page: (presence as any).current_page, device: (presence as any).device_info, lastSeen };
+    }
+    if (diffMs < 300000) {
+      return { status: "idle", label: "Idle", page: (presence as any).current_page, device: (presence as any).device_info, lastSeen };
+    }
+    return { status: "offline", label: "Offline", page: null, device: (presence as any).device_info, lastSeen };
+  };
+
+  // Login activity stats
+  const successLogins = loginLogs.filter((l: any) => l.status === "success").length;
+  const failedLogins = loginLogs.filter((l: any) => l.status === "failed").length;
+  const uniqueIPs = new Set(loginLogs.map((l: any) => l.ip_address).filter(Boolean)).size;
 
   return (
     <AdminLayout>
@@ -210,15 +274,11 @@ const AdminUsers = () => {
               <UserPlus className="h-4 w-4" />
               Create Admin
             </Button>
-            <Button variant="outline" className="gap-2">
-              <Lock className="h-4 w-4" />
-              Change Password
-            </Button>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="flex items-center justify-center gap-1">
+        <div className="flex items-center justify-center gap-1 flex-wrap">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -231,6 +291,9 @@ const AdminUsers = () => {
             >
               <tab.icon className="h-4 w-4" />
               {tab.label}
+              {tab.id === "tracking" && onlineCount > 0 && (
+                <span className="h-5 w-5 rounded-full bg-emerald-500 text-white text-[10px] flex items-center justify-center font-bold">{onlineCount}</span>
+              )}
             </button>
           ))}
         </div>
@@ -268,10 +331,10 @@ const AdminUsers = () => {
               </Card>
               <Card className="border-border/40">
                 <CardContent className="p-5 flex items-center gap-4">
-                  <div className="p-2.5 rounded-xl bg-emerald-500/10"><CheckCircle2 className="h-5 w-5 text-emerald-600" /></div>
+                  <div className="p-2.5 rounded-xl bg-emerald-500/10"><Activity className="h-5 w-5 text-emerald-600" /></div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Active</p>
-                    <p className="text-2xl font-bold text-foreground">{users.length}/{users.length}</p>
+                    <p className="text-sm text-muted-foreground">Online Now</p>
+                    <p className="text-2xl font-bold text-emerald-600">{onlineCount}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -300,80 +363,93 @@ const AdminUsers = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {users.map((user) => (
-                        <TableRow key={user.id}>
-                          <TableCell>
-                            <div className="flex items-center gap-3">
-                              <Avatar className="h-9 w-9">
-                                <AvatarFallback className="bg-secondary text-foreground text-xs font-bold">
-                                  {(user.full_name || "U").charAt(0).toUpperCase()}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <p className="text-sm font-semibold text-foreground">{user.full_name || "Unknown"}</p>
-                                <p className="text-[11px] text-muted-foreground font-mono">{user.user_id.substring(0, 8)}...</p>
+                      {users.map((user) => {
+                        const presence = getPresenceStatus(user.user_id);
+                        return (
+                          <TableRow key={user.id}>
+                            <TableCell>
+                              <div className="flex items-center gap-3">
+                                <div className="relative">
+                                  <Avatar className="h-9 w-9">
+                                    <AvatarFallback className="bg-secondary text-foreground text-xs font-bold">
+                                      {(user.full_name || "U").charAt(0).toUpperCase()}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <span className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full ring-2 ring-card ${
+                                    presence.status === "online" ? "bg-emerald-500" :
+                                    presence.status === "idle" ? "bg-amber-500" : "bg-muted-foreground/30"
+                                  }`} />
+                                </div>
+                                <div>
+                                  <p className="text-sm font-semibold text-foreground">{user.full_name || "Unknown"}</p>
+                                  <p className="text-[11px] text-muted-foreground font-mono">{user.user_id.substring(0, 8)}...</p>
+                                </div>
                               </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            {user.roles.length > 0 ? (
-                              <div className="flex gap-1 flex-wrap">
-                                {user.roles.map((role) => (
-                                  <Badge
-                                    key={role}
-                                    variant={role === "admin" ? "default" : "secondary"}
-                                    className="text-xs cursor-pointer"
-                                    onClick={() => removeRole(user.user_id, role as any)}
-                                  >
-                                    {role} ✕
-                                  </Badge>
-                                ))}
+                            </TableCell>
+                            <TableCell>
+                              {user.roles.length > 0 ? (
+                                <div className="flex gap-1 flex-wrap">
+                                  {user.roles.map((role) => (
+                                    <Badge
+                                      key={role}
+                                      variant={role === "admin" ? "default" : "secondary"}
+                                      className="text-xs cursor-pointer"
+                                      onClick={() => removeRole(user.user_id, role as any)}
+                                    >
+                                      {role} ✕
+                                    </Badge>
+                                  ))}
+                                </div>
+                              ) : (
+                                <span className="text-muted-foreground text-sm">No role</span>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <Select onValueChange={(val) => assignRole(user.user_id, val as any)}>
+                                <SelectTrigger className="w-32 h-8">
+                                  <SelectValue placeholder="Add role..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="admin">Admin</SelectItem>
+                                  <SelectItem value="moderator">Moderator</SelectItem>
+                                  <SelectItem value="user">User</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="secondary" className={`gap-1 ${
+                                presence.status === "online" ? "bg-emerald-500/10 text-emerald-600 border-emerald-200/50" :
+                                presence.status === "idle" ? "bg-amber-500/10 text-amber-600 border-amber-200/50" :
+                                "bg-muted text-muted-foreground"
+                              }`}>
+                                <span className={`h-2 w-2 rounded-full ${
+                                  presence.status === "online" ? "bg-emerald-500" :
+                                  presence.status === "idle" ? "bg-amber-500" : "bg-muted-foreground/50"
+                                }`} />
+                                {presence.label}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => { setActiveTab("tracking"); setTrackingSubTab("live"); }}
+                                  className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+                                  title="Track"
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </button>
+                                <button
+                                  onClick={() => { setActiveTab("rules"); setExpandedUser(user.user_id); }}
+                                  className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+                                  title="Edit Rules"
+                                >
+                                  <Shield className="h-4 w-4" />
+                                </button>
                               </div>
-                            ) : (
-                              <span className="text-muted-foreground text-sm">No role</span>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <Select onValueChange={(val) => assignRole(user.user_id, val as any)}>
-                              <SelectTrigger className="w-32 h-8">
-                                <SelectValue placeholder="Add role..." />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="admin">Admin</SelectItem>
-                                <SelectItem value="moderator">Moderator</SelectItem>
-                                <SelectItem value="user">User</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 border-emerald-200/50 gap-1">
-                              <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                              Active
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-1">
-                              <button
-                                onClick={() => { setActiveTab("rules"); setExpandedUser(user.user_id); }}
-                                className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
-                                title="Edit Rules"
-                              >
-                                <Shield className="h-4 w-4" />
-                              </button>
-                              <button className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors">
-                                <Eye className="h-4 w-4" />
-                              </button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                      {users.length === 0 && (
-                        <TableRow>
-                          <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                            কোন ইউজার পাওয়া যায়নি
-                          </TableCell>
-                        </TableRow>
-                      )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 )}
@@ -402,16 +478,16 @@ const AdminUsers = () => {
             ) : employees.length === 0 ? (
               <Card className="border-border/40 p-12 text-center">
                 <Users className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
-                <p className="text-muted-foreground">কোন ইউজার পাওয়া যায়নি। প্রথমে ইউজার তৈরি করুন।</p>
+                <p className="text-muted-foreground">কোন ইউজার পাওয়া যায়নি।</p>
               </Card>
             ) : (
               <div className="space-y-3">
                 {employees.map((emp) => {
                   const isExpanded = expandedUser === emp.user_id;
                   const grantedCount = emp.permissions?.length || 0;
+                  const isAdmin = (emp as any).role === "admin";
                   return (
                     <Card key={emp.user_id} className="border-border/40 overflow-hidden">
-                      {/* User header */}
                       <button
                         onClick={() => setExpandedUser(isExpanded ? null : emp.user_id)}
                         className="w-full flex items-center justify-between p-4 hover:bg-secondary/30 transition-colors"
@@ -424,13 +500,15 @@ const AdminUsers = () => {
                           </Avatar>
                           <div className="text-left">
                             <p className="font-semibold text-foreground">{emp.full_name || "Unknown"}</p>
-                            <p className="text-xs text-muted-foreground font-mono">{emp.user_id.substring(0, 8)}...</p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <Badge variant={isAdmin ? "default" : "secondary"} className="text-[10px]">
+                                {(emp as any).role}
+                              </Badge>
+                              <span className="text-xs text-muted-foreground">{grantedCount}/{ALL_PERMISSIONS.length} permissions</span>
+                            </div>
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
-                          <Badge variant="secondary" className="text-xs">
-                            {grantedCount}/{ALL_PERMISSIONS.length} permissions
-                          </Badge>
                           <Badge variant={emp.panel?.is_active ? "default" : "secondary"} className="text-xs">
                             Panel: {emp.panel?.is_active ? "ON" : "OFF"}
                           </Badge>
@@ -438,10 +516,8 @@ const AdminUsers = () => {
                         </div>
                       </button>
 
-                      {/* Expanded permission editor */}
-                      {isExpanded && (
+                      {isExpanded && !isAdmin && (
                         <div className="border-t border-border p-5 space-y-5">
-                          {/* Quick actions */}
                           <div className="flex items-center gap-3">
                             <Button size="sm" variant="outline" className="gap-1.5 text-xs" onClick={() => handleGrantAll(emp.user_id)}>
                               <Check className="h-3.5 w-3.5" /> Grant All
@@ -460,7 +536,6 @@ const AdminUsers = () => {
                             </div>
                           </div>
 
-                          {/* Permission groups */}
                           {Object.entries(permissionGroups).map(([group, perms]) => {
                             const GroupIcon = groupIcons[group] || Settings;
                             return (
@@ -483,7 +558,7 @@ const AdminUsers = () => {
                                       >
                                         <div>
                                           <p className="text-sm font-medium text-foreground">{perm.label}</p>
-                                          <p className="text-[11px] text-muted-foreground">{perm.key.replace(/_/g, " ")}</p>
+                                          <p className="text-[11px] text-muted-foreground">{perm.description}</p>
                                         </div>
                                         <Switch
                                           checked={isGranted}
@@ -496,25 +571,18 @@ const AdminUsers = () => {
                               </div>
                             );
                           })}
+                        </div>
+                      )}
 
-                          {/* Panel settings */}
-                          {emp.panel && (
-                            <div className="bg-secondary/20 rounded-xl p-4 border border-border/40">
-                              <h4 className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
-                                <Monitor className="h-4 w-4" /> Order Panel Settings
-                              </h4>
-                              <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                  <p className="text-xs text-muted-foreground">Panel Name</p>
-                                  <p className="text-sm font-medium text-foreground">{emp.panel.panel_name}</p>
-                                </div>
-                                <div>
-                                  <p className="text-xs text-muted-foreground">Max Orders</p>
-                                  <p className="text-sm font-medium text-foreground">{emp.panel.max_orders}</p>
-                                </div>
-                              </div>
+                      {isExpanded && isAdmin && (
+                        <div className="border-t border-border p-5">
+                          <div className="flex items-center gap-3 p-4 rounded-xl bg-primary/5 border border-primary/20">
+                            <Shield className="h-5 w-5 text-primary" />
+                            <div>
+                              <p className="text-sm font-bold text-foreground">অ্যাডমিন ইউজার</p>
+                              <p className="text-xs text-muted-foreground">অ্যাডমিনের সব পারমিশন স্বয়ংক্রিয়ভাবে থাকে।</p>
                             </div>
-                          )}
+                          </div>
                         </div>
                       )}
                     </Card>
@@ -528,27 +596,16 @@ const AdminUsers = () => {
         {/* ===== TRACKING TAB ===== */}
         {activeTab === "tracking" && (
           <>
-            <Card className="border-border/40">
-              <CardContent className="p-4 flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-secondary"><Clock className="h-4 w-4 text-muted-foreground" /></div>
-                <Select defaultValue="today">
-                  <SelectTrigger className="w-32"><SelectValue placeholder="Today" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="today">Today</SelectItem>
-                    <SelectItem value="yesterday">Yesterday</SelectItem>
-                    <SelectItem value="week">This Week</SelectItem>
-                    <SelectItem value="month">This Month</SelectItem>
-                  </SelectContent>
-                </Select>
-              </CardContent>
-            </Card>
-
+            {/* Online Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {[
-                { icon: Users, label: "Total Users", value: users.length, bg: "bg-primary/10", color: "text-primary" },
-                { icon: Activity, label: "Active Now", value: users.length, bg: "bg-emerald-500/10", color: "text-emerald-600" },
-                { icon: Clock, label: "Idle", value: 0, bg: "bg-amber-500/10", color: "text-amber-600" },
-                { icon: XCircle, label: "Offline", value: 0, bg: "bg-destructive/10", color: "text-destructive" },
+                { icon: Users, label: "মোট ইউজার", value: users.length, bg: "bg-primary/10", color: "text-primary" },
+                { icon: Activity, label: "এখন অনলাইন", value: onlineCount, bg: "bg-emerald-500/10", color: "text-emerald-600" },
+                { icon: Clock, label: "Idle", value: presenceList.filter((p: any) => {
+                  const d = Date.now() - new Date(p.last_seen_at).getTime();
+                  return d >= 60000 && d < 300000;
+                }).length, bg: "bg-amber-500/10", color: "text-amber-600" },
+                { icon: XCircle, label: "অফলাইন", value: users.length - onlineCount, bg: "bg-destructive/10", color: "text-destructive" },
               ].map((s, i) => (
                 <Card key={i} className="border-border/40">
                   <CardContent className="p-5 flex items-center gap-4">
@@ -562,10 +619,11 @@ const AdminUsers = () => {
               ))}
             </div>
 
+            {/* Sub tabs */}
             <div className="flex items-center justify-center gap-1">
               {[
-                { id: "live" as TrackingSubTab, label: "Live Status", icon: Activity },
-                { id: "performance" as TrackingSubTab, label: "Order Performance", icon: BarChart3 },
+                { id: "live" as TrackingSubTab, label: "লাইভ স্ট্যাটাস", icon: Activity },
+                { id: "performance" as TrackingSubTab, label: "অর্ডার পারফরম্যান্স", icon: BarChart3 },
               ].map(t => (
                 <button key={t.id} onClick={() => setTrackingSubTab(t.id)}
                   className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
@@ -577,109 +635,246 @@ const AdminUsers = () => {
               ))}
             </div>
 
+            {/* LIVE STATUS */}
             {trackingSubTab === "live" && (
               <Card className="border-border/40">
-                <CardHeader><CardTitle className="text-lg font-bold">Live User Status</CardTitle></CardHeader>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg font-bold flex items-center gap-2">
+                      <Activity className="h-5 w-5 text-emerald-500" />
+                      লাইভ ইউজার স্ট্যাটাস
+                    </CardTitle>
+                    <Badge variant="outline" className="gap-1.5 text-emerald-600">
+                      <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                      রিয়েল-টাইম
+                    </Badge>
+                  </div>
+                </CardHeader>
                 <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>User</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Last Activity</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {users.map((user) => (
-                        <TableRow key={user.id}>
-                          <TableCell>
-                            <div className="flex items-center gap-3">
-                              <Avatar className="h-8 w-8">
-                                <AvatarFallback className="bg-secondary text-foreground text-xs font-bold">
-                                  {(user.full_name || "U").charAt(0).toUpperCase()}
-                                </AvatarFallback>
-                              </Avatar>
-                              <p className="text-sm font-semibold text-foreground">{user.full_name || "Unknown"}</p>
+                  <div className="space-y-3">
+                    {users.map((user) => {
+                      const presence = getPresenceStatus(user.user_id);
+                      const statusColor = presence.status === "online" ? "emerald" :
+                        presence.status === "idle" ? "amber" : "gray";
+
+                      return (
+                        <div key={user.id} className={`flex items-center gap-4 p-4 rounded-xl border transition-all ${
+                          presence.status === "online" ? "border-emerald-500/20 bg-emerald-500/5" :
+                          presence.status === "idle" ? "border-amber-500/20 bg-amber-500/5" :
+                          "border-border/40 bg-secondary/10"
+                        }`}>
+                          {/* Avatar */}
+                          <div className="relative">
+                            <Avatar className="h-11 w-11">
+                              <AvatarFallback className="bg-primary/10 text-primary font-bold text-lg">
+                                {(user.full_name || "U").charAt(0).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className={`absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full ring-2 ring-card ${
+                              presence.status === "online" ? "bg-emerald-500 animate-pulse" :
+                              presence.status === "idle" ? "bg-amber-500" : "bg-muted-foreground/30"
+                            }`} />
+                          </div>
+
+                          {/* Info */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="font-bold text-foreground">{user.full_name || "Unknown"}</p>
+                              <Badge variant="secondary" className={`text-[10px] ${
+                                presence.status === "online" ? "bg-emerald-100 text-emerald-700" :
+                                presence.status === "idle" ? "bg-amber-100 text-amber-700" :
+                                ""
+                              }`}>
+                                {presence.label}
+                              </Badge>
                             </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 border-emerald-200/50 gap-1">
-                              <span className="h-2 w-2 rounded-full bg-emerald-500" />Active
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-sm text-muted-foreground">
-                            {new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
-                          </TableCell>
-                          <TableCell>
-                            <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground">
-                              <Eye className="h-4 w-4" />View
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                            <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
+                              {presence.page && (
+                                <span className="flex items-center gap-1">
+                                  <Globe className="h-3 w-3" />
+                                  {presence.page}
+                                </span>
+                              )}
+                              {presence.device && (
+                                <span className="flex items-center gap-1">
+                                  <Monitor className="h-3 w-3" />
+                                  {presence.device}
+                                </span>
+                              )}
+                              {presence.lastSeen && (
+                                <span className="flex items-center gap-1">
+                                  <Clock className="h-3 w-3" />
+                                  {formatDistanceToNow(presence.lastSeen, { addSuffix: true })}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Current page visual */}
+                          {presence.status === "online" && presence.page && (
+                            <div className="hidden lg:flex items-center gap-2 bg-background/80 rounded-lg px-3 py-2 border border-border/50">
+                              <Monitor className="h-4 w-4 text-emerald-500" />
+                              <div>
+                                <p className="text-[10px] text-muted-foreground font-medium">বর্তমান পেজ</p>
+                                <p className="text-xs font-bold text-foreground">{presence.page.replace("/admin/", "").replace("/admin", "Dashboard") || "Dashboard"}</p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="mt-4 p-3 rounded-lg bg-secondary/30 border border-border/30">
+                    <p className="text-[11px] text-muted-foreground">
+                      💡 <strong>লাইভ ট্র্যাকিং:</strong> প্রতি ৩০ সেকেন্ডে অটো-আপডেট হয়। এখানে দেখতে পাচ্ছেন প্রতিটি ইউজার কোন পেজে আছে, কোন ডিভাইস ব্যবহার করছে এবং কখন শেষবার এক্টিভ ছিলো।
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
             )}
 
+            {/* PERFORMANCE */}
             {trackingSubTab === "performance" && (
               <Card className="border-border/40">
                 <CardHeader>
-                  <div className="flex items-center gap-2">
-                    <ShoppingCart className="h-5 w-5 text-muted-foreground" />
-                    <CardTitle className="text-lg font-bold">Order-Based Performance</CardTitle>
+                  <div className="flex items-center justify-between flex-wrap gap-3">
+                    <CardTitle className="text-lg font-bold flex items-center gap-2">
+                      <BarChart3 className="h-5 w-5 text-primary" />
+                      অর্ডার পারফরম্যান্স
+                    </CardTitle>
+                    <Select value={perfDateRange} onValueChange={setPerfDateRange}>
+                      <SelectTrigger className="w-40">
+                        <Calendar className="h-4 w-4 mr-2" />
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {dateFilterOptions.map(opt => (
+                          <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>User</TableHead>
-                        <TableHead><div className="flex items-center gap-1"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />Confirmed</div></TableHead>
-                        <TableHead><div className="flex items-center gap-1"><XCircle className="h-3.5 w-3.5 text-destructive" />Cancelled</div></TableHead>
-                        <TableHead><div className="flex items-center gap-1"><RotateCcw className="h-3.5 w-3.5 text-amber-500" />Returned</div></TableHead>
-                        <TableHead><div className="flex items-center gap-1"><Truck className="h-3.5 w-3.5 text-primary" />Delivered</div></TableHead>
-                        <TableHead>Total</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      <TableRow>
-                        <TableCell colSpan={6} className="text-center text-muted-foreground py-10">
-                          No order activity in selected period
-                        </TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
+                  {perfLoading ? (
+                    <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+                  ) : perfData.length === 0 ? (
+                    <div className="text-center py-10">
+                      <BarChart3 className="h-10 w-10 text-muted-foreground/20 mx-auto mb-3" />
+                      <p className="text-sm text-muted-foreground">এই সময়ে কোনো অর্ডার অ্যাক্টিভিটি নেই</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {/* Summary row */}
+                      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                        {[
+                          { label: "কনফার্মড", value: perfData.reduce((s, p) => s + p.confirmed, 0), icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50" },
+                          { label: "ক্যান্সেলড", value: perfData.reduce((s, p) => s + p.cancelled, 0), icon: XCircle, color: "text-destructive", bg: "bg-destructive/10" },
+                          { label: "রিটার্নড", value: perfData.reduce((s, p) => s + p.returned, 0), icon: RotateCcw, color: "text-amber-600", bg: "bg-amber-50" },
+                          { label: "ডেলিভারড", value: perfData.reduce((s, p) => s + p.delivered, 0), icon: Truck, color: "text-blue-600", bg: "bg-blue-50" },
+                          { label: "মোট", value: perfData.reduce((s, p) => s + p.total, 0), icon: ShoppingCart, color: "text-foreground", bg: "bg-secondary" },
+                        ].map((s, i) => (
+                          <div key={i} className={`${s.bg} rounded-lg p-3 text-center`}>
+                            <s.icon className={`h-4 w-4 ${s.color} mx-auto mb-1`} />
+                            <p className={`text-xl font-bold ${s.color}`}>{s.value}</p>
+                            <p className="text-[10px] text-muted-foreground font-medium">{s.label}</p>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Per-user table */}
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>ইউজার</TableHead>
+                            <TableHead className="text-center"><div className="flex items-center justify-center gap-1"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />কনফার্মড</div></TableHead>
+                            <TableHead className="text-center"><div className="flex items-center justify-center gap-1"><XCircle className="h-3.5 w-3.5 text-destructive" />ক্যান্সেলড</div></TableHead>
+                            <TableHead className="text-center"><div className="flex items-center justify-center gap-1"><RotateCcw className="h-3.5 w-3.5 text-amber-500" />রিটার্নড</div></TableHead>
+                            <TableHead className="text-center"><div className="flex items-center justify-center gap-1"><Truck className="h-3.5 w-3.5 text-blue-500" />ডেলিভারড</div></TableHead>
+                            <TableHead className="text-center"><div className="flex items-center justify-center gap-1"><ShoppingCart className="h-3.5 w-3.5 text-primary" />ইন কুরিয়ার</div></TableHead>
+                            <TableHead className="text-center">মোট</TableHead>
+                            <TableHead className="text-center">সাকসেস রেট</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {perfData.map((p) => {
+                            const successRate = p.total > 0 ? Math.round(((p.delivered + p.confirmed) / p.total) * 100) : 0;
+                            return (
+                              <TableRow key={p.user_id}>
+                                <TableCell>
+                                  <div className="flex items-center gap-2">
+                                    <Avatar className="h-8 w-8">
+                                      <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
+                                        {(p.user_name || "U").charAt(0).toUpperCase()}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <p className="text-sm font-semibold text-foreground">{p.user_name}</p>
+                                  </div>
+                                </TableCell>
+                                <TableCell className="text-center font-bold text-emerald-600">{p.confirmed}</TableCell>
+                                <TableCell className="text-center font-bold text-destructive">{p.cancelled}</TableCell>
+                                <TableCell className="text-center font-bold text-amber-600">{p.returned}</TableCell>
+                                <TableCell className="text-center font-bold text-blue-600">{p.delivered}</TableCell>
+                                <TableCell className="text-center font-bold text-primary">{p.in_courier}</TableCell>
+                                <TableCell className="text-center font-bold text-foreground">{p.total}</TableCell>
+                                <TableCell>
+                                  <div className="flex items-center gap-2">
+                                    <Progress value={successRate} className="h-2 flex-1" />
+                                    <span className="text-xs font-bold text-foreground w-10 text-right">{successRate}%</span>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             )}
           </>
         )}
 
-        {/* ===== ACTIVITY TAB ===== */}
+        {/* ===== LOGIN ACTIVITY TAB ===== */}
         {activeTab === "activity" && (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {[
-                { icon: Shield, label: "আজকের Login", value: 1, bg: "bg-violet-500/10", color: "text-violet-600" },
-                { icon: XCircle, label: "Failed Login", value: 0, bg: "bg-destructive/10", color: "text-destructive" },
-                { icon: AlertCircle, label: "Suspicious", value: 0, bg: "bg-amber-500/10", color: "text-amber-600" },
-              ].map((s, i) => (
-                <Card key={i} className="border-border/40">
-                  <CardContent className="p-5 flex items-center gap-4">
-                    <div className={`p-2.5 rounded-xl ${s.bg}`}><s.icon className={`h-5 w-5 ${s.color}`} /></div>
-                    <div>
-                      <p className="text-2xl font-bold text-foreground">{s.value}</p>
-                      <p className="text-sm text-muted-foreground">{s.label}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-              <Card className="border-border/40 flex items-center justify-center">
-                <CardContent className="p-5">
-                  <Button variant="outline" className="gap-2"><Lock className="h-4 w-4" />Unlock Account</Button>
+              <Card className="border-border/40">
+                <CardContent className="p-5 flex items-center gap-4">
+                  <div className="p-2.5 rounded-xl bg-emerald-500/10"><CheckCircle2 className="h-5 w-5 text-emerald-600" /></div>
+                  <div>
+                    <p className="text-2xl font-bold text-foreground">{successLogins}</p>
+                    <p className="text-sm text-muted-foreground">সফল লগইন</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="border-border/40">
+                <CardContent className="p-5 flex items-center gap-4">
+                  <div className="p-2.5 rounded-xl bg-destructive/10"><XCircle className="h-5 w-5 text-destructive" /></div>
+                  <div>
+                    <p className="text-2xl font-bold text-foreground">{failedLogins}</p>
+                    <p className="text-sm text-muted-foreground">ব্যর্থ লগইন</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="border-border/40">
+                <CardContent className="p-5 flex items-center gap-4">
+                  <div className="p-2.5 rounded-xl bg-blue-500/10"><MapPin className="h-5 w-5 text-blue-600" /></div>
+                  <div>
+                    <p className="text-2xl font-bold text-foreground">{uniqueIPs}</p>
+                    <p className="text-sm text-muted-foreground">ইউনিক IP</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="border-border/40">
+                <CardContent className="p-5 flex items-center gap-4">
+                  <div className="p-2.5 rounded-xl bg-amber-500/10"><AlertCircle className="h-5 w-5 text-amber-600" /></div>
+                  <div>
+                    <p className="text-2xl font-bold text-foreground">{loginLogs.length}</p>
+                    <p className="text-sm text-muted-foreground">মোট অ্যাটেম্পট</p>
+                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -690,53 +885,121 @@ const AdminUsers = () => {
                   <Monitor className="h-5 w-5 text-muted-foreground" />
                   <CardTitle className="text-lg font-bold">Login Activity Log</CardTitle>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Select defaultValue="all">
-                    <SelectTrigger className="w-36"><SelectValue placeholder="All Attempts" /></SelectTrigger>
+                <div className="flex items-center gap-3 flex-wrap">
+                  <Select value={activityDateRange} onValueChange={setActivityDateRange}>
+                    <SelectTrigger className="w-36">
+                      <Calendar className="h-4 w-4 mr-2" />
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Attempts</SelectItem>
-                      <SelectItem value="success">Success</SelectItem>
-                      <SelectItem value="failed">Failed</SelectItem>
+                      {dateFilterOptions.map(opt => (
+                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
-                  <div className="flex-1 flex items-center gap-2 bg-secondary rounded-lg px-3 py-2 border border-border/50">
+                  <Select value={activityStatus} onValueChange={setActivityStatus}>
+                    <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">সব অ্যাটেম্পট</SelectItem>
+                      <SelectItem value="success">সফল</SelectItem>
+                      <SelectItem value="failed">ব্যর্থ</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <div className="flex-1 flex items-center gap-2 bg-secondary rounded-lg px-3 py-2 border border-border/50 min-w-[200px]">
                     <Search className="h-4 w-4 text-muted-foreground" />
-                    <input type="text" placeholder="Search by email..." className="bg-transparent text-sm outline-none flex-1 text-foreground placeholder:text-muted-foreground" />
+                    <input
+                      type="text"
+                      placeholder="Email দিয়ে সার্চ..."
+                      value={activitySearch}
+                      onChange={(e) => setActivitySearch(e.target.value)}
+                      className="bg-transparent text-sm outline-none flex-1 text-foreground placeholder:text-muted-foreground"
+                    />
                   </div>
-                  <Button variant="outline" className="gap-2"><RefreshCw className="h-4 w-4" />Refresh</Button>
+                  <Button variant="outline" className="gap-2" onClick={() => refetchActivity()}>
+                    <RefreshCw className="h-4 w-4" />Refresh
+                  </Button>
                 </div>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>সময়</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Device</TableHead>
-                      <TableHead>IP</TableHead>
-                      <TableHead>Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    <TableRow>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short" })} {new Date().toLocaleTimeString("en-GB")}
-                      </TableCell>
-                      <TableCell className="text-sm">user@example.com</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                          <Monitor className="h-4 w-4" />Chrome/Windows
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">—</TableCell>
-                      <TableCell>
-                        <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 border-emerald-200/50 gap-1">
-                          <span className="h-2 w-2 rounded-full bg-emerald-500" />Success
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
+                {activityLoading ? (
+                  <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+                ) : loginLogs.length === 0 ? (
+                  <div className="text-center py-10">
+                    <Clock className="h-10 w-10 text-muted-foreground/20 mx-auto mb-3" />
+                    <p className="text-sm text-muted-foreground">এই সময়ে কোনো লগইন অ্যাক্টিভিটি নেই</p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>সময়</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>ডিভাইস</TableHead>
+                        <TableHead>ব্রাউজার / OS</TableHead>
+                        <TableHead>IP</TableHead>
+                        <TableHead>স্ট্যাটাস</TableHead>
+                        <TableHead>অ্যাকশন</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {loginLogs.map((log: any) => (
+                        <TableRow key={log.id}>
+                          <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
+                            {new Date(log.created_at).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })}{" "}
+                            {new Date(log.created_at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
+                          </TableCell>
+                          <TableCell className="text-sm font-medium text-foreground">{log.email || "—"}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                              {log.device_type === "mobile" ? <Smartphone className="h-4 w-4" /> :
+                               log.device_type === "tablet" ? <Smartphone className="h-4 w-4" /> :
+                               <Laptop className="h-4 w-4" />}
+                              {log.device_type || "unknown"}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {log.browser || "—"} / {log.os || "—"}
+                          </TableCell>
+                          <TableCell className="text-sm font-mono text-muted-foreground">
+                            {log.ip_address || "—"}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="secondary" className={`gap-1 ${
+                              log.status === "success"
+                                ? "bg-emerald-500/10 text-emerald-600 border-emerald-200/50"
+                                : "bg-destructive/10 text-destructive border-destructive/20"
+                            }`}>
+                              <span className={`h-2 w-2 rounded-full ${
+                                log.status === "success" ? "bg-emerald-500" : "bg-destructive"
+                              }`} />
+                              {log.status === "success" ? "সফল" : "ব্যর্থ"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="gap-1 text-xs text-destructive hover:text-destructive"
+                              onClick={async () => {
+                                // Block IP
+                                if (log.ip_address) {
+                                  const { error } = await supabase
+                                    .from("blocked_ips")
+                                    .insert({ ip_address: log.ip_address, reason: "Blocked from login activity" });
+                                  if (error) toast.error(error.message);
+                                  else toast.success(`IP ${log.ip_address} ব্লক করা হয়েছে`);
+                                }
+                              }}
+                            >
+                              <Ban className="h-3.5 w-3.5" />
+                              Block IP
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
               </CardContent>
             </Card>
           </>
