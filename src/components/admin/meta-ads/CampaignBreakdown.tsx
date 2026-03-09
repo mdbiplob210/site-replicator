@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 
 interface Props {
   dateRange: string;
+  adAccountId?: string;
 }
 
 const statusBadge = (s: string) => {
