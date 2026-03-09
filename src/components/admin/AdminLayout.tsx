@@ -156,7 +156,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
                 {notifOpen && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setNotifOpen(false)} />
-                    <div className="absolute right-0 top-12 z-50 w-80 bg-card rounded-2xl border border-border shadow-2xl overflow-hidden">
+                    <div className="absolute right-0 top-10 sm:top-12 z-50 w-72 sm:w-80 bg-card rounded-2xl border border-border shadow-2xl overflow-hidden">
                       <div className="flex items-center justify-between px-4 py-3 border-b border-border">
                         <h3 className="text-sm font-bold text-foreground">নোটিফিকেশন</h3>
                         {unreadCount > 0 && (
