@@ -14,6 +14,7 @@ export function useSiteSettings() {
       data?.forEach((r: any) => { map[r.key] = r.value; });
       return map;
     },
+    staleTime: 10 * 60 * 1000, // Settings rarely change - 10 min cache
   });
 }
 

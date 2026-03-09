@@ -1,57 +1,86 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedAdminRoute } from "@/components/admin/ProtectedAdminRoute";
-import Landing from "./pages/Landing";
-import Login from "./pages/Login";
-import NotFound from "./pages/NotFound";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminUsers from "./pages/admin/AdminUsers";
-import AdminRoles from "./pages/admin/AdminRoles";
-import AdminSettings from "./pages/admin/AdminSettings";
-
-import AdminOrders from "./pages/admin/AdminOrders";
-import AdminComingSoon from "./pages/admin/AdminComingSoon";
-import AdminBackup from "./pages/admin/AdminBackup";
-import AdminAutomation from "./pages/admin/AdminAutomation";
-import AdminProducts from "./pages/admin/AdminProducts";
-import AdminPlaceholder from "./pages/admin/AdminPlaceholder";
-import AdminReports from "./pages/admin/AdminReports";
-import AdminFinance from "./pages/admin/AdminFinance";
-import AdminPlanning from "./pages/admin/AdminPlanning";
-import AdminTasks from "./pages/admin/AdminTasks";
-import AdminAnalytics from "./pages/admin/AdminAnalytics";
-import AdminMetaAds from "./pages/admin/AdminMetaAds";
-import AdminApiKeys from "./pages/admin/AdminApiKeys";
-import AdminCourier from "./pages/admin/AdminCourier";
-
-import AdminBackfillOrderItems from "./pages/admin/AdminBackfillOrderItems";
-import AdminWebsiteSettings from "./pages/admin/AdminWebsiteSettings";
-import AdminMainTemplate from "./pages/admin/AdminMainTemplate";
-import AdminCheckoutTemplate from "./pages/admin/AdminCheckoutTemplate";
-import AdminProductTemplate from "./pages/admin/AdminProductTemplate";
-import AdminCategoryTemplate from "./pages/admin/AdminCategoryTemplate";
-import AdminThankYouTemplate from "./pages/admin/AdminThankYouTemplate";
-import AdminLandingPages from "./pages/admin/AdminLandingPages";
-import AdminLandingPageAnalytics from "./pages/admin/AdminLandingPageAnalytics";
-import AdminPayment from "./pages/admin/AdminPayment";
-import AdminInvoices from "./pages/admin/AdminInvoices";
-import AdminPages from "./pages/admin/AdminPages";
-import LandingPageView from "./pages/LandingPageView";
-import LandingPageCheckout from "./pages/LandingPageCheckout";
-import StorePage from "./pages/store/StorePage";
-import ProductDetail from "./pages/store/ProductDetail";
-import CheckoutPage from "./pages/store/CheckoutPage";
-import OrderSuccess from "./pages/store/OrderSuccess";
 import { TrackingInitializer } from "./components/TrackingInitializer";
 
-const queryClient = new QueryClient();
+// Critical public pages - eagerly loaded
+import StorePage from "./pages/store/StorePage";
+
+// Lazy-loaded public pages
+const ProductDetail = lazy(() => import("./pages/store/ProductDetail"));
+const CheckoutPage = lazy(() => import("./pages/store/CheckoutPage"));
+const OrderSuccess = lazy(() => import("./pages/store/OrderSuccess"));
+const Login = lazy(() => import("./pages/Login"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const LandingPageView = lazy(() => import("./pages/LandingPageView"));
+const LandingPageCheckout = lazy(() => import("./pages/LandingPageCheckout"));
+const Landing = lazy(() => import("./pages/Landing"));
+
+// Lazy-loaded admin pages
+const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
+const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
+const AdminRoles = lazy(() => import("./pages/admin/AdminRoles"));
+const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
+const AdminOrders = lazy(() => import("./pages/admin/AdminOrders"));
+const AdminComingSoon = lazy(() => import("./pages/admin/AdminComingSoon"));
+const AdminBackup = lazy(() => import("./pages/admin/AdminBackup"));
+const AdminAutomation = lazy(() => import("./pages/admin/AdminAutomation"));
+const AdminProducts = lazy(() => import("./pages/admin/AdminProducts"));
+const AdminPlaceholder = lazy(() => import("./pages/admin/AdminPlaceholder"));
+const AdminReports = lazy(() => import("./pages/admin/AdminReports"));
+const AdminFinance = lazy(() => import("./pages/admin/AdminFinance"));
+const AdminPlanning = lazy(() => import("./pages/admin/AdminPlanning"));
+const AdminTasks = lazy(() => import("./pages/admin/AdminTasks"));
+const AdminAnalytics = lazy(() => import("./pages/admin/AdminAnalytics"));
+const AdminMetaAds = lazy(() => import("./pages/admin/AdminMetaAds"));
+const AdminApiKeys = lazy(() => import("./pages/admin/AdminApiKeys"));
+const AdminCourier = lazy(() => import("./pages/admin/AdminCourier"));
+const AdminBackfillOrderItems = lazy(() => import("./pages/admin/AdminBackfillOrderItems"));
+const AdminWebsiteSettings = lazy(() => import("./pages/admin/AdminWebsiteSettings"));
+const AdminMainTemplate = lazy(() => import("./pages/admin/AdminMainTemplate"));
+const AdminCheckoutTemplate = lazy(() => import("./pages/admin/AdminCheckoutTemplate"));
+const AdminProductTemplate = lazy(() => import("./pages/admin/AdminProductTemplate"));
+const AdminCategoryTemplate = lazy(() => import("./pages/admin/AdminCategoryTemplate"));
+const AdminThankYouTemplate = lazy(() => import("./pages/admin/AdminThankYouTemplate"));
+const AdminLandingPages = lazy(() => import("./pages/admin/AdminLandingPages"));
+const AdminLandingPageAnalytics = lazy(() => import("./pages/admin/AdminLandingPageAnalytics"));
+const AdminPayment = lazy(() => import("./pages/admin/AdminPayment"));
+const AdminInvoices = lazy(() => import("./pages/admin/AdminInvoices"));
+const AdminPages = lazy(() => import("./pages/admin/AdminPages"));
+
+// Minimal loading fallback
+const PageLoader = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+  </div>
+);
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes - reduce refetches
+      gcTime: 10 * 60 * 1000, // 10 minutes garbage collection
+      refetchOnWindowFocus: false, // Don't refetch on tab switch
+      retry: 1, // Only 1 retry on failure
+    },
+  },
+});
 
 const P = (title: string, desc?: string) => (
   <ProtectedAdminRoute>
-    <AdminPlaceholder title={title} description={desc} />
+    <Suspense fallback={<PageLoader />}>
+      <AdminPlaceholder title={title} description={desc} />
+    </Suspense>
+  </ProtectedAdminRoute>
+);
+
+const Admin = ({ children }: { children: React.ReactNode }) => (
+  <ProtectedAdminRoute>
+    <Suspense fallback={<PageLoader />}>{children}</Suspense>
   </ProtectedAdminRoute>
 );
 
@@ -62,52 +91,54 @@ const App = () => (
       <Sonner />
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <TrackingInitializer />
-        <Routes>
-          <Route path="/" element={<StorePage />} />
-          <Route path="/product/:id" element={<ProductDetail />} />
-          <Route path="/checkout" element={<CheckoutPage />} />
-          <Route path="/order-success" element={<OrderSuccess />} />
-          <Route path="/store" element={<StorePage />} />
-          <Route path="/store/product/:id" element={<ProductDetail />} />
-          <Route path="/store/checkout" element={<CheckoutPage />} />
-          <Route path="/store/order-success" element={<OrderSuccess />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/admin" element={<ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>} />
-          <Route path="/admin/orders" element={<ProtectedAdminRoute><AdminOrders /></ProtectedAdminRoute>} />
-          <Route path="/admin/users" element={<ProtectedAdminRoute><AdminUsers /></ProtectedAdminRoute>} />
-          <Route path="/admin/roles" element={<ProtectedAdminRoute><AdminRoles /></ProtectedAdminRoute>} />
-          <Route path="/admin/settings" element={<ProtectedAdminRoute><AdminSettings /></ProtectedAdminRoute>} />
-          <Route path="/admin/products" element={<ProtectedAdminRoute><AdminProducts /></ProtectedAdminRoute>} />
-          <Route path="/admin/website" element={<ProtectedAdminRoute><AdminMainTemplate /></ProtectedAdminRoute>} />
-          <Route path="/admin/website/main-template" element={<ProtectedAdminRoute><AdminMainTemplate /></ProtectedAdminRoute>} />
-          <Route path="/admin/website/checkout-template" element={<ProtectedAdminRoute><AdminCheckoutTemplate /></ProtectedAdminRoute>} />
-          <Route path="/admin/website/product-template" element={<ProtectedAdminRoute><AdminProductTemplate /></ProtectedAdminRoute>} />
-          <Route path="/admin/website/category-template" element={<ProtectedAdminRoute><AdminCategoryTemplate /></ProtectedAdminRoute>} />
-          <Route path="/admin/website/thank-you" element={<ProtectedAdminRoute><AdminThankYouTemplate /></ProtectedAdminRoute>} />
-          <Route path="/admin/website/landing-pages" element={<ProtectedAdminRoute><AdminLandingPages /></ProtectedAdminRoute>} />
-          <Route path="/admin/website/landing-pages/analytics" element={<ProtectedAdminRoute><AdminLandingPageAnalytics /></ProtectedAdminRoute>} />
-          <Route path="/admin/website/payment" element={<ProtectedAdminRoute><AdminPayment /></ProtectedAdminRoute>} />
-          <Route path="/admin/website/pages" element={<ProtectedAdminRoute><AdminPages /></ProtectedAdminRoute>} />
-          <Route path="/admin/website/settings" element={<ProtectedAdminRoute><AdminWebsiteSettings /></ProtectedAdminRoute>} />
-          <Route path="/admin/reports" element={<ProtectedAdminRoute><AdminReports /></ProtectedAdminRoute>} />
-          <Route path="/admin/finance" element={<ProtectedAdminRoute><AdminFinance /></ProtectedAdminRoute>} />
-          <Route path="/admin/planning" element={<ProtectedAdminRoute><AdminPlanning /></ProtectedAdminRoute>} />
-          <Route path="/admin/tasks" element={<ProtectedAdminRoute><AdminTasks /></ProtectedAdminRoute>} />
-          <Route path="/admin/analytics" element={<ProtectedAdminRoute><AdminAnalytics /></ProtectedAdminRoute>} />
-          <Route path="/admin/meta-ads" element={<ProtectedAdminRoute><AdminMetaAds /></ProtectedAdminRoute>} />
-          <Route path="/admin/orders/backfill-items" element={<ProtectedAdminRoute><AdminBackfillOrderItems /></ProtectedAdminRoute>} />
-          <Route path="/admin/api-keys" element={<ProtectedAdminRoute><AdminApiKeys /></ProtectedAdminRoute>} />
-          <Route path="/admin/courier" element={<ProtectedAdminRoute><AdminCourier /></ProtectedAdminRoute>} />
-          <Route path="/admin/automation" element={<ProtectedAdminRoute><AdminAutomation /></ProtectedAdminRoute>} />
-          <Route path="/admin/backup" element={<ProtectedAdminRoute><AdminBackup /></ProtectedAdminRoute>} />
-          <Route path="/admin/invoices" element={<ProtectedAdminRoute><AdminInvoices /></ProtectedAdminRoute>} />
-          <Route path="/admin/support" element={P("Support", "Customer support")} />
-          <Route path="/admin/coming-soon" element={<ProtectedAdminRoute><AdminComingSoon /></ProtectedAdminRoute>} />
-          <Route path="/admin/plan" element={P("Plan", "Subscription management")} />
-          <Route path="/lp/:slug" element={<LandingPageView />} />
-          <Route path="/lp/:slug/checkout" element={<LandingPageCheckout />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path="/" element={<StorePage />} />
+            <Route path="/product/:id" element={<ProductDetail />} />
+            <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/order-success" element={<OrderSuccess />} />
+            <Route path="/store" element={<StorePage />} />
+            <Route path="/store/product/:id" element={<ProductDetail />} />
+            <Route path="/store/checkout" element={<CheckoutPage />} />
+            <Route path="/store/order-success" element={<OrderSuccess />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/admin" element={<Admin><AdminDashboard /></Admin>} />
+            <Route path="/admin/orders" element={<Admin><AdminOrders /></Admin>} />
+            <Route path="/admin/users" element={<Admin><AdminUsers /></Admin>} />
+            <Route path="/admin/roles" element={<Admin><AdminRoles /></Admin>} />
+            <Route path="/admin/settings" element={<Admin><AdminSettings /></Admin>} />
+            <Route path="/admin/products" element={<Admin><AdminProducts /></Admin>} />
+            <Route path="/admin/website" element={<Admin><AdminMainTemplate /></Admin>} />
+            <Route path="/admin/website/main-template" element={<Admin><AdminMainTemplate /></Admin>} />
+            <Route path="/admin/website/checkout-template" element={<Admin><AdminCheckoutTemplate /></Admin>} />
+            <Route path="/admin/website/product-template" element={<Admin><AdminProductTemplate /></Admin>} />
+            <Route path="/admin/website/category-template" element={<Admin><AdminCategoryTemplate /></Admin>} />
+            <Route path="/admin/website/thank-you" element={<Admin><AdminThankYouTemplate /></Admin>} />
+            <Route path="/admin/website/landing-pages" element={<Admin><AdminLandingPages /></Admin>} />
+            <Route path="/admin/website/landing-pages/analytics" element={<Admin><AdminLandingPageAnalytics /></Admin>} />
+            <Route path="/admin/website/payment" element={<Admin><AdminPayment /></Admin>} />
+            <Route path="/admin/website/pages" element={<Admin><AdminPages /></Admin>} />
+            <Route path="/admin/website/settings" element={<Admin><AdminWebsiteSettings /></Admin>} />
+            <Route path="/admin/reports" element={<Admin><AdminReports /></Admin>} />
+            <Route path="/admin/finance" element={<Admin><AdminFinance /></Admin>} />
+            <Route path="/admin/planning" element={<Admin><AdminPlanning /></Admin>} />
+            <Route path="/admin/tasks" element={<Admin><AdminTasks /></Admin>} />
+            <Route path="/admin/analytics" element={<Admin><AdminAnalytics /></Admin>} />
+            <Route path="/admin/meta-ads" element={<Admin><AdminMetaAds /></Admin>} />
+            <Route path="/admin/orders/backfill-items" element={<Admin><AdminBackfillOrderItems /></Admin>} />
+            <Route path="/admin/api-keys" element={<Admin><AdminApiKeys /></Admin>} />
+            <Route path="/admin/courier" element={<Admin><AdminCourier /></Admin>} />
+            <Route path="/admin/automation" element={<Admin><AdminAutomation /></Admin>} />
+            <Route path="/admin/backup" element={<Admin><AdminBackup /></Admin>} />
+            <Route path="/admin/invoices" element={<Admin><AdminInvoices /></Admin>} />
+            <Route path="/admin/support" element={P("Support", "Customer support")} />
+            <Route path="/admin/coming-soon" element={<Admin><AdminComingSoon /></Admin>} />
+            <Route path="/admin/plan" element={P("Plan", "Subscription management")} />
+            <Route path="/lp/:slug" element={<LandingPageView />} />
+            <Route path="/lp/:slug/checkout" element={<LandingPageCheckout />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
       </BrowserRouter>
     </AuthProvider>
   </QueryClientProvider>

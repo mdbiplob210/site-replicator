@@ -13,6 +13,7 @@ export function useBanners() {
       if (error) throw error;
       return data || [];
     },
+    staleTime: 5 * 60 * 1000,
   });
 }
 
@@ -28,6 +29,7 @@ export function useActiveBanners() {
       if (error) throw error;
       return data || [];
     },
+    staleTime: 5 * 60 * 1000,
   });
 }
 
