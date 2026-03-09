@@ -144,31 +144,51 @@ export function useDeleteIncompleteOrder() {
   });
 }
 
+export interface ConvertPayload {
+  order: IncompleteOrder;
+  overrides?: {
+    customer_name?: string;
+    customer_phone?: string | null;
+    customer_address?: string | null;
+    delivery_charge?: number;
+    discount?: number;
+    notes?: string | null;
+  };
+}
+
 export function useConvertIncompleteToOrder() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (order: IncompleteOrder) => {
-      // Create real order
+    mutationFn: async ({ order, overrides }: ConvertPayload) => {
+      const name = overrides?.customer_name ?? order.customer_name;
+      const phone = overrides?.customer_phone !== undefined ? overrides.customer_phone : order.customer_phone;
+      const address = overrides?.customer_address !== undefined ? overrides.customer_address : order.customer_address;
+      const delCharge = overrides?.delivery_charge ?? order.delivery_charge;
+      const disc = overrides?.discount ?? order.discount;
+      const productTotal = order.unit_price * order.quantity;
+      const total = productTotal + delCharge - disc;
+      const noteText = overrides?.notes !== undefined ? overrides.notes : order.notes;
+
       const { data: seqNum } = await supabase.rpc("generate_order_number");
       const orderNumber = String(seqNum || Date.now());
       const { error: orderError } = await supabase.from("orders").insert({
         order_number: orderNumber,
-        customer_name: order.customer_name,
-        customer_phone: order.customer_phone,
-        customer_address: order.customer_address,
-        product_cost: order.unit_price * order.quantity,
-        delivery_charge: order.delivery_charge,
-        discount: order.discount,
-        total_amount: order.total_amount,
-        notes: order.notes || `[Converted from incomplete] [LP: ${order.landing_page_slug || "unknown"}]`,
+        customer_name: name,
+        customer_phone: phone,
+        customer_address: address,
+        product_cost: productTotal,
+        delivery_charge: delCharge,
+        discount: disc,
+        total_amount: total,
+        notes: noteText || `[Converted from incomplete] [LP: ${order.landing_page_slug || "unknown"}]`,
         status: "processing" as any,
         client_ip: order.client_ip,
         user_agent: order.user_agent,
         device_info: order.device_info,
+        source: "Failed Order",
       });
       if (orderError) throw orderError;
 
-      // Mark incomplete as converted
       const { error: updateError } = await supabase
         .from("incomplete_orders" as any)
         .update({ status: "converted", updated_at: new Date().toISOString() } as any)
