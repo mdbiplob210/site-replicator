@@ -64,7 +64,7 @@ const ProductDetail = () => {
       if (!canShow || exitShownRef.current || checkoutOpen) return;
       exitShownRef.current = true;
       setShowDiscountBanner(true);
-      trackCustomEvent('ExitIntentShown', { page: 'product', product_id: id });
+      trackCustomEvent('ExitIntentShown', { page: 'product', product_id: slug });
     };
     const handleMouseOut = (e: MouseEvent) => { if (e.clientY <= 0 && !e.relatedTarget) triggerExit(); };
     const handleVisibility = () => { if (document.visibilityState === 'hidden') triggerExit(); };
