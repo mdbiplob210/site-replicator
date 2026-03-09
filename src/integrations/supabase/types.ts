@@ -1295,6 +1295,7 @@ export type Database = {
           purchase_price: number
           selling_price: number
           short_description: string | null
+          slug: string | null
           status: string
           stock_quantity: number
           updated_at: string
@@ -1317,6 +1318,7 @@ export type Database = {
           purchase_price?: number
           selling_price?: number
           short_description?: string | null
+          slug?: string | null
           status?: string
           stock_quantity?: number
           updated_at?: string
@@ -1339,6 +1341,7 @@ export type Database = {
           purchase_price?: number
           selling_price?: number
           short_description?: string | null
+          slug?: string | null
           status?: string
           stock_quantity?: number
           updated_at?: string
@@ -1524,6 +1527,7 @@ export type Database = {
           product_code: string | null
           selling_price: number | null
           short_description: string | null
+          slug: string | null
           status: string | null
           stock_quantity: number | null
           updated_at: string | null
@@ -1543,6 +1547,7 @@ export type Database = {
           product_code?: string | null
           selling_price?: number | null
           short_description?: string | null
+          slug?: string | null
           status?: string | null
           stock_quantity?: number | null
           updated_at?: string | null
@@ -1562,6 +1567,7 @@ export type Database = {
           product_code?: string | null
           selling_price?: number | null
           short_description?: string | null
+          slug?: string | null
           status?: string | null
           stock_quantity?: number | null
           updated_at?: string | null
