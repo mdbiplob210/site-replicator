@@ -155,8 +155,10 @@ const AdminDashboard = () => {
                 </Card>
               ))}
             </div>
+            )}
 
             {/* Delivery Status Cards */}
+            {canSeeOrders && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {deliveryCards.map((stat) => (
                 <Card key={stat.label} className="p-4 border-border/30 card-hover group overflow-hidden relative">
