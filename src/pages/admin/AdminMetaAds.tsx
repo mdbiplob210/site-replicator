@@ -344,6 +344,39 @@ export default function AdminMetaAds() {
                 </SelectContent>
               </Select>
             </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Ad Account</label>
+              <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
+                <SelectTrigger className="w-56 mt-1.5">
+                  <SelectValue placeholder={accountsLoading ? "Loading..." : "সব অ্যাকাউন্ট"} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">সব অ্যাকাউন্ট</SelectItem>
+                  {adAccounts.map((ac) => (
+                    <SelectItem key={ac.id} value={ac.id}>
+                      {ac.name} ({ac.currency})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-end">
+              <Button
+                size="sm"
+                variant="default"
+                className="gap-1.5"
+                onClick={() => {
+                  const ids = selectedAccountId && selectedAccountId !== "all"
+                    ? [selectedAccountId]
+                    : adAccounts.map(a => a.id);
+                  syncMutation.mutate({ dateRange, adAccountIds: ids.length > 0 ? ids : undefined });
+                }}
+                disabled={syncMutation.isPending}
+              >
+                {syncMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+                {syncMutation.isPending ? "Syncing..." : "Sync All"}
+              </Button>
+            </div>
           </div>
         </div>
 
