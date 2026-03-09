@@ -6,12 +6,29 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+async function getSettingValue(supabaseAdmin: any, key: string, envFallback?: string): Promise<string> {
+  try {
+    const { data } = await supabaseAdmin
+      .from("site_settings")
+      .select("value")
+      .eq("key", key)
+      .maybeSingle();
+    if (data?.value) return data.value;
+  } catch (_) {}
+  return envFallback || "";
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
     const body = await req.json();
     const {
       pixel_id,
@@ -31,8 +48,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Validate pixel_id against server-side allowlist
-    const allowedPixelId = Deno.env.get("FB_PIXEL_ID");
+    // Validate pixel_id against allowlist (DB first, then env)
+    const allowedPixelId = await getSettingValue(supabaseAdmin, "fb_pixel_id", Deno.env.get("FB_PIXEL_ID"));
     if (allowedPixelId && pixel_id !== allowedPixelId) {
       return new Response(
         JSON.stringify({ error: "Invalid pixel_id" }),
@@ -40,7 +57,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    const accessToken = Deno.env.get("FB_ACCESS_TOKEN");
+    // Get access token from DB first, fallback to env secret
+    const accessToken = await getSettingValue(supabaseAdmin, "fb_access_token", Deno.env.get("FB_ACCESS_TOKEN"));
     if (!accessToken) {
       return new Response(
         JSON.stringify({ error: "FB_ACCESS_TOKEN not configured" }),
