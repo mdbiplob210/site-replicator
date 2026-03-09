@@ -78,19 +78,51 @@ Deno.serve(async (req) => {
 
     let deviceInfo = "Unknown Device";
     if (userAgent) {
-      const isMobile = /Mobile|Android|iPhone|iPad/i.test(userAgent);
-      const isTablet = /iPad|Tablet/i.test(userAgent);
+      const isMobile = /Mobile|Android|iPhone|iPod/i.test(userAgent);
+      const isTablet = /iPad|Tablet/i.test(userAgent) || (/Android/i.test(userAgent) && !/Mobile/i.test(userAgent));
+      const device = isTablet ? "Tablet" : isMobile ? "Mobile" : "Desktop";
+
       let os = "Unknown OS";
-      if (/Android/i.test(userAgent)) os = "Android";
-      else if (/iPhone|iPad|Mac/i.test(userAgent)) os = "iOS/macOS";
-      else if (/Windows/i.test(userAgent)) os = "Windows";
-      else if (/Linux/i.test(userAgent)) os = "Linux";
+      if (/Android/i.test(userAgent)) {
+        const ver = userAgent.match(/Android\s([\d.]+)/)?.[1] || "";
+        os = `Android ${ver}`.trim();
+      } else if (/iPhone|iPad|iPod/i.test(userAgent)) {
+        const ver = userAgent.match(/OS\s([\d_]+)/)?.[1]?.replace(/_/g, ".") || "";
+        os = `iOS ${ver}`.trim();
+      } else if (/Mac OS X/i.test(userAgent)) {
+        const ver = userAgent.match(/Mac OS X\s([\d_.]+)/)?.[1]?.replace(/_/g, ".") || "";
+        os = `macOS ${ver}`.trim();
+      } else if (/Windows/i.test(userAgent)) {
+        const ver = userAgent.match(/Windows NT\s([\d.]+)/)?.[1] || "";
+        const winMap: Record<string, string> = { "10.0": "10/11", "6.3": "8.1", "6.2": "8", "6.1": "7" };
+        os = `Windows ${winMap[ver] || ver}`.trim();
+      } else if (/Linux/i.test(userAgent)) os = "Linux";
+      else if (/CrOS/i.test(userAgent)) os = "Chrome OS";
+
       let browser = "Unknown Browser";
-      if (/Chrome/i.test(userAgent) && !/Edg/i.test(userAgent)) browser = "Chrome";
+      if (/Edg\//i.test(userAgent)) browser = "Edge";
+      else if (/OPR|Opera/i.test(userAgent)) browser = "Opera";
+      else if (/SamsungBrowser/i.test(userAgent)) browser = "Samsung Browser";
+      else if (/UCBrowser/i.test(userAgent)) browser = "UC Browser";
       else if (/Firefox/i.test(userAgent)) browser = "Firefox";
+      else if (/Chrome/i.test(userAgent) && !/Edg/i.test(userAgent)) browser = "Chrome";
       else if (/Safari/i.test(userAgent) && !/Chrome/i.test(userAgent)) browser = "Safari";
-      else if (/Edg/i.test(userAgent)) browser = "Edge";
-      deviceInfo = `${isMobile ? (isTablet ? "Tablet" : "Mobile") : "Desktop"} | ${os} | ${browser}`;
+
+      // Device model detection
+      let model = "";
+      if (/iPhone/i.test(userAgent)) model = "iPhone";
+      else if (/iPad/i.test(userAgent)) model = "iPad";
+      else if (/SM-[A-Z]\d+/i.test(userAgent)) model = userAgent.match(/SM-[A-Z]\d+/i)?.[0] || "Samsung";
+      else if (/Pixel/i.test(userAgent)) model = "Google Pixel";
+      else if (/Xiaomi|Redmi|POCO/i.test(userAgent)) model = userAgent.match(/Xiaomi|Redmi\s?\w+|POCO\s?\w+/i)?.[0] || "Xiaomi";
+      else if (/OPPO|CPH/i.test(userAgent)) model = "OPPO";
+      else if (/vivo/i.test(userAgent)) model = "Vivo";
+      else if (/realme/i.test(userAgent)) model = "Realme";
+      else if (/OnePlus/i.test(userAgent)) model = "OnePlus";
+
+      const parts = [device, os, browser];
+      if (model) parts.push(model);
+      deviceInfo = parts.join(" | ");
     }
 
     const totalProductCost = unit_price * quantity;
@@ -287,6 +319,7 @@ Deno.serve(async (req) => {
         total_amount: totalAmount,
         notes: notes ? `[LP: ${landing_page_slug || "unknown"}] ${notes}` : `[LP: ${landing_page_slug || "unknown"}]`,
         status: "processing",
+        source: "landing_page",
         client_ip: clientIp,
         user_agent: userAgent,
         device_info: deviceInfo,
