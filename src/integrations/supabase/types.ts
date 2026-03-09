@@ -1378,6 +1378,60 @@ export type Database = {
         }
         Relationships: []
       }
+      tasks: {
+        Row: {
+          assigned_to: string | null
+          completed_at: string | null
+          created_at: string
+          created_by: string
+          deadline: string | null
+          deleted_at: string | null
+          description: string | null
+          frequency: string
+          id: string
+          priority: string
+          status: string
+          task_date: string | null
+          task_type: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by: string
+          deadline?: string | null
+          deleted_at?: string | null
+          description?: string | null
+          frequency?: string
+          id?: string
+          priority?: string
+          status?: string
+          task_date?: string | null
+          task_type?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string
+          deadline?: string | null
+          deleted_at?: string | null
+          description?: string | null
+          frequency?: string
+          id?: string
+          priority?: string
+          status?: string
+          task_date?: string | null
+          task_type?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_presence: {
         Row: {
           current_page: string | null
