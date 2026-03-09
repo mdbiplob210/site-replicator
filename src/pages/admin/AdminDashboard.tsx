@@ -393,6 +393,7 @@ const AdminDashboard = () => {
                     </div>
                   </div>
                 </Card>
+              ))}
             </div>
           </>
         )}
