@@ -220,6 +220,17 @@ export function useDashboardData(filter: TimeFilter) {
   const investmentTotal = finance
     .filter((f) => f.type === "investment_in").reduce((s, f) => s + Number(f.amount), 0)
     - finance.filter((f) => f.type === "investment_out").reduce((s, f) => s + Number(f.amount), 0);
+  const totalIncome = finance
+    .filter((f) => f.type === "income")
+    .reduce((s, f) => s + Number(f.amount), 0);
+  const totalExpense = finance
+    .filter((f) => f.type === "expense")
+    .reduce((s, f) => s + Number(f.amount), 0);
+  const totalProductPurchase = finance
+    .filter((f) => f.type === "product_purchase")
+    .reduce((s, f) => s + Number(f.amount), 0);
+  const moneyIn = totalIncome + finance.filter((f) => f.type === "loan_in").reduce((s, f) => s + Number(f.amount), 0) + finance.filter((f) => f.type === "investment_in").reduce((s, f) => s + Number(f.amount), 0);
+  const moneyOut = totalExpense + totalProductPurchase + finance.filter((f) => f.type === "loan_out").reduce((s, f) => s + Number(f.amount), 0) + finance.filter((f) => f.type === "investment_out").reduce((s, f) => s + Number(f.amount), 0);
 
   // Stock value
   const stockValue = products.reduce(
