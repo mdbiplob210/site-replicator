@@ -304,7 +304,8 @@ Deno.serve(async (req) => {
     }
 
     // ═══ All checks passed - create order ═══
-    const orderNumber = `LP-${Date.now().toString(36).toUpperCase()}`;
+    const { data: seqNum } = await supabase.rpc("generate_order_number");
+    const orderNumber = String(seqNum || Date.now());
 
     const { data: order, error: orderError } = await supabase
       .from("orders")

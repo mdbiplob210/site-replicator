@@ -195,17 +195,8 @@ Deno.serve(async (req) => {
           }
 
           // Generate order number
-          const { data: lastOrder } = await supabase
-            .from('orders')
-            .select('order_number')
-            .order('created_at', { ascending: false })
-            .limit(1)
-
-          let nextNum = 'ORD-00001'
-          if (lastOrder && lastOrder.length > 0) {
-            const lastNum = parseInt(lastOrder[0].order_number.replace(/\D/g, '') || '0')
-            nextNum = `ORD-${String(lastNum + 1).padStart(5, '0')}`
-          }
+          const { data: seqNum } = await supabase.rpc('generate_order_number')
+          const nextNum = String(seqNum || Date.now())
 
           const { data: orderData, error: orderError } = await supabase.from('orders').insert({
             order_number: ext.order_number || nextNum,
