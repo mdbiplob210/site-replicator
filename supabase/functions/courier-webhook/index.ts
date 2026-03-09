@@ -158,7 +158,7 @@ Deno.serve(async (req) => {
         if (statusLower.includes('deliver') && !statusLower.includes('partial')) {
           orderStatus = 'delivered'
         } else if (statusLower.includes('return') || statusLower.includes('rts')) {
-          orderStatus = 'returned'
+          orderStatus = 'pending_return'
         } else if (statusLower.includes('cancel')) {
           orderStatus = 'cancelled'
         } else if (statusLower.includes('transit') || statusLower.includes('pickup') || statusLower.includes('hub') || statusLower.includes('on_the_way')) {
