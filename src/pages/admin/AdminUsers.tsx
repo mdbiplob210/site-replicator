@@ -489,6 +489,13 @@ const AdminUsers = () => {
                             <TableCell>
                               <div className="flex items-center gap-1">
                                 <button
+                                  onClick={() => openEditDialog(user.user_id, user.full_name)}
+                                  className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+                                  title="Edit User"
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </button>
+                                <button
                                   onClick={() => { setActiveTab("tracking"); setTrackingSubTab("live"); }}
                                   className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
                                   title="Track"
