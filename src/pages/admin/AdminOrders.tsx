@@ -547,7 +547,8 @@ const AdminOrders = () => {
 
   // Site settings for shop name
   const { data: siteSettings } = useSiteSettings();
-  const shopName = siteSettings?.site_name || "SOHOZ";
+  const shopName = siteSettings?.site_name || "STORE";
+  const shopLogo = siteSettings?.site_logo || "";
 
   // Bulk memo print
   const selectedOrdersForPrint = useMemo(() => filteredOrders.filter(o => selectedOrderIds.has(o.id)), [filteredOrders, selectedOrderIds]);
