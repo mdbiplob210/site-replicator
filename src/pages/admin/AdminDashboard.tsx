@@ -9,6 +9,7 @@ import {
   Hand, ShoppingBag, Hash
 } from "lucide-react";
 import { useDashboardData, useSalesTrend } from "@/hooks/useDashboardData";
+import { useAuth } from "@/contexts/AuthContext";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from "recharts";
 
 const timeFilters = ["Today", "Yesterday", "This Week", "This Month"] as const;
