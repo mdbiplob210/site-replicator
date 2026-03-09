@@ -112,6 +112,44 @@
     @apply bg-background text-foreground antialiased;
     font-family: 'Inter', 'Hind Siliguri', sans-serif;
   }
+
+  /* Dark mode: bolder & slightly larger text */
+  .dark body {
+    font-weight: 450;
+    letter-spacing: 0.01em;
+  }
+
+  .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .dark p, .dark span, .dark label, .dark td, .dark th {
+    font-weight: 450;
+  }
+
+  .dark .font-bold {
+    font-weight: 800;
+  }
+
+  .dark .font-semibold {
+    font-weight: 700;
+  }
+
+  .dark .font-medium {
+    font-weight: 600;
+  }
+
+  /* Dark mode card glow effects */
+  .dark .border-border\/40 {
+    border-color: hsl(230 18% 22%);
+    background-image: linear-gradient(135deg, hsl(260 20% 14%) 0%, hsl(228 22% 12%) 50%, hsl(200 20% 13%) 100%);
+  }
+
+  /* Dark mode subtle ambient glow on hover */
+  .dark .card-hover:hover {
+    box-shadow: 0 8px 32px hsl(200 100% 60% / 0.08), 0 2px 8px hsl(260 60% 50% / 0.06);
+  }
 }
 
 @layer utilities {
