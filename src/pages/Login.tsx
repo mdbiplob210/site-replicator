@@ -277,14 +277,14 @@ const Login = () => {
       />
 
       {/* Score HUD */}
-      <div className="absolute top-4 left-4 z-30 flex items-center gap-3">
-        <div className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold"
+      <div className="absolute top-3 sm:top-4 left-3 sm:left-4 z-30 flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-2 rounded-full px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-bold"
           style={{ background: "rgba(255,255,255,0.1)", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.15)", color: "#4ECDC4" }}>
-          <Trophy className="h-4 w-4" />
+          <Trophy className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           <span>{score}/5</span>
         </div>
         {combo > 1 && (
-          <div className="animate-bounce rounded-full px-3 py-1 text-xs font-bold"
+          <div className="animate-bounce rounded-full px-2.5 sm:px-3 py-1 text-[10px] sm:text-xs font-bold"
             style={{ background: "linear-gradient(135deg, #FF6B6B, #FFEAA7)", color: "#1a0a2e" }}>
             {combo}x COMBO! 🔥
           </div>
