@@ -82,19 +82,19 @@ const AdminDashboard = () => {
 
   return (
     <AdminLayout>
-      <div className="space-y-6 max-w-[1400px]">
+      <div className="space-y-4 sm:space-y-6 max-w-[1400px]">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground tracking-tight">Dashboard</h1>
-            <p className="text-muted-foreground text-sm mt-0.5">Your business performance at a glance</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">Dashboard</h1>
+            <p className="text-muted-foreground text-xs sm:text-sm mt-0.5">Your business performance at a glance</p>
           </div>
-          <div className="flex items-center gap-0.5 bg-card rounded-xl border border-border/50 p-1 shadow-sm">
+          <div className="flex items-center gap-0.5 bg-card rounded-xl border border-border/50 p-0.5 sm:p-1 shadow-sm overflow-x-auto no-scrollbar">
             {timeFilters.map((filter) => (
               <button
                 key={filter}
                 onClick={() => setActiveFilter(filter)}
-                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                className={`px-2.5 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 whitespace-nowrap ${
                   activeFilter === filter
                     ? "bg-gradient-to-r from-primary to-[hsl(187,85%,53%)] text-white shadow-md"
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary/70"
