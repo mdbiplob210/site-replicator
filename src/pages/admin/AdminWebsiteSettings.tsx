@@ -110,6 +110,15 @@ function GeneralTab() {
   const [loaded, setLoaded] = useState(false);
   const [logoUrl, setLogoUrl] = useState("");
   const [uploading, setUploading] = useState(false);
+  // New fields
+  const [marqueeText, setMarqueeText] = useState("");
+  const [footerDescription, setFooterDescription] = useState("");
+  const [footerQuickLinks, setFooterQuickLinks] = useState("");
+  const [footerHelpLinks, setFooterHelpLinks] = useState("");
+  const [footerAddress, setFooterAddress] = useState("");
+  const [footerCopyright, setFooterCopyright] = useState("");
+  const [offerCountdownMinutes, setOfferCountdownMinutes] = useState("30");
+  const [checkoutScarcityCount, setCheckoutScarcityCount] = useState("47");
 
   // Load saved values
   if (!loaded && !isLoading && settings) {
