@@ -374,9 +374,9 @@ const Template1Classic = () => {
       </section>
 
       {/* Contact floating buttons - WhatsApp & Phone */}
-      {(whatsappNumber || phoneNumber) && (
+      {floatingContactsEnabled && (whatsappNumber || phoneNumber) && (
         <div className="fixed bottom-20 right-4 z-40 flex flex-col gap-2">
-          {whatsappNumber && (
+          {floatingWhatsappEnabled && whatsappNumber && (
             <a
               href={`https://wa.me/${whatsappNumber}`}
               target="_blank"
@@ -386,7 +386,7 @@ const Template1Classic = () => {
               <MessageCircle className="h-5 w-5" />
             </a>
           )}
-          {phoneNumber && (
+          {floatingCallEnabled && phoneNumber && (
             <a
               href={`tel:${phoneNumber}`}
               className="w-12 h-12 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-lg hover:bg-blue-600 transition"
