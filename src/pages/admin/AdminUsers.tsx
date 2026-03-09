@@ -405,14 +405,16 @@ const AdminUsers = () => {
                               )}
                             </TableCell>
                             <TableCell>
-                              <Select onValueChange={(val) => assignRole(user.user_id, val as any)}>
-                                <SelectTrigger className="w-32 h-8">
-                                  <SelectValue placeholder="Add role..." />
+                              <Select onValueChange={(val) => assignRole(user.user_id, val)}>
+                                <SelectTrigger className="w-36 h-8">
+                                  <SelectValue placeholder="রোল দিন..." />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="admin">Admin</SelectItem>
-                                  <SelectItem value="moderator">Moderator</SelectItem>
-                                  <SelectItem value="user">User</SelectItem>
+                                  <SelectItem value="admin">অ্যাডমিন</SelectItem>
+                                  <SelectItem value="manager">ম্যানেজার</SelectItem>
+                                  <SelectItem value="user">ইউজার</SelectItem>
+                                  <SelectItem value="accounting">অ্যাকাউন্টিং</SelectItem>
+                                  <SelectItem value="ad_analytics">অ্যাড অ্যানালিটিক্স</SelectItem>
                                 </SelectContent>
                               </Select>
                             </TableCell>
