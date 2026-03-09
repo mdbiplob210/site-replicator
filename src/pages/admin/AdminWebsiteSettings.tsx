@@ -100,6 +100,8 @@ function GeneralTab() {
   const [instagramUrl, setInstagramUrl] = useState("");
   const [customDomain, setCustomDomain] = useState("");
   const [loaded, setLoaded] = useState(false);
+  const [logoUrl, setLogoUrl] = useState("");
+  const [uploading, setUploading] = useState(false);
 
   // Load saved values
   if (!loaded && !isLoading && settings) {
@@ -114,8 +116,58 @@ function GeneralTab() {
     setFacebookUrl(settings["facebook_url"] || "");
     setInstagramUrl(settings["instagram_url"] || "");
     setCustomDomain(settings["custom_domain"] || "");
+    setLogoUrl(settings["site_logo"] || "");
     setLoaded(true);
   }
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("ফাইল সাইজ সর্বোচ্চ 2MB হতে হবে");
+      return;
+    }
+    if (!["image/png", "image/webp", "image/jpeg", "image/svg+xml"].includes(file.type)) {
+      toast.error("শুধুমাত্র PNG, WebP, JPG বা SVG ফরম্যাট সাপোর্টেড");
+      return;
+    }
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const filePath = `logo.${ext}`;
+      // Remove old logo if exists
+      await supabase.storage.from("site-assets").remove([filePath]);
+      const { error: uploadError } = await supabase.storage
+        .from("site-assets")
+        .upload(filePath, file, { upsert: true });
+      if (uploadError) throw uploadError;
+      const { data: urlData } = supabase.storage
+        .from("site-assets")
+        .getPublicUrl(filePath);
+      const publicUrl = urlData.publicUrl + "?t=" + Date.now();
+      setLogoUrl(publicUrl);
+      await updateSetting.mutateAsync({ key: "site_logo", value: publicUrl });
+      toast.success("লোগো আপলোড হয়েছে!");
+    } catch (err: any) {
+      toast.error(err.message || "আপলোড ব্যর্থ হয়েছে");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleRemoveLogo = async () => {
+    try {
+      const fileName = logoUrl.split("/").pop()?.split("?")[0];
+      if (fileName) {
+        await supabase.storage.from("site-assets").remove([fileName]);
+      }
+      setLogoUrl("");
+      await updateSetting.mutateAsync({ key: "site_logo", value: "" });
+      toast.success("লোগো মুছে ফেলা হয়েছে!");
+    } catch (err: any) {
+      toast.error(err.message);
+    }
+  };
 
   const handleSave = async () => {
     const updates = [
@@ -131,7 +183,6 @@ function GeneralTab() {
       { key: "instagram_url", value: instagramUrl },
       { key: "custom_domain", value: customDomain },
     ];
-    
     for (const { key, value } of updates) {
       await updateSetting.mutateAsync({ key, value });
     }
@@ -160,12 +211,26 @@ function GeneralTab() {
             <label className="text-sm font-medium text-foreground">Store Logo</label>
             <p className="text-xs text-muted-foreground mt-0.5">সাজেস্টেড সাইজ: 200×200px (স্কয়ার), সর্বোচ্চ 2MB। PNG বা WebP ফরম্যাট সবচেয়ে ভালো।</p>
             <div className="flex items-center gap-4 mt-3">
-              <div className="h-16 w-16 rounded-xl border-2 border-dashed border-border flex items-center justify-center">
-                <ImageIcon className="h-6 w-6 text-muted-foreground" />
+              <div className="h-16 w-16 rounded-xl border-2 border-dashed border-border flex items-center justify-center overflow-hidden bg-secondary/30">
+                {logoUrl ? (
+                  <img src={logoUrl} alt="Store Logo" className="h-full w-full object-contain" />
+                ) : (
+                  <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                )}
               </div>
-              <Button variant="outline" className="gap-2">
-                <Upload className="h-4 w-4" /> লোগো আপলোড করুন
-              </Button>
+              <div className="flex items-center gap-2">
+                <label>
+                  <input type="file" accept="image/png,image/webp,image/jpeg,image/svg+xml" className="hidden" onChange={handleLogoUpload} />
+                  <Button variant="outline" className="gap-2" asChild disabled={uploading}>
+                    <span><Upload className="h-4 w-4" /> {uploading ? "আপলোড হচ্ছে..." : "লোগো আপলোড করুন"}</span>
+                  </Button>
+                </label>
+                {logoUrl && (
+                  <Button variant="ghost" size="icon" className="text-destructive" onClick={handleRemoveLogo}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
 
@@ -173,57 +238,32 @@ function GeneralTab() {
           <div>
             <label className="text-sm font-medium text-foreground">Site Name <span className="text-destructive">*</span></label>
             <p className="text-xs text-muted-foreground">Product Feed এ ব্যবহার হবে</p>
-            <Input 
-              className="mt-1.5" 
-              placeholder="Your Store Name"
-              value={siteName}
-              onChange={(e) => setSiteName(e.target.value)}
-            />
+            <Input className="mt-1.5" placeholder="Your Store Name" value={siteName} onChange={(e) => setSiteName(e.target.value)} />
           </div>
 
           {/* Site URL */}
           <div>
             <label className="text-sm font-medium text-foreground">Site URL <span className="text-destructive">*</span></label>
-            <p className="text-xs text-muted-foreground">Product Feed এ প্রোডাক্ট লিংক তৈরিতে ব্যবহার হবে (যেমন: https://yourstore.com)</p>
-            <Input 
-              className="mt-1.5" 
-              placeholder="https://yourstore.com"
-              value={siteUrl}
-              onChange={(e) => setSiteUrl(e.target.value)}
-            />
+            <p className="text-xs text-muted-foreground">Product Feed এ প্রোডাক্ট লিংক তৈরিতে ব্যবহার হবে</p>
+            <Input className="mt-1.5" placeholder="https://yourstore.com" value={siteUrl} onChange={(e) => setSiteUrl(e.target.value)} />
           </div>
 
           {/* Tagline */}
           <div>
             <label className="text-sm font-medium text-foreground">Tagline</label>
-            <Input 
-              className="mt-1.5" 
-              placeholder="Welcome to our store"
-              value={tagline}
-              onChange={(e) => setTagline(e.target.value)}
-            />
+            <Input className="mt-1.5" placeholder="Welcome to our store" value={tagline} onChange={(e) => setTagline(e.target.value)} />
           </div>
 
           {/* Contact Phone */}
           <div>
             <label className="text-sm font-medium text-foreground">Contact Phone</label>
-            <Input 
-              className="mt-1.5" 
-              placeholder="+880..."
-              value={contactPhone}
-              onChange={(e) => setContactPhone(e.target.value)}
-            />
+            <Input className="mt-1.5" placeholder="+880..." value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} />
           </div>
 
           {/* Contact Email */}
           <div>
             <label className="text-sm font-medium text-foreground">Contact Email</label>
-            <Input 
-              className="mt-1.5" 
-              placeholder="support@store.com"
-              value={contactEmail}
-              onChange={(e) => setContactEmail(e.target.value)}
-            />
+            <Input className="mt-1.5" placeholder="support@store.com" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} />
           </div>
         </div>
 
