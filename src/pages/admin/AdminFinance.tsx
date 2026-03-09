@@ -585,6 +585,7 @@ export default function AdminFinance() {
                 <option value="all">All Types</option>
                 <option value="income">Income</option>
                 <option value="expense">Expense</option>
+                <option value="product_purchase">Product Purchase</option>
                 <option value="loan_in">Loan (In)</option>
                 <option value="loan_out">Loan (Out)</option>
                 <option value="investment_in">Investment (In)</option>
