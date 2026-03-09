@@ -424,7 +424,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
               <Button
                 type="submit"
                 disabled={submitting}
-                className="w-full h-12 text-base font-bold bg-green-600 hover:bg-green-700 text-white rounded-xl shadow-lg shadow-green-200"
+                className="w-full h-12 sm:h-12 text-sm sm:text-base font-bold bg-green-600 hover:bg-green-700 active:scale-[0.98] text-white rounded-xl shadow-lg shadow-green-200 transition-all"
               >
                 {submitting ? (
                   <><Loader2 className="h-4 w-4 animate-spin mr-2" /> প্রসেসিং...</>
@@ -433,7 +433,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
                 )}
               </Button>
 
-              <p className="text-center text-xs text-gray-400">💳 ক্যাশ অন ডেলিভারি | 🚚 ২-৫ দিনে ডেলিভারি</p>
+              <p className="text-center text-[11px] sm:text-xs text-gray-400 pb-2">💳 ক্যাশ অন ডেলিভারি | 🚚 ২-৫ দিনে ডেলিভারি</p>
             </form>
           </>
         ) : (
