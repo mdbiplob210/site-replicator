@@ -273,6 +273,7 @@ const AdminDashboard = () => {
             )}
 
             {/* Top Products & Hourly Orders */}
+            {canSeeOrders && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {/* Top Products */}
               <Card className="p-5 border-border/30">
