@@ -267,6 +267,7 @@ export function useDashboardData(filter: TimeFilter) {
       bankBalance,
       stockValue,
       courierBalance,
+      courierCount,
       loanCount: loans.length,
       loanTotal,
       investmentTotal,
