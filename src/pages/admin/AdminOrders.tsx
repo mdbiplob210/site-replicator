@@ -21,6 +21,8 @@ import { Slider } from "@/components/ui/slider";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Plus, Search, Calendar, AlertCircle, ShieldAlert, Truck, Key,
   Settings, Download, Printer, RefreshCw, ChevronDown, Wifi, Ban,
@@ -1161,31 +1163,28 @@ const AdminOrders = () => {
 
   return (
     <AdminLayout>
-      <div className="space-y-5">
+      <div className="space-y-3 sm:space-y-5">
         {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 sm:gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground tracking-tight">Orders</h1>
-            <p className="text-muted-foreground text-sm">Manage and track all orders across channels</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">Orders</h1>
+            <p className="text-muted-foreground text-xs sm:text-sm">Manage and track all orders</p>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            {/* Date Filter removed - moved to advanced filter panel */}
-
-            <a href="/admin/orders/backfill-items">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+            {/* Mobile: compact icon buttons, Desktop: full buttons */}
+            <a href="/admin/orders/backfill-items" className="hidden sm:block">
               <Button variant="outline" size="sm" className="gap-2 rounded-xl border-border/60 shadow-sm hover:shadow">
-                <Package className="h-4 w-4 text-primary" /> Backfill Items
+                <Package className="h-4 w-4 text-primary" /> Backfill
               </Button>
             </a>
-            <Button variant="outline" size="sm" className="gap-2 rounded-xl border-border/60 shadow-sm hover:shadow" onClick={() => setCurrentView("incomplete")}>
-              <AlertCircle className="h-4 w-4 text-amber-500" /> Incomplete
+            <Button variant="outline" size="sm" className="gap-1.5 sm:gap-2 rounded-xl border-border/60 shadow-sm hover:shadow text-xs sm:text-sm" onClick={() => setCurrentView("incomplete")}>
+              <AlertCircle className="h-3.5 sm:h-4 w-3.5 sm:w-4 text-amber-500" /> <span className="hidden xs:inline">Incomplete</span><span className="xs:hidden">Inc.</span>
             </Button>
-            <Button variant="outline" size="sm" className="gap-2 rounded-xl border-border/60 shadow-sm hover:shadow" onClick={() => setCurrentView("fakeOrder")}>
-              <ShieldAlert className="h-4 w-4 text-red-500" /> Fake Order
+            <Button variant="outline" size="sm" className="gap-1.5 sm:gap-2 rounded-xl border-border/60 shadow-sm hover:shadow text-xs sm:text-sm" onClick={() => setCurrentView("fakeOrder")}>
+              <ShieldAlert className="h-3.5 sm:h-4 w-3.5 sm:w-4 text-red-500" /> <span className="hidden sm:inline">Fake Order</span><span className="sm:hidden">Fake</span>
             </Button>
-
-            {/* Courier Button */}
-            <Button variant="outline" size="sm" className="gap-2 rounded-xl border-border/60 shadow-sm hover:shadow" onClick={() => setCurrentView("courier")}>
-              <Truck className="h-4 w-4 text-violet-500" /> Courier
+            <Button variant="outline" size="sm" className="gap-1.5 sm:gap-2 rounded-xl border-border/60 shadow-sm hover:shadow text-xs sm:text-sm" onClick={() => setCurrentView("courier")}>
+              <Truck className="h-3.5 sm:h-4 w-3.5 sm:w-4 text-violet-500" /> <span className="hidden sm:inline">Courier</span>
             </Button>
 
             <Button variant="outline" size="sm" className="gap-2 rounded-xl border-border/60 shadow-sm hover:shadow" onClick={() => setCurrentView("api")}>
@@ -1656,25 +1655,27 @@ const AdminOrders = () => {
           </div>
         </div>
 
-        {/* Status Tabs - Two equal rows */}
-        <div className="grid grid-cols-6 gap-2 pb-2">
-          {statusTabs.map((tab) => (
-            <button
-              key={tab.label}
-              onClick={() => { setActiveTab(tab.label); setCancelReasonFilter("all"); }}
-              className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium whitespace-nowrap transition-all duration-200 ${
-                activeTab === tab.label
-                  ? `${tab.color} text-white shadow-lg`
-                  : "bg-card text-muted-foreground hover:bg-secondary border border-border/40"
-              }`}
-            >
-              <tab.icon className="h-3.5 w-3.5 shrink-0" />
-              <span className="truncate">{tab.label}</span>
-              <span className={`text-[10px] font-bold shrink-0 ${activeTab === tab.label ? "text-white/80" : "text-muted-foreground/50"}`}>
-                {counts[tab.label] || 0}
-              </span>
-            </button>
-          ))}
+        {/* Status Tabs - Horizontal scroll on mobile, grid on desktop */}
+        <div className="overflow-x-auto -mx-2 px-2 pb-2 scrollbar-hide">
+          <div className="flex sm:grid sm:grid-cols-6 gap-1.5 sm:gap-2 min-w-max sm:min-w-0">
+            {statusTabs.map((tab) => (
+              <button
+                key={tab.label}
+                onClick={() => { setActiveTab(tab.label); setCancelReasonFilter("all"); }}
+                className={`flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-2 rounded-xl text-[11px] sm:text-xs font-medium whitespace-nowrap transition-all duration-200 ${
+                  activeTab === tab.label
+                    ? `${tab.color} text-white shadow-lg`
+                    : "bg-card text-muted-foreground hover:bg-secondary border border-border/40"
+                }`}
+              >
+                <tab.icon className="h-3 sm:h-3.5 w-3 sm:w-3.5 shrink-0" />
+                <span className="truncate">{tab.label}</span>
+                <span className={`text-[9px] sm:text-[10px] font-bold shrink-0 ${activeTab === tab.label ? "text-white/80" : "text-muted-foreground/50"}`}>
+                  {counts[tab.label] || 0}
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* In Courier button for Confirmed tab */}
@@ -1690,20 +1691,21 @@ const AdminOrders = () => {
         )}
 
         {/* Search & Filters */}
-        <Card className="p-3 border-border/40 flex items-center gap-3 flex-wrap shadow-sm">
-          <div className="relative flex-1 min-w-[250px]">
+        <Card className="p-2 sm:p-3 border-border/40 flex items-center gap-2 sm:gap-3 flex-wrap shadow-sm">
+          <div className="relative flex-1 min-w-0">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search order, phone, name..."
-              className="pl-10 border-0 bg-transparent shadow-none focus-visible:ring-0 text-sm"
+              placeholder="Search..."
+              className="pl-10 border-0 bg-transparent shadow-none focus-visible:ring-0 text-sm h-9"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" className="h-9 w-9 rounded-xl border-border/60" onClick={handleRefresh} title="রিফ্রেশ"><RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} /></Button>
-            <Button variant="outline" size="sm" className="gap-1.5 h-9 rounded-xl border-border/60" onClick={handleExport}><Download className="h-4 w-4" /> Export</Button>
-            <Button variant="outline" size="sm" className="gap-1.5 h-9 rounded-xl border-border/60" onClick={handlePrint}><Printer className="h-4 w-4" /> Print</Button>
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <Button variant="outline" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl border-border/60" onClick={handleRefresh} title="রিফ্রেশ"><RefreshCw className={cn("h-3.5 sm:h-4 w-3.5 sm:w-4", isLoading && "animate-spin")} /></Button>
+            <Button variant="outline" size="icon" className="h-8 w-8 sm:hidden rounded-xl border-border/60" onClick={handleExport} title="Export"><Download className="h-3.5 w-3.5" /></Button>
+            <Button variant="outline" size="sm" className="gap-1.5 h-9 rounded-xl border-border/60 hidden sm:flex" onClick={handleExport}><Download className="h-4 w-4" /> Export</Button>
+            <Button variant="outline" size="sm" className="gap-1.5 h-9 rounded-xl border-border/60 hidden sm:flex" onClick={handlePrint}><Printer className="h-4 w-4" /> Print</Button>
           </div>
         </Card>
 
@@ -1857,7 +1859,75 @@ const AdminOrders = () => {
           </Card>
         )}
 
-        {/* Advanced Filter Panel */}
+        {/* Advanced Filter Panel - Sheet on mobile, Collapsible on desktop */}
+        {/* Mobile Filter Sheet */}
+        <div className="sm:hidden">
+          <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2 rounded-xl border-border/60 shadow-sm hover:shadow w-full justify-between">
+                <div className="flex items-center gap-2">
+                  <SlidersHorizontal className="h-4 w-4 text-primary" />
+                  <span className="font-semibold text-sm">ফিল্টার</span>
+                  {activeFilterCount > 0 && (
+                    <Badge className="h-5 min-w-[20px] px-1.5 text-[10px] font-bold">{activeFilterCount}</Badge>
+                  )}
+                  {activeFilterCount > 0 && (
+                    <Badge variant="secondary" className="h-5 px-1.5 text-[10px] font-bold">
+                      {filteredOrders.length}/{orders.length}
+                    </Badge>
+                  )}
+                </div>
+                <Filter className="h-4 w-4 text-muted-foreground" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="bottom" className="h-[85vh] rounded-t-2xl px-4">
+              <SheetHeader>
+                <SheetTitle className="flex items-center gap-2">
+                  <SlidersHorizontal className="h-5 w-5 text-primary" /> ফিল্টারিং
+                  {activeFilterCount > 0 && <Badge className="text-xs">{activeFilterCount} ফিল্টার</Badge>}
+                </SheetTitle>
+              </SheetHeader>
+              <ScrollArea className="h-[calc(85vh-80px)] mt-4 pr-2">
+                {/* Filter content rendered below via shared component */}
+                <MobileFilterContent
+                  orderDateFilter={orderDateFilter} setOrderDateFilter={setOrderDateFilter}
+                  customDateFrom={customDateFrom} setCustomDateFrom={setCustomDateFrom}
+                  customDateTo={customDateTo} setCustomDateTo={setCustomDateTo}
+                  filterSource={filterSource} setFilterSource={setFilterSource}
+                  filterPhone={filterPhone} setFilterPhone={setFilterPhone}
+                  filterAmountMin={filterAmountMin} setFilterAmountMin={setFilterAmountMin}
+                  filterAmountMax={filterAmountMax} setFilterAmountMax={setFilterAmountMax}
+                  filterDeviceType={filterDeviceType} setFilterDeviceType={setFilterDeviceType}
+                  filterPaymentStatus={filterPaymentStatus} setFilterPaymentStatus={setFilterPaymentStatus}
+                  filterCourierProvider={filterCourierProvider} setFilterCourierProvider={setFilterCourierProvider}
+                  filterCourierStatus={filterCourierStatus} setFilterCourierStatus={setFilterCourierStatus}
+                  filterCategory={filterCategory} setFilterCategory={setFilterCategory}
+                  filterCourierCharged={filterCourierCharged} setFilterCourierCharged={setFilterCourierCharged}
+                  filterSalesType={filterSalesType} setFilterSalesType={setFilterSalesType}
+                  filterAddress={filterAddress} setFilterAddress={setFilterAddress}
+                  filterNotes={filterNotes} setFilterNotes={setFilterNotes}
+                  filterDistrict={filterDistrict} setFilterDistrict={setFilterDistrict}
+                  filterThana={filterThana} setFilterThana={setFilterThana}
+                  filterZone={filterZone} setFilterZone={setFilterZone}
+                  filterProductInput={filterProductInput} setFilterProductInput={setFilterProductInput}
+                  filterProductIds={filterProductIds} setFilterProductIds={setFilterProductIds}
+                  filterProductFocused={filterProductFocused} setFilterProductFocused={setFilterProductFocused}
+                  filteredFilterProducts={filteredFilterProducts}
+                  courierProviders={courierProviders}
+                  categories={categories}
+                  clearAllFilters={clearAllFilters}
+                  activeFilterCount={activeFilterCount}
+                  filteredOrders={filteredOrders}
+                  orders={orders}
+                  onClose={() => setFiltersOpen(false)}
+                />
+              </ScrollArea>
+            </SheetContent>
+          </Sheet>
+        </div>
+
+        {/* Desktop Filter Collapsible */}
+        <div className="hidden sm:block">
         <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
           <CollapsibleTrigger asChild>
             <Button variant="outline" size="sm" className="gap-2 rounded-xl border-border/60 shadow-sm hover:shadow w-full justify-between">
@@ -2192,6 +2262,7 @@ const AdminOrders = () => {
             </Card>
           </CollapsibleContent>
         </Collapsible>
+        </div>
 
         {/* Order Items Modal */}
         <Dialog open={orderItemsModalOpen} onOpenChange={setOrderItemsModalOpen}>
@@ -2677,7 +2748,7 @@ const AdminOrders = () => {
                 const custStats = order.customer_phone ? customerStatsByPhone[order.customer_phone] : null;
                 const courierInfo = courierByOrderId[order.id];
                 return (
-                  <div key={order.id} className="p-3 space-y-2 active:bg-secondary/30" onClick={() => setDetailOrderId(order.id)}>
+                  <div key={order.id} className="p-3 space-y-2 active:bg-secondary/30 border-b border-border/20 last:border-b-0" onClick={() => setDetailOrderId(order.id)}>
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
                         <Checkbox checked={selectedOrderIds.has(order.id)} onCheckedChange={(checked) => {
@@ -2689,7 +2760,7 @@ const AdminOrders = () => {
                           <div className="flex items-center gap-1.5">
                             <span className="font-bold text-primary text-sm">#{order.order_number.replace(/^ORD-0*/, '')}</span>
                             {(order as any).memo_printed && (
-                              <span className="inline-flex items-center justify-center h-4 w-4 rounded-full bg-emerald-500/20 text-emerald-600" title="মেমো প্রিন্টেড">
+                              <span className="inline-flex items-center justify-center h-4 w-4 rounded-full bg-emerald-500/20 text-emerald-600">
                                 <Printer className="h-2.5 w-2.5" />
                               </span>
                             )}
@@ -2703,15 +2774,20 @@ const AdminOrders = () => {
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-semibold text-foreground truncate">{order.customer_name}</p>
                         {order.customer_phone && (
-                          <div className="flex items-center gap-2 mt-0.5">
+                          <div className="flex items-center gap-1.5 mt-0.5" onClick={(e) => e.stopPropagation()}>
                             <span className="text-xs font-mono text-primary">{order.customer_phone}</span>
-                            {custStats && <span className="text-[10px] text-muted-foreground">({custStats.total} orders)</span>}
+                            <a href={`tel:${order.customer_phone}`} className="h-5 w-5 rounded flex items-center justify-center bg-emerald-500/10 text-emerald-600">
+                              <Phone className="h-3 w-3" />
+                            </a>
+                            <button onClick={() => { navigator.clipboard.writeText(order.customer_phone || ""); toast.success("কপি!"); }} className="h-5 w-5 rounded flex items-center justify-center bg-secondary text-muted-foreground">
+                              <Copy className="h-3 w-3" />
+                            </button>
                           </div>
                         )}
                       </div>
                       <div onClick={(e) => e.stopPropagation()}>
                         <Select value={order.status} onValueChange={(value) => handleStatusChange(order.id, value, order.status)}>
-                          <SelectTrigger className="w-[110px] h-7 rounded-full text-[10px] border-0 px-2 font-semibold"
+                          <SelectTrigger className="w-[105px] h-7 rounded-full text-[10px] border-0 px-2 font-semibold"
                             style={{ backgroundColor: order.status === 'processing' ? '#3b82f6' : order.status === 'confirmed' ? '#059669' : order.status === 'cancelled' ? '#ef4444' : order.status === 'delivered' ? '#10b981' : order.status === 'in_courier' ? '#8b5cf6' : order.status === 'on_hold' ? '#eab308' : order.status === 'returned' ? '#f97316' : '#6b7280', color: 'white' }}>
                             <SelectValue />
                           </SelectTrigger>
@@ -2726,17 +2802,34 @@ const AdminOrders = () => {
                             ))}
                           </SelectContent>
                         </Select>
-                        {order.status === "cancelled" && (order as any).cancel_reason && (
-                          <p className="text-[10px] text-destructive truncate max-w-[110px]" title={(order as any).cancel_reason}>
-                            {(order as any).cancel_reason}
-                          </p>
-                        )}
                       </div>
                     </div>
+                    {/* Items + courier + payment row */}
                     <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-                      <span>{items.length} {items.length === 1 ? 'item' : 'items'} · {courierInfo ? courierInfo.provider_name : 'No courier'}</span>
-                      {order.source && <span className="bg-secondary/60 px-1.5 py-0.5 rounded text-[10px]">{order.source}</span>}
+                      <div className="flex items-center gap-1.5">
+                        <span>{items.length} items</span>
+                        <span>·</span>
+                        {courierInfo ? (
+                          <span className="flex items-center gap-1">
+                            <Truck className="h-3 w-3 text-violet-500" />
+                            {courierInfo.provider_name}
+                          </span>
+                        ) : (
+                          <span>No courier</span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        {((order as any).payment_status || "unpaid") === "paid" && (
+                          <Badge variant="outline" className="text-[9px] h-4 border-emerald-300 text-emerald-600 bg-emerald-50 px-1">✅ Paid</Badge>
+                        )}
+                        {order.source && <span className="bg-secondary/60 px-1.5 py-0.5 rounded text-[10px]">{order.source}</span>}
+                      </div>
                     </div>
+                    {order.status === "cancelled" && (order as any).cancel_reason && (
+                      <p className="text-[10px] text-destructive bg-destructive/5 px-2 py-1 rounded-lg truncate">
+                        {(order as any).cancel_reason}
+                      </p>
+                    )}
                   </div>
                 );
               })}
@@ -4076,6 +4169,152 @@ function ActivityLogPopover({ orderId }: { orderId: string }) {
           {log.user_name && <p className="text-muted-foreground/60">{log.user_name}</p>}
         </div>
       ))}
+    </div>
+  );
+}
+
+// Mobile Filter Drawer Content
+function MobileFilterContent(props: any) {
+  const {
+    orderDateFilter, setOrderDateFilter, filterSource, setFilterSource,
+    filterPhone, setFilterPhone, filterAmountMin, setFilterAmountMin,
+    filterAmountMax, setFilterAmountMax, filterDeviceType, setFilterDeviceType,
+    filterPaymentStatus, setFilterPaymentStatus, filterCourierProvider, setFilterCourierProvider,
+    filterCourierStatus, setFilterCourierStatus, filterCategory, setFilterCategory,
+    filterCourierCharged, setFilterCourierCharged, filterSalesType, setFilterSalesType,
+    filterAddress, setFilterAddress, filterNotes, setFilterNotes,
+    filterDistrict, setFilterDistrict, filterThana, setFilterThana,
+    filterZone, setFilterZone, courierProviders, categories,
+    clearAllFilters, activeFilterCount, filteredOrders, orders, onClose,
+  } = props;
+
+  return (
+    <div className="space-y-4 pb-6">
+      {/* Date Filter */}
+      <div className="space-y-1.5">
+        <Label className="text-xs font-semibold text-muted-foreground">📅 তারিখ ফিল্টার</Label>
+        <Select value={orderDateFilter} onValueChange={(v: any) => setOrderDateFilter(v)}>
+          <SelectTrigger className="rounded-xl h-10 text-sm"><SelectValue placeholder="All Time" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Time</SelectItem>
+            <SelectItem value="today">Today</SelectItem>
+            <SelectItem value="yesterday">Yesterday</SelectItem>
+            <SelectItem value="7days">Last 7 Days</SelectItem>
+            <SelectItem value="30days">Last 30 Days</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Two column grid for compact filters */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-muted-foreground">📱 Device</Label>
+          <Select value={filterDeviceType} onValueChange={setFilterDeviceType}>
+            <SelectTrigger className="rounded-xl h-10 text-sm"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="mobile">Mobile</SelectItem>
+              <SelectItem value="desktop">Desktop</SelectItem>
+              <SelectItem value="tablet">Tablet</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-muted-foreground">💰 Payment</Label>
+          <Select value={filterPaymentStatus} onValueChange={setFilterPaymentStatus}>
+            <SelectTrigger className="rounded-xl h-10 text-sm"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="paid">✅ Paid</SelectItem>
+              <SelectItem value="unpaid">💰 Unpaid</SelectItem>
+              <SelectItem value="free_delivery">🆓 Free</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-muted-foreground">🚚 Courier</Label>
+          <Select value={filterCourierProvider} onValueChange={setFilterCourierProvider}>
+            <SelectTrigger className="rounded-xl h-10 text-sm"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="no_courier">No Courier</SelectItem>
+              {courierProviders.map((cp: any) => <SelectItem key={cp.id} value={cp.id}>{cp.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-muted-foreground">📦 Category</Label>
+          <Select value={filterCategory} onValueChange={setFilterCategory}>
+            <SelectTrigger className="rounded-xl h-10 text-sm"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              {categories.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-muted-foreground">💵 Min Amount</Label>
+          <Input type="number" placeholder="0" className="rounded-xl h-10 text-sm" value={filterAmountMin} onChange={(e: any) => setFilterAmountMin(e.target.value)} />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-muted-foreground">💵 Max Amount</Label>
+          <Input type="number" placeholder="∞" className="rounded-xl h-10 text-sm" value={filterAmountMax} onChange={(e: any) => setFilterAmountMax(e.target.value)} />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-muted-foreground">🏷️ Sales Type</Label>
+          <Select value={filterSalesType} onValueChange={setFilterSalesType}>
+            <SelectTrigger className="rounded-xl h-10 text-sm"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="api">API/Website</SelectItem>
+              <SelectItem value="manual">Manual</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-muted-foreground">🚛 Delivery</Label>
+          <Select value={filterCourierCharged} onValueChange={setFilterCourierCharged}>
+            <SelectTrigger className="rounded-xl h-10 text-sm"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="charged">Charged</SelectItem>
+              <SelectItem value="free">Free</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Text filters */}
+      <div className="space-y-3">
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-muted-foreground">📞 Phone</Label>
+          <Input placeholder="ফোন নম্বর..." className="rounded-xl h-10 text-sm" value={filterPhone} onChange={(e: any) => setFilterPhone(e.target.value)} inputMode="tel" />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-muted-foreground">🌐 Source</Label>
+          <Input placeholder="Source..." className="rounded-xl h-10 text-sm" value={filterSource} onChange={(e: any) => setFilterSource(e.target.value)} />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-muted-foreground">📍 Address</Label>
+          <Input placeholder="ঠিকানা..." className="rounded-xl h-10 text-sm" value={filterAddress} onChange={(e: any) => setFilterAddress(e.target.value)} />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-muted-foreground">📝 Notes</Label>
+          <Input placeholder="Notes..." className="rounded-xl h-10 text-sm" value={filterNotes} onChange={(e: any) => setFilterNotes(e.target.value)} />
+        </div>
+      </div>
+
+      {/* Action buttons */}
+      <div className="flex gap-2 pt-2 border-t border-border/30 sticky bottom-0 bg-background pb-2">
+        {activeFilterCount > 0 && (
+          <Button variant="destructive" className="flex-1 rounded-xl gap-1.5" onClick={() => { clearAllFilters(); onClose(); }}>
+            <X className="h-4 w-4" /> ক্লিয়ার ({activeFilterCount})
+          </Button>
+        )}
+        <Button className="flex-1 rounded-xl gap-1.5" onClick={onClose}>
+          ফলাফল দেখুন ({filteredOrders.length})
+        </Button>
+      </div>
     </div>
   );
 }
