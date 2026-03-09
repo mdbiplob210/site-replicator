@@ -48,6 +48,12 @@ export default function AdminFinance() {
   const [investSource, setInvestSource] = useState("");
   const [investNote, setInvestNote] = useState("");
 
+  // Product Purchase form
+  const [purchaseSupplier, setPurchaseSupplier] = useState("");
+  const [purchaseAmount, setPurchaseAmount] = useState("");
+  const [purchaseNote, setPurchaseNote] = useState("");
+  const [purchaseBank, setPurchaseBank] = useState("");
+
   // History filters
   const [histType, setHistType] = useState("all");
 
