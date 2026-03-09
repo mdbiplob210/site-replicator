@@ -182,6 +182,7 @@ const AdminProducts = () => {
       allow_out_of_stock_orders: p.allow_out_of_stock_orders,
       category_id: p.category_id || "",
       status: p.status,
+      slug: (p as any).slug || "",
     });
     setView("edit");
   };
