@@ -89,34 +89,7 @@ const Template1Classic = () => {
   const footerHelpLinks = (settings?.footer_help_links || "ডেলিভারি তথ্য,রিটার্ন পলিসি,প্রাইভেসি পলিসি").split(",").map(s => s.trim()).filter(Boolean);
   const footerAddress = settings?.footer_address || "ঢাকা, বাংলাদেশ";
   const footerCopyright = settings?.footer_copyright || "© 2026 QUICK SHOP BD — All rights reserved";
-  const offerCountdownMinutes = Number(settings?.offer_countdown_minutes) || 30;
-
-  // Countdown timer state
-  const [countdown, setCountdown] = useState(() => {
-    const saved = sessionStorage.getItem("offer_countdown_end");
-    if (saved) {
-      const remaining = Math.max(0, Math.floor((Number(saved) - Date.now()) / 1000));
-      return remaining;
-    }
-    const seconds = offerCountdownMinutes * 60;
-    sessionStorage.setItem("offer_countdown_end", String(Date.now() + seconds * 1000));
-    return seconds;
-  });
-
-  useEffect(() => {
-    if (countdown <= 0) return;
-    const timer = setInterval(() => {
-      setCountdown(prev => {
-        if (prev <= 1) { clearInterval(timer); return 0; }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [countdown > 0]);
-
-  const countdownHours = Math.floor(countdown / 3600);
-  const countdownMins = Math.floor((countdown % 3600) / 60);
-  const countdownSecs = countdown % 60;
+  // Countdown moved to ProductDetail page
 
   const handleExitIntent = () => {
     if (appliedDiscount >= 50) return;
@@ -146,33 +119,6 @@ const Template1Classic = () => {
         </div>
       </div>
 
-      {/* Urgency Countdown Timer */}
-      {countdown > 0 && (
-        <div className="bg-gradient-to-r from-red-600 to-orange-500 text-white py-2.5 px-4">
-          <div className="max-w-7xl mx-auto flex items-center justify-center gap-3">
-            <span className="text-xs sm:text-sm font-semibold animate-pulse">🔥 এই অফারটি শেষ হবে আর মাত্র</span>
-            <div className="flex items-center gap-1">
-              {countdownHours > 0 && (
-                <div className="bg-white/20 rounded-md px-2 py-1 text-center min-w-[2.5rem]">
-                  <span className="text-sm sm:text-base font-black">{String(countdownHours).padStart(2, "0")}</span>
-                  <span className="text-[9px] block -mt-0.5">ঘণ্টা</span>
-                </div>
-              )}
-              <span className="font-bold text-lg">:</span>
-              <div className="bg-white/20 rounded-md px-2 py-1 text-center min-w-[2.5rem]">
-                <span className="text-sm sm:text-base font-black">{String(countdownMins).padStart(2, "0")}</span>
-                <span className="text-[9px] block -mt-0.5">মিনিট</span>
-              </div>
-              <span className="font-bold text-lg">:</span>
-              <div className="bg-white/20 rounded-md px-2 py-1 text-center min-w-[2.5rem]">
-                <span className="text-sm sm:text-base font-black">{String(countdownSecs).padStart(2, "0")}</span>
-                <span className="text-[9px] block -mt-0.5">সেকেন্ড</span>
-              </div>
-            </div>
-            <span className="text-xs sm:text-sm font-semibold hidden sm:inline">এর মধ্যে! ⏰</span>
-          </div>
-        </div>
-      )}
 
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white shadow-sm">

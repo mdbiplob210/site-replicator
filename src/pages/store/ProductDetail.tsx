@@ -86,6 +86,35 @@ const ProductDetail = () => {
     };
   }, [exitEnabled, appliedDiscount, checkoutOpen, id, trackCustomEvent]);
 
+  const offerCountdownMinutes = Number(settings?.offer_countdown_minutes) || 30;
+
+  // Countdown timer state - must be before early returns
+  const [countdown, setCountdown] = useState(() => {
+    const saved = sessionStorage.getItem("offer_countdown_end");
+    if (saved) {
+      const remaining = Math.max(0, Math.floor((Number(saved) - Date.now()) / 1000));
+      return remaining;
+    }
+    const seconds = offerCountdownMinutes * 60;
+    sessionStorage.setItem("offer_countdown_end", String(Date.now() + seconds * 1000));
+    return seconds;
+  });
+
+  useEffect(() => {
+    if (countdown <= 0) return;
+    const timer = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) { clearInterval(timer); return 0; }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [countdown > 0]);
+
+  const countdownHours = Math.floor(countdown / 3600);
+  const countdownMins = Math.floor((countdown % 3600) / 60);
+  const countdownSecs = countdown % 60;
+
   if (isLoading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin h-8 w-8 border-4 border-green-500 border-t-transparent rounded-full" /></div>;
   if (!product) return <div className="min-h-screen flex items-center justify-center">Product not found</div>;
 
@@ -101,7 +130,6 @@ const ProductDetail = () => {
   const paymentNumber = settings?.payment_number || "";
   const insideDhaka = settings?.delivery_inside_dhaka || "80";
   const outsideDhaka = settings?.delivery_outside_dhaka || "150";
-
   const handleOrder = () => {
     trackAddToCart({
       id: product.id,
@@ -150,6 +178,34 @@ const ProductDetail = () => {
       <div className="bg-gradient-to-r from-green-600 to-green-700 text-white text-center py-2 text-xs font-medium">
         🚚 সারা দেশে ক্যাশ অন ডেলিভারি | ২-৫ দিনে ডেলিভারি
       </div>
+
+      {/* Urgency Countdown Timer */}
+      {countdown > 0 && (
+        <div className="bg-gradient-to-r from-red-600 to-orange-500 text-white py-2.5 px-4">
+          <div className="max-w-7xl mx-auto flex items-center justify-center gap-3">
+            <span className="text-xs sm:text-sm font-semibold animate-pulse">🔥 এই অফারটি শেষ হবে আর মাত্র</span>
+            <div className="flex items-center gap-1">
+              {countdownHours > 0 && (
+                <div className="bg-white/20 rounded-md px-2 py-1 text-center min-w-[2.5rem]">
+                  <span className="text-sm sm:text-base font-black">{String(countdownHours).padStart(2, "0")}</span>
+                  <span className="text-[9px] block -mt-0.5">ঘণ্টা</span>
+                </div>
+              )}
+              <span className="font-bold text-lg">:</span>
+              <div className="bg-white/20 rounded-md px-2 py-1 text-center min-w-[2.5rem]">
+                <span className="text-sm sm:text-base font-black">{String(countdownMins).padStart(2, "0")}</span>
+                <span className="text-[9px] block -mt-0.5">মিনিট</span>
+              </div>
+              <span className="font-bold text-lg">:</span>
+              <div className="bg-white/20 rounded-md px-2 py-1 text-center min-w-[2.5rem]">
+                <span className="text-sm sm:text-base font-black">{String(countdownSecs).padStart(2, "0")}</span>
+                <span className="text-[9px] block -mt-0.5">সেকেন্ড</span>
+              </div>
+            </div>
+            <span className="text-xs font-medium hidden sm:inline">⏰ তাড়াতাড়ি করুন!</span>
+          </div>
+        </div>
+      )}
 
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white shadow-sm">
