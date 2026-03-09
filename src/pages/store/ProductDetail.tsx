@@ -86,24 +86,9 @@ const ProductDetail = () => {
     };
   }, [exitEnabled, appliedDiscount, checkoutOpen, id, trackCustomEvent]);
 
-  if (isLoading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin h-8 w-8 border-4 border-green-500 border-t-transparent rounded-full" /></div>;
-  if (!product) return <div className="min-h-screen flex items-center justify-center">Product not found</div>;
-
-  const discount = product.original_price > product.selling_price
-    ? Math.round(((product.original_price - product.selling_price) / product.original_price) * 100)
-    : 0;
-  const discountAmount = product.original_price - product.selling_price;
-
-  const whatsappNumber = settings?.whatsapp_number || "";
-  const phoneNumber = settings?.phone_number || "";
-  const phoneNumber2 = settings?.phone_number_2 || "";
-  const messengerLink = settings?.messenger_link || "";
-  const paymentNumber = settings?.payment_number || "";
-  const insideDhaka = settings?.delivery_inside_dhaka || "80";
-  const outsideDhaka = settings?.delivery_outside_dhaka || "150";
   const offerCountdownMinutes = Number(settings?.offer_countdown_minutes) || 30;
 
-  // Countdown timer state
+  // Countdown timer state - must be before early returns
   const [countdown, setCountdown] = useState(() => {
     const saved = sessionStorage.getItem("offer_countdown_end");
     if (saved) {
@@ -129,6 +114,22 @@ const ProductDetail = () => {
   const countdownHours = Math.floor(countdown / 3600);
   const countdownMins = Math.floor((countdown % 3600) / 60);
   const countdownSecs = countdown % 60;
+
+  if (isLoading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin h-8 w-8 border-4 border-green-500 border-t-transparent rounded-full" /></div>;
+  if (!product) return <div className="min-h-screen flex items-center justify-center">Product not found</div>;
+
+  const discount = product.original_price > product.selling_price
+    ? Math.round(((product.original_price - product.selling_price) / product.original_price) * 100)
+    : 0;
+  const discountAmount = product.original_price - product.selling_price;
+
+  const whatsappNumber = settings?.whatsapp_number || "";
+  const phoneNumber = settings?.phone_number || "";
+  const phoneNumber2 = settings?.phone_number_2 || "";
+  const messengerLink = settings?.messenger_link || "";
+  const paymentNumber = settings?.payment_number || "";
+  const insideDhaka = settings?.delivery_inside_dhaka || "80";
+  const outsideDhaka = settings?.delivery_outside_dhaka || "150";
   const handleOrder = () => {
     trackAddToCart({
       id: product.id,
