@@ -509,6 +509,20 @@ const AdminUsers = () => {
                                 >
                                   <Shield className="h-4 w-4" />
                                 </button>
+                                <button
+                                  onClick={() => handleDisableUser(user.user_id, user.full_name)}
+                                  className="p-1.5 rounded-lg hover:bg-amber-500/10 text-muted-foreground hover:text-amber-600 transition-colors"
+                                  title="Disable/Enable User"
+                                >
+                                  <Ban className="h-4 w-4" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteUser(user.user_id, user.full_name)}
+                                  className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                                  title="Delete User"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </button>
                               </div>
                             </TableCell>
                           </TableRow>
