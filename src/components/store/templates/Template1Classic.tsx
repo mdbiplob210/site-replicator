@@ -89,34 +89,7 @@ const Template1Classic = () => {
   const footerHelpLinks = (settings?.footer_help_links || "ডেলিভারি তথ্য,রিটার্ন পলিসি,প্রাইভেসি পলিসি").split(",").map(s => s.trim()).filter(Boolean);
   const footerAddress = settings?.footer_address || "ঢাকা, বাংলাদেশ";
   const footerCopyright = settings?.footer_copyright || "© 2026 QUICK SHOP BD — All rights reserved";
-  const offerCountdownMinutes = Number(settings?.offer_countdown_minutes) || 30;
-
-  // Countdown timer state
-  const [countdown, setCountdown] = useState(() => {
-    const saved = sessionStorage.getItem("offer_countdown_end");
-    if (saved) {
-      const remaining = Math.max(0, Math.floor((Number(saved) - Date.now()) / 1000));
-      return remaining;
-    }
-    const seconds = offerCountdownMinutes * 60;
-    sessionStorage.setItem("offer_countdown_end", String(Date.now() + seconds * 1000));
-    return seconds;
-  });
-
-  useEffect(() => {
-    if (countdown <= 0) return;
-    const timer = setInterval(() => {
-      setCountdown(prev => {
-        if (prev <= 1) { clearInterval(timer); return 0; }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [countdown > 0]);
-
-  const countdownHours = Math.floor(countdown / 3600);
-  const countdownMins = Math.floor((countdown % 3600) / 60);
-  const countdownSecs = countdown % 60;
+  // Countdown moved to ProductDetail page
 
   const handleExitIntent = () => {
     if (appliedDiscount >= 50) return;
