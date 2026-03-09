@@ -63,7 +63,7 @@ const AdminUsers = () => {
   const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [newName, setNewName] = useState("");
-  const [newRole, setNewRole] = useState<"admin" | "moderator" | "user">("admin");
+  const [newRole, setNewRole] = useState<string>("manager");
   const [creating, setCreating] = useState(false);
 
   // Rules tab
