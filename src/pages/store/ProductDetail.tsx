@@ -84,7 +84,7 @@ const ProductDetail = () => {
       document.removeEventListener('visibilitychange', handleVisibility);
       window.removeEventListener('scroll', handleScroll);
     };
-  }, [exitEnabled, appliedDiscount, checkoutOpen, id, trackCustomEvent]);
+  }, [exitEnabled, appliedDiscount, checkoutOpen, slug, trackCustomEvent]);
 
   const offerCountdownMinutes = Number(settings?.offer_countdown_minutes) || 30;
 
