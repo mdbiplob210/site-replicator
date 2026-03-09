@@ -235,9 +235,9 @@ const ProductDetail = () => {
         </div>
       </header>
 
-      <div className="max-w-6xl mx-auto px-4 py-6">
+      <div className="max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
         {/* Desktop: two columns, Mobile: stacked */}
-        <div className="flex flex-col lg:flex-row gap-6">
+        <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
           
           {/* Left: Image Gallery */}
           <div className="w-full lg:w-1/2">
