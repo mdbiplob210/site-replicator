@@ -286,7 +286,7 @@ const CheckoutPage = () => {
       <h3 className="font-bold text-lg">অর্ডার সামারি</h3>
       <div className="flex items-center gap-4">
         <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-          {item.image ? <img src={item.image} className="w-full h-full object-cover" /> : <ShoppingBag className="h-6 w-6 m-auto mt-5 text-gray-300" />}
+          {item.image ? <OptimizedImage src={item.image} alt={item.name} width={64} quality={75} className="w-full h-full object-cover" /> : <ShoppingBag className="h-6 w-6 m-auto mt-5 text-gray-300" />}
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-semibold truncate">{item.name}</p>
