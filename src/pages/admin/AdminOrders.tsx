@@ -2420,7 +2420,7 @@ const AdminOrders = () => {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {([...["processing", "confirmed", "on_hold", "hand_delivery", "cancelled"] as const, ...(order.status === "pending_return" ? ["returned" as const] : [])]).map((s) => (
+                          {([...["processing", "confirmed", "inquiry", "on_hold", "hand_delivery", "cancelled"] as const, ...(order.status === "pending_return" ? ["returned" as const] : []), ...(order.status === "inquiry" ? ["pending_return" as const] : [])]).map((s) => (
                             <SelectItem key={s} value={s}>
                               <div className="flex items-center gap-2">
                                 <span className={`h-2 w-2 rounded-full ${getStatusColor(s as OrderStatus)}`} />
