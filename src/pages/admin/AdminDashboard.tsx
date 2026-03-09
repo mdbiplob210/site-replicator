@@ -210,9 +210,10 @@ const AdminDashboard = () => {
                 </Card>
               ))}
             </div>
+            )}
 
             {/* Sales Trend Chart */}
-            {salesTrend && salesTrend.length > 0 && (
+            {canSeeOrders && salesTrend && salesTrend.length > 0 && (
               <Card className="p-5 border-border/30">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="p-2.5 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 shadow-lg shadow-emerald-500/20">
