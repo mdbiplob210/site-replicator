@@ -233,7 +233,7 @@ const AdminOrders = () => {
   const createOrder = useCreateOrder();
   const updateStatus = useUpdateOrderStatus();
   const deleteOrder = useDeleteOrder();
-  const { data: nextOrderNumber = "ORD-00001" } = useNextOrderNumber();
+  const { data: nextOrderNumber = "1" } = useNextOrderNumber();
   const { data: allProducts = [] } = usePublicProducts();
 
   // Fetch blocked phones for toggle
