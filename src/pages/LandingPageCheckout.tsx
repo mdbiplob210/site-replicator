@@ -337,11 +337,13 @@ ttq.track('InitiateCheckout');
 
     const allScripts = richTrackingHelper + trackingScripts + partialTrackingScript + orderScript;
 
-    if (page.checkout_html!.includes("</head>")) {
-      return page.checkout_html!.replace("</head>", `${allScripts}</head>`);
+    const cleanHtml = sanitizeHtmlScripts(page.checkout_html!);
+
+    if (cleanHtml.includes("</head>")) {
+      return cleanHtml.replace("</head>", `${allScripts}</head>`);
     }
 
-    return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${allScripts}</head><body>${page.checkout_html}</body></html>`;
+    return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${allScripts}</head><body>${sanitizeHtmlScripts(page.checkout_html!)}</body></html>`;
   };
 
   return (
