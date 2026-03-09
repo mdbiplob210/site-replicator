@@ -483,9 +483,8 @@ export default function AdminFinance() {
 
             {/* Supplier Summary */}
             {(() => {
-              const purchaseRecords = records.filter(r => r.type === "product_purchase");
-              const supplierMap: Record<string, { totalPurchase: number; records: typeof purchaseRecords }> = {};
-              for (const r of purchaseRecords) {
+              const supplierMap: Record<string, { totalPurchase: number; records: typeof purchaseRecordsAll }> = {};
+              for (const r of purchaseRecordsAll) {
                 if (!supplierMap[r.label]) {
                   supplierMap[r.label] = { totalPurchase: 0, records: [] };
                 }
