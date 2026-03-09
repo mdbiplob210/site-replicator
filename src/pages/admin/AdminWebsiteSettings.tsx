@@ -169,61 +169,101 @@ function GeneralTab() {
     }
   };
 
+  const handleSave = async () => {
+    const updates = [
+      { key: "site_name", value: siteName },
+      { key: "site_url", value: siteUrl },
+      { key: "tagline", value: tagline },
+      { key: "phone_number", value: contactPhone },
+      { key: "contact_email", value: contactEmail },
+      { key: "delivery_inside_dhaka", value: insideDhaka },
+      { key: "delivery_outside_dhaka", value: outsideDhaka },
+      { key: "free_delivery_above", value: freeDeliveryAbove },
+      { key: "facebook_url", value: facebookUrl },
+      { key: "instagram_url", value: instagramUrl },
+      { key: "custom_domain", value: customDomain },
+    ];
+    for (const { key, value } of updates) {
+      await updateSetting.mutateAsync({ key, value });
+    }
+    toast.success("সেটিংস সেভ হয়েছে!");
+  };
+
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-bold text-foreground">Website Settings</h2>
+          <p className="text-sm text-muted-foreground">Configure your storefront details</p>
+        </div>
+        <Button onClick={handleSave} disabled={updateSetting.isPending} className="gap-2">
+          <Save className="h-4 w-4" /> {updateSetting.isPending ? "সেভ হচ্ছে..." : "সেভ করুন"}
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-5 gap-6">
+        {/* Store Information - Left Column */}
+        <div className="col-span-3 bg-card rounded-2xl border border-border p-6 space-y-5">
+          <h3 className="font-bold text-foreground">Store Information</h3>
+
+          {/* Store Logo */}
+          <div>
+            <label className="text-sm font-medium text-foreground">Store Logo</label>
+            <p className="text-xs text-muted-foreground mt-0.5">সাজেস্টেড সাইজ: 200×200px (স্কয়ার), সর্বোচ্চ 2MB। PNG বা WebP ফরম্যাট সবচেয়ে ভালো।</p>
+            <div className="flex items-center gap-4 mt-3">
+              <div className="h-16 w-16 rounded-xl border-2 border-dashed border-border flex items-center justify-center overflow-hidden bg-secondary/30">
+                {logoUrl ? (
+                  <img src={logoUrl} alt="Store Logo" className="h-full w-full object-contain" />
+                ) : (
+                  <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <label>
+                  <input type="file" accept="image/png,image/webp,image/jpeg,image/svg+xml" className="hidden" onChange={handleLogoUpload} />
+                  <Button variant="outline" className="gap-2" asChild disabled={uploading}>
+                    <span><Upload className="h-4 w-4" /> {uploading ? "আপলোড হচ্ছে..." : "লোগো আপলোড করুন"}</span>
+                  </Button>
+                </label>
+                {logoUrl && (
+                  <Button variant="ghost" size="icon" className="text-destructive" onClick={handleRemoveLogo}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+
           {/* Site Name */}
           <div>
             <label className="text-sm font-medium text-foreground">Site Name <span className="text-destructive">*</span></label>
             <p className="text-xs text-muted-foreground">Product Feed এ ব্যবহার হবে</p>
-            <Input 
-              className="mt-1.5" 
-              placeholder="Your Store Name"
-              value={siteName}
-              onChange={(e) => setSiteName(e.target.value)}
-            />
+            <Input className="mt-1.5" placeholder="Your Store Name" value={siteName} onChange={(e) => setSiteName(e.target.value)} />
           </div>
 
           {/* Site URL */}
           <div>
             <label className="text-sm font-medium text-foreground">Site URL <span className="text-destructive">*</span></label>
-            <p className="text-xs text-muted-foreground">Product Feed এ প্রোডাক্ট লিংক তৈরিতে ব্যবহার হবে (যেমন: https://yourstore.com)</p>
-            <Input 
-              className="mt-1.5" 
-              placeholder="https://yourstore.com"
-              value={siteUrl}
-              onChange={(e) => setSiteUrl(e.target.value)}
-            />
+            <p className="text-xs text-muted-foreground">Product Feed এ প্রোডাক্ট লিংক তৈরিতে ব্যবহার হবে</p>
+            <Input className="mt-1.5" placeholder="https://yourstore.com" value={siteUrl} onChange={(e) => setSiteUrl(e.target.value)} />
           </div>
 
           {/* Tagline */}
           <div>
             <label className="text-sm font-medium text-foreground">Tagline</label>
-            <Input 
-              className="mt-1.5" 
-              placeholder="Welcome to our store"
-              value={tagline}
-              onChange={(e) => setTagline(e.target.value)}
-            />
+            <Input className="mt-1.5" placeholder="Welcome to our store" value={tagline} onChange={(e) => setTagline(e.target.value)} />
           </div>
 
           {/* Contact Phone */}
           <div>
             <label className="text-sm font-medium text-foreground">Contact Phone</label>
-            <Input 
-              className="mt-1.5" 
-              placeholder="+880..."
-              value={contactPhone}
-              onChange={(e) => setContactPhone(e.target.value)}
-            />
+            <Input className="mt-1.5" placeholder="+880..." value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} />
           </div>
 
           {/* Contact Email */}
           <div>
             <label className="text-sm font-medium text-foreground">Contact Email</label>
-            <Input 
-              className="mt-1.5" 
-              placeholder="support@store.com"
-              value={contactEmail}
-              onChange={(e) => setContactEmail(e.target.value)}
-            />
+            <Input className="mt-1.5" placeholder="support@store.com" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} />
           </div>
         </div>
 
