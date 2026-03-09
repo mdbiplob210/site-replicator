@@ -9,6 +9,7 @@ import { X, ShoppingBag, User, Phone, MapPin, Minus, Plus, CheckCircle2, Loader2
 import { useTracking } from "@/hooks/useTracking";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
 import { OptimizedImage } from "@/components/ui/optimized-image";
+import { getClientIp, parseDeviceInfo } from "@/lib/deviceDetect";
 
 interface CheckoutItem {
   productId: string;
@@ -150,6 +151,9 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
       const orderId = crypto.randomUUID();
       const total = currentItem.price * qty;
 
+      const clientIp = await getClientIp();
+      const { deviceInfo } = parseDeviceInfo();
+
       const { error } = await supabase.from("orders").insert({
         id: orderId,
         order_number: orderNumber,
@@ -162,8 +166,9 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
         discount: discount,
         status: "processing",
         source: "website",
-        device_info: /Mobi|Android/i.test(navigator.userAgent) ? "Mobile" : "Desktop",
-        user_agent: navigator.userAgent.substring(0, 200),
+        client_ip: clientIp,
+        device_info: deviceInfo,
+        user_agent: navigator.userAgent,
       } as any);
       if (error) throw error;
 

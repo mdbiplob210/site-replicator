@@ -3524,6 +3524,84 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                 </DialogContent>
               </Dialog>
 
+            {/* Device & Tracking Info */}
+            <Collapsible>
+              <CollapsibleTrigger className="w-full flex items-center justify-between p-4 rounded-2xl bg-secondary/20 border border-border/40 hover:bg-secondary/30 transition-colors">
+                <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                  <div className="h-6 w-6 rounded-lg bg-blue-500/10 flex items-center justify-center"><Smartphone className="h-3.5 w-3.5 text-blue-500" /></div>
+                  ডিভাইস ও ট্র্যাকিং তথ্য
+                </h3>
+                <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform" />
+              </CollapsibleTrigger>
+              <CollapsibleContent className="mt-2 p-4 rounded-2xl bg-secondary/10 border border-border/30 space-y-3">
+                {(() => {
+                  const ua = order.user_agent || "";
+                  // Parse device info from user_agent
+                  const isMobile = /Mobile|Android|iPhone|iPod/i.test(ua);
+                  const isTablet = /iPad|Tablet/i.test(ua);
+                  const deviceType = isTablet ? "Tablet" : isMobile ? "Mobile" : "Desktop";
+
+                  let osName = "Unknown";
+                  if (/Android/i.test(ua)) { const v = ua.match(/Android\s([\d.]+)/)?.[1] || ""; osName = `Android ${v}`.trim(); }
+                  else if (/iPhone|iPad/i.test(ua)) { const v = ua.match(/OS\s([\d_]+)/)?.[1]?.replace(/_/g, ".") || ""; osName = `iOS ${v}`.trim(); }
+                  else if (/Mac OS X/i.test(ua)) { const v = ua.match(/Mac OS X\s([\d_.]+)/)?.[1]?.replace(/_/g, ".") || ""; osName = `macOS ${v}`.trim(); }
+                  else if (/Windows/i.test(ua)) { const v = ua.match(/Windows NT\s([\d.]+)/)?.[1] || ""; const wm: Record<string,string> = {"10.0":"10/11","6.3":"8.1","6.2":"8","6.1":"7"}; osName = `Windows ${wm[v]||v}`.trim(); }
+                  else if (/Linux/i.test(ua)) osName = "Linux";
+
+                  let browserName = "Unknown";
+                  if (/Edg\//i.test(ua)) browserName = "Edge";
+                  else if (/OPR|Opera/i.test(ua)) browserName = "Opera";
+                  else if (/SamsungBrowser/i.test(ua)) browserName = "Samsung Browser";
+                  else if (/UCBrowser/i.test(ua)) browserName = "UC Browser";
+                  else if (/Firefox/i.test(ua)) browserName = "Firefox";
+                  else if (/Chrome/i.test(ua) && !/Edg/i.test(ua)) browserName = "Chrome";
+                  else if (/Safari/i.test(ua) && !/Chrome/i.test(ua)) browserName = "Safari";
+
+                  let model = "";
+                  if (/iPhone/i.test(ua)) model = "iPhone";
+                  else if (/iPad/i.test(ua)) model = "iPad";
+                  else if (/SM-[A-Z]\d+/i.test(ua)) model = ua.match(/SM-[A-Z]\d+/i)?.[0] || "Samsung";
+                  else if (/Pixel/i.test(ua)) model = "Google Pixel";
+                  else if (/Xiaomi|Redmi|POCO/i.test(ua)) model = ua.match(/Xiaomi|Redmi\s?\w+|POCO\s?\w+/i)?.[0] || "Xiaomi";
+                  else if (/OPPO|CPH/i.test(ua)) model = "OPPO";
+                  else if (/vivo/i.test(ua)) model = "Vivo";
+                  else if (/realme/i.test(ua)) model = "Realme";
+
+                  const infoItems = [
+                    { label: "IP Address", value: order.client_ip || "সংগ্রহ হয়নি", icon: "🌐" },
+                    { label: "ডিভাইস টাইপ", value: deviceType, icon: deviceType === "Mobile" ? "📱" : deviceType === "Tablet" ? "📱" : "💻" },
+                    { label: "অপারেটিং সিস্টেম", value: osName, icon: "🖥️" },
+                    { label: "ব্রাউজার", value: browserName, icon: "🌍" },
+                    { label: "ডিভাইস মডেল", value: model || "Unknown", icon: "📲" },
+                    { label: "ডিভাইস ইনফো (Raw)", value: order.device_info || "N/A", icon: "📋" },
+                    { label: "সোর্স", value: order.source || "N/A", icon: "📡" },
+                  ];
+
+                  return (
+                    <>
+                      <div className="grid grid-cols-2 gap-2">
+                        {infoItems.map((info, i) => (
+                          <div key={i} className="flex items-start gap-2.5 p-3 rounded-xl bg-background border border-border/30">
+                            <span className="text-base mt-0.5">{info.icon}</span>
+                            <div className="min-w-0">
+                              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">{info.label}</p>
+                              <p className="text-sm font-medium text-foreground truncate">{info.value}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      {ua && (
+                        <div className="p-3 rounded-xl bg-background border border-border/30">
+                          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">Full User Agent</p>
+                          <p className="text-[11px] text-muted-foreground font-mono break-all leading-relaxed">{ua}</p>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
+              </CollapsibleContent>
+            </Collapsible>
+
             {/* Save Button */}
             <Button className="w-full rounded-xl shadow-sm" onClick={handleSaveChanges} disabled={isSaving}>
               {isSaving ? <><Loader2 className="h-4 w-4 animate-spin" /> Saving...</> : "পরিবর্তন সেভ করুন"}
