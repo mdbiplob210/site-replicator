@@ -131,8 +131,10 @@ const AdminDashboard = () => {
                 <p className="text-xl font-extrabold text-violet-600 mt-0.5">{salesDetails.paymentStats.partial.count} <span className="text-xs font-medium text-muted-foreground">({fmt(salesDetails.paymentStats.partial.amount)})</span></p>
               </Card>
             </div>
+            )}
 
             {/* Order Status Cards */}
+            {canSeeOrders && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
               {orderCards.map((stat) => (
                 <Card key={stat.label} className="p-4 border-border/30 card-hover group overflow-hidden relative">
