@@ -8,6 +8,7 @@ import {
   Globe, Settings, Zap, Database
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useUserPresence } from "@/hooks/useUserTracking";
 
 const searchPages = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
