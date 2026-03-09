@@ -120,21 +120,23 @@ export default function AdminFinance() {
 
   const handleSubmitIncome = () => {
     if (!incomeAmount || Number(incomeAmount) <= 0) return;
+    const bankInfo = incomeBank ? ` [${incomeBank}]` : "";
     createRecord.mutate({
       type: "income",
       label: incomeSource,
       amount: Number(incomeAmount),
-      notes: incomeNote || null,
+      notes: (incomeNote ? incomeNote : "") + bankInfo || null,
     }, { onSuccess: () => { setIncomeAmount(""); setIncomeNote(""); } });
   };
 
   const handleSubmitExpense = () => {
     if (!expenseAmount || Number(expenseAmount) <= 0 || !expenseNote) return;
+    const bankInfo = expenseBank ? ` [${expenseBank}]` : "";
     createRecord.mutate({
       type: "expense",
       label: expensePurpose,
       amount: Number(expenseAmount),
-      notes: expenseNote,
+      notes: expenseNote + bankInfo,
     }, { onSuccess: () => { setExpenseAmount(""); setExpenseNote(""); } });
   };
 
