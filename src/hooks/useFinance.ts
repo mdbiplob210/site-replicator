@@ -93,7 +93,7 @@ export function useFinanceSummary() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("finance_records")
-        .select("*");
+        .select("type, amount");
       if (error) throw error;
 
       const records = data as FinanceRecord[];
