@@ -152,12 +152,11 @@ export function useOrderCounts(dateFilter: OrderDateFilter = "all", customFrom?:
   return useQuery({
     queryKey: ["order-counts", dateFilter, customFrom?.toISOString(), customTo?.toISOString()],
     queryFn: async () => {
-      // Fetch all order counts with pagination to bypass 1000 row limit
       let allData: { status: OrderStatus; created_at: string }[] = [];
       let from = 0;
       const pageSize = 1000;
       while (true) {
-        let query = supabase.from("orders").select("status, created_at").range(from, from + pageSize - 1);
+        let query = supabase.from("orders").select("status").range(from, from + pageSize - 1);
 
         const range = getOrderDateRange(dateFilter, customFrom, customTo);
         if (range.from) query = query.gte("created_at", range.from);
@@ -178,6 +177,7 @@ export function useOrderCounts(dateFilter: OrderDateFilter = "all", customFrom?:
       }
       return counts;
     },
+    staleTime: 30 * 1000,
   });
 }
 
