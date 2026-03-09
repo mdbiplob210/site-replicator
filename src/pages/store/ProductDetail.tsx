@@ -369,8 +369,8 @@ const ProductDetail = () => {
             </div>
 
             {/* Category */}
-            {(product.categories as any)?.name && (
-              <p className="text-sm text-gray-500">ক্যাটাগরি: {(product.categories as any).name}</p>
+            {product.category_id && (
+              <p className="text-sm text-gray-500">ক্যাটাগরি: {product.category_id}</p>
             )}
 
             {/* Delivery info table */}
