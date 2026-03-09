@@ -46,7 +46,7 @@ const ProductDetail = () => {
         id: product.id,
         name: product.name,
         price: product.selling_price,
-        category: (product.categories as any)?.name || "",
+        category: "",
         productCode: product.product_code,
         image: product.main_image_url || "",
       });
@@ -137,7 +137,7 @@ const ProductDetail = () => {
       price: product.selling_price,
       qty,
       productCode: product.product_code,
-      category: (product.categories as any)?.name || "",
+      category: "",
     });
     setCheckoutItem({
       productId: product.id,
@@ -369,8 +369,8 @@ const ProductDetail = () => {
             </div>
 
             {/* Category */}
-            {(product.categories as any)?.name && (
-              <p className="text-sm text-gray-500">ক্যাটাগরি: {(product.categories as any).name}</p>
+            {product.category_id && (
+              <p className="text-sm text-gray-500">ক্যাটাগরি: {product.category_id}</p>
             )}
 
             {/* Delivery info table */}
