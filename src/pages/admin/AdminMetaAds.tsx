@@ -380,7 +380,30 @@ export default function AdminMetaAds() {
           </div>
         </div>
 
-        {/* Stats */}
+        {/* Connected Ad Accounts */}
+        {adAccounts.length > 0 && (
+          <div className="bg-card rounded-2xl border border-border p-4">
+            <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
+              <Facebook className="h-4 w-4 text-blue-600" /> {adAccounts.length}টি Ad Account পাওয়া গেছে
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {adAccounts.map(ac => (
+                <button
+                  key={ac.id}
+                  onClick={() => setSelectedAccountId(ac.id === selectedAccountId ? "all" : ac.id)}
+                  className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
+                    ac.id === selectedAccountId
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-secondary text-muted-foreground border-border hover:bg-secondary/80"
+                  }`}
+                >
+                  {ac.name} · {ac.business_name} ({ac.currency})
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { icon: DollarSign, label: "Spend (USD)", value: `$${totalUsd.toFixed(2)}` },
