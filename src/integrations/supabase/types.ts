@@ -1435,6 +1435,10 @@ export type Database = {
         | "manage_automation"
         | "view_dashboard"
         | "manage_categories"
+        | "create_users"
+        | "create_admin_users"
+        | "create_moderator_users"
+        | "create_basic_users"
       order_status:
         | "processing"
         | "confirmed"
@@ -1599,6 +1603,10 @@ export const Constants = {
         "manage_automation",
         "view_dashboard",
         "manage_categories",
+        "create_users",
+        "create_admin_users",
+        "create_moderator_users",
+        "create_basic_users",
       ],
       order_status: [
         "processing",
