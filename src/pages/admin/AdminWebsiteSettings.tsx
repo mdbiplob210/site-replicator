@@ -272,6 +272,34 @@ function GeneralTab() {
             <Input className="mt-1.5" placeholder="+880..." value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} />
           </div>
 
+          {/* Contact Phone 2 */}
+          <div>
+            <label className="text-sm font-medium text-foreground">Contact Phone 2</label>
+            <p className="text-xs text-muted-foreground">দ্বিতীয় ফোন নম্বর (প্রোডাক্ট পেজে দেখাবে)</p>
+            <Input className="mt-1.5" placeholder="01XXXXXXXXX" value={contactPhone2} onChange={(e) => setContactPhone2(e.target.value)} />
+          </div>
+
+          {/* WhatsApp Number */}
+          <div>
+            <label className="text-sm font-medium text-foreground">WhatsApp Number</label>
+            <p className="text-xs text-muted-foreground">কান্ট্রি কোড সহ (যেমন: 8801XXXXXXXXX)</p>
+            <Input className="mt-1.5" placeholder="8801XXXXXXXXX" value={whatsappNumber} onChange={(e) => setWhatsappNumber(e.target.value)} />
+          </div>
+
+          {/* Messenger Link */}
+          <div>
+            <label className="text-sm font-medium text-foreground">Messenger Link</label>
+            <p className="text-xs text-muted-foreground">Facebook Messenger লিংক (যেমন: https://m.me/pagename)</p>
+            <Input className="mt-1.5" placeholder="https://m.me/yourpage" value={messengerLink} onChange={(e) => setMessengerLink(e.target.value)} />
+          </div>
+
+          {/* Payment Number */}
+          <div>
+            <label className="text-sm font-medium text-foreground">Payment Number</label>
+            <p className="text-xs text-muted-foreground">বিকাশ/নগদ পেমেন্ট নম্বর (ডেলিভারি টেবিলে দেখাবে)</p>
+            <Input className="mt-1.5" placeholder="01XXXXXXXXX" value={paymentNumber} onChange={(e) => setPaymentNumber(e.target.value)} />
+          </div>
+
           {/* Contact Email */}
           <div>
             <label className="text-sm font-medium text-foreground">Contact Email</label>
