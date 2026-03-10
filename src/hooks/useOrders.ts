@@ -222,7 +222,7 @@ export function useCreateOrder() {
       toast.success("Order created successfully!");
     },
     onError: (error: Error) => {
-      toast.error("অর্ডার তৈরি করতে ব্যর্থ: " + error.message);
+      toast.error("Failed to create order: " + error.message);
     },
   });
 }
