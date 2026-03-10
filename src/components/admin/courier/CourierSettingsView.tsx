@@ -20,7 +20,6 @@ export function CourierSettingsView({ onBack }: CourierSettingsViewProps) {
   const updateProvider = useUpdateCourierProvider();
   const { data: siteSettings } = useSiteSettings();
 
-  // Use custom domain if set, fallback to Supabase URL
   const customDomain = siteSettings?.custom_domain || siteSettings?.site_domain;
   const webhookBaseUrl = customDomain
     ? `https://${customDomain}/api/courier-webhook`
@@ -36,24 +35,22 @@ export function CourierSettingsView({ onBack }: CourierSettingsViewProps) {
           <Truck className="h-5 w-5 text-violet-600" />
         </div>
         <div>
-          <h1 className="text-xl font-bold text-foreground tracking-tight">কুরিয়ার ম্যানেজমেন্ট</h1>
-          <p className="text-sm text-muted-foreground">API কনফিগারেশন, ওয়েবহুক ও অথোরাইজেশন টোকেন</p>
+          <h1 className="text-xl font-bold text-foreground tracking-tight">Courier Management</h1>
+          <p className="text-sm text-muted-foreground">API configuration, webhooks & authorization tokens</p>
         </div>
       </div>
 
-      {/* COD Balance Section */}
       <CourierBalanceView />
 
-      {/* Webhook URL section */}
       <Card className="border-border/40">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
-            <Globe className="h-4 w-4 text-primary" /> ওয়েবহুক Callback URL
+            <Globe className="h-4 w-4 text-primary" /> Webhook Callback URL
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <p className="text-xs text-muted-foreground">
-            কুরিয়ার সার্ভিসের ড্যাশবোর্ডে এই URL সেট করুন। ডেলিভারি, রিটার্ন, প্রাইস চেঞ্জ অটো-আপডেট হবে।
+            Set this URL in your courier service dashboard. Delivery, return, and price change updates will be automatic.
           </p>
           {customDomain && (
             <Badge variant="outline" className="text-xs">
@@ -73,7 +70,7 @@ export function CourierSettingsView({ onBack }: CourierSettingsViewProps) {
                 onClick={() => {
                   const url = `${webhookBaseUrl}?courier=${p.slug}${p.auth_token ? `&token=${p.auth_token}` : ''}`;
                   navigator.clipboard.writeText(url);
-                  toast.success("কপি হয়েছে!");
+                  toast.success("Copied!");
                 }}
               >
                 <Copy className="h-3.5 w-3.5" />
@@ -83,17 +80,16 @@ export function CourierSettingsView({ onBack }: CourierSettingsViewProps) {
         </CardContent>
       </Card>
 
-      {/* Tracked Data Info */}
       <Card className="border-border/40">
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base">📊 ট্র্যাক করা ডেটা</CardTitle>
+          <CardTitle className="flex items-center gap-2 text-base">📊 Tracked Data</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             {[
-              "ডেলিভারি স্ট্যাটাস", "ট্র্যাকিং ID", "ডেলিভারি ফি/চার্জ", "COD Amount",
-              "রাইডার নাম ও ফোন", "ওজন (Weight)", "এরিয়া/জেলা", "ডেলিভারি তারিখ",
-              "রিটার্ন কারণ", "প্রাইস চেঞ্জ", "হাব তথ্য", "Raw স্ট্যাটাস"
+              "Delivery Status", "Tracking ID", "Delivery Fee/Charge", "COD Amount",
+              "Rider Name & Phone", "Weight", "Area/District", "Delivery Date",
+              "Return Reason", "Price Change", "Hub Info", "Raw Status"
             ].map((item) => (
               <div key={item} className="flex items-center gap-1.5 text-xs p-2 rounded-lg bg-secondary/30 border border-border/30">
                 <span className="text-primary">✓</span> {item}
@@ -103,9 +99,8 @@ export function CourierSettingsView({ onBack }: CourierSettingsViewProps) {
         </CardContent>
       </Card>
 
-      {/* Provider cards */}
       {isLoading ? (
-        <div className="text-center py-10 text-muted-foreground">লোড হচ্ছে...</div>
+        <div className="text-center py-10 text-muted-foreground">Loading...</div>
       ) : (
         <div className="space-y-4">
           {providers?.map((provider) => (
@@ -156,7 +151,6 @@ function CourierProviderCard({
     });
   };
 
-  // Get placeholder hints per courier
   const getPlaceholders = (slug: string) => {
     switch (slug) {
       case 'pathao': return { base_url: 'https://api-hermes.pathao.com', extra: ['Client ID', 'Store ID'] };
@@ -181,17 +175,16 @@ function CourierProviderCard({
             <p className="text-xs text-muted-foreground">{provider.slug}</p>
           </div>
           <Badge variant={isActive ? "default" : "secondary"} className="text-xs">
-            {isActive ? "সক্রিয়" : "নিষ্ক্রিয়"}
+            {isActive ? "Active" : "Inactive"}
           </Badge>
           <Badge variant="outline" className="text-xs">{configs.length} API</Badge>
         </div>
         <div className="flex items-center gap-2">
-          <Label className="text-xs">সক্রিয়</Label>
+          <Label className="text-xs">Active</Label>
           <Switch checked={isActive} onCheckedChange={setIsActive} />
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Auth Token */}
         <div className="p-3 rounded-xl bg-secondary/30 border border-border/40 space-y-2">
           <div className="flex items-center gap-2">
             <Shield className="h-4 w-4 text-primary" />
@@ -206,14 +199,13 @@ function CourierProviderCard({
             </Button>
             <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => {
               navigator.clipboard.writeText(provider.auth_token || '');
-              toast.success("টোকেন কপি হয়েছে!");
+              toast.success("Token copied!");
             }}>
               <Copy className="h-3.5 w-3.5" />
             </Button>
           </div>
         </div>
 
-        {/* API Configs */}
         {configs.map((config, idx) => (
           <div key={idx} className="border border-border/40 rounded-xl p-4 space-y-3 bg-muted/20">
             <div className="flex items-center justify-between">
@@ -224,7 +216,7 @@ function CourierProviderCard({
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs">লেবেল</Label>
+                <Label className="text-xs">Label</Label>
                 <Input placeholder="Production API" value={config.label} onChange={(e) => updateConfig(idx, "label", e.target.value)} className="rounded-lg" />
               </div>
               <div>
@@ -236,7 +228,7 @@ function CourierProviderCard({
                 <Input type="password" placeholder="API Key" value={config.api_key} onChange={(e) => updateConfig(idx, "api_key", e.target.value)} className="rounded-lg" />
               </div>
               <div>
-                <Label className="text-xs">Secret Key (ঐচ্ছিক)</Label>
+                <Label className="text-xs">Secret Key (optional)</Label>
                 <Input type="password" placeholder="Secret Key" value={config.secret_key || ""} onChange={(e) => updateConfig(idx, "secret_key", e.target.value)} className="rounded-lg" />
               </div>
               {(provider.slug === 'pathao' || provider.slug === 'ecourier') && (
@@ -259,10 +251,10 @@ function CourierProviderCard({
 
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={addConfig} className="rounded-lg">
-            <Plus className="h-4 w-4 mr-1" /> API যোগ করুন
+            <Plus className="h-4 w-4 mr-1" /> Add API
           </Button>
           <Button size="sm" onClick={handleSave} disabled={isUpdating} className="rounded-lg">
-            <Save className="h-4 w-4 mr-1" /> সেভ করুন
+            <Save className="h-4 w-4 mr-1" /> Save
           </Button>
         </div>
       </CardContent>

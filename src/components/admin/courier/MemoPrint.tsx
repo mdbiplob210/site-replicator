@@ -133,7 +133,7 @@ export function MemoPrint({ order, courierOrder, courierProvider, orderItems }: 
     printWindow.document.write(`
       <html>
       <head>
-        <title>মেমো - ${order.order_number}</title>
+        <title>Memo - ${order.order_number}</title>
         <style>${MEMO_STYLES}</style>
         <link href="https://fonts.googleapis.com/css2?family=Libre+Barcode+39&display=swap" rel="stylesheet">
       </head>
@@ -152,7 +152,7 @@ export function MemoPrint({ order, courierOrder, courierProvider, orderItems }: 
   return (
     <>
       <Button size="sm" variant="outline" onClick={handlePrint}>
-        <Printer className="h-4 w-4 mr-1" /> মেমো প্রিন্ট
+        <Printer className="h-4 w-4 mr-1" /> Print Memo
       </Button>
 
       <div ref={printRef} style={{ display: "none" }}>
@@ -198,13 +198,13 @@ export function MemoPrint({ order, courierOrder, courierProvider, orderItems }: 
 
           {/* Customer */}
           <div className="section">
-            <div className="section-title">👤 কাস্টমার তথ্য</div>
+            <div className="section-title">👤 Customer Info</div>
             <div className="info-grid">
-              <span className="info-label">নাম</span>
+              <span className="info-label">Name</span>
               <span className="info-value">{order.customer_name}</span>
-              <span className="info-label">ফোন</span>
+              <span className="info-label">Phone</span>
               <span className="info-value phone-num">{order.customer_phone || "—"}</span>
-              <span className="info-label">ঠিকানা</span>
+              <span className="info-label">Address</span>
               <span className="info-value">{order.customer_address || "—"}</span>
             </div>
           </div>
@@ -212,14 +212,14 @@ export function MemoPrint({ order, courierOrder, courierProvider, orderItems }: 
           {/* Items */}
           {orderItems && orderItems.length > 0 && (
             <div className="section">
-              <div className="section-title">📦 পণ্যের বিবরণ</div>
+              <div className="section-title">📦 Order Items</div>
               <table className="items-table">
                 <thead>
                   <tr>
-                    <th style={{ textAlign: "left" }}>পণ্য</th>
-                    <th style={{ textAlign: "center" }}>কোড</th>
-                    <th style={{ textAlign: "center" }}>পরি.</th>
-                    <th style={{ textAlign: "right" }}>মূল্য</th>
+                    <th style={{ textAlign: "left" }}>Product</th>
+                    <th style={{ textAlign: "center" }}>Code</th>
+                    <th style={{ textAlign: "center" }}>Qty</th>
+                    <th style={{ textAlign: "right" }}>Price</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -238,29 +238,29 @@ export function MemoPrint({ order, courierOrder, courierProvider, orderItems }: 
 
           {/* Totals */}
           <div className="totals-section">
-            <div className="total-row"><span>সাবটোটাল</span><span>৳{itemsTotal}</span></div>
-            <div className="total-row"><span>ডেলিভারি চার্জ</span><span>৳{order.delivery_charge}</span></div>
+            <div className="total-row"><span>Subtotal</span><span>৳{itemsTotal}</span></div>
+            <div className="total-row"><span>Delivery Charge</span><span>৳{order.delivery_charge}</span></div>
             {Number(order.discount) > 0 && (
-              <div className="total-row discount"><span>ডিসকাউন্ট</span><span>-৳{order.discount}</span></div>
+              <div className="total-row discount"><span>Discount</span><span>-৳{order.discount}</span></div>
             )}
-            <div className="total-row grand-total"><span>সর্বমোট</span><span>৳{order.total_amount}</span></div>
+            <div className="total-row grand-total"><span>Grand Total</span><span>৳{order.total_amount}</span></div>
           </div>
 
           {/* Notes */}
           {(order as any).courier_note && (
             <div className="courier-note">
-              <strong>📝 কুরিয়ার নোট:</strong> {(order as any).courier_note}
+              <strong>📝 Courier Note:</strong> {(order as any).courier_note}
             </div>
           )}
           {order.notes && (
             <div className="staff-note">
-              <strong>📋 স্টাফ নোট:</strong> {order.notes}
+              <strong>📋 Staff Note:</strong> {order.notes}
             </div>
           )}
 
           {/* Footer */}
           <div className="memo-footer">
-            <div className="thank-you">ধন্যবাদ আপনার অর্ডারের জন্য! 🙏</div>
+            <div className="thank-you">Thank you for your order! 🙏</div>
             <div style={{ marginTop: 3 }}>Printed on {format(new Date(), "dd/MM/yyyy")}</div>
           </div>
         </div>
