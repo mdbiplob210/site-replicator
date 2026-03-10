@@ -547,7 +547,7 @@ export default function AdminFinance() {
                               </div>
                             ))}
                             {data.records.length > 5 && (
-                              <p className="text-[10px] text-muted-foreground text-center py-1">+{data.records.length - 5} আরো রেকর্ড</p>
+                              <p className="text-[10px] text-muted-foreground text-center py-1">+{data.records.length - 5} more records</p>
                             )}
                           </div>
                         </div>
