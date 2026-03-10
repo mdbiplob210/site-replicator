@@ -202,7 +202,7 @@ const AdminProducts = () => {
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success("ক্যাটেগরি ডিলিট হয়েছে!");
+      toast.success("Category deleted!");
       fetchCategories();
     }
   };
