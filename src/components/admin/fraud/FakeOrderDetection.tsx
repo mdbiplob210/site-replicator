@@ -159,9 +159,9 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
       queryClient.invalidateQueries({ queryKey: ["blocked-phones"] });
       setNewPhone("");
       setNewPhoneReason("");
-      toast.success("নম্বর ব্লক করা হয়েছে!");
+      toast.success("Number blocked!");
     },
-    onError: (e: Error) => toast.error(e.message.includes("duplicate") ? "এই নম্বর আগে থেকে ব্লক আছে" : e.message),
+    onError: (e: Error) => toast.error(e.message.includes("duplicate") ? "This number is already blocked" : e.message),
   });
 
   const removeBlockedPhone = useMutation({
