@@ -938,11 +938,11 @@ function DataResetTab() {
   const [resetting, setResetting] = useState(false);
 
   const segments = [
-    { id: "orders", label: "অর্ডার", desc: "সব অর্ডার, অর্ডার আইটেম, ব্লক অর্ডার, ইনকমপ্লিট অর্ডার", tables: ["order_activity_logs", "order_assignments", "order_items", "courier_orders", "invoices", "incomplete_orders", "orders"] },
-    { id: "finance", label: "ফাইন্যান্স", desc: "আয়/ব্যয় রেকর্ড", tables: ["finance_records"] },
-    { id: "reports", label: "রিপোর্ট", desc: "অ্যাড স্পেন্ড রেকর্ড", tables: ["ad_spends"] },
-    { id: "ad_spend", label: "মেটা অ্যাডস ডেটা", desc: "ক্যাম্পেইন, অ্যাড সেট, অ্যাড ডেটা", tables: ["meta_ads", "meta_adsets", "meta_campaigns"] },
-    { id: "planning", label: "প্ল্যানিং ও টাস্ক", desc: "টাস্ক ডেটা", tables: ["tasks"] },
+    { id: "orders", label: "Orders", desc: "All orders, order items, blocked orders, incomplete orders", tables: ["order_activity_logs", "order_assignments", "order_items", "courier_orders", "invoices", "incomplete_orders", "orders"] },
+    { id: "finance", label: "Finance", desc: "Income/expense records", tables: ["finance_records"] },
+    { id: "reports", label: "Reports", desc: "Ad spend records", tables: ["ad_spends"] },
+    { id: "ad_spend", label: "Meta Ads Data", desc: "Campaigns, ad sets, ad data", tables: ["meta_ads", "meta_adsets", "meta_campaigns"] },
+    { id: "planning", label: "Planning & Tasks", desc: "Task data", tables: ["tasks"] },
   ];
 
   const toggleSegment = (id: string) => {
