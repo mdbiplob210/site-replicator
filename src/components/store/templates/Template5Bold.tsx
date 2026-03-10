@@ -121,7 +121,7 @@ const Template5Bold = () => {
                         <span className="text-xs text-zinc-400 line-through">৳{p.original_price}</span>
                       )}
                     </div>
-                    {outOfStock && <span className="text-[10px] text-red-500 font-bold uppercase">স্টকে নেই</span>}
+                    {outOfStock && <span className="text-[10px] text-red-500 font-bold uppercase">OUT OF STOCK</span>}
                   </div>
                 </Link>
                 <div className="px-4 pb-4">
