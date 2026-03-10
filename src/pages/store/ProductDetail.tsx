@@ -9,6 +9,7 @@ import { useTracking, useEngagementTracking } from "@/hooks/useTracking";
 import { PopupCheckout } from "@/components/store/PopupCheckout";
 import { ExitDiscountBanner } from "@/components/store/ExitDiscountBanner";
 import { OptimizedImage } from "@/components/ui/optimized-image";
+import { supabase } from "@/integrations/supabase/client";
 
 const ProductDetail = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -144,6 +145,24 @@ const ProductDetail = () => {
   const paymentNumber = settings?.payment_number || "";
   const insideDhaka = settings?.delivery_inside_dhaka || "80";
   const outsideDhaka = settings?.delivery_outside_dhaka || "150";
+
+  // Track WhatsApp lead in inbox
+  const handleWhatsAppClick = async () => {
+    try {
+      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+      fetch(`https://${projectId}.supabase.co/functions/v1/whatsapp-lead`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          visitor_id: `web-${Date.now()}`,
+          customer_name: product?.name ? `${product.name} - WhatsApp Lead` : 'WhatsApp Lead',
+          product_name: product?.name || '',
+        }),
+      });
+    } catch {
+      // Silent fail
+    }
+  };
   const handleOrder = () => {
     trackAddToCart({
       id: product.id,
@@ -355,6 +374,7 @@ const ProductDetail = () => {
               {/* WhatsApp */}
               {whatsappNumber && (
                 <a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noopener noreferrer"
+                  onClick={handleWhatsAppClick}
                   className="w-full py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition">
                   <MessageCircle className="h-4 w-4" /> WhatsApp Message: {whatsappNumber}
                 </a>
@@ -470,6 +490,7 @@ const ProductDetail = () => {
           {/* WhatsApp */}
           {whatsappNumber && (
             <a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noopener noreferrer"
+              onClick={handleWhatsAppClick}
               className="w-12 h-12 rounded-xl bg-green-500 hover:bg-green-600 text-white flex items-center justify-center flex-shrink-0 transition shadow">
               <MessageCircle className="h-5 w-5" />
             </a>
