@@ -408,7 +408,7 @@ const Login = () => {
                 <h1 className="text-xl sm:text-2xl font-bold" style={{ color: "#fff" }}>QUICK SHOP BD</h1>
                 <p className="mt-1 flex items-center justify-center gap-1 text-xs sm:text-sm" style={{ color: "rgba(78,205,196,0.8)" }}>
                   <Star className="h-3 w-3" />
-                  {isSignUp ? "নতুন অ্যাকাউন্ট তৈরি করুন" : "পোর্টালে প্রবেশ করুন"}
+                  {isSignUp ? "Create a new account" : "Enter the portal"}
                   <Star className="h-3 w-3" />
                 </p>
               </div>
