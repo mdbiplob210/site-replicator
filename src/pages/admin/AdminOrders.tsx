@@ -670,7 +670,7 @@ const AdminOrders = () => {
   // Print filtered orders
   const handlePrint = useCallback(() => {
     if (filteredOrders.length === 0) {
-      toast.error("প্রিন্ট করার জন্য কোনো অর্ডার নেই!");
+      toast.error("No orders to print!");
       return;
     }
     const printWindow = window.open("", "_blank");
