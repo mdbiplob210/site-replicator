@@ -248,7 +248,7 @@ const Login = () => {
         navigate(roleData && roleData.length > 0 ? "/admin" : "/", { replace: true });
       }
     } catch (error: any) {
-      toast({ title: "ত্রুটি", description: error.message, variant: "destructive" });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
