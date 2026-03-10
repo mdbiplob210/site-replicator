@@ -468,7 +468,7 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
               <Input
                 value={newPhone}
                 onChange={(e) => setNewPhone(e.target.value)}
-                placeholder="ফোন নম্বর (e.g. 01712345678)"
+                placeholder="Phone number (e.g. 01712345678)"
                 className="rounded-xl flex-1"
               />
               <Input
