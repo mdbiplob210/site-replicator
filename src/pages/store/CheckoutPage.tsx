@@ -269,7 +269,7 @@ const CheckoutPage = () => {
         <Input placeholder="Full name" value={form.name} onChange={e => updateForm({ name: e.target.value })} required />
       </div>
       <div className="space-y-1.5">
-        <Label className="flex items-center gap-2 text-sm font-semibold"><Phone className="h-4 w-4" /> ফোন নম্বর</Label>
+        <Label className="flex items-center gap-2 text-sm font-semibold"><Phone className="h-4 w-4" /> Phone Number</Label>
         <Input placeholder="01XXXXXXXXX" value={form.phone} onChange={e => updateForm({ phone: e.target.value })} required />
       </div>
       <div className="space-y-1.5">
