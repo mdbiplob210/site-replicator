@@ -131,7 +131,7 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["blocked-ips"] });
-      toast.success("IP আনব্লক করা হয়েছে!");
+      toast.success("IP unblocked!");
     },
   });
 
