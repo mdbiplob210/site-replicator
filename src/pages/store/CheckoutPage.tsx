@@ -184,6 +184,10 @@ const CheckoutPage = () => {
       toast.error("Please fill in all fields");
       return;
     }
+    if (!isValidBDPhone(form.phone)) {
+      toast.error("Please enter a valid Bangladesh phone number (01XXXXXXXXX)");
+      return;
+    }
     setSubmitting(true);
     orderSubmitted.current = true;
     // Track AddPaymentInfo
