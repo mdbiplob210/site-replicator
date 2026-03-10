@@ -25,7 +25,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Plus, Search, Calendar, AlertCircle, ShieldAlert, Truck, Key,
-  Settings, Download, Printer, RefreshCw, ChevronDown, Wifi, Ban,
+  Settings, Download, Printer, RefreshCw, ChevronDown, Wifi, Ban, Users,
   Trash2, Copy, X, ShoppingCart, ArrowLeft, Clock, CheckCircle2,
   GitMerge, PauseCircle, XCircle, Trash, Smartphone, BarChart3,
   MessageSquare, Filter, Loader2, Package, Globe, SlidersHorizontal, AlertTriangle, History,
@@ -2541,6 +2541,11 @@ const AdminOrders = () => {
                       </div>
                       <p className="text-[11px] text-muted-foreground mt-0.5">{format(new Date(order.created_at), "dd MMM yy")}</p>
                       <p className="text-[10px] text-muted-foreground">{format(new Date(order.created_at), "hh:mm a")}</p>
+                      {assignmentByOrderId[order.id] && (
+                        <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 rounded-full px-2 py-0.5">
+                          <Users className="h-2.5 w-2.5" /> {assignmentByOrderId[order.id]}
+                        </span>
+                      )}
                     </TableCell>
                     {/* CUSTOMER: name, phone with call/copy/whatsapp, address */}
                     <TableCell className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
@@ -2855,6 +2860,11 @@ const AdminOrders = () => {
                             )}
                           </div>
                           <p className="text-[10px] text-muted-foreground">{format(new Date(order.created_at), "dd MMM yy, hh:mm a")}</p>
+                          {assignmentByOrderId[order.id] && (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 rounded-full px-2 py-0.5">
+                              <Users className="h-2.5 w-2.5" /> {assignmentByOrderId[order.id]}
+                            </span>
+                          )}
                         </div>
                       </div>
                       <span className="text-base font-bold text-foreground">৳{Number(order.total_amount).toLocaleString()}</span>
@@ -3128,10 +3138,14 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
         if (error) throw error;
       }
       const targetPanel = transferPanels.find((p: any) => p.user_id === transferToUserId);
-      await logActivity("order_transferred", "assigned_to", currentAssignment?.assigned_to || "unassigned", transferToUserId, `অর্ডার ট্রান্সফার: ${targetPanel?.full_name || "Unknown"}`);
+      const fromPanel = transferPanels.find((p: any) => p.user_id === currentAssignment?.assigned_to);
+      const transferredBy = user?.email || "Unknown";
+      await logActivity("order_transferred", "assigned_to", fromPanel?.full_name || currentAssignment?.assigned_to || "unassigned", targetPanel?.full_name || transferToUserId, `অর্ডার ট্রান্সফার: ${fromPanel?.full_name || "Unassigned"} → ${targetPanel?.full_name || "Unknown"} (by ${transferredBy})`);
       queryClient.invalidateQueries({ queryKey: ["order-assignments"] });
+      queryClient.invalidateQueries({ queryKey: ["order-assignments-list"] });
       queryClient.invalidateQueries({ queryKey: ["order-assignment-detail", orderId] });
       queryClient.invalidateQueries({ queryKey: ["panel-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["order-activity-logs", orderId] });
       toast.success(`অর্ডার সফলভাবে ${targetPanel?.full_name || "অন্য প্যানেলে"} ট্রান্সফার হয়েছে!`);
       setTransferOpen(false);
       setTransferToUserId(null);
