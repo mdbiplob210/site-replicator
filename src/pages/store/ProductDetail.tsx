@@ -145,6 +145,24 @@ const ProductDetail = () => {
   const paymentNumber = settings?.payment_number || "";
   const insideDhaka = settings?.delivery_inside_dhaka || "80";
   const outsideDhaka = settings?.delivery_outside_dhaka || "150";
+
+  // Track WhatsApp lead in inbox
+  const handleWhatsAppClick = async () => {
+    try {
+      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+      await fetch(`https://${projectId}.supabase.co/functions/v1/whatsapp-lead`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customer_phone: whatsappNumber,
+          product_name: product?.name || '',
+          message: product ? `আমি "${product.name}" প্রোডাক্টটি সম্পর্কে জানতে চাই।` : undefined,
+        }),
+      });
+    } catch {
+      // Silent fail - don't block the wa.me redirect
+    }
+  };
   const handleOrder = () => {
     trackAddToCart({
       id: product.id,
