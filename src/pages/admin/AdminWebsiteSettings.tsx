@@ -842,7 +842,7 @@ function TrackingTab() {
         <div>
           <label className="text-sm font-medium text-foreground">Test Event Code (Optional)</label>
           <Input className="mt-1.5" placeholder="TEST12345" value={fbTestCode} onChange={(e) => setFbTestCode(e.target.value)} />
-          <p className="text-xs text-muted-foreground mt-1">টেস্ট মোডে ইভেন্ট পাঠাতে Events Manager → Test Events থেকে কোড দিন। প্রোডাকশনে ফাঁকা রাখুন।</p>
+          <p className="text-xs text-muted-foreground mt-1">Use Test Event Code to send events in test mode. Leave empty for production.</p>
         </div>
 
         <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
