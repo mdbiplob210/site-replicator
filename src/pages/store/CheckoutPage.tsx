@@ -312,7 +312,7 @@ const CheckoutPage = () => {
           <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm text-gray-500 mb-6 hover:text-gray-900">
             <ArrowLeft className="h-4 w-4" /> Back
           </button>
-          <h1 className="text-2xl font-bold mb-6">চেকআউট</h1>
+          <h1 className="text-2xl font-bold mb-6">Checkout</h1>
           {orderSummary}
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             {formFields}
