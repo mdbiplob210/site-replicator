@@ -1099,7 +1099,7 @@ const AdminUsers = () => {
                               <span className={`h-2 w-2 rounded-full ${
                                 log.status === "success" ? "bg-emerald-500" : "bg-destructive"
                               }`} />
-                              {log.status === "success" ? "সফল" : "ব্যর্থ"}
+                              {log.status === "success" ? "Success" : "Failed"}
                             </Badge>
                           </TableCell>
                           <TableCell>
