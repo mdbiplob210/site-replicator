@@ -295,7 +295,7 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
               <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/40 border border-border/40">
                 <div>
                   <Label className="font-medium text-xs">Enable Device Fingerprinting</Label>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">Browser/Device signature দিয়ে ট্র্যাক করে</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">Tracks via browser/device signature</p>
                 </div>
                 <Switch checked={deviceFingerprint} onCheckedChange={setDeviceFingerprint} />
               </div>
