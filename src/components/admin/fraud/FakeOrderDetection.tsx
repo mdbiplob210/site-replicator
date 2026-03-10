@@ -352,12 +352,12 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
               <Textarea
                 value={blockMessage}
                 onChange={(e) => setBlockMessage(e.target.value)}
-                placeholder="ব্লক মেসেজ লিখুন..."
+                placeholder="Enter block message..."
                 rows={4}
                 className="resize-none rounded-xl"
               />
               <p className="text-xs text-muted-foreground mt-2">
-                এই মেসেজটি ল্যান্ডিং পেজ ও ওয়েবসাইটে ব্লক হওয়া কাস্টমারদের দেখাবে।
+                This message will be shown to blocked customers on landing pages and the website.
               </p>
             </Card>
           </div>
