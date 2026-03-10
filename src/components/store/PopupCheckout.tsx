@@ -272,9 +272,9 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
         value: product.selling_price,
       });
 
-      toast.success(`${product.name} অর্ডারে যোগ হয়েছে! ✅`);
+      toast.success(`${product.name} added to order! ✅`);
     } catch (err: any) {
-      toast.error("যোগ করতে সমস্যা হয়েছে");
+      toast.error("Failed to add item");
     }
   };
 
