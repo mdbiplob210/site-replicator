@@ -579,7 +579,7 @@ const BlockedOrdersList = () => {
       <Card className="p-6 border-border/40">
         <div className="text-center py-12">
           <Ban className="h-10 w-10 text-muted-foreground/20 mx-auto mb-2" />
-          <p className="text-sm text-muted-foreground font-medium">কোনো ব্লক হওয়া অর্ডার নেই</p>
+          <p className="text-sm text-muted-foreground font-medium">No blocked orders</p>
         </div>
       </Card>
     );
