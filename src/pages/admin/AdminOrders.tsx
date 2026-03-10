@@ -763,7 +763,7 @@ const AdminOrders = () => {
 
   const handleInlineNoteSave = async (orderId: string, noteText: string) => {
     const { error } = await supabase.from("orders").update({ notes: noteText } as any).eq("id", orderId);
-    if (error) { toast.error("নোট সেভ ব্যর্থ"); return; }
+    if (error) { toast.error("Failed to save note"); return; }
     queryClient.invalidateQueries({ queryKey: ["orders"] });
     logActivity(orderId, "note_updated", "notes", undefined, noteText, "ইনলাইন নোট আপডেট");
     toast.success("নোট সেভ হয়েছে!");
