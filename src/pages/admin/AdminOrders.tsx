@@ -1628,16 +1628,24 @@ const AdminOrders = () => {
                   {/* Order Source */}
                   <div className="space-y-1.5">
                     <Label className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><Globe className="h-3 w-3" /> অর্ডার সোর্স</Label>
-                    <Select value={selectedOrderSource} onValueChange={setSelectedOrderSource}>
-                      <SelectTrigger className="rounded-xl h-10 text-sm"><SelectValue placeholder="সোর্স সিলেক্ট করুন..." /></SelectTrigger>
-                      <SelectContent>
-                        {orderSources.filter((s: any) => !s.is_system || s.slug !== 'api').map((src: any) => (
-                          <SelectItem key={src.id} value={src.name}>
-                            <span className="flex items-center gap-2">{src.icon} {src.name}</span>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    {convertingIncompleteId ? (
+                      <div className="flex items-center gap-2 text-sm bg-secondary/50 rounded-xl px-4 py-2.5 border border-border/40">
+                        <Package className="h-4 w-4 text-amber-600" />
+                        <span className="font-semibold text-foreground">Failed Order</span>
+                        <Badge variant="outline" className="text-[10px] ml-auto">🔒 লক করা</Badge>
+                      </div>
+                    ) : (
+                      <Select value={selectedOrderSource} onValueChange={setSelectedOrderSource}>
+                        <SelectTrigger className="rounded-xl h-10 text-sm"><SelectValue placeholder="সোর্স সিলেক্ট করুন..." /></SelectTrigger>
+                        <SelectContent>
+                          {orderSources.filter((s: any) => !s.is_system || s.slug !== 'api').map((src: any) => (
+                            <SelectItem key={src.id} value={src.name}>
+                              <span className="flex items-center gap-2">{src.icon} {src.name}</span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
                   </div>
                   {/* Order Status */}
                   <div className="space-y-2">
