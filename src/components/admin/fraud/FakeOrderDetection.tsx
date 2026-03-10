@@ -314,7 +314,7 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
                 </div>
                 <div>
                   <h3 className="font-bold text-foreground text-sm">Delivery Ratio Check</h3>
-                  <p className="text-xs text-muted-foreground">কম ডেলিভারি রেশিও থাকলে অর্ডার ব্লক</p>
+                  <p className="text-xs text-muted-foreground">Block orders from customers with low delivery ratio</p>
                 </div>
               </div>
               <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/40 border border-border/40 mb-3">
