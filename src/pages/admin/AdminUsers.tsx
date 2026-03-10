@@ -1114,7 +1114,7 @@ const AdminUsers = () => {
                                     .from("blocked_ips")
                                     .insert({ ip_address: log.ip_address, reason: "Blocked from login activity" });
                                   if (error) toast.error(error.message);
-                                  else toast.success(`IP ${log.ip_address} ব্লক করা হয়েছে`);
+                                  else toast.success(`IP ${log.ip_address} has been blocked`);
                                 }
                               }}
                             >
