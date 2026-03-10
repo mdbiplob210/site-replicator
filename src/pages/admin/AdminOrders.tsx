@@ -2541,6 +2541,11 @@ const AdminOrders = () => {
                       </div>
                       <p className="text-[11px] text-muted-foreground mt-0.5">{format(new Date(order.created_at), "dd MMM yy")}</p>
                       <p className="text-[10px] text-muted-foreground">{format(new Date(order.created_at), "hh:mm a")}</p>
+                      {assignmentByOrderId[order.id] && (
+                        <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 rounded-full px-2 py-0.5">
+                          <Users className="h-2.5 w-2.5" /> {assignmentByOrderId[order.id]}
+                        </span>
+                      )}
                     </TableCell>
                     {/* CUSTOMER: name, phone with call/copy/whatsapp, address */}
                     <TableCell className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
