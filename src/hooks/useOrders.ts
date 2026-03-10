@@ -313,7 +313,7 @@ export function useUpdateOrderStatus() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       queryClient.invalidateQueries({ queryKey: ["order-counts"] });
-      toast.success("স্ট্যাটাস আপডেট হয়েছে!");
+      toast.success("Status updated!");
     },
     onError: (error: Error) => {
       toast.error("স্ট্যাটাস আপডেট করতে ব্যর্থ: " + error.message);
