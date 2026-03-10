@@ -853,8 +853,8 @@ const AdminUsers = () => {
                   </div>
 
                   <div className="mt-4 p-3 rounded-lg bg-secondary/30 border border-border/30">
-                    <p className="text-[11px] text-muted-foreground">
-                      💡 <strong>লাইভ ট্র্যাকিং:</strong> প্রতি ৩০ সেকেন্ডে অটো-আপডেট হয়। এখানে দেখতে পাচ্ছেন প্রতিটি ইউজার কোন পেজে আছে, কোন ডিভাইস ব্যবহার করছে এবং কখন শেষবার এক্টিভ ছিলো।
+                     <p className="text-[11px] text-muted-foreground">
+                       💡 <strong>Live Tracking:</strong> Auto-updates every 30 seconds. View each user's current page, device, and last active time.
                     </p>
                   </div>
                 </CardContent>
