@@ -268,7 +268,7 @@ const Template1Classic = () => {
           </div>
           {selectedCategory && (
             <button onClick={() => setSelectedCategory(null)} className="flex items-center gap-1 text-green-600 text-sm font-semibold hover:underline">
-              সব দেখুন <ChevronRight className="h-4 w-4" />
+              View All <ChevronRight className="h-4 w-4" />
             </button>
           )}
         </div>
