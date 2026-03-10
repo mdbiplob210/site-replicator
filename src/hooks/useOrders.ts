@@ -316,7 +316,7 @@ export function useUpdateOrderStatus() {
       toast.success("Status updated!");
     },
     onError: (error: Error) => {
-      toast.error("স্ট্যাটাস আপডেট করতে ব্যর্থ: " + error.message);
+      toast.error("Failed to update status: " + error.message);
     },
   });
 }
