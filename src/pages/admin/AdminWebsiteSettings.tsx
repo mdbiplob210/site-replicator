@@ -277,7 +277,7 @@ function GeneralTab() {
           {/* Site Name */}
           <div>
             <label className="text-sm font-medium text-foreground">Site Name <span className="text-destructive">*</span></label>
-            <p className="text-xs text-muted-foreground">Product Feed, SEO ও ট্যাব টাইটেলে ব্যবহার হবে</p>
+            <p className="text-xs text-muted-foreground">Used in Product Feed, SEO & tab title</p>
             <Input className="mt-1.5" placeholder="Your Store Name" value={siteName} onChange={(e) => setSiteName(e.target.value)} />
           </div>
 
