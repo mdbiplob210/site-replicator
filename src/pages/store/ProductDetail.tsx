@@ -213,7 +213,7 @@ const ProductDetail = () => {
               <span className="font-bold text-sm sm:text-lg">:</span>
               <div className="bg-white/20 rounded-md px-1.5 sm:px-2 py-0.5 sm:py-1 text-center min-w-[2rem] sm:min-w-[2.5rem]">
                 <span className="text-xs sm:text-base font-black">{String(countdownSecs).padStart(2, "0")}</span>
-                <span className="text-[8px] sm:text-[9px] block -mt-0.5">সেকেন্ড</span>
+                <span className="text-[8px] sm:text-[9px] block -mt-0.5">Seconds</span>
               </div>
             </div>
             <span className="text-[10px] sm:text-xs font-medium hidden sm:inline">⏰ তাড়াতাড়ি!</span>
