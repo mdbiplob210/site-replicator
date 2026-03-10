@@ -765,8 +765,8 @@ const AdminOrders = () => {
     const { error } = await supabase.from("orders").update({ notes: noteText } as any).eq("id", orderId);
     if (error) { toast.error("Failed to save note"); return; }
     queryClient.invalidateQueries({ queryKey: ["orders"] });
-    logActivity(orderId, "note_updated", "notes", undefined, noteText, "ইনলাইন নোট আপডেট");
-    toast.success("নোট সেভ হয়েছে!");
+    logActivity(orderId, "note_updated", "notes", undefined, noteText, "Inline note updated");
+    toast.success("Note saved!");
     setInlineNoteOrderId(null);
     setInlineNoteText("");
   };
