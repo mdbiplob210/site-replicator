@@ -726,8 +726,8 @@ const AdminUsers = () => {
             {/* Online Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {[
-                { icon: Users, label: "মোট ইউজার", value: users.length, bg: "bg-primary/10", color: "text-primary" },
-                { icon: Activity, label: "এখন অনলাইন", value: onlineCount, bg: "bg-emerald-500/10", color: "text-emerald-600" },
+                { icon: Users, label: "Total Users", value: users.length, bg: "bg-primary/10", color: "text-primary" },
+                { icon: Activity, label: "Online Now", value: onlineCount, bg: "bg-emerald-500/10", color: "text-emerald-600" },
                 { icon: Clock, label: "Idle", value: presenceList.filter((p: any) => {
                   const d = Date.now() - new Date(p.last_seen_at).getTime();
                   return d >= 60000 && d < 300000;
