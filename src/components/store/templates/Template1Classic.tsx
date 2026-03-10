@@ -183,7 +183,7 @@ const Template1Classic = () => {
             <div className="relative">
               <input
                 type="text"
-                placeholder="প্রোডাক্ট খুঁজুন..."
+                placeholder="Search products..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 className="w-full h-11 pl-4 pr-10 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100"
