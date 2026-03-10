@@ -22,6 +22,9 @@ const DeviceIcon = ({ type }: { type: string }) => {
 export default function AdminWebsiteAnalytics() {
   const [days, setDays] = useState(7);
   const { data, isLoading } = useWebsiteAnalytics(days);
+  const { data: apiKeys } = useApiKeys();
+  const firstActiveKey = apiKeys?.find((k) => k.is_active)?.api_key || "";
+  const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID || "";
 
   return (
     <AdminLayout>
