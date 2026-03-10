@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, ImgHTMLAttributes } from "react";
+import { useState, useRef, useEffect, useCallback, ImgHTMLAttributes } from "react";
 import { getOptimizedImageUrl, getResponsiveSrcSet } from "@/lib/imageOptimizer";
 import { cn } from "@/lib/utils";
 
@@ -34,10 +34,19 @@ export function OptimizedImage({
   const optimizedSrc = getOptimizedImageUrl(src, { width, height, quality });
   const srcSet = getResponsiveSrcSet(src);
 
+  // Check if image is already cached (loaded from browser cache)
+  const checkIfCached = useCallback(() => {
+    if (imgRef.current?.complete && imgRef.current?.naturalWidth > 0) {
+      setLoaded(true);
+    }
+  }, []);
+
   useEffect(() => {
     setLoaded(false);
     setError(false);
-  }, [src]);
+    // After state reset, check if new src is already cached
+    requestAnimationFrame(() => checkIfCached());
+  }, [src, checkIfCached]);
 
   if (!src || error) {
     return fallback ? <>{fallback}</> : null;
@@ -55,7 +64,7 @@ export function OptimizedImage({
       onLoad={() => setLoaded(true)}
       onError={() => setError(true)}
       className={cn(
-        "transition-opacity duration-300",
+        "transition-opacity duration-200",
         loaded ? "opacity-100" : "opacity-0",
         className
       )}
