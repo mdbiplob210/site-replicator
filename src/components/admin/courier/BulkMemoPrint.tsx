@@ -188,11 +188,11 @@ export function useBulkMemoPrint({ orders, courierByOrderId, orderItemsByOrderId
           ` : ''}
 
           <div class="section">
-            <div class="section-title">👤 কাস্টমার তথ্য</div>
+            <div class="section-title">👤 Customer Info</div>
             <div class="info-grid">
-              <span class="info-label">নাম</span><span class="info-value">${order.customer_name}</span>
-              <span class="info-label">ফোন</span><span class="info-value phone-num">${order.customer_phone || '—'}</span>
-              <span class="info-label">ঠিকানা</span><span class="info-value">${order.customer_address || '—'}</span>
+              <span class="info-label">Name</span><span class="info-value">${order.customer_name}</span>
+              <span class="info-label">Phone</span><span class="info-value phone-num">${order.customer_phone || '—'}</span>
+              <span class="info-label">Address</span><span class="info-value">${order.customer_address || '—'}</span>
             </div>
           </div>
 
@@ -201,10 +201,10 @@ export function useBulkMemoPrint({ orders, courierByOrderId, orderItemsByOrderId
             <table class="items-table">
               <thead>
                 <tr>
-                  <th style="text-align:left">পণ্য</th>
-                  <th style="text-align:center">কোড</th>
-                  <th style="text-align:center">পরি.</th>
-                  <th style="text-align:right">মূল্য</th>
+                  <th style="text-align:left">Product</th>
+                  <th style="text-align:center">Code</th>
+                  <th style="text-align:center">Qty</th>
+                  <th style="text-align:right">Price</th>
                 </tr>
               </thead>
               <tbody>${itemRows}</tbody>
@@ -213,17 +213,17 @@ export function useBulkMemoPrint({ orders, courierByOrderId, orderItemsByOrderId
           ` : ''}
 
           <div class="totals-section">
-            <div class="total-row"><span>সাবটোটাল</span><span>৳${itemsTotal}</span></div>
-            <div class="total-row"><span>ডেলিভারি</span><span>৳${order.delivery_charge}</span></div>
-            ${Number(order.discount) > 0 ? `<div class="total-row discount"><span>ডিসকাউন্ট</span><span>-৳${order.discount}</span></div>` : ''}
-            <div class="total-row grand-total"><span>সর্বমোট</span><span>৳${order.total_amount}</span></div>
+            <div class="total-row"><span>Subtotal</span><span>৳${itemsTotal}</span></div>
+            <div class="total-row"><span>Delivery</span><span>৳${order.delivery_charge}</span></div>
+            ${Number(order.discount) > 0 ? `<div class="total-row discount"><span>Discount</span><span>-৳${order.discount}</span></div>` : ''}
+            <div class="total-row grand-total"><span>Grand Total</span><span>৳${order.total_amount}</span></div>
           </div>
 
-          ${(order as any).courier_note ? `<div class="courier-note"><strong>📝 কুরিয়ার নোট:</strong> ${(order as any).courier_note}</div>` : ''}
-          ${order.notes ? `<div class="staff-note"><strong>📋 স্টাফ নোট:</strong> ${order.notes}</div>` : ''}
+          ${(order as any).courier_note ? `<div class="courier-note"><strong>📝 Courier Note:</strong> ${(order as any).courier_note}</div>` : ''}
+          ${order.notes ? `<div class="staff-note"><strong>📋 Staff Note:</strong> ${order.notes}</div>` : ''}
 
           <div class="memo-footer">
-            <div class="thank-you">ধন্যবাদ আপনার অর্ডারের জন্য! 🙏</div>
+            <div class="thank-you">Thank you for your order! 🙏</div>
             <div>${format(new Date(), "dd/MM/yyyy")}</div>
           </div>
         </div>
@@ -231,7 +231,7 @@ export function useBulkMemoPrint({ orders, courierByOrderId, orderItemsByOrderId
     });
 
     const printWindow = window.open("", "_blank");
-    if (!printWindow) { toast.error("প্রিন্ট উইন্ডো খুলতে পারেনি"); return; }
+    if (!printWindow) { toast.error("Could not open print window"); return; }
 
     printWindow.document.write(`
       <!DOCTYPE html>

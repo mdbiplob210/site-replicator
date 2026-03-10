@@ -79,9 +79,9 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["fraud-settings"] });
-      toast.success("সেটিংস সেভ হয়েছে!");
+      toast.success("Settings saved!");
     },
-    onError: (e: Error) => toast.error("সেভ ব্যর্থ: " + e.message),
+    onError: (e: Error) => toast.error("Save failed: " + e.message),
   });
 
   const handleSaveAll = () => {
@@ -119,9 +119,9 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
       queryClient.invalidateQueries({ queryKey: ["blocked-ips"] });
       setNewIp("");
       setNewIpReason("");
-      toast.success("IP ব্লক করা হয়েছে!");
+      toast.success("IP blocked!");
     },
-    onError: (e: Error) => toast.error(e.message.includes("duplicate") ? "এই IP আগে থেকে ব্লক আছে" : e.message),
+    onError: (e: Error) => toast.error(e.message.includes("duplicate") ? "This IP is already blocked" : e.message),
   });
 
   const removeBlockedIp = useMutation({
@@ -131,7 +131,7 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["blocked-ips"] });
-      toast.success("IP আনব্লক করা হয়েছে!");
+      toast.success("IP unblocked!");
     },
   });
 
@@ -159,9 +159,9 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
       queryClient.invalidateQueries({ queryKey: ["blocked-phones"] });
       setNewPhone("");
       setNewPhoneReason("");
-      toast.success("নম্বর ব্লক করা হয়েছে!");
+      toast.success("Number blocked!");
     },
-    onError: (e: Error) => toast.error(e.message.includes("duplicate") ? "এই নম্বর আগে থেকে ব্লক আছে" : e.message),
+    onError: (e: Error) => toast.error(e.message.includes("duplicate") ? "This number is already blocked" : e.message),
   });
 
   const removeBlockedPhone = useMutation({
@@ -171,7 +171,7 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["blocked-phones"] });
-      toast.success("নম্বর আনব্লক করা হয়েছে!");
+      toast.success("Number unblocked!");
     },
   });
 
@@ -184,7 +184,7 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
   );
 
   const getDurationLabel = (d: string) => {
-    const map: Record<string, string> = { off: "Off", "1h": "১ ঘণ্টা", "6h": "৬ ঘণ্টা", "12h": "১২ ঘণ্টা", "24h": "২৪ ঘণ্টা" };
+    const map: Record<string, string> = { off: "Off", "1h": "1 Hour", "6h": "6 Hours", "12h": "12 Hours", "24h": "24 Hours" };
     return map[d] || d;
   };
 
@@ -209,7 +209,7 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
           </div>
           <div>
             <h1 className="text-xl font-bold text-foreground tracking-tight">Fake Order Detection</h1>
-            <p className="text-sm text-muted-foreground">ফেক অর্ডার প্রতিরোধ ও ব্যবসা সুরক্ষা</p>
+            <p className="text-sm text-muted-foreground">Prevent fake orders and protect your business</p>
           </div>
         </div>
         <div className="flex items-center gap-3 bg-card rounded-xl border border-border/60 px-4 py-2.5 shadow-sm">
@@ -256,7 +256,7 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
                 </div>
                 <div>
                   <h3 className="font-bold text-foreground text-sm">Repeat Order Block</h3>
-                  <p className="text-xs text-muted-foreground">একই ফোন/IP থেকে নির্দিষ্ট সময়ের মধ্যে রিপিট অর্ডার ব্লক</p>
+                  <p className="text-xs text-muted-foreground">Block repeat orders from the same phone/IP within a set time</p>
                 </div>
               </div>
               <div className="space-y-3">
@@ -267,15 +267,15 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="off">Off</SelectItem>
-                    <SelectItem value="1h">১ ঘণ্টা</SelectItem>
-                    <SelectItem value="6h">৬ ঘণ্টা</SelectItem>
-                    <SelectItem value="12h">১২ ঘণ্টা</SelectItem>
-                    <SelectItem value="24h">২৪ ঘণ্টা</SelectItem>
+                    <SelectItem value="1h">1 Hour</SelectItem>
+                    <SelectItem value="6h">6 Hours</SelectItem>
+                    <SelectItem value="12h">12 Hours</SelectItem>
+                    <SelectItem value="24h">24 Hours</SelectItem>
                   </SelectContent>
                 </Select>
                 {repeatBlockDuration !== "off" && (
                   <p className="text-xs text-muted-foreground bg-secondary/40 rounded-lg p-2.5">
-                    ✅ একজন কাস্টমার অর্ডার করার পর <strong>{getDurationLabel(repeatBlockDuration)}</strong> পর্যন্ত একই ফোন/IP থেকে আর অর্ডার আসবে না। ব্লক হওয়া অর্ডার Incomplete Orders-এ জমা হবে।
+                    ✅ After placing an order, the same phone/IP will be blocked from ordering again for <strong>{getDurationLabel(repeatBlockDuration)}</strong>. Blocked orders will be saved in Incomplete Orders.
                   </p>
                 )}
               </div>
@@ -289,19 +289,19 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
                 </div>
                 <div>
                   <h3 className="font-bold text-foreground text-sm">Device Block (VPN Protection)</h3>
-                  <p className="text-xs text-muted-foreground">VPN দিয়ে IP পরিবর্তন করলেও ডিভাইস ট্র্যাক করে ব্লক</p>
+                  <p className="text-xs text-muted-foreground">Block devices even when IP is changed via VPN</p>
                 </div>
               </div>
               <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/40 border border-border/40">
                 <div>
                   <Label className="font-medium text-xs">Enable Device Fingerprinting</Label>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">Browser/Device signature দিয়ে ট্র্যাক করে</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">Tracks via browser/device signature</p>
                 </div>
                 <Switch checked={deviceFingerprint} onCheckedChange={setDeviceFingerprint} />
               </div>
               {deviceFingerprint && (
                 <p className="text-xs text-muted-foreground bg-secondary/40 rounded-lg p-2.5 mt-3">
-                  ✅ VPN ব্যবহার করলেও একই ডিভাইস থেকে রিপিট অর্ডার ব্লক হবে।
+                  ✅ Repeat orders from the same device will be blocked even when using a VPN.
                 </p>
               )}
             </Card>
@@ -314,13 +314,13 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
                 </div>
                 <div>
                   <h3 className="font-bold text-foreground text-sm">Delivery Ratio Check</h3>
-                  <p className="text-xs text-muted-foreground">কম ডেলিভারি রেশিও থাকলে অর্ডার ব্লক</p>
+                  <p className="text-xs text-muted-foreground">Block orders from customers with low delivery ratio</p>
                 </div>
               </div>
               <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/40 border border-border/40 mb-3">
                 <div>
                   <Label className="font-medium text-xs">Enable Delivery Ratio Check</Label>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">কাস্টমারের আগের ডেলিভারি হিস্ট্রি চেক</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">Checks customer's previous delivery history</p>
                 </div>
                 <Switch checked={deliveryRatioEnabled} onCheckedChange={setDeliveryRatioEnabled} />
               </div>
@@ -332,7 +332,7 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
                   </div>
                   <Slider value={minDeliveryRatio} onValueChange={setMinDeliveryRatio} max={100} step={5} className="my-2" />
                   <p className="text-xs text-muted-foreground">
-                    কাস্টমারের ডেলিভারি সাকসেস রেট {minDeliveryRatio[0]}% এর নিচে থাকলে অর্ডার Incomplete-এ যাবে।
+                    If customer's delivery success rate is below {minDeliveryRatio[0]}%, the order will go to Incomplete.
                   </p>
                 </div>
               )}
@@ -346,18 +346,18 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
                 </div>
                 <div>
                   <h3 className="font-bold text-foreground text-sm">Block Popup Message</h3>
-                  <p className="text-xs text-muted-foreground">ব্লক হওয়া কাস্টমারদের যে মেসেজ দেখাবে</p>
+                  <p className="text-xs text-muted-foreground">Message shown to blocked customers</p>
                 </div>
               </div>
               <Textarea
                 value={blockMessage}
                 onChange={(e) => setBlockMessage(e.target.value)}
-                placeholder="ব্লক মেসেজ লিখুন..."
+                placeholder="Enter block message..."
                 rows={4}
                 className="resize-none rounded-xl"
               />
               <p className="text-xs text-muted-foreground mt-2">
-                এই মেসেজটি ল্যান্ডিং পেজ ও ওয়েবসাইটে ব্লক হওয়া কাস্টমারদের দেখাবে।
+                This message will be shown to blocked customers on landing pages and the website.
               </p>
             </Card>
           </div>
@@ -367,7 +367,7 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
             <Button onClick={handleSaveAll} disabled={saveSettings.isPending} className="gap-2 rounded-xl">
               {saveSettings.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
               <Shield className="h-4 w-4" />
-              সব সেটিংস সেভ করুন
+              Save All Settings
             </Button>
           </div>
         </TabsContent>
@@ -375,8 +375,8 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
         {/* IP Address Tab */}
         <TabsContent value="ip" className="mt-6 space-y-4">
           <Card className="p-6 border-border/40">
-            <h3 className="font-bold text-foreground text-sm mb-1">IP Address ব্লক করুন</h3>
-            <p className="text-xs text-muted-foreground mb-4">এই IP থেকে কোনোদিন অর্ডার আসবে না — সব ল্যান্ডিং পেজ ও API-তে কার্যকর</p>
+            <h3 className="font-bold text-foreground text-sm mb-1">Block IP Address</h3>
+            <p className="text-xs text-muted-foreground mb-4">Orders from this IP will be permanently blocked — applies to all landing pages and APIs</p>
             <div className="flex gap-2">
               <Input
                 value={newIp}
@@ -387,18 +387,18 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
               <Input
                 value={newIpReason}
                 onChange={(e) => setNewIpReason(e.target.value)}
-                placeholder="কারণ (ঐচ্ছিক)"
+                placeholder="Reason (optional)"
                 className="rounded-xl flex-1"
               />
               <Button
                 onClick={() => {
-                  if (!newIp.trim()) return toast.error("IP দিন");
+                  if (!newIp.trim()) return toast.error("Enter an IP");
                   addBlockedIp.mutate({ ip: newIp.trim(), reason: newIpReason.trim() });
                 }}
                 disabled={addBlockedIp.isPending}
                 className="gap-1 rounded-xl"
               >
-                <Plus className="h-4 w-4" /> ব্লক করুন
+                <Plus className="h-4 w-4" /> Block
               </Button>
             </div>
           </Card>
@@ -406,14 +406,14 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
           <Card className="border-border/40">
             <div className="p-4 border-b border-border/40 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-foreground text-sm">ব্লক করা IP ({blockedIps.length})</h3>
+                <h3 className="font-bold text-foreground text-sm">Blocked IPs ({blockedIps.length})</h3>
               </div>
               <div className="relative">
                 <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   value={ipSearch}
                   onChange={(e) => setIpSearch(e.target.value)}
-                  placeholder="IP সার্চ..."
+                  placeholder="Search IP..."
                   className="pl-9 w-[200px] h-8 rounded-lg text-xs"
                 />
               </div>
@@ -423,15 +423,15 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
             ) : filteredIps.length === 0 ? (
               <div className="p-12 text-center">
                 <Wifi className="h-10 w-10 text-muted-foreground/20 mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground">কোনো ব্লক করা IP নেই</p>
+                <p className="text-sm text-muted-foreground">No blocked IPs</p>
               </div>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead className="text-xs">IP Address</TableHead>
-                    <TableHead className="text-xs">কারণ</TableHead>
-                    <TableHead className="text-xs">ব্লক তারিখ</TableHead>
+                    <TableHead className="text-xs">Reason</TableHead>
+                    <TableHead className="text-xs">Block Date</TableHead>
                     <TableHead className="text-xs text-right">Action</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -462,30 +462,30 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
         {/* Block Number Tab */}
         <TabsContent value="phones" className="mt-6 space-y-4">
           <Card className="p-6 border-border/40">
-            <h3 className="font-bold text-foreground text-sm mb-1">ফোন নম্বর ব্লক করুন</h3>
-            <p className="text-xs text-muted-foreground mb-4">এই নম্বর থেকে কোনোদিন অর্ডার আসবে না — সব ল্যান্ডিং পেজ, ওয়েবসাইট ও API-তে কার্যকর</p>
+            <h3 className="font-bold text-foreground text-sm mb-1">Block Phone Number</h3>
+            <p className="text-xs text-muted-foreground mb-4">Orders from this number will be permanently blocked — applies to all landing pages, website and APIs</p>
             <div className="flex gap-2">
               <Input
                 value={newPhone}
                 onChange={(e) => setNewPhone(e.target.value)}
-                placeholder="ফোন নম্বর (e.g. 01712345678)"
+                placeholder="Phone number (e.g. 01712345678)"
                 className="rounded-xl flex-1"
               />
               <Input
                 value={newPhoneReason}
                 onChange={(e) => setNewPhoneReason(e.target.value)}
-                placeholder="কারণ (ঐচ্ছিক)"
+                placeholder="Reason (optional)"
                 className="rounded-xl flex-1"
               />
               <Button
                 onClick={() => {
-                  if (!newPhone.trim()) return toast.error("নম্বর দিন");
+                  if (!newPhone.trim()) return toast.error("Enter a number");
                   addBlockedPhone.mutate({ phone: newPhone.trim(), reason: newPhoneReason.trim() });
                 }}
                 disabled={addBlockedPhone.isPending}
                 className="gap-1 rounded-xl"
               >
-                <Plus className="h-4 w-4" /> ব্লক করুন
+                <Plus className="h-4 w-4" /> Block
               </Button>
             </div>
           </Card>
@@ -493,14 +493,14 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
           <Card className="border-border/40">
             <div className="p-4 border-b border-border/40 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-foreground text-sm">ব্লক করা নম্বর ({blockedPhones.length})</h3>
+                <h3 className="font-bold text-foreground text-sm">Blocked Numbers ({blockedPhones.length})</h3>
               </div>
               <div className="relative">
                 <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   value={phoneSearch}
                   onChange={(e) => setPhoneSearch(e.target.value)}
-                  placeholder="নম্বর সার্চ..."
+                  placeholder="Search number..."
                   className="pl-9 w-[200px] h-8 rounded-lg text-xs"
                 />
               </div>
@@ -510,15 +510,15 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
             ) : filteredPhones.length === 0 ? (
               <div className="p-12 text-center">
                 <Phone className="h-10 w-10 text-muted-foreground/20 mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground">কোনো ব্লক করা নম্বর নেই</p>
+                <p className="text-sm text-muted-foreground">No blocked numbers</p>
               </div>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-xs">ফোন নম্বর</TableHead>
-                    <TableHead className="text-xs">কারণ</TableHead>
-                    <TableHead className="text-xs">ব্লক তারিখ</TableHead>
+                    <TableHead className="text-xs">Phone Number</TableHead>
+                    <TableHead className="text-xs">Reason</TableHead>
+                    <TableHead className="text-xs">Block Date</TableHead>
                     <TableHead className="text-xs text-right">Action</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -579,7 +579,7 @@ const BlockedOrdersList = () => {
       <Card className="p-6 border-border/40">
         <div className="text-center py-12">
           <Ban className="h-10 w-10 text-muted-foreground/20 mx-auto mb-2" />
-          <p className="text-sm text-muted-foreground font-medium">কোনো ব্লক হওয়া অর্ডার নেই</p>
+          <p className="text-sm text-muted-foreground font-medium">No blocked orders</p>
         </div>
       </Card>
     );
@@ -590,12 +590,12 @@ const BlockedOrdersList = () => {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="text-xs">কাস্টমার</TableHead>
-            <TableHead className="text-xs">ফোন</TableHead>
+            <TableHead className="text-xs">Customer</TableHead>
+            <TableHead className="text-xs">Phone</TableHead>
             <TableHead className="text-xs">IP</TableHead>
-            <TableHead className="text-xs">ব্লক কারণ</TableHead>
-            <TableHead className="text-xs">তারিখ</TableHead>
-            <TableHead className="text-xs">মোট</TableHead>
+            <TableHead className="text-xs">Block Reason</TableHead>
+            <TableHead className="text-xs">Date</TableHead>
+            <TableHead className="text-xs">Total</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

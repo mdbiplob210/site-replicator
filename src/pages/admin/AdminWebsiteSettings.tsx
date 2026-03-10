@@ -153,11 +153,11 @@ function GeneralTab() {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 2 * 1024 * 1024) {
-      toast.error("ফাইল সাইজ সর্বোচ্চ 2MB হতে হবে");
+      toast.error("File size must be 2MB or less");
       return;
     }
     if (!["image/png", "image/webp", "image/jpeg", "image/svg+xml"].includes(file.type)) {
-      toast.error("শুধুমাত্র PNG, WebP, JPG বা SVG ফরম্যাট সাপোর্টেড");
+      toast.error("Only PNG, WebP, JPG or SVG formats supported");
       return;
     }
     setUploading(true);
@@ -175,9 +175,9 @@ function GeneralTab() {
       const publicUrl = urlData.publicUrl + "?t=" + Date.now();
       setLogoUrl(publicUrl);
       await updateSetting.mutateAsync({ key: "site_logo", value: publicUrl });
-      toast.success("লোগো আপলোড হয়েছে!");
+      toast.success("Logo uploaded!");
     } catch (err: any) {
-      toast.error(err.message || "আপলোড ব্যর্থ হয়েছে");
+      toast.error(err.message || "Upload failed");
     } finally {
       setUploading(false);
     }
@@ -191,7 +191,7 @@ function GeneralTab() {
       }
       setLogoUrl("");
       await updateSetting.mutateAsync({ key: "site_logo", value: "" });
-      toast.success("লোগো মুছে ফেলা হয়েছে!");
+      toast.success("Logo removed!");
     } catch (err: any) {
       toast.error(err.message);
     }
@@ -226,7 +226,7 @@ function GeneralTab() {
     for (const { key, value } of updates) {
       await updateSetting.mutateAsync({ key, value });
     }
-    toast.success("সেটিংস সেভ হয়েছে!");
+    toast.success("Settings saved!");
   };
 
   return (
@@ -237,7 +237,7 @@ function GeneralTab() {
           <p className="text-sm text-muted-foreground">Configure your storefront details</p>
         </div>
         <Button onClick={handleSave} disabled={updateSetting.isPending} className="gap-2">
-          <Save className="h-4 w-4" /> {updateSetting.isPending ? "সেভ হচ্ছে..." : "সেভ করুন"}
+          <Save className="h-4 w-4" /> {updateSetting.isPending ? "Saving..." : "Save"}
         </Button>
       </div>
 
@@ -249,7 +249,7 @@ function GeneralTab() {
           {/* Store Logo */}
           <div>
             <label className="text-sm font-medium text-foreground">Store Logo</label>
-            <p className="text-xs text-muted-foreground mt-0.5">সাজেস্টেড সাইজ: 200×200px (স্কয়ার), সর্বোচ্চ 2MB। PNG বা WebP ফরম্যাট সবচেয়ে ভালো।</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Suggested size: 200×200px (square), max 2MB. PNG or WebP format recommended.</p>
             <div className="flex items-center gap-4 mt-3">
               <div className="h-16 w-16 rounded-xl border-2 border-dashed border-border flex items-center justify-center overflow-hidden bg-secondary/30">
                 {logoUrl ? (
@@ -262,7 +262,7 @@ function GeneralTab() {
                 <label>
                   <input type="file" accept="image/png,image/webp,image/jpeg,image/svg+xml" className="hidden" onChange={handleLogoUpload} />
                   <Button variant="outline" className="gap-2" asChild disabled={uploading}>
-                    <span><Upload className="h-4 w-4" /> {uploading ? "আপলোড হচ্ছে..." : "লোগো আপলোড করুন"}</span>
+                    <span><Upload className="h-4 w-4" /> {uploading ? "Uploading..." : "Upload Logo"}</span>
                   </Button>
                 </label>
                 {logoUrl && (
@@ -277,63 +277,63 @@ function GeneralTab() {
           {/* Site Name */}
           <div>
             <label className="text-sm font-medium text-foreground">Site Name <span className="text-destructive">*</span></label>
-            <p className="text-xs text-muted-foreground">Product Feed, SEO ও ট্যাব টাইটেলে ব্যবহার হবে</p>
+            <p className="text-xs text-muted-foreground">Used in Product Feed, SEO & tab title</p>
             <Input className="mt-1.5" placeholder="Your Store Name" value={siteName} onChange={(e) => setSiteName(e.target.value)} />
           </div>
 
           {/* Site URL */}
           <div>
             <label className="text-sm font-medium text-foreground">Site URL <span className="text-destructive">*</span></label>
-            <p className="text-xs text-muted-foreground">SEO canonical URL, sitemap ও product feed-এ ব্যবহার হবে</p>
+            <p className="text-xs text-muted-foreground">Used in SEO canonical URL, sitemap & product feed</p>
             <Input className="mt-1.5" placeholder="https://yourstore.com" value={siteUrl} onChange={(e) => setSiteUrl(e.target.value)} />
           </div>
 
           {/* Tagline */}
           <div>
             <label className="text-sm font-medium text-foreground">Tagline</label>
-            <p className="text-xs text-muted-foreground">ফুটারে এবং SEO description-এ দেখাবে</p>
+            <p className="text-xs text-muted-foreground">Displayed in footer and SEO description</p>
             <Input className="mt-1.5" placeholder="Welcome to our store" value={tagline} onChange={(e) => setTagline(e.target.value)} />
           </div>
 
           {/* Contact Phone */}
           <div>
             <label className="text-sm font-medium text-foreground">Contact Phone</label>
-            <p className="text-xs text-muted-foreground">হেডার মার্কি, ফুটার ও প্রোডাক্ট পেজে দেখাবে</p>
+            <p className="text-xs text-muted-foreground">Shown in header marquee, footer & product page</p>
             <Input className="mt-1.5" placeholder="+880..." value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} />
           </div>
 
           {/* Contact Phone 2 */}
           <div>
             <label className="text-sm font-medium text-foreground">Contact Phone 2</label>
-            <p className="text-xs text-muted-foreground">প্রোডাক্ট পেজে দ্বিতীয় কল বাটনে দেখাবে</p>
+            <p className="text-xs text-muted-foreground">Shown as second call button on product page</p>
             <Input className="mt-1.5" placeholder="01XXXXXXXXX" value={contactPhone2} onChange={(e) => setContactPhone2(e.target.value)} />
           </div>
 
           {/* WhatsApp Number */}
           <div>
             <label className="text-sm font-medium text-foreground">WhatsApp Number</label>
-            <p className="text-xs text-muted-foreground">প্রোডাক্ট পেজ ও ফ্লোটিং বাটনে ব্যবহার হবে (কান্ট্রি কোডসহ)</p>
+            <p className="text-xs text-muted-foreground">Used on product page & floating button (with country code)</p>
             <Input className="mt-1.5" placeholder="8801XXXXXXXXX" value={whatsappNumber} onChange={(e) => setWhatsappNumber(e.target.value)} />
           </div>
 
           {/* Messenger Link */}
           <div>
             <label className="text-sm font-medium text-foreground">Messenger Link</label>
-            <p className="text-xs text-muted-foreground">প্রোডাক্ট পেজে Messenger বাটনে ব্যবহার হবে</p>
+            <p className="text-xs text-muted-foreground">Used for Messenger button on product page</p>
             <Input className="mt-1.5" placeholder="https://m.me/yourpage" value={messengerLink} onChange={(e) => setMessengerLink(e.target.value)} />
           </div>
 
           {/* Payment Number */}
           <div>
             <label className="text-sm font-medium text-foreground">Payment Number</label>
-            <p className="text-xs text-muted-foreground">চেকআউটে বিকাশ/নগদ পেমেন্ট নম্বর দেখাবে</p>
+            <p className="text-xs text-muted-foreground">bKash/Nagad payment number shown at checkout</p>
             <Input className="mt-1.5" placeholder="01XXXXXXXXX" value={paymentNumber} onChange={(e) => setPaymentNumber(e.target.value)} />
           </div>
 
           {/* Contact Email */}
           <div>
             <label className="text-sm font-medium text-foreground">Contact Email</label>
-            <p className="text-xs text-muted-foreground">ফুটারে ইমেইল অ্যাড্রেস দেখাবে</p>
+            <p className="text-xs text-muted-foreground">Email address shown in footer</p>
             <Input className="mt-1.5" placeholder="support@store.com" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} />
           </div>
         </div>
@@ -345,8 +345,8 @@ function GeneralTab() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium text-foreground">ঢাকার ভিতরে (৳)</label>
-                <p className="text-xs text-muted-foreground">চেকআউটে ডেলিভারি চার্জ</p>
+                <label className="text-sm font-medium text-foreground">Inside Dhaka (৳)</label>
+                <p className="text-xs text-muted-foreground">Delivery charge at checkout</p>
                 <Input 
                   className="mt-1.5" 
                   value={insideDhaka}
@@ -354,8 +354,8 @@ function GeneralTab() {
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground">ঢাকার বাইরে (৳)</label>
-                <p className="text-xs text-muted-foreground">চেকআউটে ডেলিভারি চার্জ</p>
+                <label className="text-sm font-medium text-foreground">Outside Dhaka (৳)</label>
+                <p className="text-xs text-muted-foreground">Delivery charge at checkout</p>
                 <Input 
                   className="mt-1.5" 
                   value={outsideDhaka}
@@ -366,7 +366,7 @@ function GeneralTab() {
 
             <div>
               <label className="text-sm font-medium text-foreground">Free Delivery Above (৳)</label>
-              <p className="text-xs text-muted-foreground">এই পরিমাণের বেশি অর্ডারে ডেলিভারি ফ্রি হবে</p>
+              <p className="text-xs text-muted-foreground">Orders above this amount get free delivery</p>
               <Input 
                 className="mt-1.5" 
                 placeholder="Leave empty to disable"
@@ -377,7 +377,7 @@ function GeneralTab() {
 
             <div>
               <label className="text-sm font-medium text-foreground">Facebook Page URL</label>
-              <p className="text-xs text-muted-foreground">ফুটারে Facebook লিংক দেখাবে</p>
+              <p className="text-xs text-muted-foreground">Facebook link shown in footer</p>
               <Input 
                 className="mt-1.5" 
                 placeholder="https://facebook.com/..."
@@ -388,7 +388,7 @@ function GeneralTab() {
 
             <div>
               <label className="text-sm font-medium text-foreground">Instagram URL</label>
-              <p className="text-xs text-muted-foreground">ফুটারে Instagram লিংক দেখাবে</p>
+              <p className="text-xs text-muted-foreground">Instagram link shown in footer</p>
               <Input 
                 className="mt-1.5" 
                 placeholder="https://instagram.com/..."
@@ -429,28 +429,28 @@ function GeneralTab() {
           <code className="text-sm text-foreground flex-1">{siteUrl || "https://yourstore.com"}</code>
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => {
             navigator.clipboard.writeText(siteUrl);
-            toast.success("কপি হয়েছে!");
+            toast.success("Copied!");
           }}><Link className="h-4 w-4" /></Button>
         </div>
       </div>
 
       {/* Marquee & Urgency Settings */}
       <div className="bg-card rounded-2xl border border-border p-6 space-y-5">
-        <h3 className="font-bold text-foreground">📢 হেডার মার্কি ও আর্জেন্সি সেটিংস</h3>
+        <h3 className="font-bold text-foreground">📢 Header Marquee & Urgency Settings</h3>
         <div>
-          <label className="text-sm font-medium text-foreground">মার্কি টেক্সট (হেডারে চলমান লেখা)</label>
-          <p className="text-xs text-muted-foreground">স্টোরের উপরে যে লেখা স্ক্রল হয়ে যায়</p>
-          <Input className="mt-1.5" placeholder="🚚 সারা দেশে ক্যাশ অন ডেলিভারি..." value={marqueeText} onChange={(e) => setMarqueeText(e.target.value)} />
+          <label className="text-sm font-medium text-foreground">Marquee Text (scrolling header text)</label>
+          <p className="text-xs text-muted-foreground">Text that scrolls across the top of the store</p>
+          <Input className="mt-1.5" placeholder="🚚 Cash on delivery all over Bangladesh..." value={marqueeText} onChange={(e) => setMarqueeText(e.target.value)} />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-sm font-medium text-foreground">অফার কাউন্টডাউন (মিনিট)</label>
-            <p className="text-xs text-muted-foreground">প্রোডাক্ট পেজে কতক্ষণের কাউন্টডাউন দেখাবে</p>
+            <label className="text-sm font-medium text-foreground">Offer Countdown (minutes)</label>
+            <p className="text-xs text-muted-foreground">How long the countdown shows on product page</p>
             <Input className="mt-1.5" type="number" placeholder="30" value={offerCountdownMinutes} onChange={(e) => setOfferCountdownMinutes(e.target.value)} />
           </div>
           <div>
-            <label className="text-sm font-medium text-foreground">চেকআউট স্কার্সিটি কাউন্ট</label>
-            <p className="text-xs text-muted-foreground">চেকআউটে "আর মাত্র X জন" শুরুর সংখ্যা</p>
+            <label className="text-sm font-medium text-foreground">Checkout Scarcity Count</label>
+            <p className="text-xs text-muted-foreground">Starting number for "Only X slots left" at checkout</p>
             <Input className="mt-1.5" type="number" placeholder="47" value={checkoutScarcityCount} onChange={(e) => setCheckoutScarcityCount(e.target.value)} />
           </div>
         </div>
@@ -458,28 +458,28 @@ function GeneralTab() {
 
       {/* Footer Settings */}
       <div className="bg-card rounded-2xl border border-border p-6 space-y-5">
-        <h3 className="font-bold text-foreground">📋 ফুটার সেটিংস</h3>
+        <h3 className="font-bold text-foreground">📋 Footer Settings</h3>
         <div>
-          <label className="text-sm font-medium text-foreground">ফুটার বর্ণনা</label>
-          <Input className="mt-1.5" placeholder="বাংলাদেশের সেরা অনলাইন শপিং..." value={footerDescription} onChange={(e) => setFooterDescription(e.target.value)} />
+          <label className="text-sm font-medium text-foreground">Footer Description</label>
+          <Input className="mt-1.5" placeholder="Best online shopping in Bangladesh..." value={footerDescription} onChange={(e) => setFooterDescription(e.target.value)} />
         </div>
         <div>
-          <label className="text-sm font-medium text-foreground">কুইক লিংকস</label>
-          <p className="text-xs text-muted-foreground">কমা দিয়ে আলাদা করুন (যেমন: হোম,সব প্রোডাক্ট,অফার,যোগাযোগ)</p>
-          <Input className="mt-1.5" placeholder="হোম,সব প্রোডাক্ট,অফার,যোগাযোগ" value={footerQuickLinks} onChange={(e) => setFooterQuickLinks(e.target.value)} />
+          <label className="text-sm font-medium text-foreground">Quick Links</label>
+          <p className="text-xs text-muted-foreground">Separate with commas (e.g. Home,All Products,Offers,Contact)</p>
+          <Input className="mt-1.5" placeholder="Home,All Products,Offers,Contact" value={footerQuickLinks} onChange={(e) => setFooterQuickLinks(e.target.value)} />
         </div>
         <div>
-          <label className="text-sm font-medium text-foreground">সাহায্য লিংকস</label>
-          <p className="text-xs text-muted-foreground">কমা দিয়ে আলাদা করুন</p>
-          <Input className="mt-1.5" placeholder="ডেলিভারি তথ্য,রিটার্ন পলিসি,প্রাইভেসি পলিসি" value={footerHelpLinks} onChange={(e) => setFooterHelpLinks(e.target.value)} />
+          <label className="text-sm font-medium text-foreground">Help Links</label>
+          <p className="text-xs text-muted-foreground">Separate with commas</p>
+          <Input className="mt-1.5" placeholder="Delivery Info,Return Policy,Privacy Policy" value={footerHelpLinks} onChange={(e) => setFooterHelpLinks(e.target.value)} />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-sm font-medium text-foreground">ঠিকানা</label>
-            <Input className="mt-1.5" placeholder="ঢাকা, বাংলাদেশ" value={footerAddress} onChange={(e) => setFooterAddress(e.target.value)} />
+            <label className="text-sm font-medium text-foreground">Address</label>
+            <Input className="mt-1.5" placeholder="Dhaka, Bangladesh" value={footerAddress} onChange={(e) => setFooterAddress(e.target.value)} />
           </div>
           <div>
-            <label className="text-sm font-medium text-foreground">কপিরাইট টেক্সট</label>
+            <label className="text-sm font-medium text-foreground">Copyright Text</label>
             <Input className="mt-1.5" placeholder="© 2026 SHOP BD — All rights reserved" value={footerCopyright} onChange={(e) => setFooterCopyright(e.target.value)} />
           </div>
         </div>
@@ -495,11 +495,11 @@ function ButtonsTab() {
   const [loaded, setLoaded] = useState(false);
 
   const [orderBtn, setOrderBtn] = useState(true);
-  const [orderBtnText, setOrderBtnText] = useState("অর্ডার করুন");
+  const [orderBtnText, setOrderBtnText] = useState("Order Now");
   const [orderBtnColor, setOrderBtnColor] = useState("#16a34a");
   
   const [cartBtn, setCartBtn] = useState(true);
-  const [cartBtnText, setCartBtnText] = useState("কার্টে যোগ করুন");
+  const [cartBtnText, setCartBtnText] = useState("Add to Cart");
   const [cartBtnColor, setCartBtnColor] = useState("#2563eb");
   
   const [whatsappBtn, setWhatsappBtn] = useState(true);
@@ -513,10 +513,10 @@ function ButtonsTab() {
 
   if (!loaded && !isLoading && settings) {
     setOrderBtn(settings["btn_order_enabled"] !== "false");
-    setOrderBtnText(settings["btn_order_text"] || "অর্ডার করুন");
+    setOrderBtnText(settings["btn_order_text"] || "Order Now");
     setOrderBtnColor(settings["btn_order_color"] || "#16a34a");
     setCartBtn(settings["btn_cart_enabled"] !== "false");
-    setCartBtnText(settings["btn_cart_text"] || "কার্টে যোগ করুন");
+    setCartBtnText(settings["btn_cart_text"] || "Add to Cart");
     setCartBtnColor(settings["btn_cart_color"] || "#2563eb");
     setWhatsappBtn(settings["btn_whatsapp_enabled"] !== "false");
     setWhatsappBtnText(settings["btn_whatsapp_text"] || "WhatsApp");
@@ -557,9 +557,9 @@ function ButtonsTab() {
           await supabase.from("site_settings").insert({ key: entry.key, value: entry.value, is_public: true } as any);
         }
       }
-      toast.success("বাটন সেটিংস সেভ হয়েছে!");
+      toast.success("Button settings saved!");
     } catch (e: any) {
-      toast.error("সেভ করতে সমস্যা: " + e.message);
+      toast.error("Save failed: " + e.message);
     }
   };
 
@@ -597,7 +597,7 @@ function ButtonsTab() {
       <div className="bg-card rounded-2xl border border-border p-6 space-y-5">
         <div>
           <h3 className="font-bold text-foreground">Button Customization</h3>
-          <p className="text-sm text-muted-foreground">টগল অফ করলে বাটন ওয়েবসাইট থেকে লুকানো হবে</p>
+          <p className="text-sm text-muted-foreground">Toggle off to hide buttons from the website</p>
         </div>
 
         <div className="grid grid-cols-3 gap-6">
@@ -638,7 +638,7 @@ function ButtonsTab() {
         <div className="flex items-center justify-between">
           <div>
             <h3 className="font-bold text-foreground">Floating Contact Buttons</h3>
-            <p className="text-sm text-muted-foreground">স্টোরের নিচে ফ্লোটিং WhatsApp ও Phone বাটন দেখানো হবে</p>
+            <p className="text-sm text-muted-foreground">Floating WhatsApp & Phone buttons at the bottom of the store</p>
           </div>
           <Switch checked={floatingContacts} onCheckedChange={setFloatingContacts} />
         </div>
@@ -647,7 +647,7 @@ function ButtonsTab() {
           <div className="flex items-center justify-between">
             <div>
               <h4 className="font-medium text-foreground">Floating WhatsApp Button</h4>
-              <p className="text-xs text-muted-foreground">General ট্যাবে দেওয়া WhatsApp নম্বর ব্যবহার হবে</p>
+              <p className="text-xs text-muted-foreground">Uses WhatsApp number from General tab</p>
             </div>
             <Switch checked={floatingWhatsapp} onCheckedChange={setFloatingWhatsapp} />
           </div>
@@ -657,7 +657,7 @@ function ButtonsTab() {
           <div className="flex items-center justify-between">
             <div>
               <h4 className="font-medium text-foreground">Floating Call Button</h4>
-              <p className="text-xs text-muted-foreground">General ট্যাবে দেওয়া Phone নম্বর ব্যবহার হবে</p>
+              <p className="text-xs text-muted-foreground">Uses Phone number from General tab</p>
             </div>
             <Switch checked={floatingCall} onCheckedChange={setFloatingCall} />
           </div>
@@ -666,7 +666,7 @@ function ButtonsTab() {
         <div className="flex items-center justify-between border-t border-border pt-4">
           <div>
             <h4 className="font-medium text-foreground">Sticky Order Button</h4>
-            <p className="text-xs text-muted-foreground">প্রোডাক্ট পেজে স্ক্রল করলেও অর্ডার বাটন দেখা যাবে</p>
+            <p className="text-xs text-muted-foreground">Order button stays visible when scrolling product page</p>
           </div>
           <Switch checked={stickyProduct} onCheckedChange={setStickyProduct} />
         </div>
@@ -685,12 +685,12 @@ function BuyDomainTab() {
       <div className="bg-card rounded-2xl border border-border p-6 space-y-5">
         <div className="flex items-center gap-2">
           <Globe className="h-5 w-5 text-primary" />
-          <h3 className="text-xl font-bold text-foreground">ডোমেইন কিনুন</h3>
+          <h3 className="text-xl font-bold text-foreground">Buy Domain</h3>
         </div>
-        <p className="text-sm text-muted-foreground">আপনার ব্র্যান্ডের জন্য একটি কাস্টম ডোমেইন খুঁজুন এবং কিনুন।</p>
+        <p className="text-sm text-muted-foreground">Find and buy a custom domain for your brand.</p>
 
         <div>
-          <label className="text-sm font-bold text-foreground">ডোমেইন নাম সার্চ করুন</label>
+          <label className="text-sm font-bold text-foreground">Search Domain Name</label>
           <div className="flex items-center gap-2 mt-2">
             <Input
               className="flex-1"
@@ -711,16 +711,16 @@ function BuyDomainTab() {
               </SelectContent>
             </Select>
             <Button className="gap-2">
-              <Search className="h-4 w-4" /> সার্চ
+              <Search className="h-4 w-4" /> Search
             </Button>
           </div>
         </div>
 
-        <p className="text-sm text-muted-foreground">.com রেজিস্ট্রেশন: ৳1200/বছর &nbsp;&nbsp; রিনিউয়াল: ৳1500/বছর</p>
+        <p className="text-sm text-muted-foreground">.com registration: ৳1200/year &nbsp;&nbsp; Renewal: ৳1500/year</p>
 
         <div className="flex items-start gap-2 text-sm text-muted-foreground bg-secondary/30 rounded-xl p-4">
           <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
-          <p>পার্চেজ রিকোয়েস্ট সাবমিট করার পর আমাদের টিম ডোমেইনটি কিনে আপনার স্টোরের সাথে কানেক্ট করে দেবে। সাধারণত ২৪-৪৮ ঘণ্টা সময় লাগে।</p>
+          <p>After submitting a purchase request, our team will buy the domain and connect it to your store. This usually takes 24-48 hours.</p>
         </div>
       </div>
     </div>
@@ -784,9 +784,9 @@ function TrackingTab() {
           await supabase.from("site_settings").insert({ key: entry.key, value: entry.value, is_public: isPublic } as any);
         }
       }
-      toast.success("ট্র্যাকিং সেটিংস সেভ হয়েছে!");
+      toast.success("Tracking settings saved!");
     } catch (e: any) {
-      toast.error("সেভ করতে সমস্যা: " + e.message);
+      toast.error("Save failed: " + e.message);
     }
   };
 
@@ -809,13 +809,13 @@ function TrackingTab() {
         <div>
           <label className="text-sm font-medium text-foreground">Google Tag Manager</label>
           <Input className="mt-1.5" placeholder="GTM-XXXXXXX" value={gtmId} onChange={(e) => setGtmId(e.target.value)} />
-          <p className="text-xs text-muted-foreground mt-1">আপনার GTM Container ID দিন</p>
+          <p className="text-xs text-muted-foreground mt-1">Enter your GTM Container ID</p>
         </div>
 
         <div>
           <label className="text-sm font-medium text-foreground">Microsoft Clarity</label>
           <Input className="mt-1.5" placeholder="abcdefghij" value={clarityId} onChange={(e) => setClarityId(e.target.value)} />
-          <p className="text-xs text-muted-foreground mt-1">আপনার Clarity Project ID দিন</p>
+          <p className="text-xs text-muted-foreground mt-1">Enter your Clarity Project ID</p>
         </div>
       </div>
 
@@ -830,7 +830,7 @@ function TrackingTab() {
         <div>
           <label className="text-sm font-medium text-foreground">Facebook Pixel ID</label>
           <Input className="mt-1.5" placeholder="123456789012345" value={fbPixelId} onChange={(e) => setFbPixelId(e.target.value)} />
-          <p className="text-xs text-muted-foreground mt-1">Meta Events Manager → Data Sources → আপনার Pixel ID কপি করুন</p>
+          <p className="text-xs text-muted-foreground mt-1">Meta Events Manager → Data Sources → Copy your Pixel ID</p>
         </div>
 
         <div>
@@ -842,19 +842,19 @@ function TrackingTab() {
         <div>
           <label className="text-sm font-medium text-foreground">Test Event Code (Optional)</label>
           <Input className="mt-1.5" placeholder="TEST12345" value={fbTestCode} onChange={(e) => setFbTestCode(e.target.value)} />
-          <p className="text-xs text-muted-foreground mt-1">টেস্ট মোডে ইভেন্ট পাঠাতে Events Manager → Test Events থেকে কোড দিন। প্রোডাকশনে ফাঁকা রাখুন।</p>
+          <p className="text-xs text-muted-foreground mt-1">Use Test Event Code to send events in test mode. Leave empty for production.</p>
         </div>
 
         <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
           <div className="flex items-start gap-2">
             <Info className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
             <div className="text-xs text-blue-800 dark:text-blue-300 space-y-1">
-              <p className="font-medium">কিভাবে Access Token পাবেন?</p>
+              <p className="font-medium">How to get an Access Token?</p>
               <ol className="list-decimal list-inside space-y-0.5">
-                <li>Meta Events Manager → Settings এ যান</li>
-                <li>Conversions API সেকশনে "Generate Access Token" ক্লিক করুন</li>
-                <li>টোকেন কপি করে এখানে পেস্ট করুন</li>
-                <li>Save করুন — সার্ভার-সাইড ইভেন্ট অটো কাজ করবে</li>
+                <li>Go to Meta Events Manager → Settings</li>
+                <li>Click "Generate Access Token" in the Conversions API section</li>
+                <li>Copy the token and paste it here</li>
+                <li>Save — server-side events will work automatically</li>
               </ol>
             </div>
           </div>
@@ -867,12 +867,12 @@ function TrackingTab() {
           <Facebook className="h-5 w-5 text-blue-600" />
           <h3 className="font-bold text-foreground">Meta Ads API Configuration</h3>
         </div>
-        <p className="text-sm text-muted-foreground">Meta Ads ডাটা সিঙ্ক এবং টোকেন এক্সচেঞ্জের জন্য প্রয়োজনীয় তথ্য দিন</p>
+        <p className="text-sm text-muted-foreground">Enter the required info for Meta Ads data sync and token exchange</p>
 
         <div>
           <label className="text-sm font-medium text-foreground">Ad Account ID</label>
-          <Input className="mt-1.5" placeholder="act_123456789 অথবা 123456789" value={fbAdAccountId} onChange={(e) => setFbAdAccountId(e.target.value)} />
-          <p className="text-xs text-muted-foreground mt-1">Meta Business Suite → Ad Accounts → আপনার Ad Account ID কপি করুন</p>
+          <Input className="mt-1.5" placeholder="act_123456789 or 123456789" value={fbAdAccountId} onChange={(e) => setFbAdAccountId(e.target.value)} />
+          <p className="text-xs text-muted-foreground mt-1">Meta Business Suite → Ad Accounts → Copy your Ad Account ID</p>
         </div>
 
         <div>
@@ -891,11 +891,11 @@ function TrackingTab() {
           <div className="flex items-start gap-2">
             <Info className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
             <div className="text-xs text-amber-800 dark:text-amber-300 space-y-1">
-              <p className="font-medium">টোকেন এক্সপায়ার হলে কি করবেন?</p>
+              <p className="font-medium">What to do when token expires?</p>
               <ol className="list-decimal list-inside space-y-0.5">
-                <li>নতুন Short-Lived Token জেনারেট করুন (Graph API Explorer থেকে)</li>
-                <li>উপরে "Conversions API Access Token" ফিল্ডে পেস্ট করুন</li>
-                <li>Save করুন — Meta Ads পেজে গিয়ে "Exchange Token" ক্লিক করলে ৬০ দিনের টোকেন পাবেন</li>
+                <li>Generate a new Short-Lived Token (from Graph API Explorer)</li>
+                <li>Paste it in the "Conversions API Access Token" field above</li>
+                <li>Save — click "Exchange Token" on Meta Ads page for a 60-day token</li>
               </ol>
             </div>
           </div>
@@ -911,7 +911,7 @@ function TrackingTab() {
         <div>
           <label className="text-sm font-medium text-foreground">TikTok Pixel ID</label>
           <Input className="mt-1.5" placeholder="CXXXXXXXXXXXXXXXXX" value={tiktokPixelId} onChange={(e) => setTiktokPixelId(e.target.value)} />
-          <p className="text-xs text-muted-foreground mt-1">TikTok Ads Manager → Assets → Events → Pixel ID কপি করুন</p>
+          <p className="text-xs text-muted-foreground mt-1">TikTok Ads Manager → Assets → Events → Copy Pixel ID</p>
         </div>
       </div>
 
@@ -921,7 +921,7 @@ function TrackingTab() {
           <span className="text-lg">📊</span>
           <h3 className="font-bold text-foreground">Coming Soon</h3>
         </div>
-        <p className="text-sm text-muted-foreground">Google Analytics 4, Custom Script injection — সব কিছু এখানে যোগ করা যাবে</p>
+        <p className="text-sm text-muted-foreground">Google Analytics 4, Custom Script injection — all can be added here</p>
       </div>
 
       <Button className="w-full gap-2" onClick={handleSave}>
@@ -938,11 +938,11 @@ function DataResetTab() {
   const [resetting, setResetting] = useState(false);
 
   const segments = [
-    { id: "orders", label: "অর্ডার", desc: "সব অর্ডার, অর্ডার আইটেম, ব্লক অর্ডার, ইনকমপ্লিট অর্ডার", tables: ["order_activity_logs", "order_assignments", "order_items", "courier_orders", "invoices", "incomplete_orders", "orders"] },
-    { id: "finance", label: "ফাইন্যান্স", desc: "আয়/ব্যয় রেকর্ড", tables: ["finance_records"] },
-    { id: "reports", label: "রিপোর্ট", desc: "অ্যাড স্পেন্ড রেকর্ড", tables: ["ad_spends"] },
-    { id: "ad_spend", label: "মেটা অ্যাডস ডেটা", desc: "ক্যাম্পেইন, অ্যাড সেট, অ্যাড ডেটা", tables: ["meta_ads", "meta_adsets", "meta_campaigns"] },
-    { id: "planning", label: "প্ল্যানিং ও টাস্ক", desc: "টাস্ক ডেটা", tables: ["tasks"] },
+    { id: "orders", label: "Orders", desc: "All orders, order items, blocked orders, incomplete orders", tables: ["order_activity_logs", "order_assignments", "order_items", "courier_orders", "invoices", "incomplete_orders", "orders"] },
+    { id: "finance", label: "Finance", desc: "Income/expense records", tables: ["finance_records"] },
+    { id: "reports", label: "Reports", desc: "Ad spend records", tables: ["ad_spends"] },
+    { id: "ad_spend", label: "Meta Ads Data", desc: "Campaigns, ad sets, ad data", tables: ["meta_ads", "meta_adsets", "meta_campaigns"] },
+    { id: "planning", label: "Planning & Tasks", desc: "Task data", tables: ["tasks"] },
   ];
 
   const toggleSegment = (id: string) => {
@@ -978,11 +978,11 @@ function DataResetTab() {
         }
       }
 
-      toast.success(`${selectedSegments.length}টি সেগমেন্টের ডাটা মুছে ফেলা হয়েছে!`);
+      toast.success(`Data from ${selectedSegments.length} segment(s) has been deleted!`);
       setShowDialog(false);
       setSelectedSegments([]);
     } catch (e: any) {
-      toast.error("রিসেট করতে সমস্যা: " + e.message);
+      toast.error("Reset failed: " + e.message);
     } finally {
       setResetting(false);
     }
@@ -995,12 +995,12 @@ function DataResetTab() {
           <div className="h-8 w-8 rounded-lg bg-destructive/10 flex items-center justify-center">
             <RotateCcw className="h-4 w-4 text-destructive" />
           </div>
-          <h3 className="text-xl font-bold text-foreground">ডাটা রিসেট</h3>
+          <h3 className="text-xl font-bold text-foreground">Data Reset</h3>
         </div>
-        <p className="text-sm text-muted-foreground">বিজনেসের নির্দিষ্ট সেগমেন্টের ডাটা মুছে ফেলুন। এই কাজ অপরিবর্তনীয়।</p>
+        <p className="text-sm text-muted-foreground">Delete data from specific business segments. This action is irreversible.</p>
 
         <Button variant="destructive" className="gap-2" onClick={() => setShowDialog(true)}>
-          <Trash2 className="h-4 w-4" /> ডাটা রিসেট করুন
+          <Trash2 className="h-4 w-4" /> Reset Data
         </Button>
       </div>
 
@@ -1009,9 +1009,9 @@ function DataResetTab() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="bg-card rounded-2xl border border-border p-6 w-full max-w-lg mx-4 space-y-4">
             <h3 className="text-lg font-bold text-destructive flex items-center gap-2">
-              ⚠️ সতর্কতা: ডাটা রিসেট
+              ⚠️ Warning: Data Reset
             </h3>
-            <p className="text-sm text-muted-foreground">কোন কোন সেগমেন্টের ডাটা রিসেট করতে চান সিলেক্ট করুন:</p>
+            <p className="text-sm text-muted-foreground">Select which segments to reset:</p>
 
             {/* Select All */}
             <label className="flex items-center gap-3 cursor-pointer py-2">
@@ -1027,7 +1027,7 @@ function DataResetTab() {
                   <div className="h-2 w-2 rounded-full bg-primary-foreground" />
                 )}
               </div>
-              <span className="font-bold text-foreground" onClick={toggleAll}>সব সিলেক্ট করুন</span>
+              <span className="font-bold text-foreground" onClick={toggleAll}>Select All</span>
             </label>
 
             {/* Segment List */}
@@ -1060,10 +1060,10 @@ function DataResetTab() {
             {/* Actions */}
             <div className="flex justify-center gap-3 pt-2">
               <Button variant="outline" onClick={() => { setShowDialog(false); setSelectedSegments([]); }}>
-                বাতিল
+                Cancel
               </Button>
               <Button variant="destructive" className="gap-2" disabled={selectedSegments.length === 0 || resetting} onClick={handleReset}>
-                <Trash2 className="h-4 w-4" /> {resetting ? "রিসেট হচ্ছে..." : `রিসেট করুন (${selectedSegments.length})`}
+                <Trash2 className="h-4 w-4" /> {resetting ? "Resetting..." : `Reset (${selectedSegments.length})`}
               </Button>
             </div>
           </div>
