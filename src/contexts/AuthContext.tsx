@@ -27,12 +27,12 @@ export const useAuth = () => useContext(AuthContext);
 
 // Display name map for roles
 export const ROLE_DISPLAY_NAMES: Record<AppRole, string> = {
-  admin: "অ্যাডমিন",
-  moderator: "ম্যানেজার",
-  manager: "ম্যানেজার",
-  user: "ইউজার",
-  accounting: "অ্যাকাউন্টিং",
-  ad_analytics: "অ্যাড অ্যানালিটিক্স",
+  admin: "Admin",
+  moderator: "Moderator",
+  manager: "Manager",
+  user: "User",
+  accounting: "Accounting",
+  ad_analytics: "Ad Analytics",
 };
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {

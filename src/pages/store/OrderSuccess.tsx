@@ -8,11 +8,11 @@ const OrderSuccess = () => (
       <div className="mx-auto w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6">
         <CheckCircle2 className="h-10 w-10 text-green-600" />
       </div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-3">অর্ডার সফল হয়েছে! 🎉</h1>
-      <p className="text-gray-500 mb-8">আপনার অর্ডার প্রসেসিং হচ্ছে। শীঘ্রই আপনাকে কল করা হবে।</p>
+      <h1 className="text-3xl font-bold text-gray-900 mb-3">Order placed successfully! 🎉</h1>
+      <p className="text-gray-500 mb-8">Your order is being processed. We will call you shortly.</p>
       <Link to="/">
         <Button variant="outline" className="gap-2">
-          <ArrowLeft className="h-4 w-4" /> Store এ ফিরে যান
+          <ArrowLeft className="h-4 w-4" /> Back to store
         </Button>
       </Link>
     </div>

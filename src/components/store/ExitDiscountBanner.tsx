@@ -13,7 +13,7 @@ export function ExitDiscountBanner({
   onReject, 
   discountAmount = 50, 
   timerSeconds = 300,
-  message = "এই ছাড়টি শুধু আপনার জন্য!"
+  message = "This discount is only for you!"
 }: ExitDiscountBannerProps) {
   const [timeLeft, setTimeLeft] = useState(timerSeconds);
 
@@ -39,19 +39,19 @@ export function ExitDiscountBanner({
         <div className="bg-gradient-to-br from-orange-500 via-red-500 to-pink-600 rounded-3xl p-1 shadow-2xl">
           <div className="bg-white rounded-[22px] overflow-hidden">
             <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white text-center py-2.5 px-4">
-              <p className="text-xs font-bold tracking-wide uppercase animate-pulse">⚡ বিশেষ অফার — শুধুমাত্র আপনার জন্য! ⚡</p>
+              <p className="text-xs font-bold tracking-wide uppercase animate-pulse">⚡ Special Offer — Only For You! ⚡</p>
             </div>
             <div className="p-6 text-center">
               {/* Countdown Timer */}
               <div className="flex items-center justify-center gap-2 mb-4">
                 <div className="bg-gray-900 text-white rounded-lg px-3 py-2 min-w-[3.5rem]">
                   <span className="text-2xl font-black tabular-nums">{String(minutes).padStart(2, "0")}</span>
-                  <p className="text-[9px] text-gray-400 uppercase">মিনিট</p>
+                  <p className="text-[9px] text-gray-400 uppercase">Minutes</p>
                 </div>
                 <span className="text-2xl font-black text-gray-900 animate-pulse">:</span>
                 <div className="bg-gray-900 text-white rounded-lg px-3 py-2 min-w-[3.5rem]">
                   <span className="text-2xl font-black tabular-nums">{String(seconds).padStart(2, "0")}</span>
-                  <p className="text-[9px] text-gray-400 uppercase">সেকেন্ড</p>
+                  <p className="text-[9px] text-gray-400 uppercase">Seconds</p>
                 </div>
               </div>
 
@@ -59,7 +59,7 @@ export function ExitDiscountBanner({
                 <div className="w-24 h-24 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center shadow-lg shadow-orange-200">
                   <div className="text-white">
                     <span className="text-3xl font-black block leading-none">৳{discountAmount}</span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider">ছাড়!</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider">Off!</span>
                   </div>
                 </div>
                 <div className="absolute -top-1 -right-1 w-7 h-7 bg-red-500 rounded-full flex items-center justify-center animate-bounce">
@@ -67,16 +67,16 @@ export function ExitDiscountBanner({
                 </div>
               </div>
               <h3 className="text-xl font-black text-gray-900 mb-1">{message}</h3>
-              <p className="text-sm text-gray-500 mb-1">আজকেই অর্ডার করুন এবং পান</p>
-              <p className="text-2xl font-black text-red-500 mb-3">৳{discountAmount} টাকা ছাড়!</p>
+              <p className="text-sm text-gray-500 mb-1">Order today and get</p>
+              <p className="text-2xl font-black text-red-500 mb-3">৳{discountAmount} discount!</p>
               <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-2.5 mb-4">
-                <p className="text-xs text-yellow-700 font-semibold">⏰ এই অফার {minutes > 0 ? `${minutes} মিনিট ${seconds} সেকেন্ডে` : `${seconds} সেকেন্ডে`} শেষ হবে!</p>
+                <p className="text-xs text-yellow-700 font-semibold">⏰ This offer ends in {minutes > 0 ? `${minutes} min ${seconds} sec` : `${seconds} sec`}!</p>
               </div>
               <button onClick={onAccept} className="w-full py-3.5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-xl font-bold text-base shadow-lg shadow-green-200 transition-all transform hover:scale-[1.02] active:scale-95">
-                🎉 ৳{discountAmount} ছাড়ে অর্ডার করুন
+                🎉 Order with ৳{discountAmount} discount
               </button>
               <button onClick={onReject} className="mt-2 text-xs text-gray-400 hover:text-gray-600 transition">
-                না, ছাড় লাগবে না
+                No thanks, skip discount
               </button>
             </div>
           </div>

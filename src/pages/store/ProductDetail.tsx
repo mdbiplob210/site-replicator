@@ -41,7 +41,7 @@ const ProductDetail = () => {
   const exitEnabled = settings?.exit_popup_enabled === 'true';
   const exitDiscount = Number(settings?.exit_popup_discount || 50);
   const exitTimer = Number(settings?.exit_popup_timer || 300);
-  const exitMessage = settings?.exit_popup_message || 'এই ছাড়টি শুধু আপনার জন্য!';
+  const exitMessage = settings?.exit_popup_message || 'This discount is only for you!';
 
   // Popup checkout
   const [checkoutOpen, setCheckoutOpen] = useState(false);
@@ -190,33 +190,33 @@ const ProductDetail = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Top bar */}
       <div className="bg-gradient-to-r from-green-600 to-green-700 text-white text-center py-2 sm:py-2 text-[11px] sm:text-xs font-medium">
-        🚚 সারা দেশে ক্যাশ অন ডেলিভারি | ২-৫ দিনে ডেলিভারি
+        🚚 Cash on delivery all over Bangladesh | Delivery in 2-5 days
       </div>
 
       {/* Urgency Countdown Timer */}
       {countdown > 0 && (
         <div className="bg-gradient-to-r from-red-600 to-orange-500 text-white py-2 sm:py-2.5 px-3 sm:px-4">
           <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 sm:gap-3">
-            <span className="text-[11px] sm:text-sm font-semibold animate-pulse">🔥 অফার শেষ হবে</span>
+            <span className="text-[11px] sm:text-sm font-semibold animate-pulse">🔥 Offer ends in</span>
             <div className="flex items-center gap-1">
               {countdownHours > 0 && (
                 <div className="bg-white/20 rounded-md px-1.5 sm:px-2 py-0.5 sm:py-1 text-center min-w-[2rem] sm:min-w-[2.5rem]">
                   <span className="text-xs sm:text-base font-black">{String(countdownHours).padStart(2, "0")}</span>
-                  <span className="text-[8px] sm:text-[9px] block -mt-0.5">ঘণ্টা</span>
+                  <span className="text-[8px] sm:text-[9px] block -mt-0.5">Hours</span>
                 </div>
               )}
               <span className="font-bold text-sm sm:text-lg">:</span>
               <div className="bg-white/20 rounded-md px-1.5 sm:px-2 py-0.5 sm:py-1 text-center min-w-[2rem] sm:min-w-[2.5rem]">
                 <span className="text-xs sm:text-base font-black">{String(countdownMins).padStart(2, "0")}</span>
-                <span className="text-[8px] sm:text-[9px] block -mt-0.5">মিনিট</span>
+                <span className="text-[8px] sm:text-[9px] block -mt-0.5">Minutes</span>
               </div>
               <span className="font-bold text-sm sm:text-lg">:</span>
               <div className="bg-white/20 rounded-md px-1.5 sm:px-2 py-0.5 sm:py-1 text-center min-w-[2rem] sm:min-w-[2.5rem]">
                 <span className="text-xs sm:text-base font-black">{String(countdownSecs).padStart(2, "0")}</span>
-                <span className="text-[8px] sm:text-[9px] block -mt-0.5">সেকেন্ড</span>
+                <span className="text-[8px] sm:text-[9px] block -mt-0.5">Seconds</span>
               </div>
             </div>
-            <span className="text-[10px] sm:text-xs font-medium hidden sm:inline">⏰ তাড়াতাড়ি!</span>
+            <span className="text-[10px] sm:text-xs font-medium hidden sm:inline">⏰ Hurry up!</span>
           </div>
         </div>
       )}
@@ -254,8 +254,8 @@ const ProductDetail = () => {
                 {discount > 0 && (
                   <div className="absolute top-3 right-3 w-14 h-14 rounded-full border-2 border-dashed border-red-400 bg-white flex flex-col items-center justify-center">
                     <span className="text-red-500 font-bold text-xs leading-none">{discountAmount}</span>
-                    <span className="text-red-500 font-bold text-[10px] leading-none">টাকা</span>
-                    <span className="text-red-500 font-bold text-[10px] leading-none">ছাড়</span>
+                    <span className="text-red-500 font-bold text-[10px] leading-none">BDT</span>
+                    <span className="text-red-500 font-bold text-[10px] leading-none">OFF</span>
                   </div>
                 )}
                 {/* Navigation arrows */}
@@ -304,9 +304,9 @@ const ProductDetail = () => {
 
             {/* Price */}
             <div className="flex items-baseline gap-2 sm:gap-3 flex-wrap">
-              <span className="text-green-600 font-black text-2xl sm:text-3xl">৳{product.selling_price} টাকা</span>
+              <span className="text-green-600 font-black text-2xl sm:text-3xl">৳{product.selling_price}</span>
               {discount > 0 && (
-                <span className="text-gray-400 line-through text-base sm:text-lg">৳{product.original_price} টাকা</span>
+                <span className="text-gray-400 line-through text-base sm:text-lg">৳{product.original_price}</span>
               )}
             </div>
 
@@ -327,10 +327,10 @@ const ProductDetail = () => {
               </div>
               {/* Stock & Free Delivery */}
               <span className={`text-sm ${product.stock_quantity > 0 ? "text-green-600" : "text-red-500"}`}>
-                {product.stock_quantity > 0 ? `✓ স্টকে আছে` : "✗ স্টকে নেই"}
+                {product.stock_quantity > 0 ? `✓ In stock` : "✗ Out of stock"}
               </span>
               {product.free_delivery && (
-                <span className="text-sm text-green-600 font-semibold bg-green-50 px-2 py-0.5 rounded-full">🚚 ফ্রি ডেলিভারি</span>
+                <span className="text-sm text-green-600 font-semibold bg-green-50 px-2 py-0.5 rounded-full">🚚 Free delivery</span>
               )}
             </div>
 
@@ -342,14 +342,14 @@ const ProductDetail = () => {
                 disabled={product.stock_quantity <= 0 && !product.allow_out_of_stock_orders}
                 className="w-full text-base font-bold py-6 sm:py-6 rounded-xl bg-green-600 hover:bg-green-700 active:scale-[0.98] text-white shadow-lg shadow-green-200 transition-all"
               >
-                🛒 অর্ডার করুন
+                🛒 Order now
               </Button>
 
               <button
                 onClick={handleOrder}
                 className="w-full py-3 border border-green-600 text-green-600 hover:bg-green-50 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition"
               >
-                <ShoppingBag className="h-4 w-4" /> কার্টে যোগ করুন
+                <ShoppingBag className="h-4 w-4" /> Add to cart
               </button>
 
               {/* WhatsApp */}
@@ -364,7 +364,7 @@ const ProductDetail = () => {
               {phoneNumber && (
                 <a href={`tel:${phoneNumber}`}
                   className="w-full py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition">
-                  <Phone className="h-4 w-4" /> কল করতে ক্লিক করুন : {phoneNumber}
+                  <Phone className="h-4 w-4" /> Click to call : {phoneNumber}
                 </a>
               )}
 
@@ -372,7 +372,7 @@ const ProductDetail = () => {
               {phoneNumber2 && (
                 <a href={`tel:${phoneNumber2}`}
                   className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition">
-                  <Phone className="h-4 w-4" /> কল করতে ক্লিক করুন : {phoneNumber2}
+                  <Phone className="h-4 w-4" /> Click to call : {phoneNumber2}
                 </a>
               )}
 
@@ -381,23 +381,23 @@ const ProductDetail = () => {
                 <a href={messengerLink} target="_blank" rel="noopener noreferrer"
                   className="w-full py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition">
                   <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.36 2 2 6.13 2 11.7c0 2.91 1.2 5.42 3.15 7.2.16.15.26.36.27.58l.05 1.82c.02.56.6.93 1.1.7l2.04-.9c.17-.08.36-.1.55-.06.88.24 1.82.36 2.84.36 5.64 0 10-4.13 10-9.7S17.64 2 12 2zm5.95 7.57l-2.9 4.6c-.46.73-1.44.92-2.13.41l-2.31-1.73a.6.6 0 00-.72 0l-3.12 2.37c-.42.32-.96-.18-.69-.63l2.9-4.6c.46-.73 1.44-.92 2.13-.41l2.31 1.73a.6.6 0 00.72 0l3.12-2.37c.42-.32.96.18.69.63z"/></svg>
-                  মেসেজ করতে ক্লিক করুন
+                  Click to message
                 </a>
               )}
             </div>
 
             {/* Category */}
             {product.category_id && (
-              <p className="text-sm text-gray-500">ক্যাটাগরি: {product.category_id}</p>
+              <p className="text-sm text-gray-500">Category: {product.category_id}</p>
             )}
 
             {/* Delivery info table */}
             <div className="border rounded-xl overflow-hidden">
               <div className="grid grid-cols-2 text-sm">
-                <div className="p-3 bg-gray-50 font-medium">ঢাকা সিটির বাহির</div>
-                <div className="p-3 font-bold text-right">{outsideDhaka} টাকা</div>
-                <div className="p-3 bg-gray-50 font-medium border-t">ঢাকা সিটির ভিতর</div>
-                <div className="p-3 font-bold text-right border-t">{insideDhaka} টাকা</div>
+                <div className="p-3 bg-gray-50 font-medium">Outside Dhaka City</div>
+                <div className="p-3 font-bold text-right">{outsideDhaka} BDT</div>
+                <div className="p-3 bg-gray-50 font-medium border-t">Inside Dhaka City</div>
+                <div className="p-3 font-bold text-right border-t">{insideDhaka} BDT</div>
                 {paymentNumber && (
                   <>
                     <div className="p-3 bg-gray-50 font-medium border-t">Payment Number</div>
@@ -411,15 +411,15 @@ const ProductDetail = () => {
             <div className="grid grid-cols-3 gap-3 pt-4 border-t">
               <div className="text-center text-xs text-gray-500">
                 <Truck className="h-5 w-5 mx-auto mb-1 text-green-600" />
-                দ্রুত ডেলিভারি
+                Fast delivery
               </div>
               <div className="text-center text-xs text-gray-500">
                 <Shield className="h-5 w-5 mx-auto mb-1 text-green-600" />
-                গ্যারান্টি
+                Warranty
               </div>
               <div className="text-center text-xs text-gray-500">
                 <RotateCcw className="h-5 w-5 mx-auto mb-1 text-green-600" />
-                রিটার্ন পলিসি
+                Return policy
               </div>
             </div>
           </div>
@@ -429,8 +429,8 @@ const ProductDetail = () => {
         {(product.short_description || product.detailed_description) && (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mt-6 p-4 sm:p-6">
             <div className="flex gap-4 mb-4">
-              <button className="px-4 py-2 bg-green-600 text-white rounded-full text-sm font-semibold">পণ্যর বিস্তারিত</button>
-              <button className="px-4 py-2 text-gray-500 text-sm font-semibold">রিটার্ন পলিসি</button>
+              <button className="px-4 py-2 bg-green-600 text-white rounded-full text-sm font-semibold">Product details</button>
+              <button className="px-4 py-2 text-gray-500 text-sm font-semibold">Return policy</button>
             </div>
             {product.short_description && (
               <div
@@ -486,9 +486,9 @@ function SuggestedProducts({ categoryId, currentProductId, onOrder }: { category
     <div className="mt-8 mb-8">
       <div className="text-center mb-6">
         <h2 className="text-xl font-bold text-gray-800 border-b-2 border-green-500 inline-block pb-1">
-          হয়তো আপনি এই পণ্যগুলিও পছন্দ করবেন
+          You might also like these products
         </h2>
-        <p className="text-sm text-gray-500 mt-1">আমাদের আরও পণ্য রয়েছে, আপনি চাইলে সেগুলোও দেখতে পারেন</p>
+        <p className="text-sm text-gray-500 mt-1">We have more products you might want to check out</p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -518,8 +518,8 @@ function SuggestedProducts({ categoryId, currentProductId, onOrder }: { category
                   {pDiscount > 0 && (
                     <div className="absolute top-2 right-2 w-12 h-12 rounded-full border-2 border-dashed border-red-400 bg-white flex flex-col items-center justify-center">
                       <span className="text-red-500 font-bold text-[10px] leading-none">{pDiscountAmount}</span>
-                      <span className="text-red-500 font-bold text-[9px] leading-none">টাকা</span>
-                      <span className="text-red-500 font-bold text-[9px] leading-none">ছাড়</span>
+                      <span className="text-red-500 font-bold text-[9px] leading-none">BDT</span>
+                      <span className="text-red-500 font-bold text-[9px] leading-none">OFF</span>
                     </div>
                   )}
                 </div>
@@ -529,22 +529,22 @@ function SuggestedProducts({ categoryId, currentProductId, onOrder }: { category
                   <h3 className="font-semibold text-gray-800 text-sm truncate mb-1">{p.name}</h3>
                 </Link>
                 <div className="flex items-baseline gap-2 mb-2">
-                  <span className="text-green-600 font-bold">{p.selling_price} টাকা</span>
+                  <span className="text-green-600 font-bold">{p.selling_price} BDT</span>
                   {pDiscount > 0 && (
-                    <span className="text-gray-400 line-through text-xs">{p.original_price} টাকা</span>
+                    <span className="text-gray-400 line-through text-xs">{p.original_price} BDT</span>
                   )}
                 </div>
                 <button
                   onClick={() => onOrder(p)}
                   className="w-full py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-bold flex items-center justify-center gap-1.5 transition"
                 >
-                  🛒 অর্ডার করুন
+                  🛒 Order now
                 </button>
                 <button
                   onClick={() => onOrder(p)}
                   className="w-full mt-1.5 py-2 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition"
                 >
-                  <ShoppingBag className="h-3.5 w-3.5" /> কার্টে যোগ করুন
+                  <ShoppingBag className="h-3.5 w-3.5" /> Add to cart
                 </button>
               </div>
             </div>
@@ -554,7 +554,7 @@ function SuggestedProducts({ categoryId, currentProductId, onOrder }: { category
 
       <div className="text-right mt-4">
         <Link to="/" className="inline-flex items-center gap-1 text-green-600 hover:text-green-700 font-semibold text-sm border border-green-500 rounded-full px-4 py-1.5 hover:bg-green-50 transition">
-          সব দেখুন →
+          View all →
         </Link>
       </div>
     </div>

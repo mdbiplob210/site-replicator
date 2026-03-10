@@ -160,7 +160,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
     e.preventDefault();
     if (!currentItem) return;
     if (!form.name || !form.phone || !form.address) {
-      toast.error("সব ফিল্ড পূরণ করুন");
+      toast.error("Please fill in all fields");
       return;
     }
     setSubmitting(true);
@@ -219,7 +219,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
       });
 
       setOrderComplete(true);
-      toast.success("অর্ডার সফল হয়েছে! 🎉");
+      toast.success("Order placed successfully! 🎉");
     } catch (err: any) {
       orderSubmitted.current = false;
       toast.error(err.message);
@@ -272,9 +272,9 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
         value: product.selling_price,
       });
 
-      toast.success(`${product.name} অর্ডারে যোগ হয়েছে! ✅`);
+      toast.success(`${product.name} added to order! ✅`);
     } catch (err: any) {
-      toast.error("যোগ করতে সমস্যা হয়েছে");
+      toast.error("Failed to add item");
     }
   };
 
@@ -330,7 +330,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
             {/* Scarcity Banner */}
             <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white px-4 sm:px-5 py-2.5 sm:py-2.5 flex items-center justify-center gap-2 text-[11px] sm:text-sm font-semibold rounded-t-3xl sm:rounded-t-3xl">
               <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-pulse" />
-              <span>এই অফারটি পাবে আর মাত্র <span className="font-black text-sm sm:text-base">{scarcityCount}</span> জন!</span>
+              <span>Only <span className="font-black text-sm sm:text-base">{scarcityCount}</span> slots left for this offer!</span>
               <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             </div>
 
@@ -351,7 +351,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
               </div>
               {/* Quantity */}
               <div className="flex items-center justify-between mt-3">
-                <span className="text-xs sm:text-sm text-gray-500">পরিমাণ:</span>
+                <span className="text-xs sm:text-sm text-gray-500">Quantity:</span>
                 <div className="flex items-center border rounded-lg overflow-hidden">
                   <button type="button" onClick={() => setQty(Math.max(1, qty - 1))} className="px-3 py-2 sm:py-1.5 hover:bg-gray-100 active:bg-gray-200 transition">
                     <Minus className="h-3.5 w-3.5" />
@@ -368,25 +368,25 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
             <form onSubmit={handleSubmit} className="p-4 sm:p-5 space-y-2.5 sm:space-y-3">
               <div>
                 <Label className="flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold text-gray-600 mb-1">
-                  <User className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> আপনার নাম
+                  <User className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> Your name
                 </Label>
-                <Input placeholder="পুরো নাম লিখুন" value={form.name} onChange={e => updateForm({ name: e.target.value })} className="h-11 sm:h-11 rounded-xl text-sm" required name="name" autoComplete="name" />
+                <Input placeholder="Enter full name" value={form.name} onChange={e => updateForm({ name: e.target.value })} className="h-11 sm:h-11 rounded-xl text-sm" required name="name" autoComplete="name" />
               </div>
               <div>
                 <Label className="flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold text-gray-600 mb-1">
-                  <Phone className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> ফোন নম্বর
+                  <Phone className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> Phone number
                 </Label>
                 <Input placeholder="01XXXXXXXXX" value={form.phone} onChange={e => updateForm({ phone: e.target.value })} className="h-11 sm:h-11 rounded-xl text-sm" required name="tel" autoComplete="tel" inputMode="tel" />
               </div>
               <div>
                 <Label className="flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold text-gray-600 mb-1">
-                  <MapPin className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> সম্পূর্ণ ঠিকানা
+                  <MapPin className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> Full address
                 </Label>
-                <Textarea placeholder="বাড়ি নং, রোড, এলাকা, জেলা" value={form.address} onChange={e => updateForm({ address: e.target.value })} className="rounded-xl resize-none text-sm" rows={2} required name="address" autoComplete="street-address" />
+                <Textarea placeholder="House no, road, area, district" value={form.address} onChange={e => updateForm({ address: e.target.value })} className="rounded-xl resize-none text-sm" rows={2} required name="address" autoComplete="street-address" />
               </div>
               <div>
-                <Label className="text-[11px] sm:text-xs font-semibold text-gray-600 mb-1">নোট (ঐচ্ছিক)</Label>
-                <Input placeholder="অতিরিক্ত তথ্য..." value={form.notes} onChange={e => updateForm({ notes: e.target.value })} className="h-11 sm:h-11 rounded-xl text-sm" autoComplete="off" />
+                <Label className="text-[11px] sm:text-xs font-semibold text-gray-600 mb-1">Note (optional)</Label>
+                <Input placeholder="Additional info..." value={form.notes} onChange={e => updateForm({ notes: e.target.value })} className="h-11 sm:h-11 rounded-xl text-sm" autoComplete="off" />
               </div>
 
               {/* Delivery Area Selector */}
