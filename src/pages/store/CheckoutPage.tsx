@@ -285,7 +285,7 @@ const CheckoutPage = () => {
 
   const orderSummary = (
     <div className="rounded-xl border p-5 space-y-4">
-      <h3 className="font-bold text-lg">অর্ডার সামারি</h3>
+      <h3 className="font-bold text-lg">Order Summary</h3>
       <div className="flex items-center gap-4">
         <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
           {item.image ? <OptimizedImage src={item.image} alt={item.name} width={64} quality={75} className="w-full h-full object-cover" /> : <ShoppingBag className="h-6 w-6 m-auto mt-5 text-gray-300" />}
