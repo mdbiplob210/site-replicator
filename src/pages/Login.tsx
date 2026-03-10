@@ -453,7 +453,7 @@ const Login = () => {
                 <div className="relative">
                   <Input
                     type={showPassword ? "text" : "password"}
-                    placeholder="🔐 পাসওয়ার্ড"
+                    placeholder="🔐 Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
