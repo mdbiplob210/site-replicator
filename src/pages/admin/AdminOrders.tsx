@@ -3938,6 +3938,54 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
               </CollapsibleContent>
             </Collapsible>
 
+            {/* Order Transfer */}
+            <div className="p-4 rounded-2xl bg-secondary/20 border border-border/40 space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                  <div className="h-6 w-6 rounded-lg bg-indigo-500/10 flex items-center justify-center"><ArrowRightLeft className="h-3.5 w-3.5 text-indigo-500" /></div>
+                  অর্ডার ট্রান্সফার
+                </h3>
+                {currentAssignment && (
+                  <Badge variant="outline" className="text-xs">
+                    বর্তমান: {transferPanels.find((p: any) => p.user_id === currentAssignment.assigned_to)?.full_name || "অ্যাসাইনড"}
+                  </Badge>
+                )}
+              </div>
+              {!transferOpen ? (
+                <Button variant="outline" size="sm" className="gap-1.5 rounded-xl text-xs w-full" onClick={() => setTransferOpen(true)}>
+                  <ArrowRightLeft className="h-3.5 w-3.5" /> অন্য প্যানেলে ট্রান্সফার করুন
+                </Button>
+              ) : (
+                <div className="space-y-3">
+                  <Select value={transferToUserId || ""} onValueChange={setTransferToUserId}>
+                    <SelectTrigger className="rounded-xl h-10 text-sm">
+                      <SelectValue placeholder="প্যানেল/এমপ্লয়ি সিলেক্ট করুন" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {transferPanels
+                        .filter((p: any) => p.user_id !== currentAssignment?.assigned_to)
+                        .map((p: any) => (
+                          <SelectItem key={p.user_id} value={p.user_id}>
+                            <span className="flex items-center gap-2">
+                              <span className="font-medium">{p.full_name}</span>
+                              <span className="text-xs text-muted-foreground">({p.panel_name})</span>
+                            </span>
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" className="flex-1 rounded-xl" onClick={() => { setTransferOpen(false); setTransferToUserId(null); }}>
+                      বাতিল
+                    </Button>
+                    <Button size="sm" className="flex-1 rounded-xl gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white" onClick={handleTransferOrder} disabled={!transferToUserId || isTransferring}>
+                      {isTransferring ? <><Loader2 className="h-3.5 w-3.5 animate-spin" /> ট্রান্সফার হচ্ছে...</> : <><ArrowRightLeft className="h-3.5 w-3.5" /> ট্রান্সফার করুন</>}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Save Button */}
             <Button className="w-full rounded-xl shadow-sm" onClick={handleSaveChanges} disabled={isSaving}>
               {isSaving ? <><Loader2 className="h-4 w-4 animate-spin" /> Saving...</> : "পরিবর্তন সেভ করুন"}
