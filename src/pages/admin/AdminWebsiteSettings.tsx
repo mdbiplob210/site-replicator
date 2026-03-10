@@ -354,8 +354,8 @@ function GeneralTab() {
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground">ঢাকার বাইরে (৳)</label>
-                <p className="text-xs text-muted-foreground">চেকআউটে ডেলিভারি চার্জ</p>
+                <label className="text-sm font-medium text-foreground">Outside Dhaka (৳)</label>
+                <p className="text-xs text-muted-foreground">Delivery charge at checkout</p>
                 <Input 
                   className="mt-1.5" 
                   value={outsideDhaka}
