@@ -356,7 +356,7 @@ const CheckoutPage = () => {
                   <Label className="text-gray-300">Phone Number</Label>
                   <Input className="bg-gray-900 border-gray-800 text-white" value={form.phone} onChange={e => updateForm({ phone: e.target.value })} required />
                 </div>
-                <Button type="button" onClick={() => { if (form.name && form.phone) setStep(2); else toast.error("নাম ও ফোন দিন"); }} className="w-full bg-amber-500 text-gray-950 font-bold hover:bg-amber-400 py-5">
+                <Button type="button" onClick={() => { if (form.name && form.phone) setStep(2); else toast.error("Please enter name and phone"); }} className="w-full bg-amber-500 text-gray-950 font-bold hover:bg-amber-400 py-5">
                   Next →
                 </Button>
               </div>
