@@ -4042,6 +4042,7 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
             </Collapsible>
 
             {/* Order Transfer */}
+            {canTransferOrders && (
             <div className="p-4 rounded-2xl bg-secondary/20 border border-border/40 space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
