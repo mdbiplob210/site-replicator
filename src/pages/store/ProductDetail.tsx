@@ -394,10 +394,10 @@ const ProductDetail = () => {
             {/* Delivery info table */}
             <div className="border rounded-xl overflow-hidden">
               <div className="grid grid-cols-2 text-sm">
-                <div className="p-3 bg-gray-50 font-medium">ঢাকা সিটির বাহির</div>
-                <div className="p-3 font-bold text-right">{outsideDhaka} টাকা</div>
-                <div className="p-3 bg-gray-50 font-medium border-t">ঢাকা সিটির ভিতর</div>
-                <div className="p-3 font-bold text-right border-t">{insideDhaka} টাকা</div>
+                <div className="p-3 bg-gray-50 font-medium">Outside Dhaka City</div>
+                <div className="p-3 font-bold text-right">{outsideDhaka} BDT</div>
+                <div className="p-3 bg-gray-50 font-medium border-t">Inside Dhaka City</div>
+                <div className="p-3 font-bold text-right border-t">{insideDhaka} BDT</div>
                 {paymentNumber && (
                   <>
                     <div className="p-3 bg-gray-50 font-medium border-t">Payment Number</div>
