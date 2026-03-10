@@ -291,7 +291,7 @@ function GeneralTab() {
           {/* Tagline */}
           <div>
             <label className="text-sm font-medium text-foreground">Tagline</label>
-            <p className="text-xs text-muted-foreground">ফুটারে এবং SEO description-এ দেখাবে</p>
+            <p className="text-xs text-muted-foreground">Displayed in footer and SEO description</p>
             <Input className="mt-1.5" placeholder="Welcome to our store" value={tagline} onChange={(e) => setTagline(e.target.value)} />
           </div>
 
