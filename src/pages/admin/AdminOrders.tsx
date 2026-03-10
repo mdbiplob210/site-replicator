@@ -3061,6 +3061,65 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
   const [logFilterAction, setLogFilterAction] = useState("all");
   const [logFilterDate, setLogFilterDate] = useState<Date | undefined>();
 
+  // Order transfer
+  const [transferOpen, setTransferOpen] = useState(false);
+  const [transferToUserId, setTransferToUserId] = useState<string | null>(null);
+  const [isTransferring, setIsTransferring] = useState(false);
+
+  // Fetch employee panels for transfer
+  const { data: transferPanels = [] } = useQuery({
+    queryKey: ["employee-panels-transfer"],
+    queryFn: async () => {
+      const { data: panels, error } = await supabase.from("employee_panels").select("*").eq("is_active", true);
+      if (error) throw error;
+      const userIds = panels?.map(p => p.user_id) || [];
+      if (userIds.length === 0) return [];
+      const { data: profiles } = await supabase.from("profiles").select("user_id, full_name").in("user_id", userIds);
+      return (panels || []).map(p => ({
+        ...p,
+        full_name: profiles?.find(pr => pr.user_id === p.user_id)?.full_name || p.panel_name,
+      }));
+    },
+    enabled: transferOpen,
+  });
+
+  // Current assignment
+  const { data: currentAssignment } = useQuery({
+    queryKey: ["order-assignment-detail", orderId],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("order_assignments").select("*").eq("order_id", orderId!).order("assigned_at", { ascending: false }).limit(1);
+      if (error) throw error;
+      return data?.[0] || null;
+    },
+    enabled: !!orderId,
+  });
+
+  const handleTransferOrder = async () => {
+    if (!orderId || !transferToUserId) return;
+    setIsTransferring(true);
+    try {
+      if (currentAssignment) {
+        const { error } = await supabase.from("order_assignments").update({ assigned_to: transferToUserId, status: "pending" } as any).eq("id", currentAssignment.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("order_assignments").insert({ order_id: orderId, assigned_to: transferToUserId, assigned_by: user?.id || null, status: "pending" } as any);
+        if (error) throw error;
+      }
+      const targetPanel = transferPanels.find((p: any) => p.user_id === transferToUserId);
+      await logActivity("order_transferred", "assigned_to", currentAssignment?.assigned_to || "unassigned", transferToUserId, `অর্ডার ট্রান্সফার: ${targetPanel?.full_name || "Unknown"}`);
+      queryClient.invalidateQueries({ queryKey: ["order-assignments"] });
+      queryClient.invalidateQueries({ queryKey: ["order-assignment-detail", orderId] });
+      queryClient.invalidateQueries({ queryKey: ["panel-stats"] });
+      toast.success(`অর্ডার সফলভাবে ${targetPanel?.full_name || "অন্য প্যানেলে"} ট্রান্সফার হয়েছে!`);
+      setTransferOpen(false);
+      setTransferToUserId(null);
+    } catch (e: any) {
+      toast.error("ট্রান্সফার ব্যর্থ: " + e.message);
+    } finally {
+      setIsTransferring(false);
+    }
+  };
+
   // Populate fields when order changes
   const orderRef = order?.id;
   useMemo(() => {
