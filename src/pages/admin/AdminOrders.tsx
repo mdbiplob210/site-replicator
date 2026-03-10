@@ -664,7 +664,7 @@ const AdminOrders = () => {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Orders");
     XLSX.writeFile(wb, `orders-${format(new Date(), "yyyy-MM-dd")}.xlsx`);
-    toast.success(`${filteredOrders.length}টি অর্ডার এক্সপোর্ট হয়েছে!`);
+    toast.success(`${filteredOrders.length} orders exported!`);
   }, [filteredOrders]);
 
   // Print filtered orders
