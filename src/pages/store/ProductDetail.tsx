@@ -41,7 +41,7 @@ const ProductDetail = () => {
   const exitEnabled = settings?.exit_popup_enabled === 'true';
   const exitDiscount = Number(settings?.exit_popup_discount || 50);
   const exitTimer = Number(settings?.exit_popup_timer || 300);
-  const exitMessage = settings?.exit_popup_message || 'এই ছাড়টি শুধু আপনার জন্য!';
+  const exitMessage = settings?.exit_popup_message || 'This discount is only for you!';
 
   // Popup checkout
   const [checkoutOpen, setCheckoutOpen] = useState(false);
