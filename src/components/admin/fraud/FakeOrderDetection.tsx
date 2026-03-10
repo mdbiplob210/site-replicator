@@ -256,7 +256,7 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
                 </div>
                 <div>
                   <h3 className="font-bold text-foreground text-sm">Repeat Order Block</h3>
-                  <p className="text-xs text-muted-foreground">একই ফোন/IP থেকে নির্দিষ্ট সময়ের মধ্যে রিপিট অর্ডার ব্লক</p>
+                  <p className="text-xs text-muted-foreground">Block repeat orders from the same phone/IP within a set time</p>
                 </div>
               </div>
               <div className="space-y-3">
