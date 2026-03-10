@@ -335,6 +335,46 @@ ttq.track('InitiateCheckout');
 })();
 </script>`;
 
+    // Phone validation + Bengali digit conversion script
+    const phoneValidationScript = `
+<script>
+(function(){
+  var bengaliMap = {'০':'0','১':'1','২':'2','৩':'3','৪':'4','৫':'5','৬':'6','৭':'7','৮':'8','৯':'9'};
+  function sanitizePhone(val) {
+    var result = '';
+    for (var i = 0; i < val.length; i++) {
+      var ch = val[i];
+      if (bengaliMap[ch]) { result += bengaliMap[ch]; }
+      else if (/[0-9]/.test(ch)) { result += ch; }
+      else if (ch === '+' && result.length === 0) { result += ch; }
+    }
+    return result;
+  }
+  function isValidBDPhone(phone) {
+    var cleaned = phone.replace(/^\\+?880/, '0');
+    return /^01[3-9]\\d{8}$/.test(cleaned);
+  }
+  document.addEventListener('input', function(e) {
+    if (e.target && (e.target.name === 'customer_phone' || e.target.name === 'phone' || e.target.type === 'tel')) {
+      e.target.value = sanitizePhone(e.target.value);
+    }
+  });
+  // Block form submit if phone invalid
+  document.addEventListener('submit', function(e) {
+    var form = e.target.closest('[data-checkout-form]');
+    if (!form) return;
+    var phoneInput = form.querySelector('[name="customer_phone"]') || form.querySelector('[name="phone"]') || form.querySelector('[type="tel"]');
+    if (phoneInput && !isValidBDPhone(phoneInput.value)) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      alert('অনুগ্রহ করে সঠিক বাংলাদেশের মোবাইল নম্বর দিন (01XXXXXXXXX)');
+      phoneInput.focus();
+      return false;
+    }
+  }, true); // capture phase to run before order script
+})();
+</script>`;
+
     // Autocomplete enhancement script
     const autocompleteScript = `
 <script>
