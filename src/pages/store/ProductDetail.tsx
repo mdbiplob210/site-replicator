@@ -197,7 +197,7 @@ const ProductDetail = () => {
       {countdown > 0 && (
         <div className="bg-gradient-to-r from-red-600 to-orange-500 text-white py-2 sm:py-2.5 px-3 sm:px-4">
           <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 sm:gap-3">
-            <span className="text-[11px] sm:text-sm font-semibold animate-pulse">🔥 অফার শেষ হবে</span>
+            <span className="text-[11px] sm:text-sm font-semibold animate-pulse">🔥 Offer ends in</span>
             <div className="flex items-center gap-1">
               {countdownHours > 0 && (
                 <div className="bg-white/20 rounded-md px-1.5 sm:px-2 py-0.5 sm:py-1 text-center min-w-[2rem] sm:min-w-[2.5rem]">
