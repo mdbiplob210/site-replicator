@@ -656,7 +656,7 @@ const AdminOrders = () => {
       "Discount": Number(o.discount),
       "Total": Number(o.total_amount),
       "Status": getStatusLabel(o.status),
-      "Source": o.source || "প্যানেল",
+      "Source": o.source || "Panel",
       "Notes": o.notes || "",
       "Date": format(new Date(o.created_at), "dd MMM yyyy, hh:mm a"),
     }));
