@@ -192,7 +192,7 @@ const AdminProducts = () => {
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success("প্রোডাক্ট ডিলিট হয়েছে!");
+      toast.success("Product deleted!");
       fetchProducts();
     }
   };
