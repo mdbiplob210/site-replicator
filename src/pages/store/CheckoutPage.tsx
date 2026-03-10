@@ -380,9 +380,9 @@ const CheckoutPage = () => {
             {step === 3 && (
               <div className="space-y-6">
                 <div className="bg-gray-900 rounded-xl p-5 border border-gray-800 space-y-3">
-                  <p><span className="text-gray-500">নাম:</span> {form.name}</p>
-                  <p><span className="text-gray-500">ফোন:</span> {form.phone}</p>
-                  <p><span className="text-gray-500">ঠিকানা:</span> {form.address}</p>
+                  <p><span className="text-gray-500">Name:</span> {form.name}</p>
+                  <p><span className="text-gray-500">Phone:</span> {form.phone}</p>
+                  <p><span className="text-gray-500">Address:</span> {form.address}</p>
                 </div>
                 <div className="bg-gray-900 rounded-xl p-5 border border-gray-800">
                   <div className="flex items-center gap-4">
