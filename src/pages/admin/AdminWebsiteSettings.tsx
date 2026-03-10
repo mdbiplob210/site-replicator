@@ -1000,7 +1000,7 @@ function DataResetTab() {
         <p className="text-sm text-muted-foreground">Delete data from specific business segments. This action is irreversible.</p>
 
         <Button variant="destructive" className="gap-2" onClick={() => setShowDialog(true)}>
-          <Trash2 className="h-4 w-4" /> ডাটা রিসেট করুন
+          <Trash2 className="h-4 w-4" /> Reset Data
         </Button>
       </div>
 
