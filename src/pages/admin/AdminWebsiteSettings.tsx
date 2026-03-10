@@ -312,7 +312,7 @@ function GeneralTab() {
           {/* WhatsApp Number */}
           <div>
             <label className="text-sm font-medium text-foreground">WhatsApp Number</label>
-            <p className="text-xs text-muted-foreground">প্রোডাক্ট পেজ ও ফ্লোটিং বাটনে ব্যবহার হবে (কান্ট্রি কোডসহ)</p>
+            <p className="text-xs text-muted-foreground">Used on product page & floating button (with country code)</p>
             <Input className="mt-1.5" placeholder="8801XXXXXXXXX" value={whatsappNumber} onChange={(e) => setWhatsappNumber(e.target.value)} />
           </div>
 
