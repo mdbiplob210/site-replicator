@@ -250,7 +250,7 @@ const AdminUsers = () => {
 
   const handleCreateAdmin = async () => {
     if (!newEmail || !newPassword || !newName) {
-      toast.error("সব ফিল্ড পূরণ করুন");
+      toast.error("Please fill all fields");
       return;
     }
     setCreating(true);
