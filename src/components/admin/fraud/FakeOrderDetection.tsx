@@ -267,10 +267,10 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="off">Off</SelectItem>
-                    <SelectItem value="1h">১ ঘণ্টা</SelectItem>
-                    <SelectItem value="6h">৬ ঘণ্টা</SelectItem>
-                    <SelectItem value="12h">১২ ঘণ্টা</SelectItem>
-                    <SelectItem value="24h">২৪ ঘণ্টা</SelectItem>
+                    <SelectItem value="1h">1 Hour</SelectItem>
+                    <SelectItem value="6h">6 Hours</SelectItem>
+                    <SelectItem value="12h">12 Hours</SelectItem>
+                    <SelectItem value="24h">24 Hours</SelectItem>
                   </SelectContent>
                 </Select>
                 {repeatBlockDuration !== "off" && (
