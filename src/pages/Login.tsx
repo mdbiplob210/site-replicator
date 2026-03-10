@@ -223,7 +223,7 @@ const Login = () => {
         });
         if (error) throw error;
         await recordLoginAttempt(email, true);
-        toast({ title: "সফল!", description: "অ্যাকাউন্ট তৈরি হয়েছে। ইমেইল ভেরিফাই করুন।" });
+        toast({ title: "Success!", description: "Account created. Please verify your email." });
       } else {
         // Rate limiting check
         const rateCheck = await isLoginRateLimited(email);
