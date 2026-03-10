@@ -423,7 +423,7 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
             ) : filteredIps.length === 0 ? (
               <div className="p-12 text-center">
                 <Wifi className="h-10 w-10 text-muted-foreground/20 mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground">কোনো ব্লক করা IP নেই</p>
+                <p className="text-sm text-muted-foreground">No blocked IPs</p>
               </div>
             ) : (
               <Table>
