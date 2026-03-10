@@ -295,7 +295,7 @@ const AdminRoles = () => {
                                         onClick={() => handleRevokeGroup(emp.user_id, group)}
                                         disabled={grantedInGroup === 0}
                                       >
-                                        সব সরান
+                                        Revoke All
                                       </Button>
                                     </div>
 
