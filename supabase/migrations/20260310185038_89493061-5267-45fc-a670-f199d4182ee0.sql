@@ -1,0 +1,1 @@
+DROP POLICY "Anyone can view active products" ON public.products;
