@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedAdminRoute } from "@/components/admin/ProtectedAdminRoute";
 import { TrackingInitializer } from "./components/TrackingInitializer";
 import { useDynamicMeta } from "@/hooks/useDynamicMeta";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 const DynamicMetaProvider = () => { useDynamicMeta(); return null; };
 
@@ -97,6 +98,7 @@ const App = () => {
       <DynamicMetaProvider />
       <Toaster />
       <Sonner />
+      <SpeedInsights />
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <TrackingInitializer />
         <Suspense fallback={<PageLoader />}>
