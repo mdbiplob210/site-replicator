@@ -418,7 +418,7 @@ const Login = () => {
                   <div>
                     <Input
                       type="text"
-                      placeholder="✨ আপনার নাম"
+                      placeholder="✨ Your Name"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       required
