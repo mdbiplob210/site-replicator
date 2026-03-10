@@ -96,7 +96,7 @@ const Template1Classic = () => {
 
   // Button settings
   const orderBtnEnabled = settings?.btn_order_enabled !== "false";
-  const orderBtnText = settings?.btn_order_text || "অর্ডার করুন";
+  const orderBtnText = settings?.btn_order_text || "Order Now";
   const orderBtnColor = settings?.btn_order_color || "#16a34a";
   const cartBtnEnabled = settings?.btn_cart_enabled !== "false";
   const cartBtnText = settings?.btn_cart_text || "বিস্তারিত দেখুন";
