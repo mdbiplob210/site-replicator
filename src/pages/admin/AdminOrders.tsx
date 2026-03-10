@@ -2860,6 +2860,11 @@ const AdminOrders = () => {
                             )}
                           </div>
                           <p className="text-[10px] text-muted-foreground">{format(new Date(order.created_at), "dd MMM yy, hh:mm a")}</p>
+                          {assignmentByOrderId[order.id] && (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 rounded-full px-2 py-0.5">
+                              <Users className="h-2.5 w-2.5" /> {assignmentByOrderId[order.id]}
+                            </span>
+                          )}
                         </div>
                       </div>
                       <span className="text-base font-bold text-foreground">৳{Number(order.total_amount).toLocaleString()}</span>
