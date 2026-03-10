@@ -638,7 +638,7 @@ function ButtonsTab() {
         <div className="flex items-center justify-between">
           <div>
             <h3 className="font-bold text-foreground">Floating Contact Buttons</h3>
-            <p className="text-sm text-muted-foreground">স্টোরের নিচে ফ্লোটিং WhatsApp ও Phone বাটন দেখানো হবে</p>
+            <p className="text-sm text-muted-foreground">Floating WhatsApp & Phone buttons at the bottom of the store</p>
           </div>
           <Switch checked={floatingContacts} onCheckedChange={setFloatingContacts} />
         </div>
