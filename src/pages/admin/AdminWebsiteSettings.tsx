@@ -1009,9 +1009,9 @@ function DataResetTab() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="bg-card rounded-2xl border border-border p-6 w-full max-w-lg mx-4 space-y-4">
             <h3 className="text-lg font-bold text-destructive flex items-center gap-2">
-              ⚠️ সতর্কতা: ডাটা রিসেট
+              ⚠️ Warning: Data Reset
             </h3>
-            <p className="text-sm text-muted-foreground">কোন কোন সেগমেন্টের ডাটা রিসেট করতে চান সিলেক্ট করুন:</p>
+            <p className="text-sm text-muted-foreground">Select which segments to reset:</p>
 
             {/* Select All */}
             <label className="flex items-center gap-3 cursor-pointer py-2">
