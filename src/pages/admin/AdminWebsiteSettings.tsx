@@ -262,7 +262,7 @@ function GeneralTab() {
                 <label>
                   <input type="file" accept="image/png,image/webp,image/jpeg,image/svg+xml" className="hidden" onChange={handleLogoUpload} />
                   <Button variant="outline" className="gap-2" asChild disabled={uploading}>
-                    <span><Upload className="h-4 w-4" /> {uploading ? "আপলোড হচ্ছে..." : "লোগো আপলোড করুন"}</span>
+                    <span><Upload className="h-4 w-4" /> {uploading ? "Uploading..." : "Upload Logo"}</span>
                   </Button>
                 </label>
                 {logoUrl && (
