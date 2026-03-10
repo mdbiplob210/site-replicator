@@ -455,6 +455,39 @@ const ProductDetail = () => {
         }} />
       </div>
 
+      {/* Sticky Bottom Bar - Always visible while scrolling */}
+      <div className="fixed bottom-0 left-0 right-0 z-[90] bg-white border-t border-border shadow-[0_-4px_20px_rgba(0,0,0,0.1)] safe-bottom">
+        <div className="max-w-6xl mx-auto px-3 py-2.5 flex items-center gap-2">
+          {/* Order Now - takes most space */}
+          <button
+            onClick={handleOrder}
+            disabled={product.stock_quantity <= 0 && !product.allow_out_of_stock_orders}
+            className="flex-1 py-3 rounded-xl bg-green-600 hover:bg-green-700 active:scale-[0.98] text-white font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg shadow-green-200 disabled:opacity-50"
+          >
+            🛒 Order Now
+          </button>
+
+          {/* WhatsApp */}
+          {whatsappNumber && (
+            <a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noopener noreferrer"
+              className="w-12 h-12 rounded-xl bg-green-500 hover:bg-green-600 text-white flex items-center justify-center flex-shrink-0 transition shadow">
+              <MessageCircle className="h-5 w-5" />
+            </a>
+          )}
+
+          {/* Call */}
+          {phoneNumber && (
+            <a href={`tel:${phoneNumber}`}
+              className="w-12 h-12 rounded-xl bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center flex-shrink-0 transition shadow">
+              <Phone className="h-5 w-5" />
+            </a>
+          )}
+        </div>
+      </div>
+
+      {/* Bottom spacer so content isn't hidden behind sticky bar */}
+      <div className="h-20" />
+
       {showDiscountBanner && (
         <ExitDiscountBanner
           onAccept={handleAcceptDiscount}
