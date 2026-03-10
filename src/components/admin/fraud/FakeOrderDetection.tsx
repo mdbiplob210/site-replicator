@@ -301,7 +301,7 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
               </div>
               {deviceFingerprint && (
                 <p className="text-xs text-muted-foreground bg-secondary/40 rounded-lg p-2.5 mt-3">
-                  ✅ VPN ব্যবহার করলেও একই ডিভাইস থেকে রিপিট অর্ডার ব্লক হবে।
+                  ✅ Repeat orders from the same device will be blocked even when using a VPN.
                 </p>
               )}
             </Card>
