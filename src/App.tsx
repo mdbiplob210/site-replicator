@@ -52,6 +52,7 @@ const AdminCategoryTemplate = lazy(() => import("./pages/admin/AdminCategoryTemp
 const AdminThankYouTemplate = lazy(() => import("./pages/admin/AdminThankYouTemplate"));
 const AdminLandingPages = lazy(() => import("./pages/admin/AdminLandingPages"));
 const AdminLandingPageAnalytics = lazy(() => import("./pages/admin/AdminLandingPageAnalytics"));
+const AdminWebsiteAnalytics = lazy(() => import("./pages/admin/AdminWebsiteAnalytics"));
 const AdminPayment = lazy(() => import("./pages/admin/AdminPayment"));
 const AdminInvoices = lazy(() => import("./pages/admin/AdminInvoices"));
 const AdminPages = lazy(() => import("./pages/admin/AdminPages"));
