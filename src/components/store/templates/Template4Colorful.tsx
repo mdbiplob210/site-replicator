@@ -124,7 +124,7 @@ const Template4Colorful = () => {
                         <span className="text-xs text-gray-400 line-through">৳{p.original_price}</span>
                       )}
                     </div>
-                    {outOfStock && <span className="text-[10px] text-red-500 font-semibold">স্টকে নেই</span>}
+                    {outOfStock && <span className="text-[10px] text-red-500 font-semibold">Out of stock</span>}
                   </div>
                 </Link>
                 <div className="px-4 pb-4">
