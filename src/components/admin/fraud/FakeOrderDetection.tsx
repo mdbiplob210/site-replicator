@@ -406,7 +406,7 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
           <Card className="border-border/40">
             <div className="p-4 border-b border-border/40 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-foreground text-sm">ব্লক করা IP ({blockedIps.length})</h3>
+                <h3 className="font-bold text-foreground text-sm">Blocked IPs ({blockedIps.length})</h3>
               </div>
               <div className="relative">
                 <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
