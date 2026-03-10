@@ -113,7 +113,7 @@ const Template4Colorful = () => {
                       <Heart className="h-4 w-4 text-rose-500" />
                     </button>
                     {(p as any).free_delivery && (
-                      <div className="absolute top-3 left-3 bg-gradient-to-r from-rose-500 to-violet-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">🚚 ফ্রি ডেলিভারি</div>
+                      <div className="absolute top-3 left-3 bg-gradient-to-r from-rose-500 to-violet-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">🚚 Free Delivery</div>
                     )}
                   </div>
                   <div className="p-4 pb-2">
