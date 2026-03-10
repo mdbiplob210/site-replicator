@@ -134,7 +134,7 @@ const AdminRoles = () => {
             <Card className="border-border/40">
               <CardContent className="p-5 flex items-center gap-4">
                 <div className="p-2.5 rounded-xl bg-primary/10"><Users className="h-5 w-5 text-primary" /></div>
-                <div><p className="text-2xl font-bold text-foreground">{employees.length}</p><p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">মোট এমপ্লয়ি</p></div>
+                <div><p className="text-2xl font-bold text-foreground">{employees.length}</p><p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Total Employees</p></div>
               </CardContent>
             </Card>
             <Card className="border-border/40">
