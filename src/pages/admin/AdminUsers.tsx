@@ -222,7 +222,7 @@ const AdminUsers = () => {
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success(`রোল "${role}" অ্যাসাইন হয়েছে`);
+      toast.success(`Role "${role}" assigned`);
       fetchUsers();
     }
   };
