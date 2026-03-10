@@ -3098,8 +3098,20 @@ export default AdminOrders;
 function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null; order: any; onClose: () => void }) {
   const { data: items = [], isLoading } = useOrderItems(orderId);
   const { data: allProducts = [] } = usePublicProducts();
-  const { user } = useAuth();
+  const { user, isAdmin, userRoles } = useAuth();
   const queryClient = useQueryClient();
+
+  // Check transfer permission inside this component
+  const { data: hasTransferPerm = false } = useQuery({
+    queryKey: ["transfer-perm-detail", user?.id],
+    queryFn: async () => {
+      if (isAdmin) return true;
+      const { data } = await supabase.from("employee_permissions").select("id").eq("user_id", user!.id).eq("permission", "transfer_orders" as any).limit(1);
+      return (data && data.length > 0) || false;
+    },
+    enabled: !!user?.id,
+  });
+  const canTransferOrders = isAdmin || hasTransferPerm;
   const itemsTotal = items.reduce((s: number, i: any) => s + Number(i.total_price), 0);
   
   // Editable fields
@@ -4042,6 +4054,7 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
             </Collapsible>
 
             {/* Order Transfer */}
+            {canTransferOrders && (
             <div className="p-4 rounded-2xl bg-secondary/20 border border-border/40 space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
@@ -4088,6 +4101,7 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                 </div>
               )}
             </div>
+            )}
 
             {/* Save Button */}
             <Button className="w-full rounded-xl shadow-sm" onClick={handleSaveChanges} disabled={isSaving}>
