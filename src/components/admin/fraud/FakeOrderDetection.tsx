@@ -171,7 +171,7 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["blocked-phones"] });
-      toast.success("নম্বর আনব্লক করা হয়েছে!");
+      toast.success("Number unblocked!");
     },
   });
 
