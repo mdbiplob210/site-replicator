@@ -237,7 +237,7 @@ function GeneralTab() {
           <p className="text-sm text-muted-foreground">Configure your storefront details</p>
         </div>
         <Button onClick={handleSave} disabled={updateSetting.isPending} className="gap-2">
-          <Save className="h-4 w-4" /> {updateSetting.isPending ? "সেভ হচ্ছে..." : "সেভ করুন"}
+          <Save className="h-4 w-4" /> {updateSetting.isPending ? "Saving..." : "Save"}
         </Button>
       </div>
 
