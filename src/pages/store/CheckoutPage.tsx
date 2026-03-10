@@ -244,6 +244,14 @@ const CheckoutPage = () => {
         customerName: form.name,
       });
 
+      // Track purchase for website analytics
+      trackWebsiteEvent({
+        event_type: "purchase",
+        page_path: "/checkout",
+        product_name: item.name,
+        product_code: item.productCode,
+      });
+
       // Store order info for success page
       sessionStorage.setItem("last_order", JSON.stringify({
         orderNumber, total, name: item.name, qty: item.qty,

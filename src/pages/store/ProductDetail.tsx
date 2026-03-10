@@ -181,6 +181,14 @@ const ProductDetail = () => {
       productCode: product.product_code,
       category: "",
     });
+    // Track add_to_cart for website analytics
+    trackWebsiteEvent({
+      event_type: "add_to_cart",
+      page_path: `/product/${slug}`,
+      product_id: product.id,
+      product_name: product.name,
+      product_code: product.product_code,
+    });
     setCheckoutItem({
       productId: product.id,
       name: product.name,
