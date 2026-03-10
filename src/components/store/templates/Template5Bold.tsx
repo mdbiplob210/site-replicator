@@ -110,7 +110,7 @@ const Template5Bold = () => {
                       <div className="w-full h-full flex items-center justify-center text-zinc-300"><ShoppingBag className="h-12 w-12" /></div>
                     )}
                     {(p as any).free_delivery && (
-                      <div className="absolute top-2 left-2 bg-lime-400 text-zinc-900 text-[9px] font-black px-2 py-0.5 uppercase tracking-wider">ফ্রি ডেলিভারি</div>
+                      <div className="absolute top-2 left-2 bg-lime-400 text-zinc-900 text-[9px] font-black px-2 py-0.5 uppercase tracking-wider">FREE DELIVERY</div>
                     )}
                   </div>
                   <div className="p-4 pb-2">
