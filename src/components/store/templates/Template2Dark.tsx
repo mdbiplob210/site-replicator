@@ -118,7 +118,7 @@ const Template2Dark = () => {
                       </div>
                     )}
                     {(p as any).free_delivery && (
-                      <div className="absolute top-2 left-2 bg-amber-500 text-gray-950 text-[9px] font-bold px-2 py-0.5 rounded-full">🚚 ফ্রি ডেলিভারি</div>
+                      <div className="absolute top-2 left-2 bg-amber-500 text-gray-950 text-[9px] font-bold px-2 py-0.5 rounded-full">🚚 Free Delivery</div>
                     )}
                   </div>
                   <h3 className="font-bold text-white truncate">{p.name}</h3>
