@@ -380,9 +380,9 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
               </div>
               <div>
                 <Label className="flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold text-gray-600 mb-1">
-                  <MapPin className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> সম্পূর্ণ ঠিকানা
+                  <MapPin className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> Full address
                 </Label>
-                <Textarea placeholder="বাড়ি নং, রোড, এলাকা, জেলা" value={form.address} onChange={e => updateForm({ address: e.target.value })} className="rounded-xl resize-none text-sm" rows={2} required name="address" autoComplete="street-address" />
+                <Textarea placeholder="House no, road, area, district" value={form.address} onChange={e => updateForm({ address: e.target.value })} className="rounded-xl resize-none text-sm" rows={2} required name="address" autoComplete="street-address" />
               </div>
               <div>
                 <Label className="text-[11px] sm:text-xs font-semibold text-gray-600 mb-1">নোট (ঐচ্ছিক)</Label>
