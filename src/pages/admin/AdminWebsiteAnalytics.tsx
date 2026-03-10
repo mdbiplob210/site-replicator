@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { useWebsiteAnalytics } from "@/hooks/useWebsiteAnalytics";
+import { useApiKeys } from "@/hooks/useApiKeys";
+import { AnalyticsSnippetGenerator } from "@/components/admin/analytics/AnalyticsSnippetGenerator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Eye, Users, MousePointerClick, ShoppingCart, TrendingUp, Monitor, Smartphone, Tablet, Globe, BarChart3, Clock, ArrowUpDown } from "lucide-react";
