@@ -349,7 +349,7 @@ const CheckoutPage = () => {
             {step === 1 && (
               <div className="space-y-4">
                 <div className="space-y-1.5">
-                  <Label className="text-gray-300">আপনার নাম</Label>
+                  <Label className="text-gray-300">Your Name</Label>
                   <Input className="bg-gray-900 border-gray-800 text-white" value={form.name} onChange={e => updateForm({ name: e.target.value })} required />
                 </div>
                 <div className="space-y-1.5">
