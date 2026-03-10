@@ -1059,13 +1059,13 @@ const AdminUsers = () => {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>সময়</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>ডিভাইস</TableHead>
-                        <TableHead>ব্রাউজার / OS</TableHead>
-                        <TableHead>IP</TableHead>
-                        <TableHead>স্ট্যাটাস</TableHead>
-                        <TableHead>অ্যাকশন</TableHead>
+                         <TableHead>Time</TableHead>
+                         <TableHead>Email</TableHead>
+                         <TableHead>Device</TableHead>
+                         <TableHead>Browser / OS</TableHead>
+                         <TableHead>IP</TableHead>
+                         <TableHead>Status</TableHead>
+                         <TableHead>Action</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
