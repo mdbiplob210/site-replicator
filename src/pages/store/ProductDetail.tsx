@@ -429,8 +429,8 @@ const ProductDetail = () => {
         {(product.short_description || product.detailed_description) && (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mt-6 p-4 sm:p-6">
             <div className="flex gap-4 mb-4">
-              <button className="px-4 py-2 bg-green-600 text-white rounded-full text-sm font-semibold">পণ্যর বিস্তারিত</button>
-              <button className="px-4 py-2 text-gray-500 text-sm font-semibold">রিটার্ন পলিসি</button>
+              <button className="px-4 py-2 bg-green-600 text-white rounded-full text-sm font-semibold">Product details</button>
+              <button className="px-4 py-2 text-gray-500 text-sm font-semibold">Return policy</button>
             </div>
             {product.short_description && (
               <div
