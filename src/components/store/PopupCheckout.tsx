@@ -11,6 +11,7 @@ import { usePublicProducts } from "@/hooks/usePublicProducts";
 import { OptimizedImage } from "@/components/ui/optimized-image";
 import { getClientIp, parseDeviceInfo } from "@/lib/deviceDetect";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { sanitizePhoneInput, isValidBDPhone } from "@/lib/phoneUtils";
 
 interface CheckoutItem {
   productId: string;
