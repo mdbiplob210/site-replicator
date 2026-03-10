@@ -366,7 +366,7 @@ const Login = () => {
               className="flex h-full w-full cursor-pointer items-center justify-center rounded-full"
               onClick={() => {
                 if (score < 3) {
-                  toast({ title: "🔒 লক আছে!", description: `আরো ${3 - score}টি অর্ব সংগ্রহ করুন!`, variant: "destructive" });
+                  toast({ title: "🔒 Locked!", description: `Collect ${3 - score} more orb(s)!`, variant: "destructive" });
                 }
               }}
               style={{
