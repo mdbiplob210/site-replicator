@@ -33,6 +33,7 @@ const websiteSubItems = [
   { title: "Payment", url: "/admin/website/payment", icon: PaymentIcon },
   { title: "Pages", url: "/admin/website/pages", icon: File },
   { title: "LP Analytics", url: "/admin/website/landing-pages/analytics", icon: PieChart },
+  { title: "Website Analytics", url: "/admin/website/analytics", icon: BarChart3 },
   { title: "Settings", url: "/admin/website/settings", icon: Settings },
 ];
 

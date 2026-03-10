@@ -1525,6 +1525,69 @@ export type Database = {
         }
         Relationships: []
       }
+      website_events: {
+        Row: {
+          created_at: string
+          device_type: string | null
+          event_type: string
+          id: string
+          page_path: string
+          page_title: string | null
+          product_code: string | null
+          product_id: string | null
+          product_name: string | null
+          referrer: string | null
+          session_id: string | null
+          user_agent: string | null
+          visitor_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          device_type?: string | null
+          event_type?: string
+          id?: string
+          page_path: string
+          page_title?: string | null
+          product_code?: string | null
+          product_id?: string | null
+          product_name?: string | null
+          referrer?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          visitor_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          device_type?: string | null
+          event_type?: string
+          id?: string
+          page_path?: string
+          page_title?: string | null
+          product_code?: string | null
+          product_id?: string | null
+          product_name?: string | null
+          referrer?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          visitor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "website_events_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "website_events_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       whatsapp_auto_replies: {
         Row: {
           created_at: string | null

@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { ShoppingBag, ArrowLeft, Check, Package, CreditCard, MapPin, Phone, User } from "lucide-react";
 import { useTracking } from "@/hooks/useTracking";
+import { trackWebsiteEvent } from "@/hooks/useWebsiteAnalytics";
 import { OptimizedImage } from "@/components/ui/optimized-image";
 import { getClientIp, parseDeviceInfo } from "@/lib/deviceDetect";
 import { sanitizePhoneInput, isValidBDPhone } from "@/lib/phoneUtils";
@@ -241,6 +242,14 @@ const CheckoutPage = () => {
         qty: item.qty,
         customerPhone: form.phone,
         customerName: form.name,
+      });
+
+      // Track purchase for website analytics
+      trackWebsiteEvent({
+        event_type: "purchase",
+        page_path: "/checkout",
+        product_name: item.name,
+        product_code: item.productCode,
       });
 
       // Store order info for success page

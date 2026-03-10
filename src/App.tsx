@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedAdminRoute } from "@/components/admin/ProtectedAdminRoute";
 import { TrackingInitializer } from "./components/TrackingInitializer";
+import { WebsiteEventTracker } from "./components/WebsiteEventTracker";
 import { useDynamicMeta } from "@/hooks/useDynamicMeta";
 
 const DynamicMetaProvider = () => { useDynamicMeta(); return null; };
@@ -51,6 +52,7 @@ const AdminCategoryTemplate = lazy(() => import("./pages/admin/AdminCategoryTemp
 const AdminThankYouTemplate = lazy(() => import("./pages/admin/AdminThankYouTemplate"));
 const AdminLandingPages = lazy(() => import("./pages/admin/AdminLandingPages"));
 const AdminLandingPageAnalytics = lazy(() => import("./pages/admin/AdminLandingPageAnalytics"));
+const AdminWebsiteAnalytics = lazy(() => import("./pages/admin/AdminWebsiteAnalytics"));
 const AdminPayment = lazy(() => import("./pages/admin/AdminPayment"));
 const AdminInvoices = lazy(() => import("./pages/admin/AdminInvoices"));
 const AdminPages = lazy(() => import("./pages/admin/AdminPages"));
@@ -99,6 +101,7 @@ const App = () => {
       <Sonner />
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <TrackingInitializer />
+        <WebsiteEventTracker />
         <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/" element={<StorePage />} />
@@ -124,6 +127,7 @@ const App = () => {
             <Route path="/admin/website/thank-you" element={<Admin><AdminThankYouTemplate /></Admin>} />
             <Route path="/admin/website/landing-pages" element={<Admin><AdminLandingPages /></Admin>} />
             <Route path="/admin/website/landing-pages/analytics" element={<Admin><AdminLandingPageAnalytics /></Admin>} />
+            <Route path="/admin/website/analytics" element={<Admin><AdminWebsiteAnalytics /></Admin>} />
             <Route path="/admin/website/payment" element={<Admin><AdminPayment /></Admin>} />
             <Route path="/admin/website/pages" element={<Admin><AdminPages /></Admin>} />
             <Route path="/admin/website/settings" element={<Admin><AdminWebsiteSettings /></Admin>} />

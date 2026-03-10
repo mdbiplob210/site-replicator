@@ -6,6 +6,7 @@ import { useProductSEO } from "@/hooks/useProductSEO";
 import { Button } from "@/components/ui/button";
 import { ShoppingBag, ArrowLeft, Minus, Plus, Truck, Shield, RotateCcw, Phone, MessageCircle } from "lucide-react";
 import { useTracking, useEngagementTracking } from "@/hooks/useTracking";
+import { trackWebsiteEvent } from "@/hooks/useWebsiteAnalytics";
 import { PopupCheckout } from "@/components/store/PopupCheckout";
 import { ExitDiscountBanner } from "@/components/store/ExitDiscountBanner";
 import { OptimizedImage } from "@/components/ui/optimized-image";
@@ -65,8 +66,16 @@ const ProductDetail = () => {
         productCode: product.product_code,
         image: product.main_image_url || "",
       });
+      // Track product_view for website analytics
+      trackWebsiteEvent({
+        event_type: "product_view",
+        page_path: `/product/${slug}`,
+        product_id: product.id,
+        product_name: product.name,
+        product_code: product.product_code,
+      });
     }
-  }, [product, trackViewContent]);
+  }, [product, trackViewContent, slug]);
 
   // Exit intent detection
   useEffect(() => {
@@ -171,6 +180,14 @@ const ProductDetail = () => {
       qty,
       productCode: product.product_code,
       category: "",
+    });
+    // Track add_to_cart for website analytics
+    trackWebsiteEvent({
+      event_type: "add_to_cart",
+      page_path: `/product/${slug}`,
+      product_id: product.id,
+      product_name: product.name,
+      product_code: product.product_code,
     });
     setCheckoutItem({
       productId: product.id,
