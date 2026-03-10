@@ -253,7 +253,17 @@ const AdminOrders = () => {
     },
     enabled: !!user?.id && userRole !== undefined,
   });
+  const { data: hasTransferPermission = false } = useQuery({
+    queryKey: ["has-transfer-orders", user?.id],
+    queryFn: async () => {
+      if (userRole === "admin") return true;
+      const { data } = await supabase.from("employee_permissions").select("id").eq("user_id", user!.id).eq("permission", "transfer_orders" as any).limit(1);
+      return (data && data.length > 0) || false;
+    },
+    enabled: !!user?.id && userRole !== undefined,
+  });
   const canPrintMemo = userRole === "admin" || hasPrintMemoPermission;
+  const canTransferOrders = userRole === "admin" || hasTransferPermission;
   const { data: orders = [], isLoading } = useOrders(statusFilter, orderDateFilter, customDateFrom, customDateTo);
   const { data: counts = {} } = useOrderCounts(orderDateFilter, customDateFrom, customDateTo);
   const createOrder = useCreateOrder();
@@ -1968,6 +1978,7 @@ const AdminOrders = () => {
               </SelectContent>
             </Select>
             {/* Bulk Order Transfer */}
+            {canTransferOrders && (
             <Select value={bulkTransferUserId} onValueChange={(v) => { setBulkTransferUserId(v); handleBulkTransfer(v); }}>
               <SelectTrigger className="w-[160px] h-8 rounded-xl text-xs font-semibold border-border/60">
                 <ArrowRightLeft className="h-3.5 w-3.5 mr-1" />
@@ -1983,6 +1994,7 @@ const AdminOrders = () => {
                 ))}
               </SelectContent>
             </Select>
+            )}
             {/* Bulk Print */}
             {canPrintMemo && (
             <Button variant="outline" size="sm" className="gap-1.5 h-8 rounded-xl text-xs border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100 dark:bg-violet-900/20 dark:border-violet-700 dark:text-violet-400" onClick={() => {

@@ -37,6 +37,7 @@ export const ALL_PERMISSIONS = [
   // Courier
   { key: "manage_courier", label: "Manage Courier", group: "Courier", description: "Can manage courier services and shipments" },
   { key: "print_memo", label: "Print Memo", group: "Orders", description: "Can print order memos" },
+  { key: "transfer_orders", label: "Transfer Orders", group: "Orders", description: "Can transfer orders between employees" },
 
   // System
   { key: "manage_users", label: "Manage Users", group: "System", description: "Can edit/delete users and employees" },
