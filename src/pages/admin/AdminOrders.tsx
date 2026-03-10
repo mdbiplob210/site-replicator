@@ -4151,7 +4151,7 @@ function IncompleteOrderCard({ io, activeIncompleteTab, onConvert, deleteIncompl
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
           {activeIncompleteTab !== "Converted" && (
-            <Button size="sm" variant="outline" className="gap-1 text-xs" onClick={openConvertDialog}>
+            <Button size="sm" variant="outline" className="gap-1 text-xs" onClick={() => onConvert(io)}>
               <GitMerge className="h-3 w-3" /> অর্ডারে কনভার্ট
             </Button>
           )}
@@ -4162,75 +4162,6 @@ function IncompleteOrderCard({ io, activeIncompleteTab, onConvert, deleteIncompl
           </Button>
         </div>
       </div>
-
-      {/* Convert to Order Dialog */}
-      <Dialog open={convertOpen} onOpenChange={setConvertOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <GitMerge className="h-5 w-5 text-primary" /> অর্ডারে কনভার্ট করুন
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 mt-2">
-            {/* Product info (read-only) */}
-            {io.product_name && (
-              <div className="bg-secondary/50 rounded-xl p-3 space-y-1">
-                <p className="text-xs font-semibold text-muted-foreground">প্রোডাক্ট তথ্য</p>
-                <p className="text-sm font-medium text-foreground">{io.product_name} {io.product_code ? `(${io.product_code})` : ""}</p>
-                <div className="flex gap-4 text-xs text-muted-foreground">
-                  <span>পরিমাণ: {io.quantity || 1}</span>
-                  <span>দাম: ৳{io.unit_price || 0}</span>
-                  <span className="font-semibold text-foreground">সাবটোটাল: ৳{productTotal}</span>
-                </div>
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 gap-3">
-              <div>
-                <Label className="text-xs">কাস্টমারের নাম <span className="text-destructive">*</span></Label>
-                <Input value={cName} onChange={(e) => setCName(e.target.value)} className="mt-1" placeholder="নাম" />
-              </div>
-              <div>
-                <Label className="text-xs">ফোন নম্বর</Label>
-                <Input value={cPhone} onChange={(e) => setCPhone(e.target.value)} className="mt-1" placeholder="01XXXXXXXXX" />
-              </div>
-              <div>
-                <Label className="text-xs">ঠিকানা</Label>
-                <Textarea value={cAddress} onChange={(e) => setCAddress(e.target.value)} className="mt-1" placeholder="সম্পূর্ণ ঠিকানা" rows={2} />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label className="text-xs">ডেলিভারি চার্জ (৳)</Label>
-                  <Input type="number" value={cDelivery} onChange={(e) => setCDelivery(Number(e.target.value))} className="mt-1" />
-                </div>
-                <div>
-                  <Label className="text-xs">ডিসকাউন্ট (৳)</Label>
-                  <Input type="number" value={cDiscount} onChange={(e) => setCDiscount(Number(e.target.value))} className="mt-1" />
-                </div>
-              </div>
-              <div>
-                <Label className="text-xs">নোট</Label>
-                <Textarea value={cNotes} onChange={(e) => setCNotes(e.target.value)} className="mt-1" placeholder="স্টাফ নোট..." rows={2} />
-              </div>
-            </div>
-
-            {/* Total summary */}
-            <div className="bg-primary/5 border border-primary/20 rounded-xl p-3 flex items-center justify-between">
-              <span className="text-sm font-medium text-foreground">মোট পরিশোধযোগ্য</span>
-              <span className="text-lg font-bold text-primary">৳{computedTotal}</span>
-            </div>
-
-            <div className="flex items-center gap-2 text-xs text-muted-foreground bg-secondary/50 rounded-lg px-3 py-2">
-              <Package className="h-3.5 w-3.5" />
-              <span>সোর্স: <span className="font-semibold text-foreground">Failed Order</span></span>
-            </div>
-
-            <Button className="w-full rounded-xl gap-2" onClick={handleConvert} disabled={convertIncomplete.isPending || !cName.trim()}>
-              {convertIncomplete.isPending ? <><Loader2 className="h-4 w-4 animate-spin" /> কনভার্ট হচ্ছে...</> : <><GitMerge className="h-4 w-4" /> অর্ডার তৈরি করুন</>}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </Card>
   );
 }
