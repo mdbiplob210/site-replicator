@@ -867,7 +867,7 @@ function TrackingTab() {
           <Facebook className="h-5 w-5 text-blue-600" />
           <h3 className="font-bold text-foreground">Meta Ads API Configuration</h3>
         </div>
-        <p className="text-sm text-muted-foreground">Meta Ads ডাটা সিঙ্ক এবং টোকেন এক্সচেঞ্জের জন্য প্রয়োজনীয় তথ্য দিন</p>
+        <p className="text-sm text-muted-foreground">Enter the required info for Meta Ads data sync and token exchange</p>
 
         <div>
           <label className="text-sm font-medium text-foreground">Ad Account ID</label>
