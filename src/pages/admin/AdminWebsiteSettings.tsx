@@ -1060,10 +1060,10 @@ function DataResetTab() {
             {/* Actions */}
             <div className="flex justify-center gap-3 pt-2">
               <Button variant="outline" onClick={() => { setShowDialog(false); setSelectedSegments([]); }}>
-                বাতিল
+                Cancel
               </Button>
               <Button variant="destructive" className="gap-2" disabled={selectedSegments.length === 0 || resetting} onClick={handleReset}>
-                <Trash2 className="h-4 w-4" /> {resetting ? "রিসেট হচ্ছে..." : `রিসেট করুন (${selectedSegments.length})`}
+                <Trash2 className="h-4 w-4" /> {resetting ? "Resetting..." : `Reset (${selectedSegments.length})`}
               </Button>
             </div>
           </div>

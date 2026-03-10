@@ -273,7 +273,7 @@ const AdminOrders = () => {
     queryClient.invalidateQueries({ queryKey: ["courier-orders-filter"] });
     queryClient.invalidateQueries({ queryKey: ["all-order-items-filter"] });
     queryClient.invalidateQueries({ queryKey: ["next-order-number"] });
-    toast.success("ডেটা রিফ্রেশ হচ্ছে...");
+    toast.success("Refreshing data...");
   }, [queryClient]);
 
   // Courier orders for filtering
