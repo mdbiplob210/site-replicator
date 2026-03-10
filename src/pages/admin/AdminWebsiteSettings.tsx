@@ -305,7 +305,7 @@ function GeneralTab() {
           {/* Contact Phone 2 */}
           <div>
             <label className="text-sm font-medium text-foreground">Contact Phone 2</label>
-            <p className="text-xs text-muted-foreground">প্রোডাক্ট পেজে দ্বিতীয় কল বাটনে দেখাবে</p>
+            <p className="text-xs text-muted-foreground">Shown as second call button on product page</p>
             <Input className="mt-1.5" placeholder="01XXXXXXXXX" value={contactPhone2} onChange={(e) => setContactPhone2(e.target.value)} />
           </div>
 
