@@ -216,7 +216,7 @@ const ProductDetail = () => {
                 <span className="text-[8px] sm:text-[9px] block -mt-0.5">Seconds</span>
               </div>
             </div>
-            <span className="text-[10px] sm:text-xs font-medium hidden sm:inline">⏰ তাড়াতাড়ি!</span>
+            <span className="text-[10px] sm:text-xs font-medium hidden sm:inline">⏰ Hurry up!</span>
           </div>
         </div>
       )}
