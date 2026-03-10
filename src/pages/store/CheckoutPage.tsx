@@ -297,9 +297,9 @@ const CheckoutPage = () => {
         <span className="font-bold">৳{total}</span>
       </div>
       <div className="border-t pt-3 space-y-2 text-sm">
-        <div className="flex justify-between"><span>সাবটোটাল</span><span>৳{total}</span></div>
-        <div className="flex justify-between"><span>ডেলিভারি চার্জ</span><span>{deliveryCharge === 0 ? "Free" : `৳${deliveryCharge}`}</span></div>
-        <div className="flex justify-between font-bold text-lg border-t pt-2"><span>মোট</span><span>৳{total + deliveryCharge}</span></div>
+        <div className="flex justify-between"><span>Subtotal</span><span>৳{total}</span></div>
+        <div className="flex justify-between"><span>Delivery Charge</span><span>{deliveryCharge === 0 ? "Free" : `৳${deliveryCharge}`}</span></div>
+        <div className="flex justify-between font-bold text-lg border-t pt-2"><span>Total</span><span>৳{total + deliveryCharge}</span></div>
       </div>
     </div>
   );
