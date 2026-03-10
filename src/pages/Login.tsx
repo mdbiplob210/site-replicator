@@ -516,7 +516,7 @@ const Login = () => {
                   const { error } = await lovable.auth.signInWithOAuth("google", {
                     redirect_uri: window.location.origin,
                   });
-                  if (error) toast({ title: "ত্রুটি", description: error.message, variant: "destructive" });
+                  if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
                 }}
               >
                 <svg className="h-5 w-5" viewBox="0 0 24 24">
