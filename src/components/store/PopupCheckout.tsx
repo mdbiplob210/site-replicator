@@ -11,6 +11,7 @@ import { usePublicProducts } from "@/hooks/usePublicProducts";
 import { OptimizedImage } from "@/components/ui/optimized-image";
 import { getClientIp, parseDeviceInfo } from "@/lib/deviceDetect";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { sanitizePhoneInput, isValidBDPhone } from "@/lib/phoneUtils";
 
 interface CheckoutItem {
   productId: string;
@@ -153,6 +154,10 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
   const updateForm = (updates: Partial<typeof form>) => {
     formInteracted.current = true;
     abandonedSaved.current = false;
+    // Auto-sanitize phone: convert Bengali digits, strip non-digits
+    if (updates.phone !== undefined) {
+      updates.phone = sanitizePhoneInput(updates.phone);
+    }
     setForm(prev => ({ ...prev, ...updates }));
   };
 
@@ -161,6 +166,10 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
     if (!currentItem) return;
     if (!form.name || !form.phone || !form.address) {
       toast.error("Please fill in all fields");
+      return;
+    }
+    if (!isValidBDPhone(form.phone)) {
+      toast.error("Please enter a valid Bangladesh phone number (01XXXXXXXXX)");
       return;
     }
     setSubmitting(true);
@@ -376,7 +385,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
                 <Label className="flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold text-gray-600 mb-1">
                   <Phone className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> Phone number
                 </Label>
-                <Input placeholder="01XXXXXXXXX" value={form.phone} onChange={e => updateForm({ phone: e.target.value })} className="h-11 sm:h-11 rounded-xl text-sm" required name="tel" autoComplete="tel" inputMode="tel" />
+                <Input placeholder="01XXXXXXXXX" value={form.phone} onChange={e => updateForm({ phone: e.target.value })} className="h-11 sm:h-11 rounded-xl text-sm" required name="tel" autoComplete="tel" inputMode="tel" maxLength={11} pattern="01[3-9][0-9]{8}" />
               </div>
               <div>
                 <Label className="flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold text-gray-600 mb-1">

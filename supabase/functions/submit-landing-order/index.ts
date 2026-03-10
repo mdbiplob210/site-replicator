@@ -66,6 +66,15 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Validate Bangladesh phone number (server-side)
+    const cleanedPhone = customer_phone.replace(/^\+?880/, "0");
+    if (!/^01[3-9]\d{8}$/.test(cleanedPhone)) {
+      return new Response(
+        JSON.stringify({ error: "অনুগ্রহ করে সঠিক বাংলাদেশের মোবাইল নম্বর দিন (01XXXXXXXXX)" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceRoleKey);
