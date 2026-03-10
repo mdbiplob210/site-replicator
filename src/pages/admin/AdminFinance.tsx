@@ -315,7 +315,7 @@ export default function AdminFinance() {
                 disabled={createSource.isPending || !newSourceName.trim()}
               >
                 <Plus className="h-4 w-4" />
-                যোগ করুন
+                Add
               </Button>
             </div>
 
