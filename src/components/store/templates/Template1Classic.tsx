@@ -128,8 +128,8 @@ const Template1Classic = () => {
       {/* Top announcement bar */}
       <div className="bg-gradient-to-r from-green-600 to-green-700 text-white text-center h-[34px] sm:h-[32px] flex items-center justify-center text-[11px] sm:text-sm font-medium overflow-hidden">
         <div className="animate-marquee whitespace-nowrap inline-block">
-          {marqueeText} হটলাইনঃ {phoneNumber || "01XXXXXXXXX"} &nbsp;&nbsp;&nbsp;
-          {marqueeText} হটলাইনঃ {phoneNumber || "01XXXXXXXXX"}
+          {marqueeText} Hotline: {phoneNumber || "01XXXXXXXXX"} &nbsp;&nbsp;&nbsp;
+          {marqueeText} Hotline: {phoneNumber || "01XXXXXXXXX"}
         </div>
       </div>
 
