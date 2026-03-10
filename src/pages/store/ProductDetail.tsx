@@ -254,8 +254,8 @@ const ProductDetail = () => {
                 {discount > 0 && (
                   <div className="absolute top-3 right-3 w-14 h-14 rounded-full border-2 border-dashed border-red-400 bg-white flex flex-col items-center justify-center">
                     <span className="text-red-500 font-bold text-xs leading-none">{discountAmount}</span>
-                    <span className="text-red-500 font-bold text-[10px] leading-none">টাকা</span>
-                    <span className="text-red-500 font-bold text-[10px] leading-none">ছাড়</span>
+                    <span className="text-red-500 font-bold text-[10px] leading-none">BDT</span>
+                    <span className="text-red-500 font-bold text-[10px] leading-none">OFF</span>
                   </div>
                 )}
                 {/* Navigation arrows */}
