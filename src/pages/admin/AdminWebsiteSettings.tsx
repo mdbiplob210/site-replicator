@@ -191,7 +191,7 @@ function GeneralTab() {
       }
       setLogoUrl("");
       await updateSetting.mutateAsync({ key: "site_logo", value: "" });
-      toast.success("লোগো মুছে ফেলা হয়েছে!");
+      toast.success("Logo removed!");
     } catch (err: any) {
       toast.error(err.message);
     }
