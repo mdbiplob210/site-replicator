@@ -495,11 +495,11 @@ function ButtonsTab() {
   const [loaded, setLoaded] = useState(false);
 
   const [orderBtn, setOrderBtn] = useState(true);
-  const [orderBtnText, setOrderBtnText] = useState("অর্ডার করুন");
+  const [orderBtnText, setOrderBtnText] = useState("Order Now");
   const [orderBtnColor, setOrderBtnColor] = useState("#16a34a");
   
   const [cartBtn, setCartBtn] = useState(true);
-  const [cartBtnText, setCartBtnText] = useState("কার্টে যোগ করুন");
+  const [cartBtnText, setCartBtnText] = useState("Add to Cart");
   const [cartBtnColor, setCartBtnColor] = useState("#2563eb");
   
   const [whatsappBtn, setWhatsappBtn] = useState(true);
@@ -513,10 +513,10 @@ function ButtonsTab() {
 
   if (!loaded && !isLoading && settings) {
     setOrderBtn(settings["btn_order_enabled"] !== "false");
-    setOrderBtnText(settings["btn_order_text"] || "অর্ডার করুন");
+    setOrderBtnText(settings["btn_order_text"] || "Order Now");
     setOrderBtnColor(settings["btn_order_color"] || "#16a34a");
     setCartBtn(settings["btn_cart_enabled"] !== "false");
-    setCartBtnText(settings["btn_cart_text"] || "কার্টে যোগ করুন");
+    setCartBtnText(settings["btn_cart_text"] || "Add to Cart");
     setCartBtnColor(settings["btn_cart_color"] || "#2563eb");
     setWhatsappBtn(settings["btn_whatsapp_enabled"] !== "false");
     setWhatsappBtnText(settings["btn_whatsapp_text"] || "WhatsApp");
