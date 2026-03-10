@@ -123,8 +123,8 @@ const AdminRoles = () => {
                 <Shield className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-foreground">এমপ্লয়ি রোল ও পারমিশন</h1>
-                <p className="text-sm text-muted-foreground">প্রতিটি এমপ্লয়ির কাজ ও অর্ডার ভাগ করুন</p>
+                <h1 className="text-2xl font-bold text-foreground">Employee Roles & Permissions</h1>
+                <p className="text-sm text-muted-foreground">Assign tasks and orders for each employee</p>
               </div>
             </div>
           </div>
