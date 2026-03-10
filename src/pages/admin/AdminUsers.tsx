@@ -896,11 +896,11 @@ const AdminUsers = () => {
                       {/* Summary row */}
                       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                         {[
-                          { label: "কনফার্মড", value: perfData.reduce((s, p) => s + p.confirmed, 0), icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50" },
-                          { label: "ক্যান্সেলড", value: perfData.reduce((s, p) => s + p.cancelled, 0), icon: XCircle, color: "text-destructive", bg: "bg-destructive/10" },
-                          { label: "রিটার্নড", value: perfData.reduce((s, p) => s + p.returned, 0), icon: RotateCcw, color: "text-amber-600", bg: "bg-amber-50" },
-                          { label: "ডেলিভারড", value: perfData.reduce((s, p) => s + p.delivered, 0), icon: Truck, color: "text-blue-600", bg: "bg-blue-50" },
-                          { label: "মোট", value: perfData.reduce((s, p) => s + p.total, 0), icon: ShoppingCart, color: "text-foreground", bg: "bg-secondary" },
+                          { label: "Confirmed", value: perfData.reduce((s, p) => s + p.confirmed, 0), icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50" },
+                          { label: "Cancelled", value: perfData.reduce((s, p) => s + p.cancelled, 0), icon: XCircle, color: "text-destructive", bg: "bg-destructive/10" },
+                          { label: "Returned", value: perfData.reduce((s, p) => s + p.returned, 0), icon: RotateCcw, color: "text-amber-600", bg: "bg-amber-50" },
+                          { label: "Delivered", value: perfData.reduce((s, p) => s + p.delivered, 0), icon: Truck, color: "text-blue-600", bg: "bg-blue-50" },
+                          { label: "Total", value: perfData.reduce((s, p) => s + p.total, 0), icon: ShoppingCart, color: "text-foreground", bg: "bg-secondary" },
                         ].map((s, i) => (
                           <div key={i} className={`${s.bg} rounded-lg p-3 text-center`}>
                             <s.icon className={`h-4 w-4 ${s.color} mx-auto mb-1`} />
