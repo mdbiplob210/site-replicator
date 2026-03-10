@@ -11,8 +11,6 @@ export type ApiKey = {
   last_used_at: string | null;
   source_url: string | null;
   last_synced_at: string | null;
-  api_first_key: string | null;
-  api_second_key: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -23,7 +21,7 @@ export function useApiKeys() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("api_keys" as any)
-        .select("*")
+        .select("id, label, api_key, permissions, is_active, last_used_at, source_url, last_synced_at, created_at, updated_at")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data as unknown as ApiKey[];

@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Get API key with source_url and BizMation keys
+    // Get API key with source_url
     const { data: keyData, error: keyError } = await supabase
       .from('api_keys')
       .select('*')
@@ -69,35 +69,17 @@ Deno.serve(async (req) => {
       })
     }
 
-    const hasBizMationKeys = keyData.api_first_key && keyData.api_second_key
-
-    if (!keyData.source_url && !hasBizMationKeys) {
-      return new Response(JSON.stringify({ error: 'No source URL or BizMation API keys configured' }), {
+    if (!keyData.source_url) {
+      return new Response(JSON.stringify({ error: 'No source URL configured for this API key' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
     }
 
-    // Build the fetch URL
-    let fetchUrl = keyData.source_url || ''
+    const fetchUrl = keyData.source_url
     const fetchHeaders: Record<string, string> = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
-    }
-
-    if (hasBizMationKeys) {
-      // BizMation integration: append api_1 and api_2 as query params
-      if (fetchUrl) {
-        const separator = fetchUrl.includes('?') ? '&' : '?'
-        fetchUrl = `${fetchUrl}${separator}api_1=${encodeURIComponent(keyData.api_first_key)}&api_2=${encodeURIComponent(keyData.api_second_key)}`
-      } else {
-        // Default BizMation missing orders endpoint pattern
-        return new Response(JSON.stringify({ error: 'Source URL is required when using BizMation API keys' }), {
-          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        })
-      }
-    } else {
-      // Regular sync: use X-API-Key header
-      fetchHeaders['X-API-Key'] = keyData.api_key
+      'X-API-Key': keyData.api_key,
     }
 
     // Fetch orders from external source
@@ -140,20 +122,19 @@ Deno.serve(async (req) => {
 
     for (const ext of externalOrders) {
       try {
-        // Map BizMation fields to our format
-        const customerName = ext.customer_name || ext.name || ext.customerName || ext.shipping_name
+        const customerName = ext.customer_name || ext.name || ext.customerName
         if (!customerName) {
           skipped++
           continue
         }
 
-        const phone = ext.customer_phone || ext.phone || ext.mobile_number || ext.shipping_mobile_number || null
-        const address = ext.customer_address || ext.address || ext.shipping_address || null
-        const deliveryCharge = ext.delivery_charge || ext.shipping_charge || 0
-        const orderNumber = ext.order_number || ext.reference_no?.toString() || null
+        const phone = ext.customer_phone || ext.phone || null
+        const address = ext.customer_address || ext.address || null
+        const deliveryCharge = ext.delivery_charge || 0
+        const orderNumber = ext.order_number || null
         const discount = ext.discount || 0
         const notes = ext.notes || ext.note || null
-        const totalAmount = ext.total_amount || ext.total || ext.paid_amount || 0
+        const totalAmount = ext.total_amount || ext.total || 0
 
         const isIncomplete = ext.type === 'incomplete_order' || ext.type === 'incomplete'
 
@@ -237,14 +218,14 @@ Deno.serve(async (req) => {
 
           if (orderError) throw orderError
 
-          // Insert items if provided - support both our format and BizMation format
-          const items = ext.items || ext.order_items || ext.product_datas || []
+          // Insert items if provided
+          const items = ext.items || ext.order_items || []
           if (Array.isArray(items) && items.length > 0 && orderData) {
             const itemRows = []
             for (const item of items) {
-              const productName = item.product_name || item.name || item.product_title || 'Unknown'
+              const productName = item.product_name || item.name || 'Unknown'
               const productCode = item.product_code || item.code || ''
-              const unitPrice = item.unit_price || item.price || item.selling_price || 0
+              const unitPrice = item.unit_price || item.price || 0
               const imageUrl = item.image_url || item.image || item.main_image_url || null
               let productId = item.product_id || null
 
@@ -262,8 +243,8 @@ Deno.serve(async (req) => {
                   } else {
                     const { data: newProduct } = await supabase.from('products').insert({
                       name: productName, product_code: productCode, selling_price: unitPrice,
-                      original_price: item.original_price || item.regular_price || unitPrice,
-                      purchase_price: item.purchase_price || item.cost_price || 0,
+                      original_price: item.original_price || unitPrice,
+                      purchase_price: item.purchase_price || 0,
                       main_image_url: imageUrl, status: 'active', stock_quantity: 0,
                     }).select('id').single()
                     if (newProduct) productId = newProduct.id
@@ -278,8 +259,8 @@ Deno.serve(async (req) => {
                   const autoCode = 'AUTO-' + productName.replace(/[^a-zA-Z0-9]/g, '-').substring(0, 20).toUpperCase() + '-' + Date.now().toString(36)
                   const { data: newProduct } = await supabase.from('products').insert({
                     name: productName, product_code: autoCode, selling_price: unitPrice,
-                    original_price: item.original_price || item.regular_price || unitPrice,
-                    purchase_price: item.purchase_price || item.cost_price || 0,
+                    original_price: item.original_price || unitPrice,
+                    purchase_price: item.purchase_price || 0,
                     main_image_url: imageUrl, status: 'active', stock_quantity: 0,
                   }).select('id').single()
                   if (newProduct) productId = newProduct.id
