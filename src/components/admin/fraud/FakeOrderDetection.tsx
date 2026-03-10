@@ -320,7 +320,7 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
               <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/40 border border-border/40 mb-3">
                 <div>
                   <Label className="font-medium text-xs">Enable Delivery Ratio Check</Label>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">কাস্টমারের আগের ডেলিভারি হিস্ট্রি চেক</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">Checks customer's previous delivery history</p>
                 </div>
                 <Switch checked={deliveryRatioEnabled} onCheckedChange={setDeliveryRatioEnabled} />
               </div>
