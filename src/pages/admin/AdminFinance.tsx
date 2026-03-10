@@ -259,7 +259,7 @@ export default function AdminFinance() {
               onClick={() => setShowSourceManager(!showSourceManager)}
             >
               <Tags className="h-3.5 w-3.5" />
-              সোর্স ম্যানেজ
+              Manage Sources
             </Button>
             <span className="text-sm text-muted-foreground">{dateRange}</span>
           </div>
