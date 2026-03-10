@@ -749,8 +749,8 @@ const AdminUsers = () => {
             {/* Sub tabs */}
             <div className="flex items-center justify-center gap-1">
               {[
-                { id: "live" as TrackingSubTab, label: "লাইভ স্ট্যাটাস", icon: Activity },
-                { id: "performance" as TrackingSubTab, label: "অর্ডার পারফরম্যান্স", icon: BarChart3 },
+                { id: "live" as TrackingSubTab, label: "Live Status", icon: Activity },
+                { id: "performance" as TrackingSubTab, label: "Order Performance", icon: BarChart3 },
               ].map(t => (
                 <button key={t.id} onClick={() => setTrackingSubTab(t.id)}
                   className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
