@@ -1027,7 +1027,7 @@ function DataResetTab() {
                   <div className="h-2 w-2 rounded-full bg-primary-foreground" />
                 )}
               </div>
-              <span className="font-bold text-foreground" onClick={toggleAll}>সব সিলেক্ট করুন</span>
+              <span className="font-bold text-foreground" onClick={toggleAll}>Select All</span>
             </label>
 
             {/* Segment List */}
