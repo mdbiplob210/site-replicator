@@ -233,7 +233,7 @@ const AdminRoles = () => {
                                 <span className="text-xs text-muted-foreground">{permCount}/{ALL_PERMISSIONS.length} permissions</span>
                                 {emp.panel?.is_active && (
                                   <Badge className="text-[10px] bg-emerald-100 text-emerald-700 border-emerald-200">
-                                    <Monitor className="h-3 w-3 mr-1" /> প্যানেল এক্টিভ
+                                    <Monitor className="h-3 w-3 mr-1" /> Panel Active
                                   </Badge>
                                 )}
                               </div>
