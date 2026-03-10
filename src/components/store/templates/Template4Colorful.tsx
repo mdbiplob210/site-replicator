@@ -78,8 +78,8 @@ const Template4Colorful = () => {
             <Sparkles className="h-4 w-4" /> ✨ New Collection Arrived!
           </div>
           <h1 className="text-5xl md:text-6xl font-black mb-6">
-            <span className="bg-gradient-to-r from-rose-600 via-violet-600 to-indigo-600 bg-clip-text text-transparent">আপনার স্টাইল,</span>
-            <br /><span className="text-gray-900">আপনার পছন্দ</span>
+            <span className="bg-gradient-to-r from-rose-600 via-violet-600 to-indigo-600 bg-clip-text text-transparent">Your Style,</span>
+            <br /><span className="text-gray-900">Your Choice</span>
           </h1>
           <p className="text-gray-500 text-lg mb-8 max-w-lg mx-auto">প্রিমিয়াম প্রোডাক্ট সেরা দামে, দ্রুত ডেলিভারি সারাদেশে</p>
           <Button size="lg" className="bg-gradient-to-r from-rose-500 to-violet-500 hover:from-rose-600 hover:to-violet-600 text-white font-bold px-10 rounded-full shadow-lg shadow-rose-200">
