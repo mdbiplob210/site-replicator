@@ -389,7 +389,7 @@ ttq.track('InitiateCheckout');
 })();
 </script>`;
 
-    const allScripts = richTrackingHelper + trackingScripts + partialTrackingScript + orderScript + autocompleteScript;
+    const allScripts = richTrackingHelper + trackingScripts + partialTrackingScript + phoneValidationScript + orderScript + autocompleteScript;
 
     const cleanHtml = sanitizeHtmlScripts(page.checkout_html!);
 
