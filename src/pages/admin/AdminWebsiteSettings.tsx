@@ -345,8 +345,8 @@ function GeneralTab() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium text-foreground">ঢাকার ভিতরে (৳)</label>
-                <p className="text-xs text-muted-foreground">চেকআউটে ডেলিভারি চার্জ</p>
+                <label className="text-sm font-medium text-foreground">Inside Dhaka (৳)</label>
+                <p className="text-xs text-muted-foreground">Delivery charge at checkout</p>
                 <Input 
                   className="mt-1.5" 
                   value={insideDhaka}
