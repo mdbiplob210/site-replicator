@@ -430,8 +430,8 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="text-xs">IP Address</TableHead>
-                    <TableHead className="text-xs">কারণ</TableHead>
-                    <TableHead className="text-xs">ব্লক তারিখ</TableHead>
+                    <TableHead className="text-xs">Reason</TableHead>
+                    <TableHead className="text-xs">Block Date</TableHead>
                     <TableHead className="text-xs text-right">Action</TableHead>
                   </TableRow>
                 </TableHeader>
