@@ -685,9 +685,9 @@ function BuyDomainTab() {
       <div className="bg-card rounded-2xl border border-border p-6 space-y-5">
         <div className="flex items-center gap-2">
           <Globe className="h-5 w-5 text-primary" />
-          <h3 className="text-xl font-bold text-foreground">ডোমেইন কিনুন</h3>
+          <h3 className="text-xl font-bold text-foreground">Buy Domain</h3>
         </div>
-        <p className="text-sm text-muted-foreground">আপনার ব্র্যান্ডের জন্য একটি কাস্টম ডোমেইন খুঁজুন এবং কিনুন।</p>
+        <p className="text-sm text-muted-foreground">Find and buy a custom domain for your brand.</p>
 
         <div>
           <label className="text-sm font-bold text-foreground">ডোমেইন নাম সার্চ করুন</label>
