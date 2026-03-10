@@ -849,12 +849,12 @@ function TrackingTab() {
           <div className="flex items-start gap-2">
             <Info className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
             <div className="text-xs text-blue-800 dark:text-blue-300 space-y-1">
-              <p className="font-medium">কিভাবে Access Token পাবেন?</p>
+              <p className="font-medium">How to get an Access Token?</p>
               <ol className="list-decimal list-inside space-y-0.5">
-                <li>Meta Events Manager → Settings এ যান</li>
-                <li>Conversions API সেকশনে "Generate Access Token" ক্লিক করুন</li>
-                <li>টোকেন কপি করে এখানে পেস্ট করুন</li>
-                <li>Save করুন — সার্ভার-সাইড ইভেন্ট অটো কাজ করবে</li>
+                <li>Go to Meta Events Manager → Settings</li>
+                <li>Click "Generate Access Token" in the Conversions API section</li>
+                <li>Copy the token and paste it here</li>
+                <li>Save — server-side events will work automatically</li>
               </ol>
             </div>
           </div>
