@@ -523,7 +523,7 @@ export default function AdminFinance() {
                               </div>
                               <div>
                                 <p className="font-semibold text-sm text-foreground">{supplier}</p>
-                                <p className="text-xs text-muted-foreground">{data.records.length}টি ট্রানজেকশন</p>
+                                <p className="text-xs text-muted-foreground">{data.records.length} transactions</p>
                               </div>
                             </div>
                             <div className="text-right">
