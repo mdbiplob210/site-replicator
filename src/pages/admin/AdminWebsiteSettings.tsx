@@ -809,7 +809,7 @@ function TrackingTab() {
         <div>
           <label className="text-sm font-medium text-foreground">Google Tag Manager</label>
           <Input className="mt-1.5" placeholder="GTM-XXXXXXX" value={gtmId} onChange={(e) => setGtmId(e.target.value)} />
-          <p className="text-xs text-muted-foreground mt-1">আপনার GTM Container ID দিন</p>
+          <p className="text-xs text-muted-foreground mt-1">Enter your GTM Container ID</p>
         </div>
 
         <div>
