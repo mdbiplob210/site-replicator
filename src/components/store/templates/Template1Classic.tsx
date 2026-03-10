@@ -313,8 +313,8 @@ const Template1Classic = () => {
                     {discount > 0 && (
                       <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-dashed border-red-400 bg-white flex flex-col items-center justify-center">
                         <span className="text-red-500 font-bold text-[9px] sm:text-[10px] leading-none">{discountAmount}</span>
-                        <span className="text-red-500 font-bold text-[8px] sm:text-[9px] leading-none">টাকা</span>
-                        <span className="text-red-500 font-bold text-[8px] sm:text-[9px] leading-none">ছাড়</span>
+                        <span className="text-red-500 font-bold text-[8px] sm:text-[9px] leading-none">BDT</span>
+                        <span className="text-red-500 font-bold text-[8px] sm:text-[9px] leading-none">OFF</span>
                       </div>
                     )}
                     {/* Free delivery badge */}
