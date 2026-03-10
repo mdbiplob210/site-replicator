@@ -445,7 +445,7 @@ const CheckoutPage = () => {
           <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm text-gray-400 mb-6"><ArrowLeft className="h-4 w-4" /> Back</button>
           <div className="bg-white rounded-3xl shadow-xl border border-rose-100 overflow-hidden">
             <div className="bg-gradient-to-r from-rose-500 to-violet-500 p-6 text-white">
-              <h1 className="text-xl font-bold">🛍️ চেকআউট</h1>
+              <h1 className="text-xl font-bold">🛍️ Checkout</h1>
               <div className="flex items-center gap-3 mt-3">
                 <div className="w-12 h-12 bg-white/20 rounded-lg overflow-hidden">
                   {item.image ? <OptimizedImage src={item.image} alt={item.name} width={48} quality={75} className="w-full h-full object-cover" /> : null}
