@@ -101,7 +101,7 @@ const Template2Dark = () => {
         {isLoading ? (
           <div className="text-center py-12 text-gray-600">Loading...</div>
         ) : products.length === 0 ? (
-          <div className="text-center py-12 text-gray-600">কোন প্রোডাক্ট নেই</div>
+          <div className="text-center py-12 text-gray-600">No products available</div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
             {products.map((p) => {
