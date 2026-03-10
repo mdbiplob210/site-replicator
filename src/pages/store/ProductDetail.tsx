@@ -388,7 +388,7 @@ const ProductDetail = () => {
 
             {/* Category */}
             {product.category_id && (
-              <p className="text-sm text-gray-500">ক্যাটাগরি: {product.category_id}</p>
+              <p className="text-sm text-gray-500">Category: {product.category_id}</p>
             )}
 
             {/* Delivery info table */}
