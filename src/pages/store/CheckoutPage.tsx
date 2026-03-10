@@ -274,7 +274,7 @@ const CheckoutPage = () => {
       </div>
       <div className="space-y-1.5">
         <Label className="flex items-center gap-2 text-sm font-semibold"><MapPin className="h-4 w-4" /> Delivery Address</Label>
-        <Textarea placeholder="সম্পূর্ণ ঠিকানা লিখুন" value={form.address} onChange={e => updateForm({ address: e.target.value })} required />
+        <Textarea placeholder="Enter full address" value={form.address} onChange={e => updateForm({ address: e.target.value })} required />
       </div>
       <div className="space-y-1.5">
         <Label className="text-sm font-semibold">নোট (ঐচ্ছিক)</Label>
