@@ -1036,7 +1036,7 @@ const AdminUsers = () => {
                     <Search className="h-4 w-4 text-muted-foreground" />
                     <input
                       type="text"
-                      placeholder="Email দিয়ে সার্চ..."
+                      placeholder="Search by email..."
                       value={activitySearch}
                       onChange={(e) => setActivitySearch(e.target.value)}
                       className="bg-transparent text-sm outline-none flex-1 text-foreground placeholder:text-muted-foreground"
