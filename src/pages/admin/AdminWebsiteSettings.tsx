@@ -436,21 +436,21 @@ function GeneralTab() {
 
       {/* Marquee & Urgency Settings */}
       <div className="bg-card rounded-2xl border border-border p-6 space-y-5">
-        <h3 className="font-bold text-foreground">📢 হেডার মার্কি ও আর্জেন্সি সেটিংস</h3>
+        <h3 className="font-bold text-foreground">📢 Header Marquee & Urgency Settings</h3>
         <div>
-          <label className="text-sm font-medium text-foreground">মার্কি টেক্সট (হেডারে চলমান লেখা)</label>
-          <p className="text-xs text-muted-foreground">স্টোরের উপরে যে লেখা স্ক্রল হয়ে যায়</p>
-          <Input className="mt-1.5" placeholder="🚚 সারা দেশে ক্যাশ অন ডেলিভারি..." value={marqueeText} onChange={(e) => setMarqueeText(e.target.value)} />
+          <label className="text-sm font-medium text-foreground">Marquee Text (scrolling header text)</label>
+          <p className="text-xs text-muted-foreground">Text that scrolls across the top of the store</p>
+          <Input className="mt-1.5" placeholder="🚚 Cash on delivery all over Bangladesh..." value={marqueeText} onChange={(e) => setMarqueeText(e.target.value)} />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-sm font-medium text-foreground">অফার কাউন্টডাউন (মিনিট)</label>
-            <p className="text-xs text-muted-foreground">প্রোডাক্ট পেজে কতক্ষণের কাউন্টডাউন দেখাবে</p>
+            <label className="text-sm font-medium text-foreground">Offer Countdown (minutes)</label>
+            <p className="text-xs text-muted-foreground">How long the countdown shows on product page</p>
             <Input className="mt-1.5" type="number" placeholder="30" value={offerCountdownMinutes} onChange={(e) => setOfferCountdownMinutes(e.target.value)} />
           </div>
           <div>
-            <label className="text-sm font-medium text-foreground">চেকআউট স্কার্সিটি কাউন্ট</label>
-            <p className="text-xs text-muted-foreground">চেকআউটে "আর মাত্র X জন" শুরুর সংখ্যা</p>
+            <label className="text-sm font-medium text-foreground">Checkout Scarcity Count</label>
+            <p className="text-xs text-muted-foreground">Starting number for "Only X slots left" at checkout</p>
             <Input className="mt-1.5" type="number" placeholder="47" value={checkoutScarcityCount} onChange={(e) => setCheckoutScarcityCount(e.target.value)} />
           </div>
         </div>
