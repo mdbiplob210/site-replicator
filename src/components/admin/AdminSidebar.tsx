@@ -60,10 +60,14 @@ const bottomMenuItems = [
 ];
 
 export function AdminSidebar() {
-  const { state } = useSidebar();
+  const { state, setOpenMobile, isMobile } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
   const { signOut, user, isAdmin, userRoles } = useAuth();
+
+  const closeMobileSidebar = () => {
+    if (isMobile) setOpenMobile(false);
+  };
 
   // Role-based menu filtering
   const hasRole = (role: string) => userRoles.includes(role as any);
