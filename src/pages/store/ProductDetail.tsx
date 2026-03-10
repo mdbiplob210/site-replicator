@@ -349,7 +349,7 @@ const ProductDetail = () => {
                 onClick={handleOrder}
                 className="w-full py-3 border border-green-600 text-green-600 hover:bg-green-50 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition"
               >
-                <ShoppingBag className="h-4 w-4" /> কার্টে যোগ করুন
+                <ShoppingBag className="h-4 w-4" /> Add to cart
               </button>
 
               {/* WhatsApp */}
