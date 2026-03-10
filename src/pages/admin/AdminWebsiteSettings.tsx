@@ -666,7 +666,7 @@ function ButtonsTab() {
         <div className="flex items-center justify-between border-t border-border pt-4">
           <div>
             <h4 className="font-medium text-foreground">Sticky Order Button</h4>
-            <p className="text-xs text-muted-foreground">প্রোডাক্ট পেজে স্ক্রল করলেও অর্ডার বাটন দেখা যাবে</p>
+            <p className="text-xs text-muted-foreground">Order button stays visible when scrolling product page</p>
           </div>
           <Switch checked={stickyProduct} onCheckedChange={setStickyProduct} />
         </div>
