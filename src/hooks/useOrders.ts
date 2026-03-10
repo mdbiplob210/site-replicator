@@ -219,7 +219,7 @@ export function useCreateOrder() {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       queryClient.invalidateQueries({ queryKey: ["order-counts"] });
       queryClient.invalidateQueries({ queryKey: ["order-items"] });
-      toast.success("অর্ডার সফলভাবে তৈরি হয়েছে!");
+      toast.success("Order created successfully!");
     },
     onError: (error: Error) => {
       toast.error("অর্ডার তৈরি করতে ব্যর্থ: " + error.message);
