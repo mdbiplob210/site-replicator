@@ -319,7 +319,7 @@ function GeneralTab() {
           {/* Messenger Link */}
           <div>
             <label className="text-sm font-medium text-foreground">Messenger Link</label>
-            <p className="text-xs text-muted-foreground">প্রোডাক্ট পেজে Messenger বাটনে ব্যবহার হবে</p>
+            <p className="text-xs text-muted-foreground">Used for Messenger button on product page</p>
             <Input className="mt-1.5" placeholder="https://m.me/yourpage" value={messengerLink} onChange={(e) => setMessengerLink(e.target.value)} />
           </div>
 
