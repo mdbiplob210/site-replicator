@@ -297,7 +297,7 @@ const Login = () => {
       {/* Title */}
       <div className="absolute top-4 right-4 z-30 text-right">
         <div className="text-xs font-medium" style={{ color: "rgba(255,255,255,0.4)" }}>
-          {portalOpen ? "✨ পোর্টাল সক্রিয়" : "🎮 অর্ব সংগ্রহ করুন"}
+          {portalOpen ? "✨ Portal Active" : "🎮 Collect the Orbs"}
         </div>
       </div>
 
