@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useApiKeys, useCreateApiKey, useUpdateApiKey, useDeleteApiKey, useSyncOrders } from "@/hooks/useApiKeys";
-import { Key, Plus, Trash2, Copy, Eye, EyeOff, BookOpen, Code, ArrowLeft, RefreshCw, Globe, Loader2, Link2 } from "lucide-react";
+import { Key, Plus, Trash2, Copy, Eye, EyeOff, BookOpen, Code, ArrowLeft, RefreshCw, Globe, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -36,8 +36,6 @@ export function ApiKeysView({ onBack }: ApiKeysViewProps) {
   const [newPerms, setNewPerms] = useState<string[]>(["orders:create", "incomplete_orders:create"]);
   const [visibleKeys, setVisibleKeys] = useState<Record<string, boolean>>({});
   const [editingSourceUrl, setEditingSourceUrl] = useState<Record<string, string>>({});
-  const [editingFirstKey, setEditingFirstKey] = useState<Record<string, string>>({});
-  const [editingSecondKey, setEditingSecondKey] = useState<Record<string, string>>({});
   const [syncingKeyId, setSyncingKeyId] = useState<string | null>(null);
 
   const apiBaseUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/order-api`;
@@ -67,22 +65,6 @@ export function ApiKeysView({ onBack }: ApiKeysViewProps) {
     if (url !== undefined) {
       updateKey.mutate({ id: keyId, updates: { source_url: url || null } as any });
       setEditingSourceUrl(prev => { const n = { ...prev }; delete n[keyId]; return n; });
-    }
-  };
-
-  const saveFirstKey = (keyId: string) => {
-    const val = editingFirstKey[keyId];
-    if (val !== undefined) {
-      updateKey.mutate({ id: keyId, updates: { api_first_key: val || null } as any });
-      setEditingFirstKey(prev => { const n = { ...prev }; delete n[keyId]; return n; });
-    }
-  };
-
-  const saveSecondKey = (keyId: string) => {
-    const val = editingSecondKey[keyId];
-    if (val !== undefined) {
-      updateKey.mutate({ id: keyId, updates: { api_second_key: val || null } as any });
-      setEditingSecondKey(prev => { const n = { ...prev }; delete n[keyId]; return n; });
     }
   };
 
@@ -178,47 +160,6 @@ export function ApiKeysView({ onBack }: ApiKeysViewProps) {
                     </Button>
                   </div>
 
-                  {/* BizMation API Keys */}
-                  <div className="bg-muted/30 rounded-xl p-3 border border-border/40 space-y-3">
-                    <div className="flex items-center gap-2">
-                      <Link2 className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm font-medium">BizMation API Keys (for order sync)</span>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div>
-                        <Label className="text-xs">API First Key</Label>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Input
-                            placeholder="Enter API First Key"
-                            value={editingFirstKey[key.id] !== undefined ? editingFirstKey[key.id] : (key.api_first_key || "")}
-                            onChange={e => setEditingFirstKey(prev => ({ ...prev, [key.id]: e.target.value }))}
-                            className="text-sm"
-                          />
-                          {editingFirstKey[key.id] !== undefined && (
-                            <Button size="sm" onClick={() => saveFirstKey(key.id)} disabled={updateKey.isPending}>Save</Button>
-                          )}
-                        </div>
-                      </div>
-                      <div>
-                        <Label className="text-xs">API Second Key</Label>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Input
-                            placeholder="Enter API Second Key"
-                            value={editingSecondKey[key.id] !== undefined ? editingSecondKey[key.id] : (key.api_second_key || "")}
-                            onChange={e => setEditingSecondKey(prev => ({ ...prev, [key.id]: e.target.value }))}
-                            className="text-sm"
-                          />
-                          {editingSecondKey[key.id] !== undefined && (
-                            <Button size="sm" onClick={() => saveSecondKey(key.id)} disabled={updateKey.isPending}>Save</Button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      💡 Enter the API First Key and API Second Key from your BizMation website to sync orders automatically.
-                    </p>
-                  </div>
-
                   {/* Source URL */}
                   <div className="bg-muted/30 rounded-xl p-3 border border-border/40 space-y-2">
                     <div className="flex items-center gap-2">
@@ -243,7 +184,7 @@ export function ApiKeysView({ onBack }: ApiKeysViewProps) {
                         size="sm"
                         variant="outline"
                         className="gap-2"
-                        disabled={(!key.source_url && !key.api_first_key) || syncingKeyId === key.id}
+                        disabled={!key.source_url || syncingKeyId === key.id}
                         onClick={() => handleSync(key.id)}
                       >
                         {syncingKeyId === key.id ? (
@@ -259,9 +200,9 @@ export function ApiKeysView({ onBack }: ApiKeysViewProps) {
                         </span>
                       )}
                     </div>
-                    {!key.source_url && !key.api_first_key && (
+                    {!key.source_url && (
                       <p className="text-xs text-muted-foreground">
-                        💡 Set a Source URL or BizMation API Keys to enable order syncing from external sites.
+                        💡 Set a Source URL to enable order syncing from external sites.
                       </p>
                     )}
                   </div>
@@ -361,18 +302,6 @@ X-API-Key: your_api_key_here
           </div>
 
           <div className="bg-muted/50 p-4 rounded-lg space-y-3">
-            <h3 className="font-bold text-lg">🔄 BizMation Integration</h3>
-            <p className="text-sm">If your external site uses <strong>BizMation</strong>, you can sync orders automatically:</p>
-            <ol className="text-sm list-decimal ml-5 space-y-1">
-              <li>Create a new API Key and enter a label for the site</li>
-              <li>Enter the <strong>API First Key</strong> and <strong>API Second Key</strong> from your BizMation site</li>
-              <li>Set the <strong>Source URL</strong> to your BizMation missing orders endpoint (e.g. <code className="bg-background px-1 rounded text-xs">https://yourdomain.com/api/missing-orders</code>)</li>
-              <li>Click <strong>"Sync Orders"</strong> to pull all orders into your panel</li>
-            </ol>
-            <p className="text-xs text-muted-foreground mt-2">The system will automatically pass api_1 and api_2 as query parameters when fetching from the source URL.</p>
-          </div>
-
-          <div className="bg-muted/50 p-4 rounded-lg space-y-3">
             <h3 className="font-bold text-lg">🔄 Source URL — Order Sync System</h3>
             <p className="text-sm">Set a Source URL on your API Key, then click "Sync Orders" to pull orders from your external site.</p>
             <p className="text-sm font-medium mt-2">Create a GET endpoint on your external site like this:</p>
@@ -416,10 +345,7 @@ Route::get('/api/orders', function(Request $request) {
 { "data": [{ "customer_name": "...", ... }] }
 
 // Format 3: orders key
-{ "orders": [{ "customer_name": "...", ... }] }
-
-// Format 4: BizMation format
-{ "success": true, "data": [{ "name": "...", "mobile_number": "...", ... }] }`}</pre>
+{ "orders": [{ "customer_name": "...", ... }] }`}</pre>
             </div>
             <p className="text-xs text-muted-foreground mt-2">💡 Duplicate check: Orders with the same order_number or same phone+name will be skipped.</p>
           </div>
@@ -435,10 +361,7 @@ Route::get('/api/orders', function(Request $request) {
   "reason": "Duplicate order from same phone within 24 hours",
   "incomplete_order_id": "uuid...",
   "tracking": { "ip": "...", "device": "Mobile | Android | Chrome" }
-}
-
-// Custom duplicate window (1-48 hours):
-{ "duplicate_window_hours": 12, ... }`}</pre>
+}`}</pre>
           </div>
 
           <div className="bg-muted/50 p-4 rounded-lg space-y-3">
