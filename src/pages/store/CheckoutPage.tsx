@@ -20,7 +20,7 @@ interface CheckoutItem {
 
 const CheckoutPage = () => {
   const { data: settings } = useSiteSettings();
-  usePageSEO({ title: "চেকআউট", noIndex: true });
+  usePageSEO({ title: "Checkout", noIndex: true });
   const navigate = useNavigate();
   const [item, setItem] = useState<CheckoutItem | null>(null);
   const [step, setStep] = useState(1);
