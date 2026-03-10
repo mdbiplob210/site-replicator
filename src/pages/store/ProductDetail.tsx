@@ -304,9 +304,9 @@ const ProductDetail = () => {
 
             {/* Price */}
             <div className="flex items-baseline gap-2 sm:gap-3 flex-wrap">
-              <span className="text-green-600 font-black text-2xl sm:text-3xl">৳{product.selling_price} টাকা</span>
+              <span className="text-green-600 font-black text-2xl sm:text-3xl">৳{product.selling_price}</span>
               {discount > 0 && (
-                <span className="text-gray-400 line-through text-base sm:text-lg">৳{product.original_price} টাকা</span>
+                <span className="text-gray-400 line-through text-base sm:text-lg">৳{product.original_price}</span>
               )}
             </div>
 
