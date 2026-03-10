@@ -277,7 +277,7 @@ const CheckoutPage = () => {
         <Textarea placeholder="Enter full address" value={form.address} onChange={e => updateForm({ address: e.target.value })} required />
       </div>
       <div className="space-y-1.5">
-        <Label className="text-sm font-semibold">নোট (ঐচ্ছিক)</Label>
+        <Label className="text-sm font-semibold">Note (optional)</Label>
         <Input placeholder="অতিরিক্ত তথ্য..." value={form.notes} onChange={e => updateForm({ notes: e.target.value })} />
       </div>
     </>
