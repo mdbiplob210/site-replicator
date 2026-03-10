@@ -557,9 +557,9 @@ function ButtonsTab() {
           await supabase.from("site_settings").insert({ key: entry.key, value: entry.value, is_public: true } as any);
         }
       }
-      toast.success("বাটন সেটিংস সেভ হয়েছে!");
+      toast.success("Button settings saved!");
     } catch (e: any) {
-      toast.error("সেভ করতে সমস্যা: " + e.message);
+      toast.error("Save failed: " + e.message);
     }
   };
 
