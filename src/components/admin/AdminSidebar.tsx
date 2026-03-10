@@ -176,6 +176,7 @@ export function AdminSidebar() {
                               <SidebarMenuButton asChild>
                                 <NavLink
                                   to={sub.url}
+                                  onClick={closeMobileSidebar}
                                   className="group flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[12px] text-sidebar-foreground/60 hover:text-white hover:bg-sidebar-accent/60 transition-all duration-200"
                                   activeClassName="text-white font-semibold bg-sidebar-accent/40"
                                 >
