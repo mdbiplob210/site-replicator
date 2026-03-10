@@ -42,7 +42,7 @@ export function useAddBanner() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["banners"] });
-      toast.success("ব্যানার যোগ হয়েছে!");
+      toast.success("Banner added!");
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -57,7 +57,7 @@ export function useUpdateBanner() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["banners"] });
-      toast.success("ব্যানার আপডেট হয়েছে!");
+      toast.success("Banner updated!");
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -72,7 +72,7 @@ export function useDeleteBanner() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["banners"] });
-      toast.success("ব্যানার মুছে ফেলা হয়েছে!");
+      toast.success("Banner deleted!");
     },
     onError: (e: Error) => toast.error(e.message),
   });

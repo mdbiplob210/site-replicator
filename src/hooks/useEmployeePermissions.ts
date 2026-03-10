@@ -3,49 +3,49 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export const ALL_PERMISSIONS = [
-  // Orders - অর্ডার ম্যানেজমেন্ট
-  { key: "view_orders", label: "অর্ডার দেখা", group: "অর্ডার", description: "সব অর্ডার দেখতে পারবে" },
-  { key: "create_orders", label: "নতুন অর্ডার তৈরি", group: "অর্ডার", description: "ম্যানুয়ালি অর্ডার তৈরি করতে পারবে" },
-  { key: "edit_orders", label: "অর্ডার এডিট", group: "অর্ডার", description: "অর্ডারের তথ্য পরিবর্তন করতে পারবে" },
-  { key: "delete_orders", label: "অর্ডার ডিলিট", group: "অর্ডার", description: "অর্ডার মুছে ফেলতে পারবে" },
-  { key: "change_order_status", label: "স্ট্যাটাস পরিবর্তন", group: "অর্ডার", description: "অর্ডার স্ট্যাটাস বদলাতে পারবে" },
+  // Orders
+  { key: "view_orders", label: "View Orders", group: "Orders", description: "Can view all orders" },
+  { key: "create_orders", label: "Create Orders", group: "Orders", description: "Can manually create orders" },
+  { key: "edit_orders", label: "Edit Orders", group: "Orders", description: "Can modify order details" },
+  { key: "delete_orders", label: "Delete Orders", group: "Orders", description: "Can delete orders" },
+  { key: "change_order_status", label: "Change Status", group: "Orders", description: "Can change order status" },
 
-  // Products - প্রোডাক্ট ম্যানেজমেন্ট
-  { key: "view_products", label: "প্রোডাক্ট দেখা", group: "প্রোডাক্ট", description: "সব প্রোডাক্ট দেখতে পারবে" },
-  { key: "create_products", label: "নতুন প্রোডাক্ট তৈরি", group: "প্রোডাক্ট", description: "নতুন প্রোডাক্ট যোগ করতে পারবে" },
-  { key: "edit_products", label: "প্রোডাক্ট এডিট", group: "প্রোডাক্ট", description: "প্রোডাক্ট তথ্য পরিবর্তন করতে পারবে" },
-  { key: "delete_products", label: "প্রোডাক্ট ডিলিট", group: "প্রোডাক্ট", description: "প্রোডাক্ট মুছে ফেলতে পারবে" },
-  { key: "manage_categories", label: "ক্যাটাগরি ম্যানেজ", group: "প্রোডাক্ট", description: "ক্যাটাগরি তৈরি/এডিট/ডিলিট করতে পারবে" },
+  // Products
+  { key: "view_products", label: "View Products", group: "Products", description: "Can view all products" },
+  { key: "create_products", label: "Create Products", group: "Products", description: "Can add new products" },
+  { key: "edit_products", label: "Edit Products", group: "Products", description: "Can modify product details" },
+  { key: "delete_products", label: "Delete Products", group: "Products", description: "Can delete products" },
+  { key: "manage_categories", label: "Manage Categories", group: "Products", description: "Can create/edit/delete categories" },
 
-  // Finance - ফিন্যান্স ও হিসাব
-  { key: "view_finance", label: "ফিন্যান্স দেখা", group: "ফিন্যান্স", description: "আয়-ব্যয় ও হিসাব দেখতে পারবে" },
-  { key: "edit_finance", label: "ফিন্যান্স এডিট", group: "ফিন্যান্স", description: "আয়-ব্যয় যোগ/এডিট করতে পারবে" },
+  // Finance
+  { key: "view_finance", label: "View Finance", group: "Finance", description: "Can view income/expenses and accounts" },
+  { key: "edit_finance", label: "Edit Finance", group: "Finance", description: "Can add/edit income and expenses" },
 
-  // Dashboard & Analytics - ড্যাশবোর্ড ও রিপোর্ট
-  { key: "view_dashboard", label: "ড্যাশবোর্ড দেখা", group: "ড্যাশবোর্ড ও রিপোর্ট", description: "ড্যাশবোর্ড পেজ দেখতে পারবে" },
-  { key: "view_analytics", label: "এনালিটিক্স দেখা", group: "ড্যাশবোর্ড ও রিপোর্ট", description: "বিস্তারিত এনালিটিক্স দেখতে পারবে" },
-  { key: "view_reports", label: "রিপোর্ট দেখা", group: "ড্যাশবোর্ড ও রিপোর্ট", description: "সব রিপোর্ট ডাউনলোড ও দেখতে পারবে" },
+  // Dashboard & Analytics
+  { key: "view_dashboard", label: "View Dashboard", group: "Dashboard & Reports", description: "Can view the dashboard page" },
+  { key: "view_analytics", label: "View Analytics", group: "Dashboard & Reports", description: "Can view detailed analytics" },
+  { key: "view_reports", label: "View Reports", group: "Dashboard & Reports", description: "Can download and view all reports" },
 
-  // Website - ওয়েবসাইট ম্যানেজমেন্ট
-  { key: "manage_website", label: "ওয়েবসাইট সেটিংস", group: "ওয়েবসাইট", description: "ওয়েবসাইট টেমপ্লেট ও সেটিংস পরিবর্তন করতে পারবে" },
-  { key: "manage_landing_pages", label: "ল্যান্ডিং পেজ ম্যানেজ", group: "ওয়েবসাইট", description: "ল্যান্ডিং পেজ তৈরি/এডিট করতে পারবে" },
-  { key: "manage_banners", label: "ব্যানার ম্যানেজ", group: "ওয়েবসাইট", description: "ওয়েবসাইটের ব্যানার পরিবর্তন করতে পারবে" },
+  // Website
+  { key: "manage_website", label: "Website Settings", group: "Website", description: "Can change website templates and settings" },
+  { key: "manage_landing_pages", label: "Manage Landing Pages", group: "Website", description: "Can create/edit landing pages" },
+  { key: "manage_banners", label: "Manage Banners", group: "Website", description: "Can change website banners" },
 
-  // Marketing - মার্কেটিং
-  { key: "manage_meta_ads", label: "মেটা অ্যাডস ম্যানেজ", group: "মার্কেটিং", description: "Meta Ads ডেটা দেখা ও সিঙ্ক করতে পারবে" },
+  // Marketing
+  { key: "manage_meta_ads", label: "Manage Meta Ads", group: "Marketing", description: "Can view and sync Meta Ads data" },
 
-  // Courier - কুরিয়ার
-  { key: "manage_courier", label: "কুরিয়ার ম্যানেজ", group: "কুরিয়ার", description: "কুরিয়ার সার্ভিস ও শিপমেন্ট ম্যানেজ করতে পারবে" },
+  // Courier
+  { key: "manage_courier", label: "Manage Courier", group: "Courier", description: "Can manage courier services and shipments" },
 
-  // System - সিস্টেম অ্যাডমিন
-  { key: "manage_users", label: "ইউজার ম্যানেজ", group: "সিস্টেম", description: "ইউজার ও এমপ্লয়ি এডিট/ডিলিট করতে পারবে" },
-  { key: "create_users", label: "ইউজার তৈরি", group: "সিস্টেম", description: "নতুন ইউজার অ্যাকাউন্ট তৈরি করতে পারবে" },
-  { key: "create_admin_users", label: "অ্যাডমিন তৈরি", group: "সিস্টেম", description: "অ্যাডমিন রোলের ইউজার তৈরি করতে পারবে" },
-  { key: "create_moderator_users", label: "মডারেটর তৈরি", group: "সিস্টেম", description: "মডারেটর রোলের ইউজার তৈরি করতে পারবে" },
-  { key: "create_basic_users", label: "সাধারণ ইউজার তৈরি", group: "সিস্টেম", description: "সাধারণ (user) রোলের ইউজার তৈরি করতে পারবে" },
-  { key: "manage_settings", label: "সেটিংস ম্যানেজ", group: "সিস্টেম", description: "সাইট সেটিংস পরিবর্তন করতে পারবে" },
-  { key: "manage_automation", label: "অটোমেশন ম্যানেজ", group: "সিস্টেম", description: "অটোমেশন রুল তৈরি/পরিবর্তন করতে পারবে" },
-  { key: "manage_backup", label: "ব্যাকআপ ম্যানেজ", group: "সিস্টেম", description: "ডেটা ব্যাকআপ ও রিস্টোর করতে পারবে" },
+  // System
+  { key: "manage_users", label: "Manage Users", group: "System", description: "Can edit/delete users and employees" },
+  { key: "create_users", label: "Create Users", group: "System", description: "Can create new user accounts" },
+  { key: "create_admin_users", label: "Create Admins", group: "System", description: "Can create admin role users" },
+  { key: "create_moderator_users", label: "Create Moderators", group: "System", description: "Can create moderator role users" },
+  { key: "create_basic_users", label: "Create Basic Users", group: "System", description: "Can create basic (user) role users" },
+  { key: "manage_settings", label: "Manage Settings", group: "System", description: "Can change site settings" },
+  { key: "manage_automation", label: "Manage Automation", group: "System", description: "Can create/modify automation rules" },
+  { key: "manage_backup", label: "Manage Backup", group: "System", description: "Can backup and restore data" },
 ] as const;
 
 export type PermissionKey = typeof ALL_PERMISSIONS[number]["key"];
@@ -67,7 +67,6 @@ export function useEmployees() {
   return useQuery({
     queryKey: ["employees"],
     queryFn: async () => {
-      // Get all users with roles (non-admin)
       const { data: userRoles, error: rolesError } = await supabase
         .from("user_roles")
         .select("user_id, role");
@@ -76,19 +75,16 @@ export function useEmployees() {
       const userIds = [...new Set(userRoles?.map(r => r.user_id) || [])];
       if (userIds.length === 0) return [];
 
-      // Get profiles
       const { data: profiles } = await supabase
         .from("profiles")
         .select("user_id, full_name, avatar_url")
         .in("user_id", userIds);
 
-      // Get permissions
       const { data: permissions } = await supabase
         .from("employee_permissions")
         .select("user_id, permission")
         .in("user_id", userIds);
 
-      // Get panels
       const { data: panels } = await supabase
         .from("employee_panels")
         .select("*")
@@ -141,7 +137,7 @@ export function useTogglePermission() {
       queryClient.invalidateQueries({ queryKey: ["employees"] });
     },
     onError: (error: Error) => {
-      toast.error("পারমিশন আপডেট ব্যর্থ: " + error.message);
+      toast.error("Permission update failed: " + error.message);
     },
   });
 }
@@ -172,10 +168,10 @@ export function useTogglePanel() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["employees"] });
-      toast.success("প্যানেল আপডেট হয়েছে!");
+      toast.success("Panel updated!");
     },
     onError: (error: Error) => {
-      toast.error("প্যানেল আপডেট ব্যর্থ: " + error.message);
+      toast.error("Panel update failed: " + error.message);
     },
   });
 }
@@ -205,20 +201,17 @@ export function usePanelStats() {
   return useQuery({
     queryKey: ["panel-stats"],
     queryFn: async () => {
-      // Get all active panels
       const { data: panels, error: panelError } = await supabase
         .from("employee_panels")
         .select("*");
       if (panelError) throw panelError;
 
-      // Get all assignments with order status
       const { data: assignments, error: assignError } = await supabase
         .from("order_assignments")
         .select("assigned_to, status, orders(status)")
         .order("assigned_at", { ascending: false });
       if (assignError) throw assignError;
 
-      // Get profiles for panel users
       const userIds = panels?.map(p => p.user_id) || [];
       const { data: profiles } = await supabase
         .from("profiles")

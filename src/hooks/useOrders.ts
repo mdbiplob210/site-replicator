@@ -335,7 +335,7 @@ export function useDeleteOrder() {
       toast.success("Order deleted!");
     },
     onError: (error: Error) => {
-      toast.error("অর্ডার ডিলিট করতে ব্যর্থ: " + error.message);
+      toast.error("Failed to delete order: " + error.message);
     },
   });
 }

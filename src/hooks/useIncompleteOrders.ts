@@ -199,7 +199,7 @@ export function useConvertIncompleteToOrder() {
       qc.invalidateQueries({ queryKey: ["incomplete-orders"] });
       qc.invalidateQueries({ queryKey: ["incomplete-order-counts"] });
       qc.invalidateQueries({ queryKey: ["orders"] });
-      toast.success("অর্ডারে কনভার্ট হয়েছে!");
+      toast.success("Converted to order!");
     },
     onError: (e: Error) => toast.error(e.message),
   });

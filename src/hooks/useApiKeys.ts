@@ -45,9 +45,9 @@ export function useCreateApiKey() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["api-keys"] });
-      toast.success("API Key তৈরি হয়েছে!");
+      toast.success("API Key created!");
     },
-    onError: (e: Error) => toast.error("তৈরি ব্যর্থ: " + e.message),
+    onError: (e: Error) => toast.error("Creation failed: " + e.message),
   });
 }
 
@@ -63,9 +63,9 @@ export function useUpdateApiKey() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["api-keys"] });
-      toast.success("আপডেট হয়েছে!");
+      toast.success("Updated!");
     },
-    onError: (e: Error) => toast.error("আপডেট ব্যর্থ: " + e.message),
+    onError: (e: Error) => toast.error("Update failed: " + e.message),
   });
 }
 
@@ -81,9 +81,9 @@ export function useDeleteApiKey() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["api-keys"] });
-      toast.success("API Key ডিলিট হয়েছে!");
+      toast.success("API Key deleted!");
     },
-    onError: (e: Error) => toast.error("ডিলিট ব্যর্থ: " + e.message),
+    onError: (e: Error) => toast.error("Delete failed: " + e.message),
   });
 }
 
@@ -93,7 +93,7 @@ export function useSyncOrders() {
     mutationFn: async (apiKeyId: string) => {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
-      if (!token) throw new Error("লগইন করুন");
+      if (!token) throw new Error("Please login");
 
       const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
       const res = await fetch(
@@ -116,8 +116,8 @@ export function useSyncOrders() {
       qc.invalidateQueries({ queryKey: ["api-keys"] });
       qc.invalidateQueries({ queryKey: ["orders"] });
       qc.invalidateQueries({ queryKey: ["incomplete-orders"] });
-      toast.success(data.message || `${data.synced} অর্ডার সিঙ্ক হয়েছে`);
+      toast.success(data.message || `${data.synced} orders synced`);
     },
-    onError: (e: Error) => toast.error("সিঙ্ক ব্যর্থ: " + e.message),
+    onError: (e: Error) => toast.error("Sync failed: " + e.message),
   });
 }
