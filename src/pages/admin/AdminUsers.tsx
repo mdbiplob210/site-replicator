@@ -1190,8 +1190,8 @@ const AdminUsers = () => {
               <Input className="mt-1" placeholder="Full Name" value={editName} onChange={(e) => setEditName(e.target.value)} />
             </div>
             <div>
-              <Label className="text-xs font-semibold text-muted-foreground uppercase">ইমেইল</Label>
-              <Input className="mt-1" type="email" placeholder={editFetching ? "লোড হচ্ছে..." : "email@example.com"} value={editEmail} onChange={(e) => setEditEmail(e.target.value)} disabled={editFetching} />
+               <Label className="text-xs font-semibold text-muted-foreground uppercase">Email</Label>
+               <Input className="mt-1" type="email" placeholder={editFetching ? "Loading..." : "email@example.com"} value={editEmail} onChange={(e) => setEditEmail(e.target.value)} disabled={editFetching} />
             </div>
             <div>
               <Label className="text-xs font-semibold text-muted-foreground uppercase">নতুন পাসওয়ার্ড</Label>
