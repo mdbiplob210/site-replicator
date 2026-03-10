@@ -1309,16 +1309,20 @@ const AdminOrders = () => {
               </DialogContent>
             </Dialog>
 
-            {/* New Order Dialog */}
-            <Dialog open={newOrderOpen} onOpenChange={setNewOrderOpen}>
+            <Dialog open={newOrderOpen} onOpenChange={(open) => {
+              setNewOrderOpen(open);
+              if (!open) { setConvertingIncompleteId(null); }
+            }}>
               <DialogTrigger asChild>
                 <Button className="gap-2 rounded-xl shadow-md shadow-primary/20"><Plus className="h-4 w-4" /> New Order</Button>
               </DialogTrigger>
               <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl" onInteractOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()} onCloseAutoFocus={(e) => e.preventDefault()}>
                 <DialogHeader>
                   <DialogTitle className="flex items-center gap-2 text-lg">
-                    <div className="p-2 rounded-xl bg-primary/10"><ShoppingCart className="h-5 w-5 text-primary" /></div>
-                    Create New Order
+                    <div className={cn("p-2 rounded-xl", convertingIncompleteId ? "bg-amber-500/10" : "bg-primary/10")}>
+                      {convertingIncompleteId ? <GitMerge className="h-5 w-5 text-amber-600" /> : <ShoppingCart className="h-5 w-5 text-primary" />}
+                    </div>
+                    {convertingIncompleteId ? "ইনকমপ্লিট অর্ডার কনভার্ট" : "Create New Order"}
                     <Badge variant="secondary" className="ml-2 text-xs">{nextOrderNumber}</Badge>
                   </DialogTitle>
                 </DialogHeader>
