@@ -564,7 +564,7 @@ const AdminOrders = () => {
       await supabase.from("orders").update({ memo_printed: true } as any).eq("id", id);
     }
     queryClient.invalidateQueries({ queryKey: ["orders"] });
-    toast.success(`${orderIds.length}টি অর্ডারের মেমো প্রিন্টেড হয়েছে!`);
+    toast.success(`${orderIds.length} order memo(s) marked as printed!`);
   }, [queryClient]);
 
   const bulkPrint = useBulkMemoPrint({
