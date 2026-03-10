@@ -914,14 +914,14 @@ const AdminUsers = () => {
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead>ইউজার</TableHead>
-                            <TableHead className="text-center"><div className="flex items-center justify-center gap-1"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />কনফার্মড</div></TableHead>
-                            <TableHead className="text-center"><div className="flex items-center justify-center gap-1"><XCircle className="h-3.5 w-3.5 text-destructive" />ক্যান্সেলড</div></TableHead>
-                            <TableHead className="text-center"><div className="flex items-center justify-center gap-1"><RotateCcw className="h-3.5 w-3.5 text-amber-500" />রিটার্নড</div></TableHead>
-                            <TableHead className="text-center"><div className="flex items-center justify-center gap-1"><Truck className="h-3.5 w-3.5 text-blue-500" />ডেলিভারড</div></TableHead>
-                            <TableHead className="text-center"><div className="flex items-center justify-center gap-1"><ShoppingCart className="h-3.5 w-3.5 text-primary" />ইন কুরিয়ার</div></TableHead>
-                            <TableHead className="text-center">মোট</TableHead>
-                            <TableHead className="text-center">সাকসেস রেট</TableHead>
+                             <TableHead>User</TableHead>
+                             <TableHead className="text-center"><div className="flex items-center justify-center gap-1"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />Confirmed</div></TableHead>
+                             <TableHead className="text-center"><div className="flex items-center justify-center gap-1"><XCircle className="h-3.5 w-3.5 text-destructive" />Cancelled</div></TableHead>
+                             <TableHead className="text-center"><div className="flex items-center justify-center gap-1"><RotateCcw className="h-3.5 w-3.5 text-amber-500" />Returned</div></TableHead>
+                             <TableHead className="text-center"><div className="flex items-center justify-center gap-1"><Truck className="h-3.5 w-3.5 text-blue-500" />Delivered</div></TableHead>
+                             <TableHead className="text-center"><div className="flex items-center justify-center gap-1"><ShoppingCart className="h-3.5 w-3.5 text-primary" />In Courier</div></TableHead>
+                             <TableHead className="text-center">Total</TableHead>
+                             <TableHead className="text-center">Success Rate</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
