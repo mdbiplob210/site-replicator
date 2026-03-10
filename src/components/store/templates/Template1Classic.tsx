@@ -239,10 +239,10 @@ const Template1Classic = () => {
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
           {[
-            { icon: Truck, label: "ফ্রি ডেলিভারি", sub: "৳১৫০০+ অর্ডারে" },
-            { icon: ShieldCheck, label: "১০০% অরিজিনাল", sub: "গ্যারান্টিড" },
-            { icon: RotateCcw, label: "ইজি রিটার্ন", sub: "৭ দিনে" },
-            { icon: Star, label: "সন্তুষ্ট কাস্টমার", sub: "৫০০০+" },
+            { icon: Truck, label: "Free Delivery", sub: "On ৳1500+ orders" },
+            { icon: ShieldCheck, label: "100% Original", sub: "Guaranteed" },
+            { icon: RotateCcw, label: "Easy Return", sub: "Within 7 days" },
+            { icon: Star, label: "Happy Customers", sub: "5000+" },
           ].map(b => (
             <div key={b.label} className="flex items-center gap-2.5">
               <div className="h-9 w-9 sm:h-8 sm:w-8 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
