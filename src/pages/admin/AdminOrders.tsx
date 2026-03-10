@@ -1701,7 +1701,12 @@ const AdminOrders = () => {
                     )}
                   </div>
                   <Button className="w-full rounded-xl shadow-sm" onClick={handleCreateOrder} disabled={createOrder.isPending || !customerName.trim()}>
-                    {createOrder.isPending ? <><Loader2 className="h-4 w-4 animate-spin" /> Creating...</> : <><Plus className="h-4 w-4" /> Create Order</>}
+                    {createOrder.isPending 
+                      ? <><Loader2 className="h-4 w-4 animate-spin" /> {convertingIncompleteId ? "কনভার্ট হচ্ছে..." : "Creating..."}</>
+                      : convertingIncompleteId 
+                        ? <><GitMerge className="h-4 w-4" /> অর্ডারে কনভার্ট করুন</>
+                        : <><Plus className="h-4 w-4" /> Create Order</>
+                    }
                   </Button>
                 </div>
               </DialogContent>
