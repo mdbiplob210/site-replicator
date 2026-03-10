@@ -589,7 +589,7 @@ const AdminUsers = () => {
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-foreground">Rules & Permissions Editor</h2>
-                  <p className="text-sm text-muted-foreground">প্রতিটা এমপ্লয়ির জন্য আলাদাভাবে পারমিশন এবং অর্ডার প্যানেল সেটিং করুন</p>
+                  <p className="text-sm text-muted-foreground">Set permissions and order panel settings for each employee</p>
                 </div>
               </div>
             </Card>
