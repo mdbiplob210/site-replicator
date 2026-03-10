@@ -499,7 +499,7 @@ const Login = () => {
 
               <div className="my-5 flex items-center gap-3">
                 <div className="h-px flex-1" style={{ background: "rgba(78,205,196,0.2)" }} />
-                <span className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>অথবা</span>
+                <span className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>or</span>
                 <div className="h-px flex-1" style={{ background: "rgba(78,205,196,0.2)" }} />
               </div>
 
