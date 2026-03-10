@@ -3138,7 +3138,9 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
         if (error) throw error;
       }
       const targetPanel = transferPanels.find((p: any) => p.user_id === transferToUserId);
-      await logActivity("order_transferred", "assigned_to", currentAssignment?.assigned_to || "unassigned", transferToUserId, `অর্ডার ট্রান্সফার: ${targetPanel?.full_name || "Unknown"}`);
+      const fromPanel = transferPanels.find((p: any) => p.user_id === currentAssignment?.assigned_to);
+      const transferredBy = user?.email || "Unknown";
+      await logActivity("order_transferred", "assigned_to", fromPanel?.full_name || currentAssignment?.assigned_to || "unassigned", targetPanel?.full_name || transferToUserId, `অর্ডার ট্রান্সফার: ${fromPanel?.full_name || "Unassigned"} → ${targetPanel?.full_name || "Unknown"} (by ${transferredBy})`);
       queryClient.invalidateQueries({ queryKey: ["order-assignments"] });
       queryClient.invalidateQueries({ queryKey: ["order-assignment-detail", orderId] });
       queryClient.invalidateQueries({ queryKey: ["panel-stats"] });
