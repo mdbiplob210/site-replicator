@@ -102,7 +102,7 @@ const Template3Minimal = () => {
                   </div>
                   <h3 className="text-sm font-normal text-stone-800">{p.name}</h3>
                   <p className="text-sm text-stone-500 mt-1">৳{p.selling_price}</p>
-                  {outOfStock && <p className="text-xs text-red-500 mt-0.5">স্টকে নেই</p>}
+                  {outOfStock && <p className="text-xs text-red-500 mt-0.5">Out of stock</p>}
                 </Link>
                 <button onClick={() => handleOrder(p)} disabled={outOfStock} className="mt-2 inline-flex items-center gap-1.5 text-xs tracking-[0.1em] uppercase text-stone-600 hover:text-stone-900 border-b border-stone-300 pb-0.5 transition disabled:opacity-40 disabled:cursor-not-allowed">
                   <ShoppingCart className="h-3 w-3" /> অর্ডার করুন
