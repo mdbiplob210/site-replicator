@@ -138,7 +138,7 @@ const AdminUsers = () => {
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
-      toast.success(data.disabled ? `"${name}" ডিসেবল হয়েছে` : `"${name}" আবার সক্রিয় হয়েছে`);
+      toast.success(data.disabled ? `"${name}" has been disabled` : `"${name}" has been re-enabled`);
     } catch (err: any) { toast.error(err.message); }
   };
 
