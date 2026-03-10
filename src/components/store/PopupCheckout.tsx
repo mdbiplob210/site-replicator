@@ -160,7 +160,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
     e.preventDefault();
     if (!currentItem) return;
     if (!form.name || !form.phone || !form.address) {
-      toast.error("সব ফিল্ড পূরণ করুন");
+      toast.error("Please fill in all fields");
       return;
     }
     setSubmitting(true);
