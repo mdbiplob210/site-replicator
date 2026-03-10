@@ -320,14 +320,14 @@ const AdminUsers = () => {
   ];
 
   const dateFilterOptions = [
-    { value: "today", label: "আজকে" },
-    { value: "yesterday", label: "গতকাল" },
-    { value: "last7", label: "গত ৭ দিন" },
-    { value: "last30", label: "গত ৩০ দিন" },
-    { value: "thisMonth", label: "এই মাস" },
-    { value: "lastMonth", label: "গত মাস" },
-    { value: "thisYear", label: "এই বছর" },
-    { value: "all", label: "সর্বকালীন" },
+    { value: "today", label: "Today" },
+    { value: "yesterday", label: "Yesterday" },
+    { value: "last7", label: "Last 7 Days" },
+    { value: "last30", label: "Last 30 Days" },
+    { value: "thisMonth", label: "This Month" },
+    { value: "lastMonth", label: "Last Month" },
+    { value: "thisYear", label: "This Year" },
+    { value: "all", label: "All Time" },
   ];
 
   // Helper: get user name from profiles or presence
