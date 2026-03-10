@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { useWebsiteAnalytics } from "@/hooks/useWebsiteAnalytics";
+import { useApiKeys } from "@/hooks/useApiKeys";
+import { AnalyticsSnippetGenerator } from "@/components/admin/analytics/AnalyticsSnippetGenerator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Eye, Users, MousePointerClick, ShoppingCart, TrendingUp, Monitor, Smartphone, Tablet, Globe, BarChart3, Clock, ArrowUpDown } from "lucide-react";
@@ -20,6 +22,9 @@ const DeviceIcon = ({ type }: { type: string }) => {
 export default function AdminWebsiteAnalytics() {
   const [days, setDays] = useState(7);
   const { data, isLoading } = useWebsiteAnalytics(days);
+  const { data: apiKeys } = useApiKeys();
+  const firstActiveKey = apiKeys?.find((k) => k.is_active)?.api_key || "";
+  const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID || "";
 
   return (
     <AdminLayout>
@@ -227,6 +232,9 @@ export default function AdminWebsiteAnalytics() {
             </Card>
           </>
         )}
+
+        {/* Snippet Generator for external sites */}
+        <AnalyticsSnippetGenerator apiKey={firstActiveKey} projectId={projectId} />
       </div>
     </AdminLayout>
   );

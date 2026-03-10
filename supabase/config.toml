@@ -38,3 +38,6 @@ verify_jwt = false
 
 [functions.sitemap]
 verify_jwt = false
+
+[functions.track-website-event]
+verify_jwt = false
