@@ -175,9 +175,9 @@ function GeneralTab() {
       const publicUrl = urlData.publicUrl + "?t=" + Date.now();
       setLogoUrl(publicUrl);
       await updateSetting.mutateAsync({ key: "site_logo", value: publicUrl });
-      toast.success("লোগো আপলোড হয়েছে!");
+      toast.success("Logo uploaded!");
     } catch (err: any) {
-      toast.error(err.message || "আপলোড ব্যর্থ হয়েছে");
+      toast.error(err.message || "Upload failed");
     } finally {
       setUploading(false);
     }
