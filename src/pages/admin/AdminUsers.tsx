@@ -1181,7 +1181,7 @@ const AdminUsers = () => {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <div className="p-2 rounded-xl bg-primary/10"><Edit className="h-5 w-5 text-primary" /></div>
-              ইউজার তথ্য পরিবর্তন
+              Edit User Details
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
