@@ -202,7 +202,7 @@ const ProductDetail = () => {
               {countdownHours > 0 && (
                 <div className="bg-white/20 rounded-md px-1.5 sm:px-2 py-0.5 sm:py-1 text-center min-w-[2rem] sm:min-w-[2.5rem]">
                   <span className="text-xs sm:text-base font-black">{String(countdownHours).padStart(2, "0")}</span>
-                  <span className="text-[8px] sm:text-[9px] block -mt-0.5">ঘণ্টা</span>
+                  <span className="text-[8px] sm:text-[9px] block -mt-0.5">Hours</span>
                 </div>
               )}
               <span className="font-bold text-sm sm:text-lg">:</span>
