@@ -226,7 +226,7 @@ function GeneralTab() {
     for (const { key, value } of updates) {
       await updateSetting.mutateAsync({ key, value });
     }
-    toast.success("সেটিংস সেভ হয়েছে!");
+    toast.success("Settings saved!");
   };
 
   return (
