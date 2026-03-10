@@ -815,7 +815,7 @@ function TrackingTab() {
         <div>
           <label className="text-sm font-medium text-foreground">Microsoft Clarity</label>
           <Input className="mt-1.5" placeholder="abcdefghij" value={clarityId} onChange={(e) => setClarityId(e.target.value)} />
-          <p className="text-xs text-muted-foreground mt-1">আপনার Clarity Project ID দিন</p>
+          <p className="text-xs text-muted-foreground mt-1">Enter your Clarity Project ID</p>
         </div>
       </div>
 
