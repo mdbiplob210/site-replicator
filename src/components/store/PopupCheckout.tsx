@@ -444,9 +444,9 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
                 <CheckCircle2 className="h-8 w-8 text-green-600" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900">অর্ডার সফল হয়েছে! 🎉</h3>
-              <p className="text-sm text-gray-500 mt-1">অর্ডার নং: {completedOrderNumber}</p>
-              <p className="text-xs text-gray-400 mt-1">শীঘ্রই আপনাকে কল করা হবে</p>
+              <h3 className="text-xl font-bold text-gray-900">Order placed successfully! 🎉</h3>
+              <p className="text-sm text-gray-500 mt-1">Order #: {completedOrderNumber}</p>
+              <p className="text-xs text-gray-400 mt-1">We will call you shortly</p>
             </div>
 
             {/* Same-category product suggestions */}
