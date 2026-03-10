@@ -4,7 +4,7 @@ import {
   Lightbulb, ListChecks, BarChart3, Megaphone, Zap, Database,
   Users, HeadphonesIcon, Sparkles, CreditCard, LogOut, ChevronDown,
   Layout, ShoppingBag, Gift, Grid3X3, Heart, Layers, CreditCard as PaymentIcon,
-  File, Settings, PieChart, UserCog
+  File, Settings, PieChart, UserCog, MessageSquare
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -47,6 +47,7 @@ const mainMenuItems = [
   { title: "Planning", url: "/admin/planning", icon: Lightbulb },
   { title: "Tasks", url: "/admin/tasks", icon: ListChecks },
   { title: "Analytics", url: "/admin/analytics", icon: BarChart3, hasSubmenu: true },
+  { title: "WhatsApp", url: "/admin/whatsapp", icon: MessageSquare },
 ];
 
 const bottomMenuItems = [
@@ -79,6 +80,7 @@ export function AdminSidebar() {
   const canSeePlanning = isAdmin;
   const canSeeTasks = isAdmin || hasRole("manager") || hasRole("moderator");
   const canSeeAnalytics = isAdmin || hasRole("ad_analytics");
+  const canSeeWhatsApp = isAdmin || hasRole("moderator") || hasRole("user");
   const canSeeMetaAds = isAdmin || hasRole("ad_analytics");
   const canSeeAutomation = isAdmin;
   const canSeeBackup = isAdmin;
@@ -95,6 +97,7 @@ export function AdminSidebar() {
     if (item.title === "Planning") return canSeePlanning;
     if (item.title === "Tasks") return canSeeTasks;
     if (item.title === "Analytics") return canSeeAnalytics;
+    if (item.title === "WhatsApp") return canSeeWhatsApp;
     return true;
   });
 
