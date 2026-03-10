@@ -28,7 +28,6 @@ import {
   useUserPresenceList, useLoginActivity, useUserPerformance
 } from "@/hooks/useUserTracking";
 import { formatDistanceToNow } from "date-fns";
-import { bn } from "date-fns/locale";
 
 interface UserProfile {
   id: string;
