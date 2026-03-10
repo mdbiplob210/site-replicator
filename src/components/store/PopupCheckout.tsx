@@ -497,7 +497,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
             )}
 
             <Button onClick={handleClose} variant="outline" className="w-full mt-4 rounded-xl">
-              বন্ধ করুন
+              Close
             </Button>
           </div>
         )}

@@ -428,9 +428,9 @@ const Template1Classic = () => {
               )}
             </div>
             {[
-              { title: "কুইক লিংকস", links: footerQuickLinks },
-              { title: "সাহায্য", links: footerHelpLinks },
-              { title: "যোগাযোগ", links: [`ফোন: ${phoneNumber || "01XXXXXXXXX"}`, ...(contactEmail ? [`ইমেইল: ${contactEmail}`] : []), footerAddress] },
+              { title: "Quick Links", links: footerQuickLinks },
+              { title: "Help", links: footerHelpLinks },
+              { title: "Contact", links: [`Phone: ${phoneNumber || "01XXXXXXXXX"}`, ...(contactEmail ? [`Email: ${contactEmail}`] : []), footerAddress] },
             ].map(col => (
               <div key={col.title}>
                 <h4 className="text-xs font-bold text-white mb-2 uppercase tracking-wider">{col.title}</h4>

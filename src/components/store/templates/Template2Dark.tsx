@@ -131,7 +131,7 @@ const Template2Dark = () => {
                   {outOfStock && <span className="text-[10px] text-red-400 font-semibold">Out of stock</span>}
                 </Link>
                 <button onClick={() => handleOrder(p)} disabled={outOfStock} className="w-full mt-2 py-2 bg-amber-500 hover:bg-amber-600 text-gray-950 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition disabled:opacity-40 disabled:cursor-not-allowed">
-                  <ShoppingCart className="h-4 w-4" /> অর্ডার করুন
+                  <ShoppingCart className="h-4 w-4" /> Order Now
                 </button>
               </div>
               );

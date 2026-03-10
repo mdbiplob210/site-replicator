@@ -129,7 +129,7 @@ const Template4Colorful = () => {
                 </Link>
                 <div className="px-4 pb-4">
                   <button onClick={() => handleOrder(p)} disabled={outOfStock} className="w-full py-2 bg-gradient-to-r from-rose-500 to-violet-500 hover:from-rose-600 hover:to-violet-600 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition disabled:opacity-40 disabled:cursor-not-allowed">
-                    <ShoppingCart className="h-4 w-4" /> অর্ডার করুন
+                    <ShoppingCart className="h-4 w-4" /> Order Now
                   </button>
                 </div>
               </div>

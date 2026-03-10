@@ -126,7 +126,7 @@ const Template5Bold = () => {
                 </Link>
                 <div className="px-4 pb-4">
                   <button onClick={() => handleOrder(p)} disabled={outOfStock} className="w-full py-2.5 bg-zinc-900 hover:bg-lime-400 hover:text-zinc-900 text-white text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 transition disabled:opacity-40 disabled:cursor-not-allowed">
-                    <ShoppingCart className="h-4 w-4" /> অর্ডার করুন
+                    <ShoppingCart className="h-4 w-4" /> ORDER NOW
                   </button>
                 </div>
               </div>

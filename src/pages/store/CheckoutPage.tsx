@@ -459,7 +459,7 @@ const CheckoutPage = () => {
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               {formFields}
               <Button type="submit" disabled={submitting} className="w-full py-6 text-lg font-bold bg-gradient-to-r from-rose-500 to-violet-500 text-white rounded-xl shadow-lg shadow-rose-200">
-                {submitting ? "Processing..." : `✨ অর্ডার করুন — ৳${total}`}
+                {submitting ? "Processing..." : `✨ Place Order — ৳${total}`}
               </Button>
             </form>
           </div>
