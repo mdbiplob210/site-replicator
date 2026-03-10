@@ -453,7 +453,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
             {suggestedProducts.length > 0 && (
               <div className="border-t pt-5">
                 <h4 className="font-bold text-sm text-gray-700 mb-3 text-center">
-                  🛍️ এই প্রোডাক্টগুলোও আপনার পছন্দ হতে পারে
+                  🛍️ You might also like these products
                 </h4>
                 <div className="grid grid-cols-2 gap-3">
                   {suggestedProducts.map(p => {
