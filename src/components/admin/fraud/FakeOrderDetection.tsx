@@ -275,7 +275,7 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
                 </Select>
                 {repeatBlockDuration !== "off" && (
                   <p className="text-xs text-muted-foreground bg-secondary/40 rounded-lg p-2.5">
-                    ✅ একজন কাস্টমার অর্ডার করার পর <strong>{getDurationLabel(repeatBlockDuration)}</strong> পর্যন্ত একই ফোন/IP থেকে আর অর্ডার আসবে না। ব্লক হওয়া অর্ডার Incomplete Orders-এ জমা হবে।
+                    ✅ After placing an order, the same phone/IP will be blocked from ordering again for <strong>{getDurationLabel(repeatBlockDuration)}</strong>. Blocked orders will be saved in Incomplete Orders.
                   </p>
                 )}
               </div>
