@@ -510,7 +510,7 @@ export default function AdminFinance() {
                   {suppliers.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
                       <Package className="h-10 w-10 mb-3 opacity-30" />
-                      <p className="font-medium">কোনো পারচেজ রেকর্ড নেই</p>
+                      <p className="font-medium">No purchase records yet</p>
                     </div>
                   ) : (
                     <div className="space-y-3">
