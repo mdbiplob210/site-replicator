@@ -18,7 +18,7 @@ export default function BannerSettings() {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("ফাইল সাইজ সর্বোচ্চ 5MB হতে হবে");
+      toast.error("File size must be under 5MB");
       return;
     }
     setUploading(true);
@@ -33,7 +33,7 @@ export default function BannerSettings() {
       const nextOrder = banners.length > 0 ? Math.max(...banners.map((b: any) => b.sort_order)) + 1 : 0;
       await addBanner.mutateAsync({ image_url: urlData.publicUrl, sort_order: nextOrder });
     } catch (err: any) {
-      toast.error(err.message || "আপলোড ব্যর্থ");
+      toast.error(err.message || "Upload failed");
     } finally {
       setUploading(false);
       e.target.value = "";
@@ -42,7 +42,6 @@ export default function BannerSettings() {
 
   const handleDelete = async (banner: any) => {
     try {
-      // Try to delete from storage
       const url = banner.image_url as string;
       const parts = url.split("/site-assets/");
       if (parts[1]) {
@@ -58,28 +57,28 @@ export default function BannerSettings() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-bold text-foreground">ব্যানার ম্যানেজমেন্ট</h2>
-          <p className="text-sm text-muted-foreground">স্টোর পেজের টপে যে ব্যানার স্লাইডার দেখাবে সেটি পরিচালনা করুন</p>
+          <h2 className="text-lg font-bold text-foreground">Banner Management</h2>
+          <p className="text-sm text-muted-foreground">Manage the banner slider displayed at the top of the store page</p>
         </div>
         <label>
           <input type="file" accept="image/*" className="hidden" onChange={handleUpload} />
           <Button variant="default" className="gap-2" asChild disabled={uploading}>
-            <span><Plus className="h-4 w-4" /> {uploading ? "আপলোড হচ্ছে..." : "ব্যানার যোগ করুন"}</span>
+            <span><Plus className="h-4 w-4" /> {uploading ? "Uploading..." : "Add Banner"}</span>
           </Button>
         </label>
       </div>
 
       <p className="text-xs text-muted-foreground bg-secondary/50 rounded-lg px-3 py-2">
-        💡 সাজেস্টেড সাইজ: 1920×600px (16:5 রেশিও)। সর্বোচ্চ 5MB। JPG/PNG/WebP সাপোর্টেড।
+        💡 Suggested size: 1920×600px (16:5 ratio). Max 5MB. JPG/PNG/WebP supported.
       </p>
 
       {isLoading ? (
-        <div className="text-center py-8 text-muted-foreground text-sm">লোড হচ্ছে...</div>
+        <div className="text-center py-8 text-muted-foreground text-sm">Loading...</div>
       ) : banners.length === 0 ? (
         <div className="text-center py-16 border-2 border-dashed border-border rounded-2xl">
           <ImageIcon className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
-          <p className="text-muted-foreground">কোনো ব্যানার নেই</p>
-          <p className="text-xs text-muted-foreground mt-1">উপরের বাটনে ক্লিক করে ব্যানার যোগ করুন</p>
+          <p className="text-muted-foreground">No banners yet</p>
+          <p className="text-xs text-muted-foreground mt-1">Click the button above to add a banner</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -97,20 +96,20 @@ export default function BannerSettings() {
                 <div className="flex items-center gap-2">
                   <Link className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
                   <Input
-                    placeholder="লিংক URL (ঐচ্ছিক)"
+                    placeholder="Link URL (optional)"
                     value={banner.link_url || ""}
                     onChange={(e) => updateBanner.mutate({ id: banner.id, link_url: e.target.value })}
                     className="h-8 text-xs"
                   />
                 </div>
                 <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                  <span>ক্রম: {banner.sort_order}</span>
+                  <span>Order: {banner.sort_order}</span>
                 </div>
               </div>
 
               <div className="flex items-center gap-3 flex-shrink-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">{banner.is_active ? "সক্রিয়" : "নিষ্ক্রিয়"}</span>
+                  <span className="text-xs text-muted-foreground">{banner.is_active ? "Active" : "Inactive"}</span>
                   <Switch
                     checked={banner.is_active}
                     onCheckedChange={(checked) => updateBanner.mutate({ id: banner.id, is_active: checked })}
