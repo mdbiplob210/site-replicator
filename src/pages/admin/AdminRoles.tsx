@@ -198,7 +198,7 @@ const AdminRoles = () => {
               {isLoading ? (
                 <Card className="border-border/40 p-16 text-center">
                   <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mx-auto" />
-                  <p className="text-muted-foreground mt-3">লোড হচ্ছে...</p>
+                  <p className="text-muted-foreground mt-3">Loading...</p>
                 </Card>
               ) : employees.length === 0 ? (
                 <Card className="border-border/40 p-16 text-center">
