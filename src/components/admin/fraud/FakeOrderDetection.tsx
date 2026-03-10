@@ -332,7 +332,7 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
                   </div>
                   <Slider value={minDeliveryRatio} onValueChange={setMinDeliveryRatio} max={100} step={5} className="my-2" />
                   <p className="text-xs text-muted-foreground">
-                    কাস্টমারের ডেলিভারি সাকসেস রেট {minDeliveryRatio[0]}% এর নিচে থাকলে অর্ডার Incomplete-এ যাবে।
+                    If customer's delivery success rate is below {minDeliveryRatio[0]}%, the order will go to Incomplete.
                   </p>
                 </div>
               )}
