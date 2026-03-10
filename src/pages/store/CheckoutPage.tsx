@@ -368,7 +368,7 @@ const CheckoutPage = () => {
                   <Textarea className="bg-gray-900 border-gray-800 text-white" value={form.address} onChange={e => updateForm({ address: e.target.value })} required />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-gray-300">নোট</Label>
+                  <Label className="text-gray-300">Note</Label>
                   <Input className="bg-gray-900 border-gray-800 text-white" value={form.notes} onChange={e => updateForm({ notes: e.target.value })} />
                 </div>
                 <div className="flex gap-3">
