@@ -922,7 +922,45 @@ const AdminOrders = () => {
     setBulkCourierId("");
   };
 
-  // Open convert as new order - pre-fill form from incomplete order
+  // Employee panels for bulk transfer
+  const { data: bulkTransferPanels = [] } = useQuery({
+    queryKey: ["employee-panels-bulk-transfer"],
+    queryFn: async () => {
+      const { data: panels, error } = await supabase.from("employee_panels").select("*").eq("is_active", true);
+      if (error) throw error;
+      const userIds = panels?.map(p => p.user_id) || [];
+      if (userIds.length === 0) return [];
+      const { data: profiles } = await supabase.from("profiles").select("user_id, full_name").in("user_id", userIds);
+      return (panels || []).map(p => ({
+        ...p,
+        full_name: profiles?.find(pr => pr.user_id === p.user_id)?.full_name || p.panel_name,
+      }));
+    },
+  });
+
+  // Bulk order transfer
+  const handleBulkTransfer = async (targetUserId: string) => {
+    if (selectedOrderIds.size === 0 || !targetUserId) return;
+    let count = 0;
+    for (const orderId of selectedOrderIds) {
+      // Upsert assignment
+      const { data: existing } = await supabase.from("order_assignments").select("id").eq("order_id", orderId).limit(1);
+      if (existing && existing.length > 0) {
+        const { error } = await supabase.from("order_assignments").update({ assigned_to: targetUserId, status: "pending" } as any).eq("id", existing[0].id);
+        if (!error) count++;
+      } else {
+        const { error } = await supabase.from("order_assignments").insert({ order_id: orderId, assigned_to: targetUserId, assigned_by: user?.id || null, status: "pending" } as any);
+        if (!error) count++;
+      }
+    }
+    const targetPanel = bulkTransferPanels.find((p: any) => p.user_id === targetUserId);
+    queryClient.invalidateQueries({ queryKey: ["order-assignments-list"] });
+    queryClient.invalidateQueries({ queryKey: ["panel-stats"] });
+    toast.success(`${count}টি অর্ডার ${targetPanel?.full_name || "এমপ্লয়ি"}-এর কাছে ট্রান্সফার হয়েছে!`);
+    setSelectedOrderIds(new Set());
+    setBulkTransferUserId("");
+  };
+
   const openConvertAsNewOrder = (io: any) => {
     setCustomerName(io.customer_name || "");
     setCustomerPhone(io.customer_phone || "");
