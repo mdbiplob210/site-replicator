@@ -474,7 +474,7 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
               <Input
                 value={newPhoneReason}
                 onChange={(e) => setNewPhoneReason(e.target.value)}
-                placeholder="কারণ (ঐচ্ছিক)"
+                placeholder="Reason (optional)"
                 className="rounded-xl flex-1"
               />
               <Button
