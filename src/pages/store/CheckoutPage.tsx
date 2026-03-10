@@ -12,6 +12,7 @@ import { ShoppingBag, ArrowLeft, Check, Package, CreditCard, MapPin, Phone, User
 import { useTracking } from "@/hooks/useTracking";
 import { OptimizedImage } from "@/components/ui/optimized-image";
 import { getClientIp, parseDeviceInfo } from "@/lib/deviceDetect";
+import { sanitizePhoneInput, isValidBDPhone } from "@/lib/phoneUtils";
 
 interface CheckoutItem {
   productId: string; name: string; price: number; qty: number; image: string | null;
