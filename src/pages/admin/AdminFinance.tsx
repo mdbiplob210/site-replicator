@@ -462,7 +462,7 @@ export default function AdminFinance() {
                 <div><p className="font-semibold text-foreground">Product Purchase</p><p className="text-xs text-muted-foreground">Track purchases from suppliers</p></div>
               </div>
               <div>
-                <label className="text-xs font-semibold text-muted-foreground uppercase">সাপ্লায়ার নাম</label>
+                <label className="text-xs font-semibold text-muted-foreground uppercase">Supplier Name</label>
                 <Input className="mt-1" placeholder="e.g. ABC Traders, XYZ Supplier" value={purchaseSupplier} onChange={(e) => setPurchaseSupplier(e.target.value)} />
               </div>
               <div className="grid grid-cols-2 gap-4">
