@@ -327,10 +327,10 @@ const ProductDetail = () => {
               </div>
               {/* Stock & Free Delivery */}
               <span className={`text-sm ${product.stock_quantity > 0 ? "text-green-600" : "text-red-500"}`}>
-                {product.stock_quantity > 0 ? `✓ স্টকে আছে` : "✗ স্টকে নেই"}
+                {product.stock_quantity > 0 ? `✓ In stock` : "✗ Out of stock"}
               </span>
               {product.free_delivery && (
-                <span className="text-sm text-green-600 font-semibold bg-green-50 px-2 py-0.5 rounded-full">🚚 ফ্রি ডেলিভারি</span>
+                <span className="text-sm text-green-600 font-semibold bg-green-50 px-2 py-0.5 rounded-full">🚚 Free delivery</span>
               )}
             </div>
 
