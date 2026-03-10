@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { ShoppingBag, ArrowLeft, Check, Package, CreditCard, MapPin, Phone, User } from "lucide-react";
 import { useTracking } from "@/hooks/useTracking";
+import { trackWebsiteEvent } from "@/hooks/useWebsiteAnalytics";
 import { OptimizedImage } from "@/components/ui/optimized-image";
 import { getClientIp, parseDeviceInfo } from "@/lib/deviceDetect";
 import { sanitizePhoneInput, isValidBDPhone } from "@/lib/phoneUtils";
