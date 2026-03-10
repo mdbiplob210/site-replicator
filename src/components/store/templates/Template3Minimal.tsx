@@ -69,7 +69,7 @@ const Template3Minimal = () => {
       <section className="max-w-6xl mx-auto px-6 py-28 text-center">
         <p className="text-xs tracking-[0.3em] uppercase text-stone-400 mb-6">Curated Collection</p>
         <h1 className="text-4xl md:text-5xl font-normal leading-tight text-stone-800 mb-6">Elegance in<br />Every Detail</h1>
-        <p className="text-stone-500 mb-10 max-w-md mx-auto text-sm leading-relaxed">সৌন্দর্য এবং গুণমানের সমন্বয়ে তৈরি আমাদের কিউরেটেড কালেকশন</p>
+        <p className="text-stone-500 mb-10 max-w-md mx-auto text-sm leading-relaxed">A curated collection crafted with beauty and quality in mind</p>
         <Link to="/" className="inline-flex items-center gap-2 text-xs tracking-[0.2em] uppercase text-stone-700 hover:text-stone-900 border-b border-stone-300 pb-1 transition">
           View Collection <ArrowRight className="h-3 w-3" />
         </Link>
