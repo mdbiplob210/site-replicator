@@ -156,7 +156,7 @@ const Template1Classic = () => {
             <div className="relative w-full">
               <input
                 type="text"
-                placeholder="প্রোডাক্ট খুঁজুন খোঁজ..."
+                placeholder="Search products..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 className="w-full h-10 pl-4 pr-10 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-500"
