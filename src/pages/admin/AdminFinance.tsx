@@ -295,7 +295,7 @@ export default function AdminFinance() {
                 />
               </div>
               <div className="w-40">
-                <label className="text-xs font-semibold text-muted-foreground uppercase">টাইপ</label>
+                <label className="text-xs font-semibold text-muted-foreground uppercase">Type</label>
                 <select
                   value={newSourceType}
                   onChange={(e) => setNewSourceType(e.target.value as "income" | "expense")}
