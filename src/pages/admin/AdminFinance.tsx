@@ -286,7 +286,7 @@ export default function AdminFinance() {
             {/* Add new source */}
             <div className="flex items-end gap-3">
               <div className="flex-1">
-                <label className="text-xs font-semibold text-muted-foreground uppercase">সোর্সের নাম</label>
+                <label className="text-xs font-semibold text-muted-foreground uppercase">Source Name</label>
                 <Input
                   className="mt-1"
                   placeholder="e.g. Facebook Sales, Office Rent"
