@@ -249,7 +249,7 @@ function GeneralTab() {
           {/* Store Logo */}
           <div>
             <label className="text-sm font-medium text-foreground">Store Logo</label>
-            <p className="text-xs text-muted-foreground mt-0.5">সাজেস্টেড সাইজ: 200×200px (স্কয়ার), সর্বোচ্চ 2MB। PNG বা WebP ফরম্যাট সবচেয়ে ভালো।</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Suggested size: 200×200px (square), max 2MB. PNG or WebP format recommended.</p>
             <div className="flex items-center gap-4 mt-3">
               <div className="h-16 w-16 rounded-xl border-2 border-dashed border-border flex items-center justify-center overflow-hidden bg-secondary/30">
                 {logoUrl ? (
