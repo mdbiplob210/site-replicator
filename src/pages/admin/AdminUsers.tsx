@@ -991,7 +991,7 @@ const AdminUsers = () => {
                   <div className="p-2.5 rounded-xl bg-blue-500/10"><MapPin className="h-5 w-5 text-blue-600" /></div>
                   <div>
                     <p className="text-2xl font-bold text-foreground">{uniqueIPs}</p>
-                    <p className="text-sm text-muted-foreground">ইউনিক IP</p>
+                    <p className="text-sm text-muted-foreground">Unique IPs</p>
                   </div>
                 </CardContent>
               </Card>
