@@ -842,7 +842,7 @@ const AdminUsers = () => {
                             <div className="hidden lg:flex items-center gap-2 bg-background/80 rounded-lg px-3 py-2 border border-border/50">
                               <Monitor className="h-4 w-4 text-emerald-500" />
                               <div>
-                                <p className="text-[10px] text-muted-foreground font-medium">বর্তমান পেজ</p>
+                                <p className="text-[10px] text-muted-foreground font-medium">Current Page</p>
                                 <p className="text-xs font-bold text-foreground">{presence.page.replace("/admin/", "").replace("/admin", "Dashboard") || "Dashboard"}</p>
                               </div>
                             </div>
