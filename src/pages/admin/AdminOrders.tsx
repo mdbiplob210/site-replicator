@@ -253,7 +253,17 @@ const AdminOrders = () => {
     },
     enabled: !!user?.id && userRole !== undefined,
   });
+  const { data: hasTransferPermission = false } = useQuery({
+    queryKey: ["has-transfer-orders", user?.id],
+    queryFn: async () => {
+      if (userRole === "admin") return true;
+      const { data } = await supabase.from("employee_permissions").select("id").eq("user_id", user!.id).eq("permission", "transfer_orders" as any).limit(1);
+      return (data && data.length > 0) || false;
+    },
+    enabled: !!user?.id && userRole !== undefined,
+  });
   const canPrintMemo = userRole === "admin" || hasPrintMemoPermission;
+  const canTransferOrders = userRole === "admin" || hasTransferPermission;
   const { data: orders = [], isLoading } = useOrders(statusFilter, orderDateFilter, customDateFrom, customDateTo);
   const { data: counts = {} } = useOrderCounts(orderDateFilter, customDateFrom, customDateTo);
   const createOrder = useCreateOrder();
