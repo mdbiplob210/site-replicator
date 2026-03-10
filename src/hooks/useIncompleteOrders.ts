@@ -138,7 +138,7 @@ export function useDeleteIncompleteOrder() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["incomplete-orders"] });
       qc.invalidateQueries({ queryKey: ["incomplete-order-counts"] });
-      toast.success("ডিলিট হয়েছে");
+      toast.success("Deleted");
     },
     onError: (e: Error) => toast.error(e.message),
   });
