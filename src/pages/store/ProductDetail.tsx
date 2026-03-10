@@ -538,13 +538,13 @@ function SuggestedProducts({ categoryId, currentProductId, onOrder }: { category
                   onClick={() => onOrder(p)}
                   className="w-full py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-bold flex items-center justify-center gap-1.5 transition"
                 >
-                  🛒 অর্ডার করুন
+                  🛒 Order now
                 </button>
                 <button
                   onClick={() => onOrder(p)}
                   className="w-full mt-1.5 py-2 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition"
                 >
-                  <ShoppingBag className="h-3.5 w-3.5" /> কার্টে যোগ করুন
+                  <ShoppingBag className="h-3.5 w-3.5" /> Add to cart
                 </button>
               </div>
             </div>
