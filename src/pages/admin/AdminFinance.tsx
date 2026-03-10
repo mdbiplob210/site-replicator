@@ -274,8 +274,8 @@ export default function AdminFinance() {
                   <Tags className="h-4 w-4 text-primary" />
                 </div>
                 <div>
-                  <p className="font-semibold text-foreground">সোর্স ম্যানেজমেন্ট</p>
-                  <p className="text-xs text-muted-foreground">Income ও Expense এর জন্য কাস্টম সোর্স তৈরি করুন</p>
+                  <p className="font-semibold text-foreground">Source Management</p>
+                  <p className="text-xs text-muted-foreground">Create custom sources for Income and Expense</p>
                 </div>
               </div>
               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setShowSourceManager(false)}>
