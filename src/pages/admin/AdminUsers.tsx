@@ -94,7 +94,7 @@ const AdminUsers = () => {
   };
 
   const handleEditUser = async () => {
-    if (!editName && !editEmail && !editPassword) { toast.error("কিছু পরিবর্তন করুন"); return; }
+    if (!editName && !editEmail && !editPassword) { toast.error("Please make a change"); return; }
     setEditLoading(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
