@@ -127,6 +127,7 @@ const App = () => {
             <Route path="/admin/website/thank-you" element={<Admin><AdminThankYouTemplate /></Admin>} />
             <Route path="/admin/website/landing-pages" element={<Admin><AdminLandingPages /></Admin>} />
             <Route path="/admin/website/landing-pages/analytics" element={<Admin><AdminLandingPageAnalytics /></Admin>} />
+            <Route path="/admin/website/analytics" element={<Admin><AdminWebsiteAnalytics /></Admin>} />
             <Route path="/admin/website/payment" element={<Admin><AdminPayment /></Admin>} />
             <Route path="/admin/website/pages" element={<Admin><AdminPages /></Admin>} />
             <Route path="/admin/website/settings" element={<Admin><AdminWebsiteSettings /></Admin>} />
