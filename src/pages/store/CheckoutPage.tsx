@@ -266,7 +266,7 @@ const CheckoutPage = () => {
     <>
       <div className="space-y-1.5">
         <Label className="flex items-center gap-2 text-sm font-semibold"><User className="h-4 w-4" /> Your Name</Label>
-        <Input placeholder="পুরো নাম" value={form.name} onChange={e => updateForm({ name: e.target.value })} required />
+        <Input placeholder="Full name" value={form.name} onChange={e => updateForm({ name: e.target.value })} required />
       </div>
       <div className="space-y-1.5">
         <Label className="flex items-center gap-2 text-sm font-semibold"><Phone className="h-4 w-4" /> ফোন নম্বর</Label>
