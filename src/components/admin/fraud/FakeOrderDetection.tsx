@@ -346,7 +346,7 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
                 </div>
                 <div>
                   <h3 className="font-bold text-foreground text-sm">Block Popup Message</h3>
-                  <p className="text-xs text-muted-foreground">ব্লক হওয়া কাস্টমারদের যে মেসেজ দেখাবে</p>
+                  <p className="text-xs text-muted-foreground">Message shown to blocked customers</p>
                 </div>
               </div>
               <Textarea
