@@ -732,7 +732,7 @@ const AdminUsers = () => {
                   const d = Date.now() - new Date(p.last_seen_at).getTime();
                   return d >= 60000 && d < 300000;
                 }).length, bg: "bg-amber-500/10", color: "text-amber-600" },
-                { icon: XCircle, label: "অফলাইন", value: users.length - onlineCount, bg: "bg-destructive/10", color: "text-destructive" },
+                { icon: XCircle, label: "Offline", value: users.length - onlineCount, bg: "bg-destructive/10", color: "text-destructive" },
               ].map((s, i) => (
                 <Card key={i} className="border-border/40">
                   <CardContent className="p-5 flex items-center gap-4">
