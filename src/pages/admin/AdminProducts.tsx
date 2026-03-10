@@ -223,7 +223,7 @@ const AdminProducts = () => {
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success("ক্যাটেগরি তৈরি হয়েছে!");
+      toast.success("Category created!");
       setShowCategoryDialog(false);
       setNewCategory({ name: "", slug: "", parent_id: "", description: "" });
       fetchCategories();
