@@ -868,7 +868,7 @@ const AdminUsers = () => {
                   <div className="flex items-center justify-between flex-wrap gap-3">
                     <CardTitle className="text-lg font-bold flex items-center gap-2">
                       <BarChart3 className="h-5 w-5 text-primary" />
-                      অর্ডার পারফরম্যান্স
+                      Order Performance
                     </CardTitle>
                     <Select value={perfDateRange} onValueChange={setPerfDateRange}>
                       <SelectTrigger className="w-40">
