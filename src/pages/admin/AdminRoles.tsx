@@ -140,7 +140,7 @@ const AdminRoles = () => {
             <Card className="border-border/40">
               <CardContent className="p-5 flex items-center gap-4">
                 <div className="p-2.5 rounded-xl bg-emerald-50"><Monitor className="h-5 w-5 text-emerald-600" /></div>
-                <div><p className="text-2xl font-bold text-foreground">{activePanels}</p><p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">এক্টিভ প্যানেল</p></div>
+                <div><p className="text-2xl font-bold text-foreground">{activePanels}</p><p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Active Panels</p></div>
               </CardContent>
             </Card>
             <Card className="border-border/40">
