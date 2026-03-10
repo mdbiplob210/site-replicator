@@ -66,8 +66,16 @@ const ProductDetail = () => {
         productCode: product.product_code,
         image: product.main_image_url || "",
       });
+      // Track product_view for website analytics
+      trackWebsiteEvent({
+        event_type: "product_view",
+        page_path: `/product/${slug}`,
+        product_id: product.id,
+        product_name: product.name,
+        product_code: product.product_code,
+      });
     }
-  }, [product, trackViewContent]);
+  }, [product, trackViewContent, slug]);
 
   // Exit intent detection
   useEffect(() => {
