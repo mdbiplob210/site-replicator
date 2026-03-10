@@ -773,7 +773,7 @@ const AdminUsers = () => {
                     </CardTitle>
                     <Badge variant="outline" className="gap-1.5 text-emerald-600">
                       <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                      রিয়েল-টাইম
+                      Real-time
                     </Badge>
                   </div>
                 </CardHeader>
