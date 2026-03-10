@@ -87,7 +87,7 @@ const Template2Dark = () => {
             Discover<br /><span className="text-amber-400">Premium</span> Style
           </h1>
           <p className="text-gray-400 text-lg mb-8 max-w-xl mx-auto">
-            এক্সক্লুসিভ কালেকশন — সেরা কোয়ালিটি, সেরা দাম
+            Exclusive collection — Best quality, best price
           </p>
           <Button size="lg" className="bg-amber-500 hover:bg-amber-600 text-gray-950 font-bold px-10 rounded-full">
             Explore Now
