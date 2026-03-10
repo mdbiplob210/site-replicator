@@ -84,11 +84,11 @@ const orderStatusSettings = [
   { label: "Incomplete", color: "bg-amber-400" },
 ];
 const CANCEL_REASONS = [
-  "কাস্টমারের কাছে টাকা নাই",
-  "কাস্টমারের পছন্দ হচ্ছে না",
-  "কাস্টমার নিতে চাচ্ছে না",
-  "ডেলিভারি এরিয়ার বাইরে",
-  "ভুল অর্ডার / ডুপ্লিকেট",
+  "Customer has no money",
+  "Customer doesn't like it",
+  "Customer refuses to receive",
+  "Outside delivery area",
+  "Wrong order / Duplicate",
 ];
 
 
@@ -477,7 +477,7 @@ const AdminOrders = () => {
         const q = searchQuery.toLowerCase();
         if (!(o.customer_name.toLowerCase().includes(q) || o.order_number.toLowerCase().includes(q) || (o.customer_phone && o.customer_phone.toLowerCase().includes(q)))) return false;
       }
-      if (filterSource && !(o.source || "প্যানেল").toLowerCase().includes(filterSource.toLowerCase())) return false;
+      if (filterSource && !(o.source || "Panel").toLowerCase().includes(filterSource.toLowerCase())) return false;
       if (filterPhone && !(o.customer_phone && o.customer_phone.includes(filterPhone))) return false;
       if (filterAmountMin && Number(o.total_amount) < Number(filterAmountMin)) return false;
       if (filterAmountMax && Number(o.total_amount) > Number(filterAmountMax)) return false;
@@ -564,7 +564,7 @@ const AdminOrders = () => {
       await supabase.from("orders").update({ memo_printed: true } as any).eq("id", id);
     }
     queryClient.invalidateQueries({ queryKey: ["orders"] });
-    toast.success(`${orderIds.length}টি অর্ডারের মেমো প্রিন্টেড হয়েছে!`);
+    toast.success(`${orderIds.length} order memo(s) marked as printed!`);
   }, [queryClient]);
 
   const bulkPrint = useBulkMemoPrint({
@@ -608,7 +608,7 @@ const AdminOrders = () => {
   const orderSourcesSummary = useMemo(() => {
     const sourceMap: Record<string, { count: number; totalAmount: number }> = {};
     filteredOrders.forEach((o) => {
-      const src = o.source || "প্যানেল (Manual)";
+      const src = o.source || "Panel (Manual)";
       if (!sourceMap[src]) sourceMap[src] = { count: 0, totalAmount: 0 };
       sourceMap[src].count += 1;
       sourceMap[src].totalAmount += Number(o.total_amount);
@@ -643,7 +643,7 @@ const AdminOrders = () => {
   // Export filtered orders to Excel
   const handleExport = useCallback(() => {
     if (filteredOrders.length === 0) {
-      toast.error("এক্সপোর্ট করার জন্য কোনো অর্ডার নেই!");
+      toast.error("No orders to export!");
       return;
     }
     const exportData = filteredOrders.map((o) => ({
@@ -656,7 +656,7 @@ const AdminOrders = () => {
       "Discount": Number(o.discount),
       "Total": Number(o.total_amount),
       "Status": getStatusLabel(o.status),
-      "Source": o.source || "প্যানেল",
+      "Source": o.source || "Panel",
       "Notes": o.notes || "",
       "Date": format(new Date(o.created_at), "dd MMM yyyy, hh:mm a"),
     }));
@@ -664,13 +664,13 @@ const AdminOrders = () => {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Orders");
     XLSX.writeFile(wb, `orders-${format(new Date(), "yyyy-MM-dd")}.xlsx`);
-    toast.success(`${filteredOrders.length}টি অর্ডার এক্সপোর্ট হয়েছে!`);
+    toast.success(`${filteredOrders.length} orders exported!`);
   }, [filteredOrders]);
 
   // Print filtered orders
   const handlePrint = useCallback(() => {
     if (filteredOrders.length === 0) {
-      toast.error("প্রিন্ট করার জন্য কোনো অর্ডার নেই!");
+      toast.error("No orders to print!");
       return;
     }
     const printWindow = window.open("", "_blank");
@@ -690,7 +690,7 @@ const AdminOrders = () => {
       <html><head><title>Orders Print</title></head>
       <body style="font-family:Arial,sans-serif;padding:20px">
         <h2 style="margin-bottom:10px">Orders Report — ${format(new Date(), "dd MMM yyyy")}</h2>
-        <p style="color:#666;margin-bottom:15px">${filteredOrders.length}টি অর্ডার</p>
+        <p style="color:#666;margin-bottom:15px">${filteredOrders.length} orders</p>
         <table style="width:100%;border-collapse:collapse;font-size:13px">
           <thead><tr style="background:#f5f5f5">
             <th style="padding:8px 10px;border:1px solid #ddd;text-align:left">Order #</th>
@@ -763,10 +763,10 @@ const AdminOrders = () => {
 
   const handleInlineNoteSave = async (orderId: string, noteText: string) => {
     const { error } = await supabase.from("orders").update({ notes: noteText } as any).eq("id", orderId);
-    if (error) { toast.error("নোট সেভ ব্যর্থ"); return; }
+    if (error) { toast.error("Failed to save note"); return; }
     queryClient.invalidateQueries({ queryKey: ["orders"] });
-    logActivity(orderId, "note_updated", "notes", undefined, noteText, "ইনলাইন নোট আপডেট");
-    toast.success("নোট সেভ হয়েছে!");
+    logActivity(orderId, "note_updated", "notes", undefined, noteText, "Inline note updated");
+    toast.success("Note saved!");
     setInlineNoteOrderId(null);
     setInlineNoteText("");
   };
@@ -774,10 +774,10 @@ const AdminOrders = () => {
   const handleTogglePaymentStatus = async (orderId: string, currentStatus: string) => {
     const newStatus = currentStatus === "paid" ? "unpaid" : "paid";
     const { error } = await supabase.from("orders").update({ payment_status: newStatus } as any).eq("id", orderId);
-    if (error) { toast.error("পেমেন্ট স্ট্যাটাস আপডেট ব্যর্থ"); return; }
+    if (error) { toast.error("Payment status update failed"); return; }
     queryClient.invalidateQueries({ queryKey: ["orders"] });
     logActivity(orderId, "payment_status_changed", "payment_status", currentStatus, newStatus);
-    toast.success(`পেমেন্ট স্ট্যাটাস: ${newStatus === "paid" ? "Paid" : "Unpaid"}`);
+    toast.success(`Payment status: ${newStatus === "paid" ? "Paid" : "Unpaid"}`);
   };
 
   // Handle status change with cancel/hold interception

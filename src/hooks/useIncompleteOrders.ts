@@ -119,7 +119,7 @@ export function useUpdateIncompleteOrderStatus() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["incomplete-orders"] });
       qc.invalidateQueries({ queryKey: ["incomplete-order-counts"] });
-      toast.success("স্ট্যাটাস আপডেট হয়েছে");
+      toast.success("Status updated");
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -138,7 +138,7 @@ export function useDeleteIncompleteOrder() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["incomplete-orders"] });
       qc.invalidateQueries({ queryKey: ["incomplete-order-counts"] });
-      toast.success("ডিলিট হয়েছে");
+      toast.success("Deleted");
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -199,7 +199,7 @@ export function useConvertIncompleteToOrder() {
       qc.invalidateQueries({ queryKey: ["incomplete-orders"] });
       qc.invalidateQueries({ queryKey: ["incomplete-order-counts"] });
       qc.invalidateQueries({ queryKey: ["orders"] });
-      toast.success("অর্ডারে কনভার্ট হয়েছে!");
+      toast.success("Converted to order!");
     },
     onError: (e: Error) => toast.error(e.message),
   });

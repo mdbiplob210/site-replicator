@@ -219,10 +219,10 @@ export function useCreateOrder() {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       queryClient.invalidateQueries({ queryKey: ["order-counts"] });
       queryClient.invalidateQueries({ queryKey: ["order-items"] });
-      toast.success("অর্ডার সফলভাবে তৈরি হয়েছে!");
+      toast.success("Order created successfully!");
     },
     onError: (error: Error) => {
-      toast.error("অর্ডার তৈরি করতে ব্যর্থ: " + error.message);
+      toast.error("Failed to create order: " + error.message);
     },
   });
 }
@@ -313,10 +313,10 @@ export function useUpdateOrderStatus() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       queryClient.invalidateQueries({ queryKey: ["order-counts"] });
-      toast.success("স্ট্যাটাস আপডেট হয়েছে!");
+      toast.success("Status updated!");
     },
     onError: (error: Error) => {
-      toast.error("স্ট্যাটাস আপডেট করতে ব্যর্থ: " + error.message);
+      toast.error("Failed to update status: " + error.message);
     },
   });
 }
@@ -332,10 +332,10 @@ export function useDeleteOrder() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       queryClient.invalidateQueries({ queryKey: ["order-counts"] });
-      toast.success("অর্ডার ডিলিট হয়েছে!");
+      toast.success("Order deleted!");
     },
     onError: (error: Error) => {
-      toast.error("অর্ডার ডিলিট করতে ব্যর্থ: " + error.message);
+      toast.error("Failed to delete order: " + error.message);
     },
   });
 }

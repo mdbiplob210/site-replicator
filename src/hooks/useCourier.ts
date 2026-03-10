@@ -65,9 +65,9 @@ export function useUpdateCourierProvider() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["courier-providers"] });
-      toast.success("কুরিয়ার প্রোভাইডার আপডেট হয়েছে!");
+      toast.success("Courier provider updated!");
     },
-    onError: (e: Error) => toast.error("আপডেট ব্যর্থ: " + e.message),
+    onError: (e: Error) => toast.error("Update failed: " + e.message),
   });
 }
 
@@ -129,8 +129,8 @@ export function useSubmitToCourier() {
       qc.invalidateQueries({ queryKey: ["courier-orders"] });
       qc.invalidateQueries({ queryKey: ["orders"] });
       qc.invalidateQueries({ queryKey: ["order-counts"] });
-      toast.success("কুরিয়ারে সাবমিট হয়েছে!");
+      toast.success("Submitted to courier!");
     },
-    onError: (e: Error) => toast.error("সাবমিট ব্যর্থ: " + e.message),
+    onError: (e: Error) => toast.error("Submit failed: " + e.message),
   });
 }

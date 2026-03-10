@@ -8,33 +8,33 @@ const AdminSettings = () => {
     <AdminLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">সেটিংস</h1>
-          <p className="text-muted-foreground">সিস্টেম সেটিংস কনফিগার করুন</p>
+          <h1 className="text-2xl font-bold text-foreground">Settings</h1>
+          <p className="text-muted-foreground">Configure system settings</p>
         </div>
 
         <Card className="border-border/60 max-w-xl">
           <CardHeader>
-            <CardTitle className="text-lg">সাধারণ সেটিংস</CardTitle>
+            <CardTitle className="text-lg">General Settings</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <Label className="text-foreground">ইমেইল ভেরিফিকেশন</Label>
-                <p className="text-sm text-muted-foreground">নতুন ইউজারদের ইমেইল ভেরিফাই করতে হবে</p>
+                <Label className="text-foreground">Email Verification</Label>
+                <p className="text-sm text-muted-foreground">New users must verify their email</p>
               </div>
               <Switch defaultChecked />
             </div>
             <div className="flex items-center justify-between">
               <div>
-                <Label className="text-foreground">নতুন রেজিস্ট্রেশন</Label>
-                <p className="text-sm text-muted-foreground">নতুন ইউজার রেজিস্ট্রেশন অনুমতি দিন</p>
+                <Label className="text-foreground">New Registration</Label>
+                <p className="text-sm text-muted-foreground">Allow new user registration</p>
               </div>
               <Switch defaultChecked />
             </div>
             <div className="flex items-center justify-between">
               <div>
-                <Label className="text-foreground">মেইনটেনেন্স মোড</Label>
-                <p className="text-sm text-muted-foreground">সাইট মেইনটেনেন্স মোডে রাখুন</p>
+                <Label className="text-foreground">Maintenance Mode</Label>
+                <p className="text-sm text-muted-foreground">Put the site in maintenance mode</p>
               </div>
               <Switch />
             </div>

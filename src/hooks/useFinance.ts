@@ -39,10 +39,10 @@ export function useCreateFinanceSource() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["finance-sources"] });
-      toast.success("সোর্স যোগ হয়েছে!");
+      toast.success("Source added!");
     },
     onError: (error: Error) => {
-      toast.error("সোর্স যোগ করতে ব্যর্থ: " + error.message);
+      toast.error("Failed to add source: " + error.message);
     },
   });
 }
@@ -56,10 +56,10 @@ export function useDeleteFinanceSource() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["finance-sources"] });
-      toast.success("সোর্স ডিলিট হয়েছে!");
+      toast.success("Source deleted!");
     },
     onError: (error: Error) => {
-      toast.error("ডিলিট করতে ব্যর্থ: " + error.message);
+      toast.error("Failed to delete: " + error.message);
     },
   });
 }
@@ -153,10 +153,10 @@ export function useCreateFinanceRecord() {
       queryClient.invalidateQueries({ queryKey: ["finance-records"] });
       queryClient.invalidateQueries({ queryKey: ["finance-summary"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard-finance"] });
-      toast.success("রেকর্ড সফলভাবে সেভ হয়েছে!");
+      toast.success("Record saved successfully!");
     },
     onError: (error: Error) => {
-      toast.error("সেভ করতে ব্যর্থ: " + error.message);
+      toast.error("Failed to save: " + error.message);
     },
   });
 }
@@ -173,10 +173,10 @@ export function useDeleteFinanceRecord() {
       queryClient.invalidateQueries({ queryKey: ["finance-records"] });
       queryClient.invalidateQueries({ queryKey: ["finance-summary"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard-finance"] });
-      toast.success("রেকর্ড ডিলিট হয়েছে!");
+      toast.success("Record deleted!");
     },
     onError: (error: Error) => {
-      toast.error("ডিলিট করতে ব্যর্থ: " + error.message);
+      toast.error("Failed to delete: " + error.message);
     },
   });
 }

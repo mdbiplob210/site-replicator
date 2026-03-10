@@ -19,7 +19,6 @@ export interface Task {
   updated_at: string;
   completed_at: string | null;
   deleted_at: string | null;
-  // joined
   creator_name?: string;
   assignee_name?: string;
 }
@@ -39,7 +38,6 @@ export function useTasks() {
 
       const tasks = (data || []) as unknown as Task[];
 
-      // Get unique user IDs for names
       const userIds = [...new Set([
         ...tasks.map(t => t.created_by),
         ...tasks.filter(t => t.assigned_to).map(t => t.assigned_to!),
@@ -100,9 +98,9 @@ export function useCreateTask() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
-      toast.success("টাস্ক তৈরি হয়েছে!");
+      toast.success("Task created!");
     },
-    onError: (e: Error) => toast.error("টাস্ক তৈরি ব্যর্থ: " + e.message),
+    onError: (e: Error) => toast.error("Task creation failed: " + e.message),
   });
 }
 
@@ -118,7 +116,7 @@ export function useCompleteTask() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
-      toast.success("টাস্ক সম্পন্ন হয়েছে!");
+      toast.success("Task completed!");
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -137,7 +135,7 @@ export function useSoftDeleteTask() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
       queryClient.invalidateQueries({ queryKey: ["tasks-deleted"] });
-      toast.success("টাস্ক ডিলিট হয়েছে!");
+      toast.success("Task deleted!");
     },
     onError: (e: Error) => toast.error(e.message),
   });
