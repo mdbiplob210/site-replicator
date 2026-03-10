@@ -978,11 +978,11 @@ function DataResetTab() {
         }
       }
 
-      toast.success(`${selectedSegments.length}টি সেগমেন্টের ডাটা মুছে ফেলা হয়েছে!`);
+      toast.success(`Data from ${selectedSegments.length} segment(s) has been deleted!`);
       setShowDialog(false);
       setSelectedSegments([]);
     } catch (e: any) {
-      toast.error("রিসেট করতে সমস্যা: " + e.message);
+      toast.error("Reset failed: " + e.message);
     } finally {
       setResetting(false);
     }
