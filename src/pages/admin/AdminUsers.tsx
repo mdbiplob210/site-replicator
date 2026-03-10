@@ -1186,7 +1186,7 @@ const AdminUsers = () => {
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label className="text-xs font-semibold text-muted-foreground uppercase">নাম</Label>
+              <Label className="text-xs font-semibold text-muted-foreground uppercase">Name</Label>
               <Input className="mt-1" placeholder="Full Name" value={editName} onChange={(e) => setEditName(e.target.value)} />
             </div>
             <div>
