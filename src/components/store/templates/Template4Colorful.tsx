@@ -91,7 +91,7 @@ const Template4Colorful = () => {
       {/* Products */}
       <section className="max-w-7xl mx-auto px-4 py-16">
         <h2 className="text-3xl font-extrabold text-gray-900 mb-2 text-center">Our Products</h2>
-        <p className="text-center text-gray-400 mb-10">সেরা কোয়ালিটির প্রোডাক্ট</p>
+        <p className="text-center text-gray-400 mb-10">Best quality products</p>
         {isLoading ? (
           <div className="text-center py-12 text-gray-400">Loading...</div>
         ) : products.length === 0 ? (
