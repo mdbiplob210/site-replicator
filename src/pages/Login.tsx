@@ -61,8 +61,13 @@ const Login = () => {
   const { user, isAdmin, loading: authLoading } = useAuth();
 
   useEffect(() => {
-    if (!authLoading && user && isAdmin) {
-      navigate("/admin", { replace: true });
+    if (!authLoading && user) {
+      // Redirect any user with a role to admin panel
+      supabase.from("user_roles").select("role").eq("user_id", user.id).then(({ data }) => {
+        if (data && data.length > 0) {
+          navigate("/admin", { replace: true });
+        }
+      });
     }
   }, [user, isAdmin, authLoading, navigate]);
 
