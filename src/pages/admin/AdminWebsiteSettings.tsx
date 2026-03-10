@@ -921,7 +921,7 @@ function TrackingTab() {
           <span className="text-lg">📊</span>
           <h3 className="font-bold text-foreground">Coming Soon</h3>
         </div>
-        <p className="text-sm text-muted-foreground">Google Analytics 4, Custom Script injection — সব কিছু এখানে যোগ করা যাবে</p>
+        <p className="text-sm text-muted-foreground">Google Analytics 4, Custom Script injection — all can be added here</p>
       </div>
 
       <Button className="w-full gap-2" onClick={handleSave}>
