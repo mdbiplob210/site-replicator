@@ -119,9 +119,9 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
       queryClient.invalidateQueries({ queryKey: ["blocked-ips"] });
       setNewIp("");
       setNewIpReason("");
-      toast.success("IP ব্লক করা হয়েছে!");
+      toast.success("IP blocked!");
     },
-    onError: (e: Error) => toast.error(e.message.includes("duplicate") ? "এই IP আগে থেকে ব্লক আছে" : e.message),
+    onError: (e: Error) => toast.error(e.message.includes("duplicate") ? "This IP is already blocked" : e.message),
   });
 
   const removeBlockedIp = useMutation({
