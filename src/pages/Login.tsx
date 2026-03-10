@@ -436,7 +436,7 @@ const Login = () => {
                 <div>
                   <Input
                     type="email"
-                    placeholder="📧 ইমেইল"
+                    placeholder="📧 Email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
