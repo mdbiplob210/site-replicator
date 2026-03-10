@@ -774,10 +774,10 @@ const AdminOrders = () => {
   const handleTogglePaymentStatus = async (orderId: string, currentStatus: string) => {
     const newStatus = currentStatus === "paid" ? "unpaid" : "paid";
     const { error } = await supabase.from("orders").update({ payment_status: newStatus } as any).eq("id", orderId);
-    if (error) { toast.error("পেমেন্ট স্ট্যাটাস আপডেট ব্যর্থ"); return; }
+    if (error) { toast.error("Payment status update failed"); return; }
     queryClient.invalidateQueries({ queryKey: ["orders"] });
     logActivity(orderId, "payment_status_changed", "payment_status", currentStatus, newStatus);
-    toast.success(`পেমেন্ট স্ট্যাটাস: ${newStatus === "paid" ? "Paid" : "Unpaid"}`);
+    toast.success(`Payment status: ${newStatus === "paid" ? "Paid" : "Unpaid"}`);
   };
 
   // Handle status change with cancel/hold interception
