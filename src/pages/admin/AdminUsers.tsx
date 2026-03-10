@@ -1000,7 +1000,7 @@ const AdminUsers = () => {
                   <div className="p-2.5 rounded-xl bg-amber-500/10"><AlertCircle className="h-5 w-5 text-amber-600" /></div>
                   <div>
                     <p className="text-2xl font-bold text-foreground">{loginLogs.length}</p>
-                    <p className="text-sm text-muted-foreground">মোট অ্যাটেম্পট</p>
+                    <p className="text-sm text-muted-foreground">Total Attempts</p>
                   </div>
                 </CardContent>
               </Card>
