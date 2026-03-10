@@ -379,7 +379,7 @@ const Login = () => {
               <div className="text-center">
                 <div className="text-4xl mb-2">🔒</div>
                 <div className="text-xs font-medium" style={{ color: "rgba(78,205,196,0.8)" }}>
-                  {score}/3 অর্ব
+                  {score}/3 Orbs
                 </div>
               </div>
             </div>
