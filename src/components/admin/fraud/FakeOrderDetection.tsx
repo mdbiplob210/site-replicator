@@ -367,7 +367,7 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
             <Button onClick={handleSaveAll} disabled={saveSettings.isPending} className="gap-2 rounded-xl">
               {saveSettings.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
               <Shield className="h-4 w-4" />
-              সব সেটিংস সেভ করুন
+              Save All Settings
             </Button>
           </div>
         </TabsContent>
