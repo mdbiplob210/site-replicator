@@ -99,7 +99,7 @@ const Template1Classic = () => {
   const orderBtnText = settings?.btn_order_text || "Order Now";
   const orderBtnColor = settings?.btn_order_color || "#16a34a";
   const cartBtnEnabled = settings?.btn_cart_enabled !== "false";
-  const cartBtnText = settings?.btn_cart_text || "বিস্তারিত দেখুন";
+  const cartBtnText = settings?.btn_cart_text || "View Details";
   const cartBtnColor = settings?.btn_cart_color || "#2563eb";
   const floatingContactsEnabled = settings?.floating_contacts_enabled !== "false";
   const floatingWhatsappEnabled = settings?.floating_whatsapp_enabled !== "false";
