@@ -353,7 +353,7 @@ export default function AdminFinance() {
                   </div>
                 ))}
                 {allSources.filter((s: any) => s.type === "expense").length === 0 && (
-                  <p className="text-xs text-muted-foreground py-2">কোনো সোর্স নেই</p>
+                  <p className="text-xs text-muted-foreground py-2">No sources yet</p>
                 )}
               </div>
             </div>
