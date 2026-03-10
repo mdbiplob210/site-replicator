@@ -1194,8 +1194,8 @@ const AdminUsers = () => {
                <Input className="mt-1" type="email" placeholder={editFetching ? "Loading..." : "email@example.com"} value={editEmail} onChange={(e) => setEditEmail(e.target.value)} disabled={editFetching} />
             </div>
             <div>
-              <Label className="text-xs font-semibold text-muted-foreground uppercase">নতুন পাসওয়ার্ড</Label>
-              <Input className="mt-1" type="password" placeholder="খালি রাখলে আগেরটাই থাকবে" value={editPassword} onChange={(e) => setEditPassword(e.target.value)} />
+               <Label className="text-xs font-semibold text-muted-foreground uppercase">New Password</Label>
+               <Input className="mt-1" type="password" placeholder="Leave empty to keep current" value={editPassword} onChange={(e) => setEditPassword(e.target.value)} />
             </div>
             <Button className="w-full h-11 gap-2" onClick={handleEditUser} disabled={editLoading}>
               {editLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
