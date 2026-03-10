@@ -1655,6 +1655,7 @@ export type Database = {
         | "create_basic_users"
         | "print_memo"
         | "transfer_orders"
+        | "manage_whatsapp"
       order_status:
         | "processing"
         | "confirmed"
@@ -1833,6 +1834,7 @@ export const Constants = {
         "create_basic_users",
         "print_memo",
         "transfer_orders",
+        "manage_whatsapp",
       ],
       order_status: [
         "processing",
