@@ -889,7 +889,7 @@ const AdminUsers = () => {
                   ) : perfData.length === 0 ? (
                     <div className="text-center py-10">
                       <BarChart3 className="h-10 w-10 text-muted-foreground/20 mx-auto mb-3" />
-                      <p className="text-sm text-muted-foreground">এই সময়ে কোনো অর্ডার অ্যাক্টিভিটি নেই</p>
+                      <p className="text-sm text-muted-foreground">No order activity in this period</p>
                     </div>
                   ) : (
                     <div className="space-y-4">
