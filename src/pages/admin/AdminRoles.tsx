@@ -203,8 +203,8 @@ const AdminRoles = () => {
               ) : employees.length === 0 ? (
                 <Card className="border-border/40 p-16 text-center">
                   <Users className="h-12 w-12 text-muted-foreground/20 mx-auto mb-4" />
-                  <p className="text-lg font-semibold text-muted-foreground">কোনো এমপ্লয়ি নেই</p>
-                  <p className="text-sm text-muted-foreground/70 mt-1">প্রথমে Users পেজ থেকে এমপ্লয়ি যোগ করুন</p>
+                  <p className="text-lg font-semibold text-muted-foreground">No Employees</p>
+                  <p className="text-sm text-muted-foreground/70 mt-1">Add employees from the Users page first</p>
                 </Card>
               ) : (
                 <div className="space-y-4">
