@@ -284,7 +284,7 @@ function GeneralTab() {
           {/* Site URL */}
           <div>
             <label className="text-sm font-medium text-foreground">Site URL <span className="text-destructive">*</span></label>
-            <p className="text-xs text-muted-foreground">SEO canonical URL, sitemap ও product feed-এ ব্যবহার হবে</p>
+            <p className="text-xs text-muted-foreground">Used in SEO canonical URL, sitemap & product feed</p>
             <Input className="mt-1.5" placeholder="https://yourstore.com" value={siteUrl} onChange={(e) => setSiteUrl(e.target.value)} />
           </div>
 
