@@ -391,34 +391,34 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
 
               {/* Delivery Area Selector */}
               <div className="bg-gray-50 rounded-xl p-3 space-y-2">
-                <label className="text-xs font-semibold text-gray-600">ডেলিভারি এরিয়া:</label>
+                <label className="text-xs font-semibold text-gray-600">Delivery Area:</label>
                 <div className="flex gap-2">
                   <button type="button" onClick={() => setDeliveryArea("inside")}
                     className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition ${deliveryArea === "inside" ? "border-green-500 bg-green-50 text-green-700" : "border-gray-200 text-gray-500"}`}>
-                    ঢাকার ভিতরে (৳{insideDhaka})
+                    Inside Dhaka (৳{insideDhaka})
                   </button>
                   <button type="button" onClick={() => setDeliveryArea("outside")}
                     className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition ${deliveryArea === "outside" ? "border-green-500 bg-green-50 text-green-700" : "border-gray-200 text-gray-500"}`}>
-                    ঢাকার বাইরে (৳{outsideDhaka})
+                    Outside Dhaka (৳{outsideDhaka})
                   </button>
                 </div>
               </div>
 
               {/* Summary */}
               <div className="bg-gray-50 rounded-xl p-3 space-y-1.5 text-sm">
-                <div className="flex justify-between"><span className="text-gray-500">সাবটোটাল</span><span>৳{subtotal}</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">Subtotal</span><span>৳{subtotal}</span></div>
                 {discount > 0 && (
                   <div className="flex justify-between text-red-500 font-semibold">
-                    <span>🎁 বিশেষ ছাড়</span><span>-৳{discount}</span>
+                    <span>🎁 Special Discount</span><span>-৳{discount}</span>
                   </div>
                 )}
                 <div className="flex justify-between">
-                  <span className="text-gray-500">ডেলিভারি চার্জ</span>
+                  <span className="text-gray-500">Delivery Charge</span>
                   <span className={deliveryCharge === 0 ? "text-green-600 font-semibold" : ""}>
-                    {deliveryCharge === 0 ? "ফ্রি" : `৳${deliveryCharge}`}
+                    {deliveryCharge === 0 ? "Free" : `৳${deliveryCharge}`}
                   </span>
                 </div>
-                <div className="flex justify-between font-bold text-base border-t pt-1.5"><span>মোট</span><span className="text-green-600">৳{total}</span></div>
+                <div className="flex justify-between font-bold text-base border-t pt-1.5"><span>Total</span><span className="text-green-600">৳{total}</span></div>
               </div>
 
               <Button
@@ -427,13 +427,14 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
                 className="w-full h-12 sm:h-12 text-sm sm:text-base font-bold bg-green-600 hover:bg-green-700 active:scale-[0.98] text-white rounded-xl shadow-lg shadow-green-200 transition-all"
               >
                 {submitting ? (
-                  <><Loader2 className="h-4 w-4 animate-spin mr-2" /> প্রসেসিং...</>
+                 <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Processing...</>
                 ) : (
-                  <>🛒 অর্ডার কনফার্ম করুন — ৳{total}</>
+                  <>🛒 Confirm Order — ৳{total}</>
+
                 )}
               </Button>
 
-              <p className="text-center text-[11px] sm:text-xs text-gray-400 pb-2">💳 ক্যাশ অন ডেলিভারি | 🚚 ২-৫ দিনে ডেলিভারি</p>
+              <p className="text-center text-[11px] sm:text-xs text-gray-400 pb-2">💳 Cash on delivery | 🚚 Delivery in 2-5 days</p>
             </form>
           </>
         ) : (
@@ -443,16 +444,16 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
                 <CheckCircle2 className="h-8 w-8 text-green-600" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900">অর্ডার সফল হয়েছে! 🎉</h3>
-              <p className="text-sm text-gray-500 mt-1">অর্ডার নং: {completedOrderNumber}</p>
-              <p className="text-xs text-gray-400 mt-1">শীঘ্রই আপনাকে কল করা হবে</p>
+              <h3 className="text-xl font-bold text-gray-900">Order placed successfully! 🎉</h3>
+              <p className="text-sm text-gray-500 mt-1">Order #: {completedOrderNumber}</p>
+              <p className="text-xs text-gray-400 mt-1">We will call you shortly</p>
             </div>
 
             {/* Same-category product suggestions */}
             {suggestedProducts.length > 0 && (
               <div className="border-t pt-5">
                 <h4 className="font-bold text-sm text-gray-700 mb-3 text-center">
-                  🛍️ এই প্রোডাক্টগুলোও আপনার পছন্দ হতে পারে
+                  🛍️ You might also like these products
                 </h4>
                 <div className="grid grid-cols-2 gap-3">
                   {suggestedProducts.map(p => {
@@ -485,7 +486,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
                             onClick={() => handleAddSuggested(p)}
                             className="w-full mt-1.5 py-1.5 text-xs font-bold bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
                           >
-                            + যোগ করুন
+                            + Add
                           </button>
                         </div>
                       </div>
@@ -496,7 +497,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
             )}
 
             <Button onClick={handleClose} variant="outline" className="w-full mt-4 rounded-xl">
-              বন্ধ করুন
+              Close
             </Button>
           </div>
         )}

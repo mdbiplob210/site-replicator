@@ -87,7 +87,7 @@ const Template2Dark = () => {
             Discover<br /><span className="text-amber-400">Premium</span> Style
           </h1>
           <p className="text-gray-400 text-lg mb-8 max-w-xl mx-auto">
-            এক্সক্লুসিভ কালেকশন — সেরা কোয়ালিটি, সেরা দাম
+            Exclusive collection — Best quality, best price
           </p>
           <Button size="lg" className="bg-amber-500 hover:bg-amber-600 text-gray-950 font-bold px-10 rounded-full">
             Explore Now
@@ -101,7 +101,7 @@ const Template2Dark = () => {
         {isLoading ? (
           <div className="text-center py-12 text-gray-600">Loading...</div>
         ) : products.length === 0 ? (
-          <div className="text-center py-12 text-gray-600">কোন প্রোডাক্ট নেই</div>
+          <div className="text-center py-12 text-gray-600">No products available</div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
             {products.map((p) => {
@@ -118,7 +118,7 @@ const Template2Dark = () => {
                       </div>
                     )}
                     {(p as any).free_delivery && (
-                      <div className="absolute top-2 left-2 bg-amber-500 text-gray-950 text-[9px] font-bold px-2 py-0.5 rounded-full">🚚 ফ্রি ডেলিভারি</div>
+                      <div className="absolute top-2 left-2 bg-amber-500 text-gray-950 text-[9px] font-bold px-2 py-0.5 rounded-full">🚚 Free Delivery</div>
                     )}
                   </div>
                   <h3 className="font-bold text-white truncate">{p.name}</h3>
@@ -128,10 +128,10 @@ const Template2Dark = () => {
                       <span className="text-sm text-gray-600 line-through">৳{p.original_price}</span>
                     )}
                   </div>
-                  {outOfStock && <span className="text-[10px] text-red-400 font-semibold">স্টকে নেই</span>}
+                  {outOfStock && <span className="text-[10px] text-red-400 font-semibold">Out of stock</span>}
                 </Link>
                 <button onClick={() => handleOrder(p)} disabled={outOfStock} className="w-full mt-2 py-2 bg-amber-500 hover:bg-amber-600 text-gray-950 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition disabled:opacity-40 disabled:cursor-not-allowed">
-                  <ShoppingCart className="h-4 w-4" /> অর্ডার করুন
+                  <ShoppingCart className="h-4 w-4" /> Order Now
                 </button>
               </div>
               );

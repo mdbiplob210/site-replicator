@@ -75,13 +75,13 @@ const Template4Colorful = () => {
         <div className="absolute bottom-10 right-10 w-80 h-80 bg-violet-300/20 rounded-full blur-3xl" />
         <div className="max-w-7xl mx-auto px-4 text-center relative z-10">
           <div className="inline-flex items-center gap-2 bg-gradient-to-r from-rose-100 to-violet-100 rounded-full px-5 py-2 text-sm font-semibold text-rose-600 mb-6">
-            <Sparkles className="h-4 w-4" /> ✨ নতুন কালেকশন এসেছে!
+            <Sparkles className="h-4 w-4" /> ✨ New Collection Arrived!
           </div>
           <h1 className="text-5xl md:text-6xl font-black mb-6">
-            <span className="bg-gradient-to-r from-rose-600 via-violet-600 to-indigo-600 bg-clip-text text-transparent">আপনার স্টাইল,</span>
-            <br /><span className="text-gray-900">আপনার পছন্দ</span>
+            <span className="bg-gradient-to-r from-rose-600 via-violet-600 to-indigo-600 bg-clip-text text-transparent">Your Style,</span>
+            <br /><span className="text-gray-900">Your Choice</span>
           </h1>
-          <p className="text-gray-500 text-lg mb-8 max-w-lg mx-auto">প্রিমিয়াম প্রোডাক্ট সেরা দামে, দ্রুত ডেলিভারি সারাদেশে</p>
+          <p className="text-gray-500 text-lg mb-8 max-w-lg mx-auto">Premium products at the best prices, fast delivery nationwide</p>
           <Button size="lg" className="bg-gradient-to-r from-rose-500 to-violet-500 hover:from-rose-600 hover:to-violet-600 text-white font-bold px-10 rounded-full shadow-lg shadow-rose-200">
             🛍️ Shop Now
           </Button>
@@ -91,11 +91,11 @@ const Template4Colorful = () => {
       {/* Products */}
       <section className="max-w-7xl mx-auto px-4 py-16">
         <h2 className="text-3xl font-extrabold text-gray-900 mb-2 text-center">Our Products</h2>
-        <p className="text-center text-gray-400 mb-10">সেরা কোয়ালিটির প্রোডাক্ট</p>
+        <p className="text-center text-gray-400 mb-10">Best quality products</p>
         {isLoading ? (
           <div className="text-center py-12 text-gray-400">Loading...</div>
         ) : products.length === 0 ? (
-          <div className="text-center py-12 text-gray-400">কোন প্রোডাক্ট নেই</div>
+          <div className="text-center py-12 text-gray-400">No products available</div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
             {products.map((p) => {
@@ -113,7 +113,7 @@ const Template4Colorful = () => {
                       <Heart className="h-4 w-4 text-rose-500" />
                     </button>
                     {(p as any).free_delivery && (
-                      <div className="absolute top-3 left-3 bg-gradient-to-r from-rose-500 to-violet-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">🚚 ফ্রি ডেলিভারি</div>
+                      <div className="absolute top-3 left-3 bg-gradient-to-r from-rose-500 to-violet-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">🚚 Free Delivery</div>
                     )}
                   </div>
                   <div className="p-4 pb-2">
@@ -124,12 +124,12 @@ const Template4Colorful = () => {
                         <span className="text-xs text-gray-400 line-through">৳{p.original_price}</span>
                       )}
                     </div>
-                    {outOfStock && <span className="text-[10px] text-red-500 font-semibold">স্টকে নেই</span>}
+                    {outOfStock && <span className="text-[10px] text-red-500 font-semibold">Out of stock</span>}
                   </div>
                 </Link>
                 <div className="px-4 pb-4">
                   <button onClick={() => handleOrder(p)} disabled={outOfStock} className="w-full py-2 bg-gradient-to-r from-rose-500 to-violet-500 hover:from-rose-600 hover:to-violet-600 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition disabled:opacity-40 disabled:cursor-not-allowed">
-                    <ShoppingCart className="h-4 w-4" /> অর্ডার করুন
+                    <ShoppingCart className="h-4 w-4" /> Order Now
                   </button>
                 </div>
               </div>

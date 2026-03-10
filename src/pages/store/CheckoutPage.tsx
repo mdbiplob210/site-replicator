@@ -20,7 +20,7 @@ interface CheckoutItem {
 
 const CheckoutPage = () => {
   const { data: settings } = useSiteSettings();
-  usePageSEO({ title: "চেকআউট", noIndex: true });
+  usePageSEO({ title: "Checkout", noIndex: true });
   const navigate = useNavigate();
   const [item, setItem] = useState<CheckoutItem | null>(null);
   const [step, setStep] = useState(1);
@@ -176,7 +176,7 @@ const CheckoutPage = () => {
     e.preventDefault();
     if (!item) return;
     if (!form.name || !form.phone || !form.address) {
-      toast.error("সব ফিল্ড পূরণ করুন");
+      toast.error("Please fill in all fields");
       return;
     }
     setSubmitting(true);
@@ -241,7 +241,7 @@ const CheckoutPage = () => {
       }));
 
       sessionStorage.removeItem("checkout_item");
-      toast.success("অর্ডার সফল হয়েছে! 🎉");
+      toast.success("Order placed successfully! 🎉");
       navigate("/order-success");
     } catch (err: any) {
       orderSubmitted.current = false;
@@ -254,8 +254,8 @@ const CheckoutPage = () => {
   if (!item) return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-4">
       <ShoppingBag className="h-16 w-16 text-gray-300" />
-      <p className="text-gray-500">কোন প্রোডাক্ট সিলেক্ট করা হয়নি</p>
-      <Button variant="outline" onClick={() => navigate("/")}>Store এ ফিরে যান</Button>
+      <p className="text-gray-500">No product selected</p>
+      <Button variant="outline" onClick={() => navigate("/")}>Back to Store</Button>
     </div>
   );
 
@@ -265,27 +265,27 @@ const CheckoutPage = () => {
   const formFields = (
     <>
       <div className="space-y-1.5">
-        <Label className="flex items-center gap-2 text-sm font-semibold"><User className="h-4 w-4" /> আপনার নাম</Label>
-        <Input placeholder="পুরো নাম" value={form.name} onChange={e => updateForm({ name: e.target.value })} required />
+        <Label className="flex items-center gap-2 text-sm font-semibold"><User className="h-4 w-4" /> Your Name</Label>
+        <Input placeholder="Full name" value={form.name} onChange={e => updateForm({ name: e.target.value })} required />
       </div>
       <div className="space-y-1.5">
-        <Label className="flex items-center gap-2 text-sm font-semibold"><Phone className="h-4 w-4" /> ফোন নম্বর</Label>
+        <Label className="flex items-center gap-2 text-sm font-semibold"><Phone className="h-4 w-4" /> Phone Number</Label>
         <Input placeholder="01XXXXXXXXX" value={form.phone} onChange={e => updateForm({ phone: e.target.value })} required />
       </div>
       <div className="space-y-1.5">
-        <Label className="flex items-center gap-2 text-sm font-semibold"><MapPin className="h-4 w-4" /> ডেলিভারি ঠিকানা</Label>
-        <Textarea placeholder="সম্পূর্ণ ঠিকানা লিখুন" value={form.address} onChange={e => updateForm({ address: e.target.value })} required />
+        <Label className="flex items-center gap-2 text-sm font-semibold"><MapPin className="h-4 w-4" /> Delivery Address</Label>
+        <Textarea placeholder="Enter full address" value={form.address} onChange={e => updateForm({ address: e.target.value })} required />
       </div>
       <div className="space-y-1.5">
-        <Label className="text-sm font-semibold">নোট (ঐচ্ছিক)</Label>
-        <Input placeholder="অতিরিক্ত তথ্য..." value={form.notes} onChange={e => updateForm({ notes: e.target.value })} />
+        <Label className="text-sm font-semibold">Note (optional)</Label>
+        <Input placeholder="Additional info..." value={form.notes} onChange={e => updateForm({ notes: e.target.value })} />
       </div>
     </>
   );
 
   const orderSummary = (
     <div className="rounded-xl border p-5 space-y-4">
-      <h3 className="font-bold text-lg">অর্ডার সামারি</h3>
+      <h3 className="font-bold text-lg">Order Summary</h3>
       <div className="flex items-center gap-4">
         <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
           {item.image ? <OptimizedImage src={item.image} alt={item.name} width={64} quality={75} className="w-full h-full object-cover" /> : <ShoppingBag className="h-6 w-6 m-auto mt-5 text-gray-300" />}
@@ -297,9 +297,9 @@ const CheckoutPage = () => {
         <span className="font-bold">৳{total}</span>
       </div>
       <div className="border-t pt-3 space-y-2 text-sm">
-        <div className="flex justify-between"><span>সাবটোটাল</span><span>৳{total}</span></div>
-        <div className="flex justify-between"><span>ডেলিভারি চার্জ</span><span>{deliveryCharge === 0 ? "Free" : `৳${deliveryCharge}`}</span></div>
-        <div className="flex justify-between font-bold text-lg border-t pt-2"><span>মোট</span><span>৳{total + deliveryCharge}</span></div>
+        <div className="flex justify-between"><span>Subtotal</span><span>৳{total}</span></div>
+        <div className="flex justify-between"><span>Delivery Charge</span><span>{deliveryCharge === 0 ? "Free" : `৳${deliveryCharge}`}</span></div>
+        <div className="flex justify-between font-bold text-lg border-t pt-2"><span>Total</span><span>৳{total + deliveryCharge}</span></div>
       </div>
     </div>
   );
@@ -312,12 +312,12 @@ const CheckoutPage = () => {
           <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm text-gray-500 mb-6 hover:text-gray-900">
             <ArrowLeft className="h-4 w-4" /> Back
           </button>
-          <h1 className="text-2xl font-bold mb-6">চেকআউট</h1>
+          <h1 className="text-2xl font-bold mb-6">Checkout</h1>
           {orderSummary}
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             {formFields}
             <Button type="submit" disabled={submitting} className="w-full py-6 text-lg font-bold bg-blue-600 hover:bg-blue-700 rounded-xl">
-              {submitting ? "Processing..." : `অর্ডার কনফার্ম করুন — ৳${total}`}
+              {submitting ? "Processing..." : `Confirm Order — ৳${total}`}
             </Button>
           </form>
         </div>
@@ -327,7 +327,7 @@ const CheckoutPage = () => {
 
   // ===== CHECKOUT 2: Multi-Step Wizard =====
   if (checkoutType === "2") {
-    const steps = ["আপনার তথ্য", "ডেলিভারি", "কনফার্ম"];
+    const steps = ["Your Info", "Delivery", "Confirm"];
     return (
       <div className="min-h-screen bg-gray-950 text-white">
         <div className="max-w-xl mx-auto px-4 py-8">
@@ -349,14 +349,14 @@ const CheckoutPage = () => {
             {step === 1 && (
               <div className="space-y-4">
                 <div className="space-y-1.5">
-                  <Label className="text-gray-300">আপনার নাম</Label>
+                  <Label className="text-gray-300">Your Name</Label>
                   <Input className="bg-gray-900 border-gray-800 text-white" value={form.name} onChange={e => updateForm({ name: e.target.value })} required />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-gray-300">ফোন নম্বর</Label>
+                  <Label className="text-gray-300">Phone Number</Label>
                   <Input className="bg-gray-900 border-gray-800 text-white" value={form.phone} onChange={e => updateForm({ phone: e.target.value })} required />
                 </div>
-                <Button type="button" onClick={() => { if (form.name && form.phone) setStep(2); else toast.error("নাম ও ফোন দিন"); }} className="w-full bg-amber-500 text-gray-950 font-bold hover:bg-amber-400 py-5">
+                <Button type="button" onClick={() => { if (form.name && form.phone) setStep(2); else toast.error("Please enter name and phone"); }} className="w-full bg-amber-500 text-gray-950 font-bold hover:bg-amber-400 py-5">
                   Next →
                 </Button>
               </div>
@@ -364,25 +364,25 @@ const CheckoutPage = () => {
             {step === 2 && (
               <div className="space-y-4">
                 <div className="space-y-1.5">
-                  <Label className="text-gray-300">ডেলিভারি ঠিকানা</Label>
+                  <Label className="text-gray-300">Delivery Address</Label>
                   <Textarea className="bg-gray-900 border-gray-800 text-white" value={form.address} onChange={e => updateForm({ address: e.target.value })} required />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-gray-300">নোট</Label>
+                  <Label className="text-gray-300">Note</Label>
                   <Input className="bg-gray-900 border-gray-800 text-white" value={form.notes} onChange={e => updateForm({ notes: e.target.value })} />
                 </div>
                 <div className="flex gap-3">
                   <Button type="button" variant="outline" onClick={() => setStep(1)} className="flex-1 border-gray-700 text-gray-300">← Back</Button>
-                  <Button type="button" onClick={() => { if (form.address) setStep(3); else toast.error("ঠিকানা দিন"); }} className="flex-1 bg-amber-500 text-gray-950 font-bold hover:bg-amber-400">Next →</Button>
+                  <Button type="button" onClick={() => { if (form.address) setStep(3); else toast.error("Please enter address"); }} className="flex-1 bg-amber-500 text-gray-950 font-bold hover:bg-amber-400">Next →</Button>
                 </div>
               </div>
             )}
             {step === 3 && (
               <div className="space-y-6">
                 <div className="bg-gray-900 rounded-xl p-5 border border-gray-800 space-y-3">
-                  <p><span className="text-gray-500">নাম:</span> {form.name}</p>
-                  <p><span className="text-gray-500">ফোন:</span> {form.phone}</p>
-                  <p><span className="text-gray-500">ঠিকানা:</span> {form.address}</p>
+                  <p><span className="text-gray-500">Name:</span> {form.name}</p>
+                  <p><span className="text-gray-500">Phone:</span> {form.phone}</p>
+                  <p><span className="text-gray-500">Address:</span> {form.address}</p>
                 </div>
                 <div className="bg-gray-900 rounded-xl p-5 border border-gray-800">
                   <div className="flex items-center gap-4">
@@ -426,9 +426,9 @@ const CheckoutPage = () => {
             <div className="md:pl-10 md:border-l border-stone-200">
               {orderSummary}
               <div className="mt-6 text-xs text-stone-400 space-y-2">
-                <p>✓ ক্যাশ অন ডেলিভারি</p>
-                <p>✓ ৩-৫ দিনে ডেলিভারি</p>
-                <p>✓ ইজি রিটার্ন পলিসি</p>
+              <p>✓ Cash on delivery</p>
+                <p>✓ Delivery in 3-5 days</p>
+                <p>✓ Easy return policy</p>
               </div>
             </div>
           </div>
@@ -445,7 +445,7 @@ const CheckoutPage = () => {
           <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm text-gray-400 mb-6"><ArrowLeft className="h-4 w-4" /> Back</button>
           <div className="bg-white rounded-3xl shadow-xl border border-rose-100 overflow-hidden">
             <div className="bg-gradient-to-r from-rose-500 to-violet-500 p-6 text-white">
-              <h1 className="text-xl font-bold">🛍️ চেকআউট</h1>
+              <h1 className="text-xl font-bold">🛍️ Checkout</h1>
               <div className="flex items-center gap-3 mt-3">
                 <div className="w-12 h-12 bg-white/20 rounded-lg overflow-hidden">
                   {item.image ? <OptimizedImage src={item.image} alt={item.name} width={48} quality={75} className="w-full h-full object-cover" /> : null}
@@ -459,7 +459,7 @@ const CheckoutPage = () => {
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               {formFields}
               <Button type="submit" disabled={submitting} className="w-full py-6 text-lg font-bold bg-gradient-to-r from-rose-500 to-violet-500 text-white rounded-xl shadow-lg shadow-rose-200">
-                {submitting ? "Processing..." : `✨ অর্ডার করুন — ৳${total}`}
+                {submitting ? "Processing..." : `✨ Place Order — ৳${total}`}
               </Button>
             </form>
           </div>

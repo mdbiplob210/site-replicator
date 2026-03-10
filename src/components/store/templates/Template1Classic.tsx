@@ -83,11 +83,11 @@ const Template1Classic = () => {
   const phoneNumber = settings?.phone_number || "";
   const siteName = settings?.site_name || "QUICK SHOP BD";
   const siteLogo = settings?.site_logo || "";
-  const marqueeText = settings?.marquee_text || "🚚 সারা দেশে ক্যাশ অন ডেলিভারি (৪৮ থেকে ৭২ ঘণ্টার মধ্যে নিশ্চিত ডেলিভারি)";
-  const footerDescription = settings?.footer_description || settings?.tagline || "বাংলাদেশের সেরা অনলাইন শপিং ডেস্টিনেশন।";
-  const footerQuickLinks = (settings?.footer_quick_links || "হোম,সব প্রোডাক্ট,অফার,যোগাযোগ").split(",").map(s => s.trim()).filter(Boolean);
-  const footerHelpLinks = (settings?.footer_help_links || "ডেলিভারি তথ্য,রিটার্ন পলিসি,প্রাইভেসি পলিসি").split(",").map(s => s.trim()).filter(Boolean);
-  const footerAddress = settings?.footer_address || "ঢাকা, বাংলাদেশ";
+  const marqueeText = settings?.marquee_text || "🚚 Cash on delivery nationwide (Guaranteed delivery within 48-72 hours)";
+  const footerDescription = settings?.footer_description || settings?.tagline || "The best online shopping destination in Bangladesh.";
+  const footerQuickLinks = (settings?.footer_quick_links || "Home,All Products,Offers,Contact").split(",").map(s => s.trim()).filter(Boolean);
+  const footerHelpLinks = (settings?.footer_help_links || "Delivery Info,Return Policy,Privacy Policy").split(",").map(s => s.trim()).filter(Boolean);
+  const footerAddress = settings?.footer_address || "Dhaka, Bangladesh";
   const footerCopyright = settings?.footer_copyright || "© 2026 QUICK SHOP BD — All rights reserved";
   const contactEmail = settings?.contact_email || "";
   const facebookUrl = settings?.facebook_url || "";
@@ -96,10 +96,10 @@ const Template1Classic = () => {
 
   // Button settings
   const orderBtnEnabled = settings?.btn_order_enabled !== "false";
-  const orderBtnText = settings?.btn_order_text || "অর্ডার করুন";
+  const orderBtnText = settings?.btn_order_text || "Order Now";
   const orderBtnColor = settings?.btn_order_color || "#16a34a";
   const cartBtnEnabled = settings?.btn_cart_enabled !== "false";
-  const cartBtnText = settings?.btn_cart_text || "বিস্তারিত দেখুন";
+  const cartBtnText = settings?.btn_cart_text || "View Details";
   const cartBtnColor = settings?.btn_cart_color || "#2563eb";
   const floatingContactsEnabled = settings?.floating_contacts_enabled !== "false";
   const floatingWhatsappEnabled = settings?.floating_whatsapp_enabled !== "false";
@@ -128,8 +128,8 @@ const Template1Classic = () => {
       {/* Top announcement bar */}
       <div className="bg-gradient-to-r from-green-600 to-green-700 text-white text-center h-[34px] sm:h-[32px] flex items-center justify-center text-[11px] sm:text-sm font-medium overflow-hidden">
         <div className="animate-marquee whitespace-nowrap inline-block">
-          {marqueeText} হটলাইনঃ {phoneNumber || "01XXXXXXXXX"} &nbsp;&nbsp;&nbsp;
-          {marqueeText} হটলাইনঃ {phoneNumber || "01XXXXXXXXX"}
+          {marqueeText} Hotline: {phoneNumber || "01XXXXXXXXX"} &nbsp;&nbsp;&nbsp;
+          {marqueeText} Hotline: {phoneNumber || "01XXXXXXXXX"}
         </div>
       </div>
 
@@ -156,7 +156,7 @@ const Template1Classic = () => {
             <div className="relative w-full">
               <input
                 type="text"
-                placeholder="প্রোডাক্ট খুঁজুন খোঁজ..."
+                placeholder="Search products..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 className="w-full h-10 pl-4 pr-10 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-500"
@@ -183,7 +183,7 @@ const Template1Classic = () => {
             <div className="relative">
               <input
                 type="text"
-                placeholder="প্রোডাক্ট খুঁজুন..."
+                placeholder="Search products..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 className="w-full h-11 pl-4 pr-10 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100"
@@ -197,7 +197,7 @@ const Template1Classic = () => {
         {/* Mobile Menu */}
         {mobileMenu && (
           <div className="lg:hidden border-t bg-white px-4 py-2 space-y-0.5">
-            <button onClick={() => { setSelectedCategory(null); setMobileMenu(false); }} className="block w-full text-left py-2.5 px-3 text-sm font-medium hover:text-green-600 hover:bg-green-50 rounded-lg transition">সব প্রোডাক্ট</button>
+            <button onClick={() => { setSelectedCategory(null); setMobileMenu(false); }} className="block w-full text-left py-2.5 px-3 text-sm font-medium hover:text-green-600 hover:bg-green-50 rounded-lg transition">All Products</button>
             {categories.map(c => (
               <button key={c.id} onClick={() => { setSelectedCategory(c.id); setMobileMenu(false); }} className="block w-full text-left py-2.5 px-3 text-sm hover:text-green-600 hover:bg-green-50 rounded-lg transition">{c.name}</button>
             ))}
@@ -218,7 +218,7 @@ const Template1Classic = () => {
                 !selectedCategory ? "bg-green-600 text-white shadow-sm" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
             >
-              সব দেখুন
+              View All
             </button>
             {categories.map(c => (
               <button
@@ -239,10 +239,10 @@ const Template1Classic = () => {
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
           {[
-            { icon: Truck, label: "ফ্রি ডেলিভারি", sub: "৳১৫০০+ অর্ডারে" },
-            { icon: ShieldCheck, label: "১০০% অরিজিনাল", sub: "গ্যারান্টিড" },
-            { icon: RotateCcw, label: "ইজি রিটার্ন", sub: "৭ দিনে" },
-            { icon: Star, label: "সন্তুষ্ট কাস্টমার", sub: "৫০০০+" },
+            { icon: Truck, label: "Free Delivery", sub: "On ৳1500+ orders" },
+            { icon: ShieldCheck, label: "100% Original", sub: "Guaranteed" },
+            { icon: RotateCcw, label: "Easy Return", sub: "Within 7 days" },
+            { icon: Star, label: "Happy Customers", sub: "5000+" },
           ].map(b => (
             <div key={b.label} className="flex items-center gap-2.5">
               <div className="h-9 w-9 sm:h-8 sm:w-8 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
@@ -262,13 +262,13 @@ const Template1Classic = () => {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-base sm:text-xl font-bold text-gray-800">
-              {selectedCategory ? categories.find(c => c.id === selectedCategory)?.name : "হয়তো আপনি এই পণ্যগুলিও পছন্দ করবেন"}
+             {selectedCategory ? categories.find(c => c.id === selectedCategory)?.name : "You might also like these products"}
             </h2>
-            <p className="text-[11px] sm:text-xs text-gray-400 mt-0.5">আমাদের আরও পণ্য রয়েছে, আপনি চাইলে সেগুলোও দেখতে পারেন</p>
+            <p className="text-[11px] sm:text-xs text-gray-400 mt-0.5">We have more products you might want to check out</p>
           </div>
           {selectedCategory && (
             <button onClick={() => setSelectedCategory(null)} className="flex items-center gap-1 text-green-600 text-sm font-semibold hover:underline">
-              সব দেখুন <ChevronRight className="h-4 w-4" />
+              View All <ChevronRight className="h-4 w-4" />
             </button>
           )}
         </div>
@@ -289,7 +289,7 @@ const Template1Classic = () => {
         ) : filteredProducts.length === 0 ? (
           <div className="text-center py-20">
             <ShoppingBag className="h-16 w-16 text-gray-200 mx-auto mb-4" />
-            <p className="text-gray-400 text-lg">কোনো প্রোডাক্ট পাওয়া যায়নি</p>
+            <p className="text-gray-400 text-lg">No products found</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
@@ -313,14 +313,14 @@ const Template1Classic = () => {
                     {discount > 0 && (
                       <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-dashed border-red-400 bg-white flex flex-col items-center justify-center">
                         <span className="text-red-500 font-bold text-[9px] sm:text-[10px] leading-none">{discountAmount}</span>
-                        <span className="text-red-500 font-bold text-[8px] sm:text-[9px] leading-none">টাকা</span>
-                        <span className="text-red-500 font-bold text-[8px] sm:text-[9px] leading-none">ছাড়</span>
+                        <span className="text-red-500 font-bold text-[8px] sm:text-[9px] leading-none">BDT</span>
+                        <span className="text-red-500 font-bold text-[8px] sm:text-[9px] leading-none">OFF</span>
                       </div>
                     )}
                     {/* Free delivery badge */}
                     {(p as any).free_delivery && (
                       <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 bg-green-600 text-white text-[8px] sm:text-[9px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full">
-                        🚚 ফ্রি ডেলিভারি
+                        🚚 Free Delivery
                       </div>
                     )}
                   </Link>
@@ -350,7 +350,7 @@ const Template1Classic = () => {
                       )}
                     </div>
                     {p.stock_quantity !== undefined && p.stock_quantity <= 0 && !(p as any).allow_out_of_stock_orders && (
-                      <span className="text-[10px] text-red-500 font-semibold">স্টকে নেই</span>
+                      <span className="text-[10px] text-red-500 font-semibold">Out of stock</span>
                     )}
                   </div>
 
@@ -428,9 +428,9 @@ const Template1Classic = () => {
               )}
             </div>
             {[
-              { title: "কুইক লিংকস", links: footerQuickLinks },
-              { title: "সাহায্য", links: footerHelpLinks },
-              { title: "যোগাযোগ", links: [`ফোন: ${phoneNumber || "01XXXXXXXXX"}`, ...(contactEmail ? [`ইমেইল: ${contactEmail}`] : []), footerAddress] },
+              { title: "Quick Links", links: footerQuickLinks },
+              { title: "Help", links: footerHelpLinks },
+              { title: "Contact", links: [`Phone: ${phoneNumber || "01XXXXXXXXX"}`, ...(contactEmail ? [`Email: ${contactEmail}`] : []), footerAddress] },
             ].map(col => (
               <div key={col.title}>
                 <h4 className="text-xs font-bold text-white mb-2 uppercase tracking-wider">{col.title}</h4>
