@@ -156,7 +156,7 @@ const AdminProducts = () => {
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success(editingId ? "প্রোডাক্ট আপডেট হয়েছে!" : "প্রোডাক্ট সেভ হয়েছে!");
+      toast.success(editingId ? "Product updated!" : "Product saved!");
       setView("list");
       setEditingId(null);
       setForm(emptyProduct);
