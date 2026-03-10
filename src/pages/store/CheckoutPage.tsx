@@ -254,7 +254,7 @@ const CheckoutPage = () => {
   if (!item) return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-4">
       <ShoppingBag className="h-16 w-16 text-gray-300" />
-      <p className="text-gray-500">কোন প্রোডাক্ট সিলেক্ট করা হয়নি</p>
+      <p className="text-gray-500">No product selected</p>
       <Button variant="outline" onClick={() => navigate("/")}>Store এ ফিরে যান</Button>
     </div>
   );
