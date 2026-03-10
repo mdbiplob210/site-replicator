@@ -1199,7 +1199,7 @@ const AdminUsers = () => {
             </div>
             <Button className="w-full h-11 gap-2" onClick={handleEditUser} disabled={editLoading}>
               {editLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-              আপডেট করুন
+              Update
             </Button>
           </div>
         </DialogContent>
