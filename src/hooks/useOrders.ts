@@ -332,7 +332,7 @@ export function useDeleteOrder() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       queryClient.invalidateQueries({ queryKey: ["order-counts"] });
-      toast.success("অর্ডার ডিলিট হয়েছে!");
+      toast.success("Order deleted!");
     },
     onError: (error: Error) => {
       toast.error("অর্ডার ডিলিট করতে ব্যর্থ: " + error.message);
