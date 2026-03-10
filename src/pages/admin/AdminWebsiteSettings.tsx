@@ -153,11 +153,11 @@ function GeneralTab() {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 2 * 1024 * 1024) {
-      toast.error("ফাইল সাইজ সর্বোচ্চ 2MB হতে হবে");
+      toast.error("File size must be 2MB or less");
       return;
     }
     if (!["image/png", "image/webp", "image/jpeg", "image/svg+xml"].includes(file.type)) {
-      toast.error("শুধুমাত্র PNG, WebP, JPG বা SVG ফরম্যাট সাপোর্টেড");
+      toast.error("Only PNG, WebP, JPG or SVG formats supported");
       return;
     }
     setUploading(true);
