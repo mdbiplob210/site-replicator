@@ -529,9 +529,9 @@ function SuggestedProducts({ categoryId, currentProductId, onOrder }: { category
                   <h3 className="font-semibold text-gray-800 text-sm truncate mb-1">{p.name}</h3>
                 </Link>
                 <div className="flex items-baseline gap-2 mb-2">
-                  <span className="text-green-600 font-bold">{p.selling_price} টাকা</span>
+                  <span className="text-green-600 font-bold">{p.selling_price} BDT</span>
                   {pDiscount > 0 && (
-                    <span className="text-gray-400 line-through text-xs">{p.original_price} টাকা</span>
+                    <span className="text-gray-400 line-through text-xs">{p.original_price} BDT</span>
                   )}
                 </div>
                 <button
