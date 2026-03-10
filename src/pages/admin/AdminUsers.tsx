@@ -156,7 +156,7 @@ const AdminUsers = () => {
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
-      toast.success(`"${name}" ডিলিট হয়েছে`);
+      toast.success(`"${name}" deleted`);
       fetchUsers();
     } catch (err: any) { toast.error(err.message); }
   };
