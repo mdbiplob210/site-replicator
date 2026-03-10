@@ -385,8 +385,8 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
                 <Textarea placeholder="House no, road, area, district" value={form.address} onChange={e => updateForm({ address: e.target.value })} className="rounded-xl resize-none text-sm" rows={2} required name="address" autoComplete="street-address" />
               </div>
               <div>
-                <Label className="text-[11px] sm:text-xs font-semibold text-gray-600 mb-1">নোট (ঐচ্ছিক)</Label>
-                <Input placeholder="অতিরিক্ত তথ্য..." value={form.notes} onChange={e => updateForm({ notes: e.target.value })} className="h-11 sm:h-11 rounded-xl text-sm" autoComplete="off" />
+                <Label className="text-[11px] sm:text-xs font-semibold text-gray-600 mb-1">Note (optional)</Label>
+                <Input placeholder="Additional info..." value={form.notes} onChange={e => updateForm({ notes: e.target.value })} className="h-11 sm:h-11 rounded-xl text-sm" autoComplete="off" />
               </div>
 
               {/* Delivery Area Selector */}
