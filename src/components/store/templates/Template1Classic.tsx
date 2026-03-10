@@ -289,7 +289,7 @@ const Template1Classic = () => {
         ) : filteredProducts.length === 0 ? (
           <div className="text-center py-20">
             <ShoppingBag className="h-16 w-16 text-gray-200 mx-auto mb-4" />
-            <p className="text-gray-400 text-lg">কোনো প্রোডাক্ট পাওয়া যায়নি</p>
+            <p className="text-gray-400 text-lg">No products found</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
