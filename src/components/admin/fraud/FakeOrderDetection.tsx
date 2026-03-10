@@ -510,7 +510,7 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
             ) : filteredPhones.length === 0 ? (
               <div className="p-12 text-center">
                 <Phone className="h-10 w-10 text-muted-foreground/20 mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground">কোনো ব্লক করা নম্বর নেই</p>
+                <p className="text-sm text-muted-foreground">No blocked numbers</p>
               </div>
             ) : (
               <Table>
