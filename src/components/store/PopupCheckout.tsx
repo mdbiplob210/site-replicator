@@ -168,6 +168,10 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
       toast.error("Please fill in all fields");
       return;
     }
+    if (!isValidBDPhone(form.phone)) {
+      toast.error("Please enter a valid Bangladesh phone number (01XXXXXXXXX)");
+      return;
+    }
     setSubmitting(true);
     orderSubmitted.current = true;
     trackAddPaymentInfo({ value: currentItem.price * qty });
