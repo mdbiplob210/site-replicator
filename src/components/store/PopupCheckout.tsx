@@ -351,7 +351,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
               </div>
               {/* Quantity */}
               <div className="flex items-center justify-between mt-3">
-                <span className="text-xs sm:text-sm text-gray-500">পরিমাণ:</span>
+                <span className="text-xs sm:text-sm text-gray-500">Quantity:</span>
                 <div className="flex items-center border rounded-lg overflow-hidden">
                   <button type="button" onClick={() => setQty(Math.max(1, qty - 1))} className="px-3 py-2 sm:py-1.5 hover:bg-gray-100 active:bg-gray-200 transition">
                     <Minus className="h-3.5 w-3.5" />
