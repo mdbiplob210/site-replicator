@@ -202,7 +202,7 @@ const Login = () => {
     try {
       // Input validation
       if (!isValidEmail(email)) {
-        toast({ title: "ত্রুটি", description: "সঠিক ইমেইল দিন", variant: "destructive" });
+        toast({ title: "Error", description: "Please enter a valid email", variant: "destructive" });
         setLoading(false);
         return;
       }
