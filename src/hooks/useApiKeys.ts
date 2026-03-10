@@ -11,6 +11,8 @@ export type ApiKey = {
   last_used_at: string | null;
   source_url: string | null;
   last_synced_at: string | null;
+  api_first_key: string | null;
+  api_second_key: string | null;
   created_at: string;
   updated_at: string;
 };
