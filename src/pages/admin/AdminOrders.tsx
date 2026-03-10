@@ -1184,7 +1184,7 @@ const AdminOrders = () => {
                   key={io.id}
                   io={io}
                   activeIncompleteTab={activeIncompleteTab}
-                  convertIncomplete={convertIncomplete}
+                  onConvert={openConvertAsNewOrder}
                   deleteIncomplete={deleteIncomplete}
                 />
               ))}
