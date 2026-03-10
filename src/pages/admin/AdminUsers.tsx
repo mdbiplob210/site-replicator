@@ -982,7 +982,7 @@ const AdminUsers = () => {
                   <div className="p-2.5 rounded-xl bg-destructive/10"><XCircle className="h-5 w-5 text-destructive" /></div>
                   <div>
                     <p className="text-2xl font-bold text-foreground">{failedLogins}</p>
-                    <p className="text-sm text-muted-foreground">ব্যর্থ লগইন</p>
+                    <p className="text-sm text-muted-foreground">Failed Logins</p>
                   </div>
                 </CardContent>
               </Card>
