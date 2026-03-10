@@ -597,7 +597,7 @@ function ButtonsTab() {
       <div className="bg-card rounded-2xl border border-border p-6 space-y-5">
         <div>
           <h3 className="font-bold text-foreground">Button Customization</h3>
-          <p className="text-sm text-muted-foreground">টগল অফ করলে বাটন ওয়েবসাইট থেকে লুকানো হবে</p>
+          <p className="text-sm text-muted-foreground">Toggle off to hide buttons from the website</p>
         </div>
 
         <div className="grid grid-cols-3 gap-6">
