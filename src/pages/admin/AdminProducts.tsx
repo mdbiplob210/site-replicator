@@ -267,7 +267,7 @@ const AdminProducts = () => {
                 <div>
                   <Label className="text-sm font-semibold">URL Slug</Label>
                   <Input placeholder="auto-generated if empty" value={form.slug} onChange={e => setForm({...form, slug: e.target.value})} className="mt-1.5 font-mono text-xs" />
-                  <p className="text-[10px] text-muted-foreground mt-1">খালি রাখলে নাম থেকে স্বয়ংক্রিয় তৈরি হবে</p>
+                  <p className="text-[10px] text-muted-foreground mt-1">Leave empty to auto-generate from name</p>
                 </div>
                 <div>
                   <Label className="text-sm font-semibold">Product Code <span className="text-destructive">*</span></Label>
