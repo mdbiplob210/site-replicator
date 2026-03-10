@@ -486,7 +486,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
                             onClick={() => handleAddSuggested(p)}
                             className="w-full mt-1.5 py-1.5 text-xs font-bold bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
                           >
-                            + যোগ করুন
+                            + Add
                           </button>
                         </div>
                       </div>
