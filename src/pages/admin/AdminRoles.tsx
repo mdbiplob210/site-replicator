@@ -252,7 +252,7 @@ const AdminRoles = () => {
                               <p className="text-sm font-bold text-foreground">Set Permissions</p>
                               <div className="flex gap-2">
                                 <Button size="sm" variant="outline" className="gap-1.5 text-xs rounded-lg" onClick={() => handleGrantAll(emp.user_id)}>
-                                  <Check className="h-3 w-3" /> সব দিন
+                                  <Check className="h-3 w-3" /> Grant All
                                 </Button>
                                 <Button size="sm" variant="outline" className="gap-1.5 text-xs rounded-lg text-destructive" onClick={() => handleRevokeAll(emp.user_id)}>
                                   <X className="h-3 w-3" /> সব সরান
