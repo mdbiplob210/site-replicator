@@ -459,7 +459,7 @@ export default function AdminFinance() {
             <div className="bg-card rounded-2xl border border-border p-6 space-y-5">
               <div className="flex items-center gap-3">
                 <div className="h-9 w-9 rounded-lg bg-secondary flex items-center justify-center"><Package className="h-4 w-4 text-foreground" /></div>
-                <div><p className="font-semibold text-foreground">প্রোডাক্ট পারচেজ</p><p className="text-xs text-muted-foreground">সাপ্লায়ার থেকে প্রোডাক্ট কেনার হিসাব রাখুন</p></div>
+                <div><p className="font-semibold text-foreground">Product Purchase</p><p className="text-xs text-muted-foreground">Track purchases from suppliers</p></div>
               </div>
               <div>
                 <label className="text-xs font-semibold text-muted-foreground uppercase">সাপ্লায়ার নাম</label>
