@@ -505,14 +505,14 @@ const AdminUsers = () => {
                             <TableCell>
                               <Select onValueChange={(val) => assignRole(user.user_id, val)}>
                                 <SelectTrigger className="w-36 h-8">
-                                  <SelectValue placeholder="রোল দিন..." />
+                                  <SelectValue placeholder="Assign role..." />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="admin">অ্যাডমিন</SelectItem>
-                                  <SelectItem value="manager">ম্যানেজার</SelectItem>
-                                  <SelectItem value="user">ইউজার</SelectItem>
-                                  <SelectItem value="accounting">অ্যাকাউন্টিং</SelectItem>
-                                  <SelectItem value="ad_analytics">অ্যাড অ্যানালিটিক্স</SelectItem>
+                                  <SelectItem value="admin">Admin</SelectItem>
+                                  <SelectItem value="manager">Manager</SelectItem>
+                                  <SelectItem value="user">User</SelectItem>
+                                  <SelectItem value="accounting">Accounting</SelectItem>
+                                  <SelectItem value="ad_analytics">Ad Analytics</SelectItem>
                                 </SelectContent>
                               </Select>
                             </TableCell>
