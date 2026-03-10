@@ -26,6 +26,7 @@ const CheckoutPage = () => {
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ name: "", phone: "", address: "", notes: "" });
+  const [deliveryArea, setDeliveryArea] = useState<"inside" | "outside">("inside");
   const checkoutType = settings?.active_checkout || "1";
   const formInteracted = useRef(false);
   const abandonedSaved = useRef(false);
@@ -201,6 +202,7 @@ const CheckoutPage = () => {
         notes: form.notes || null,
         total_amount: total,
         product_cost: item.price * item.qty,
+        delivery_charge: deliveryCharge,
         status: "processing",
         source: "website",
         client_ip: clientIp,
@@ -259,8 +261,12 @@ const CheckoutPage = () => {
     </div>
   );
 
-  const total = item.price * item.qty;
-  const deliveryCharge = 0;
+  const insideDhaka = Number(settings?.delivery_inside_dhaka) || 80;
+  const outsideDhaka = Number(settings?.delivery_outside_dhaka) || 150;
+  const freeDeliveryAbove = Number(settings?.free_delivery_above) || 0;
+  const subtotal = item.price * item.qty;
+  const deliveryCharge = (freeDeliveryAbove > 0 && subtotal >= freeDeliveryAbove) ? 0 : (deliveryArea === "inside" ? insideDhaka : outsideDhaka);
+  const total = subtotal + deliveryCharge;
 
   const formFields = (
     <>
@@ -275,6 +281,20 @@ const CheckoutPage = () => {
       <div className="space-y-1.5">
         <Label className="flex items-center gap-2 text-sm font-semibold"><MapPin className="h-4 w-4" /> Delivery Address</Label>
         <Textarea placeholder="Enter full address" value={form.address} onChange={e => updateForm({ address: e.target.value })} required />
+      </div>
+      {/* Delivery Area Selector */}
+      <div className="space-y-1.5">
+        <Label className="text-sm font-semibold">Delivery Area</Label>
+        <div className="flex gap-2">
+          <button type="button" onClick={() => setDeliveryArea("inside")}
+            className={`flex-1 py-2.5 rounded-lg text-sm font-semibold border transition ${deliveryArea === "inside" ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"}`}>
+            Inside Dhaka — ৳{insideDhaka}
+          </button>
+          <button type="button" onClick={() => setDeliveryArea("outside")}
+            className={`flex-1 py-2.5 rounded-lg text-sm font-semibold border transition ${deliveryArea === "outside" ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"}`}>
+            Outside Dhaka — ৳{outsideDhaka}
+          </button>
+        </div>
       </div>
       <div className="space-y-1.5">
         <Label className="text-sm font-semibold">Note (optional)</Label>
@@ -294,12 +314,15 @@ const CheckoutPage = () => {
           <p className="font-semibold truncate">{item.name}</p>
           <p className="text-sm text-gray-500">৳{item.price} × {item.qty}</p>
         </div>
-        <span className="font-bold">৳{total}</span>
+        <span className="font-bold">৳{subtotal}</span>
       </div>
       <div className="border-t pt-3 space-y-2 text-sm">
-        <div className="flex justify-between"><span>Subtotal</span><span>৳{total}</span></div>
-        <div className="flex justify-between"><span>Delivery Charge</span><span>{deliveryCharge === 0 ? "Free" : `৳${deliveryCharge}`}</span></div>
-        <div className="flex justify-between font-bold text-lg border-t pt-2"><span>Total</span><span>৳{total + deliveryCharge}</span></div>
+        <div className="flex justify-between"><span>Subtotal</span><span>৳{subtotal}</span></div>
+        <div className="flex justify-between">
+          <span>Delivery ({deliveryArea === "inside" ? "Inside Dhaka" : "Outside Dhaka"})</span>
+          <span className={deliveryCharge === 0 ? "text-green-600 font-semibold" : ""}>{deliveryCharge === 0 ? "Free" : `৳${deliveryCharge}`}</span>
+        </div>
+        <div className="flex justify-between font-bold text-lg border-t pt-2"><span>Total</span><span>৳{total}</span></div>
       </div>
     </div>
   );

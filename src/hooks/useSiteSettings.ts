@@ -22,10 +22,13 @@ export function useUpdateSiteSetting() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ key, value }: { key: string; value: string }) => {
+      // Use upsert so new keys are created if they don't exist
       const { error } = await supabase
         .from("site_settings")
-        .update({ value, updated_at: new Date().toISOString() } as any)
-        .eq("key", key);
+        .upsert(
+          { key, value, updated_at: new Date().toISOString(), is_public: true } as any,
+          { onConflict: "key" }
+        );
       if (error) throw error;
     },
     onSuccess: () => {
