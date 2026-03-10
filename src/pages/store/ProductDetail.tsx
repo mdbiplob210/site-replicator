@@ -150,17 +150,17 @@ const ProductDetail = () => {
   const handleWhatsAppClick = async () => {
     try {
       const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-      await fetch(`https://${projectId}.supabase.co/functions/v1/whatsapp-lead`, {
+      fetch(`https://${projectId}.supabase.co/functions/v1/whatsapp-lead`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          customer_phone: whatsappNumber,
+          visitor_id: `web-${Date.now()}`,
+          customer_name: product?.name ? `${product.name} - WhatsApp Lead` : 'WhatsApp Lead',
           product_name: product?.name || '',
-          message: product ? `আমি "${product.name}" প্রোডাক্টটি সম্পর্কে জানতে চাই।` : undefined,
         }),
       });
     } catch {
-      // Silent fail - don't block the wa.me redirect
+      // Silent fail
     }
   };
   const handleOrder = () => {
