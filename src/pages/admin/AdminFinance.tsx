@@ -335,14 +335,14 @@ export default function AdminFinance() {
                   </div>
                 ))}
                 {allSources.filter((s: any) => s.type === "income").length === 0 && (
-                  <p className="text-xs text-muted-foreground py-2">কোনো সোর্স নেই</p>
+                  <p className="text-xs text-muted-foreground py-2">No sources yet</p>
                 )}
               </div>
 
               {/* Expense Sources */}
               <div className="space-y-2">
                 <p className="text-xs font-semibold text-muted-foreground uppercase flex items-center gap-1.5">
-                  <ArrowUpCircle className="h-3.5 w-3.5" /> Expense সোর্স
+                  <ArrowUpCircle className="h-3.5 w-3.5" /> Expense Sources
                 </p>
                 {allSources.filter((s: any) => s.type === "expense").map((s: any) => (
                   <div key={s.id} className="flex items-center justify-between px-3 py-2 rounded-xl bg-secondary/30 border border-border/40">
