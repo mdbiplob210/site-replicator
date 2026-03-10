@@ -324,7 +324,7 @@ export default function AdminFinance() {
               {/* Income Sources */}
               <div className="space-y-2">
                 <p className="text-xs font-semibold text-muted-foreground uppercase flex items-center gap-1.5">
-                  <ArrowDownCircle className="h-3.5 w-3.5" /> Income সোর্স
+                  <ArrowDownCircle className="h-3.5 w-3.5" /> Income Sources
                 </p>
                 {allSources.filter((s: any) => s.type === "income").map((s: any) => (
                   <div key={s.id} className="flex items-center justify-between px-3 py-2 rounded-xl bg-secondary/30 border border-border/40">
