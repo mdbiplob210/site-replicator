@@ -23,8 +23,9 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
 
-    // Validate API key
-    const apiKey = req.headers.get('x-api-key')
+    // Validate API key (header or query param for sendBeacon)
+    const url = new URL(req.url)
+    const apiKey = req.headers.get('x-api-key') || url.searchParams.get('key')
     if (!apiKey) {
       return new Response(JSON.stringify({ error: 'API key required' }), {
         status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
