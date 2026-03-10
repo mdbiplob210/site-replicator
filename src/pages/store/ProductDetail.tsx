@@ -554,7 +554,7 @@ function SuggestedProducts({ categoryId, currentProductId, onOrder }: { category
 
       <div className="text-right mt-4">
         <Link to="/" className="inline-flex items-center gap-1 text-green-600 hover:text-green-700 font-semibold text-sm border border-green-500 rounded-full px-4 py-1.5 hover:bg-green-50 transition">
-          সব দেখুন →
+          View all →
         </Link>
       </div>
     </div>
