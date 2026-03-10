@@ -209,7 +209,7 @@ const AdminProducts = () => {
 
   const saveCategory = async () => {
     if (!newCategory.name) {
-      toast.error("Category Name আবশ্যক");
+      toast.error("Category Name is required");
       return;
     }
     const slug = newCategory.slug || newCategory.name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
