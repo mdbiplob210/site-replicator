@@ -47,6 +47,7 @@ const mainMenuItems = [
   { title: "Planning", url: "/admin/planning", icon: Lightbulb },
   { title: "Tasks", url: "/admin/tasks", icon: ListChecks },
   { title: "Analytics", url: "/admin/analytics", icon: BarChart3, hasSubmenu: true },
+  { title: "WhatsApp", url: "/admin/whatsapp", icon: MessageSquare },
 ];
 
 const bottomMenuItems = [
