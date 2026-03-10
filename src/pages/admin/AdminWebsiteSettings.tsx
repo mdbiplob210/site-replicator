@@ -911,7 +911,7 @@ function TrackingTab() {
         <div>
           <label className="text-sm font-medium text-foreground">TikTok Pixel ID</label>
           <Input className="mt-1.5" placeholder="CXXXXXXXXXXXXXXXXX" value={tiktokPixelId} onChange={(e) => setTiktokPixelId(e.target.value)} />
-          <p className="text-xs text-muted-foreground mt-1">TikTok Ads Manager → Assets → Events → Pixel ID কপি করুন</p>
+          <p className="text-xs text-muted-foreground mt-1">TikTok Ads Manager → Assets → Events → Copy Pixel ID</p>
         </div>
       </div>
 
