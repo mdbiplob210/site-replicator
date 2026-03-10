@@ -364,7 +364,7 @@ const ProductDetail = () => {
               {phoneNumber && (
                 <a href={`tel:${phoneNumber}`}
                   className="w-full py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition">
-                  <Phone className="h-4 w-4" /> কল করতে ক্লিক করুন : {phoneNumber}
+                  <Phone className="h-4 w-4" /> Click to call : {phoneNumber}
                 </a>
               )}
 
