@@ -426,9 +426,9 @@ const CheckoutPage = () => {
             <div className="md:pl-10 md:border-l border-stone-200">
               {orderSummary}
               <div className="mt-6 text-xs text-stone-400 space-y-2">
-                <p>✓ ক্যাশ অন ডেলিভারি</p>
-                <p>✓ ৩-৫ দিনে ডেলিভারি</p>
-                <p>✓ ইজি রিটার্ন পলিসি</p>
+              <p>✓ Cash on delivery</p>
+                <p>✓ Delivery in 3-5 days</p>
+                <p>✓ Easy return policy</p>
               </div>
             </div>
           </div>
