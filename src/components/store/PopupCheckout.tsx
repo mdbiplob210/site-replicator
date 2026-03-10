@@ -434,7 +434,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
                 )}
               </Button>
 
-              <p className="text-center text-[11px] sm:text-xs text-gray-400 pb-2">💳 ক্যাশ অন ডেলিভারি | 🚚 ২-৫ দিনে ডেলিভারি</p>
+              <p className="text-center text-[11px] sm:text-xs text-gray-400 pb-2">💳 Cash on delivery | 🚚 Delivery in 2-5 days</p>
             </form>
           </>
         ) : (
