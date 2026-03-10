@@ -79,7 +79,7 @@ const Template5Bold = () => {
           <h1 className="text-6xl md:text-8xl font-black leading-none tracking-tighter mb-8">
             BIG<br /><span className="text-lime-400">DEALS</span><br />TODAY
           </h1>
-          <p className="text-zinc-400 text-lg mb-8 max-w-md">সবচেয়ে ভালো প্রোডাক্ট, সবচেয়ে ভালো দাম। আজই অর্ডার করুন।</p>
+          <p className="text-zinc-400 text-lg mb-8 max-w-md">Best products, best prices. Order today.</p>
           <Button size="lg" className="bg-lime-400 hover:bg-lime-300 text-zinc-900 font-black px-10 rounded-none text-lg">
             SHOP NOW <ArrowUpRight className="h-5 w-5 ml-2" />
           </Button>
