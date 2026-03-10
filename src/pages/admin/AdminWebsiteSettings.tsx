@@ -326,7 +326,7 @@ function GeneralTab() {
           {/* Payment Number */}
           <div>
             <label className="text-sm font-medium text-foreground">Payment Number</label>
-            <p className="text-xs text-muted-foreground">চেকআউটে বিকাশ/নগদ পেমেন্ট নম্বর দেখাবে</p>
+            <p className="text-xs text-muted-foreground">bKash/Nagad payment number shown at checkout</p>
             <Input className="mt-1.5" placeholder="01XXXXXXXXX" value={paymentNumber} onChange={(e) => setPaymentNumber(e.target.value)} />
           </div>
 
