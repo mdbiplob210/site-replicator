@@ -154,6 +154,10 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
   const updateForm = (updates: Partial<typeof form>) => {
     formInteracted.current = true;
     abandonedSaved.current = false;
+    // Auto-sanitize phone: convert Bengali digits, strip non-digits
+    if (updates.phone !== undefined) {
+      updates.phone = sanitizePhoneInput(updates.phone);
+    }
     setForm(prev => ({ ...prev, ...updates }));
   };
 
