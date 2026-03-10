@@ -86,8 +86,8 @@ const Template1Classic = () => {
   const marqueeText = settings?.marquee_text || "🚚 Cash on delivery nationwide (Guaranteed delivery within 48-72 hours)";
   const footerDescription = settings?.footer_description || settings?.tagline || "The best online shopping destination in Bangladesh.";
   const footerQuickLinks = (settings?.footer_quick_links || "Home,All Products,Offers,Contact").split(",").map(s => s.trim()).filter(Boolean);
-  const footerHelpLinks = (settings?.footer_help_links || "ডেলিভারি তথ্য,রিটার্ন পলিসি,প্রাইভেসি পলিসি").split(",").map(s => s.trim()).filter(Boolean);
-  const footerAddress = settings?.footer_address || "ঢাকা, বাংলাদেশ";
+  const footerHelpLinks = (settings?.footer_help_links || "Delivery Info,Return Policy,Privacy Policy").split(",").map(s => s.trim()).filter(Boolean);
+  const footerAddress = settings?.footer_address || "Dhaka, Bangladesh";
   const footerCopyright = settings?.footer_copyright || "© 2026 QUICK SHOP BD — All rights reserved";
   const contactEmail = settings?.contact_email || "";
   const facebookUrl = settings?.facebook_url || "";
