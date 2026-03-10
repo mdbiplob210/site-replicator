@@ -995,9 +995,9 @@ function DataResetTab() {
           <div className="h-8 w-8 rounded-lg bg-destructive/10 flex items-center justify-center">
             <RotateCcw className="h-4 w-4 text-destructive" />
           </div>
-          <h3 className="text-xl font-bold text-foreground">ডাটা রিসেট</h3>
+          <h3 className="text-xl font-bold text-foreground">Data Reset</h3>
         </div>
-        <p className="text-sm text-muted-foreground">বিজনেসের নির্দিষ্ট সেগমেন্টের ডাটা মুছে ফেলুন। এই কাজ অপরিবর্তনীয়।</p>
+        <p className="text-sm text-muted-foreground">Delete data from specific business segments. This action is irreversible.</p>
 
         <Button variant="destructive" className="gap-2" onClick={() => setShowDialog(true)}>
           <Trash2 className="h-4 w-4" /> ডাটা রিসেট করুন
