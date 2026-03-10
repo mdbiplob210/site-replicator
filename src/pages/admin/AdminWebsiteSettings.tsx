@@ -429,7 +429,7 @@ function GeneralTab() {
           <code className="text-sm text-foreground flex-1">{siteUrl || "https://yourstore.com"}</code>
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => {
             navigator.clipboard.writeText(siteUrl);
-            toast.success("কপি হয়েছে!");
+            toast.success("Copied!");
           }}><Link className="h-4 w-4" /></Button>
         </div>
       </div>
