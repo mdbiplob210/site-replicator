@@ -286,7 +286,7 @@ const AdminRoles = () => {
                                         onClick={() => handleGrantGroup(emp.user_id, group)}
                                         disabled={allGranted}
                                       >
-                                        সব দিন
+                                        Grant All
                                       </Button>
                                       <Button
                                         size="sm"
