@@ -161,10 +161,10 @@ const AdminRoles = () => {
           <Tabs defaultValue="panels" className="space-y-5">
             <TabsList className="grid w-full grid-cols-2 max-w-md">
               <TabsTrigger value="panels" className="gap-2">
-                <LayoutGrid className="h-4 w-4" /> অর্ডার প্যানেল
+                <LayoutGrid className="h-4 w-4" /> Order Panels
               </TabsTrigger>
               <TabsTrigger value="permissions" className="gap-2">
-                <Shield className="h-4 w-4" /> পারমিশন
+                <Shield className="h-4 w-4" /> Permissions
               </TabsTrigger>
             </TabsList>
 
