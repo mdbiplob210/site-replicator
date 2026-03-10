@@ -9,6 +9,7 @@ import { useTracking, useEngagementTracking } from "@/hooks/useTracking";
 import { PopupCheckout } from "@/components/store/PopupCheckout";
 import { ExitDiscountBanner } from "@/components/store/ExitDiscountBanner";
 import { OptimizedImage } from "@/components/ui/optimized-image";
+import { supabase } from "@/integrations/supabase/client";
 
 const ProductDetail = () => {
   const { slug } = useParams<{ slug: string }>();
