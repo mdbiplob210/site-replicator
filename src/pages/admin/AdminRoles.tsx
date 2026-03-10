@@ -20,36 +20,36 @@ import {
 import { PanelManagement } from "@/components/admin/PanelManagement";
 
 const groupIcons: Record<string, any> = {
-  "অর্ডার": ShoppingCart,
-  "প্রোডাক্ট": Package,
-  "ফিন্যান্স": DollarSign,
-  "ড্যাশবোর্ড ও রিপোর্ট": BarChart3,
-  "ওয়েবসাইট": Globe,
-  "মার্কেটিং": Megaphone,
-  "কুরিয়ার": Truck,
-  "সিস্টেম": Settings,
+  "Orders": ShoppingCart,
+  "Products": Package,
+  "Finance": DollarSign,
+  "Dashboard & Reports": BarChart3,
+  "Website": Globe,
+  "Marketing": Megaphone,
+  "Courier": Truck,
+  "System": Settings,
 };
 
 const groupColors: Record<string, string> = {
-  "অর্ডার": "from-blue-500/10 to-blue-500/5 border-blue-500/20",
-  "প্রোডাক্ট": "from-emerald-500/10 to-emerald-500/5 border-emerald-500/20",
-  "ফিন্যান্স": "from-amber-500/10 to-amber-500/5 border-amber-500/20",
-  "ড্যাশবোর্ড ও রিপোর্ট": "from-purple-500/10 to-purple-500/5 border-purple-500/20",
-  "ওয়েবসাইট": "from-cyan-500/10 to-cyan-500/5 border-cyan-500/20",
-  "মার্কেটিং": "from-pink-500/10 to-pink-500/5 border-pink-500/20",
-  "কুরিয়ার": "from-orange-500/10 to-orange-500/5 border-orange-500/20",
-  "সিস্টেম": "from-red-500/10 to-red-500/5 border-red-500/20",
+  "Orders": "from-blue-500/10 to-blue-500/5 border-blue-500/20",
+  "Products": "from-emerald-500/10 to-emerald-500/5 border-emerald-500/20",
+  "Finance": "from-amber-500/10 to-amber-500/5 border-amber-500/20",
+  "Dashboard & Reports": "from-purple-500/10 to-purple-500/5 border-purple-500/20",
+  "Website": "from-cyan-500/10 to-cyan-500/5 border-cyan-500/20",
+  "Marketing": "from-pink-500/10 to-pink-500/5 border-pink-500/20",
+  "Courier": "from-orange-500/10 to-orange-500/5 border-orange-500/20",
+  "System": "from-red-500/10 to-red-500/5 border-red-500/20",
 };
 
 const groupIconColors: Record<string, string> = {
-  "অর্ডার": "text-blue-600",
-  "প্রোডাক্ট": "text-emerald-600",
-  "ফিন্যান্স": "text-amber-600",
-  "ড্যাশবোর্ড ও রিপোর্ট": "text-purple-600",
-  "ওয়েবসাইট": "text-cyan-600",
-  "মার্কেটিং": "text-pink-600",
-  "কুরিয়ার": "text-orange-600",
-  "সিস্টেম": "text-red-600",
+  "Orders": "text-blue-600",
+  "Products": "text-emerald-600",
+  "Finance": "text-amber-600",
+  "Dashboard & Reports": "text-purple-600",
+  "Website": "text-cyan-600",
+  "Marketing": "text-pink-600",
+  "Courier": "text-orange-600",
+  "System": "text-red-600",
 };
 
 const AdminRoles = () => {
@@ -123,8 +123,8 @@ const AdminRoles = () => {
                 <Shield className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-foreground">এমপ্লয়ি রোল ও পারমিশন</h1>
-                <p className="text-sm text-muted-foreground">প্রতিটি এমপ্লয়ির কাজ ও অর্ডার ভাগ করুন</p>
+                <h1 className="text-2xl font-bold text-foreground">Employee Roles & Permissions</h1>
+                <p className="text-sm text-muted-foreground">Assign tasks and orders for each employee</p>
               </div>
             </div>
           </div>
@@ -134,25 +134,25 @@ const AdminRoles = () => {
             <Card className="border-border/40">
               <CardContent className="p-5 flex items-center gap-4">
                 <div className="p-2.5 rounded-xl bg-primary/10"><Users className="h-5 w-5 text-primary" /></div>
-                <div><p className="text-2xl font-bold text-foreground">{employees.length}</p><p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">মোট এমপ্লয়ি</p></div>
+                <div><p className="text-2xl font-bold text-foreground">{employees.length}</p><p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Total Employees</p></div>
               </CardContent>
             </Card>
             <Card className="border-border/40">
               <CardContent className="p-5 flex items-center gap-4">
                 <div className="p-2.5 rounded-xl bg-emerald-50"><Monitor className="h-5 w-5 text-emerald-600" /></div>
-                <div><p className="text-2xl font-bold text-foreground">{activePanels}</p><p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">এক্টিভ প্যানেল</p></div>
+                <div><p className="text-2xl font-bold text-foreground">{activePanels}</p><p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Active Panels</p></div>
               </CardContent>
             </Card>
             <Card className="border-border/40">
               <CardContent className="p-5 flex items-center gap-4">
                 <div className="p-2.5 rounded-xl bg-blue-50"><ShoppingCart className="h-5 w-5 text-blue-600" /></div>
-                <div><p className="text-2xl font-bold text-foreground">অটো</p><p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">অর্ডার বণ্টন</p></div>
+                <div><p className="text-2xl font-bold text-foreground">Auto</p><p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Order Distribution</p></div>
               </CardContent>
             </Card>
             <Card className="border-border/40">
               <CardContent className="p-5 flex items-center gap-4">
                 <div className="p-2.5 rounded-xl bg-amber-50"><Shield className="h-5 w-5 text-amber-600" /></div>
-                <div><p className="text-2xl font-bold text-foreground">{ALL_PERMISSIONS.length}</p><p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">মোট পারমিশন</p></div>
+                <div><p className="text-2xl font-bold text-foreground">{ALL_PERMISSIONS.length}</p><p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Total Permissions</p></div>
               </CardContent>
             </Card>
           </div>
@@ -161,10 +161,10 @@ const AdminRoles = () => {
           <Tabs defaultValue="panels" className="space-y-5">
             <TabsList className="grid w-full grid-cols-2 max-w-md">
               <TabsTrigger value="panels" className="gap-2">
-                <LayoutGrid className="h-4 w-4" /> অর্ডার প্যানেল
+                <LayoutGrid className="h-4 w-4" /> Order Panels
               </TabsTrigger>
               <TabsTrigger value="permissions" className="gap-2">
-                <Shield className="h-4 w-4" /> পারমিশন
+                <Shield className="h-4 w-4" /> Permissions
               </TabsTrigger>
             </TabsList>
 
@@ -178,7 +178,7 @@ const AdminRoles = () => {
               {/* Permission Summary */}
               <Card className="border-border/40">
                 <CardContent className="p-5">
-                  <p className="text-sm font-bold text-foreground mb-3">পারমিশন ক্যাটাগরি সারাংশ</p>
+                  <p className="text-sm font-bold text-foreground mb-3">Permission Category Summary</p>
                   <div className="flex flex-wrap gap-2">
                     {Object.entries(permissionGroups).map(([group, perms]) => {
                       const GroupIcon = groupIcons[group] || Shield;
@@ -198,13 +198,13 @@ const AdminRoles = () => {
               {isLoading ? (
                 <Card className="border-border/40 p-16 text-center">
                   <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mx-auto" />
-                  <p className="text-muted-foreground mt-3">লোড হচ্ছে...</p>
+                  <p className="text-muted-foreground mt-3">Loading...</p>
                 </Card>
               ) : employees.length === 0 ? (
                 <Card className="border-border/40 p-16 text-center">
                   <Users className="h-12 w-12 text-muted-foreground/20 mx-auto mb-4" />
-                  <p className="text-lg font-semibold text-muted-foreground">কোনো এমপ্লয়ি নেই</p>
-                  <p className="text-sm text-muted-foreground/70 mt-1">প্রথমে Users পেজ থেকে এমপ্লয়ি যোগ করুন</p>
+                  <p className="text-lg font-semibold text-muted-foreground">No Employees</p>
+                  <p className="text-sm text-muted-foreground/70 mt-1">Add employees from the Users page first</p>
                 </Card>
               ) : (
                 <div className="space-y-4">
@@ -230,10 +230,10 @@ const AdminRoles = () => {
                                 <Badge variant={isAdmin ? "default" : "secondary"} className="text-[10px]">
                                   {isAdmin ? "Admin" : (emp as any).role}
                                 </Badge>
-                                <span className="text-xs text-muted-foreground">{permCount}/{ALL_PERMISSIONS.length} পারমিশন</span>
+                                <span className="text-xs text-muted-foreground">{permCount}/{ALL_PERMISSIONS.length} permissions</span>
                                 {emp.panel?.is_active && (
                                   <Badge className="text-[10px] bg-emerald-100 text-emerald-700 border-emerald-200">
-                                    <Monitor className="h-3 w-3 mr-1" /> প্যানেল এক্টিভ
+                                    <Monitor className="h-3 w-3 mr-1" /> Panel Active
                                   </Badge>
                                 )}
                               </div>
@@ -249,13 +249,13 @@ const AdminRoles = () => {
                           <div className="border-t border-border/40 p-5 bg-secondary/5">
                             {/* Quick Actions */}
                             <div className="flex items-center justify-between mb-5">
-                              <p className="text-sm font-bold text-foreground">পারমিশন সেট করুন</p>
+                              <p className="text-sm font-bold text-foreground">Set Permissions</p>
                               <div className="flex gap-2">
                                 <Button size="sm" variant="outline" className="gap-1.5 text-xs rounded-lg" onClick={() => handleGrantAll(emp.user_id)}>
-                                  <Check className="h-3 w-3" /> সব দিন
+                                  <Check className="h-3 w-3" /> Grant All
                                 </Button>
                                 <Button size="sm" variant="outline" className="gap-1.5 text-xs rounded-lg text-destructive" onClick={() => handleRevokeAll(emp.user_id)}>
-                                  <X className="h-3 w-3" /> সব সরান
+                                  <X className="h-3 w-3" /> Revoke All
                                 </Button>
                               </div>
                             </div>
@@ -286,7 +286,7 @@ const AdminRoles = () => {
                                         onClick={() => handleGrantGroup(emp.user_id, group)}
                                         disabled={allGranted}
                                       >
-                                        সব দিন
+                                        Grant All
                                       </Button>
                                       <Button
                                         size="sm"
@@ -295,7 +295,7 @@ const AdminRoles = () => {
                                         onClick={() => handleRevokeGroup(emp.user_id, group)}
                                         disabled={grantedInGroup === 0}
                                       >
-                                        সব সরান
+                                        Revoke All
                                       </Button>
                                     </div>
 
@@ -339,8 +339,8 @@ const AdminRoles = () => {
                             <div className="flex items-center gap-3 p-4 rounded-xl bg-primary/5 border border-primary/20">
                               <Shield className="h-5 w-5 text-primary" />
                               <div>
-                                <p className="text-sm font-bold text-foreground">অ্যাডমিন ইউজার</p>
-                                <p className="text-xs text-muted-foreground">অ্যাডমিনের সব পারমিশন স্বয়ংক্রিয়ভাবে থাকে।</p>
+                                <p className="text-sm font-bold text-foreground">Admin User</p>
+                                <p className="text-xs text-muted-foreground">Admins automatically have all permissions.</p>
                               </div>
                             </div>
                           </div>

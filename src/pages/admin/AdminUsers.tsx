@@ -28,7 +28,6 @@ import {
   useUserPresenceList, useLoginActivity, useUserPerformance
 } from "@/hooks/useUserTracking";
 import { formatDistanceToNow } from "date-fns";
-import { bn } from "date-fns/locale";
 
 interface UserProfile {
   id: string;
@@ -42,14 +41,14 @@ type TabType = "users" | "rules" | "tracking" | "activity";
 type TrackingSubTab = "live" | "performance";
 
 const groupIcons: Record<string, any> = {
-  "অর্ডার": ShoppingCart,
-  "প্রোডাক্ট": Package,
-  "ফিন্যান্স": DollarSign,
-  "ড্যাশবোর্ড ও রিপোর্ট": BarChart3,
-  "ওয়েবসাইট": Globe,
-  "মার্কেটিং": ShoppingCart,
-  "কুরিয়ার": Truck,
-  "সিস্টেম": Settings,
+  "Orders": ShoppingCart,
+  "Products": Package,
+  "Finance": DollarSign,
+  "Dashboard & Reports": BarChart3,
+  "Website": Globe,
+  "Marketing": ShoppingCart,
+  "Courier": Truck,
+  "System": Settings,
 };
 
 const AdminUsers = () => {
@@ -95,7 +94,7 @@ const AdminUsers = () => {
   };
 
   const handleEditUser = async () => {
-    if (!editName && !editEmail && !editPassword) { toast.error("কিছু পরিবর্তন করুন"); return; }
+    if (!editName && !editEmail && !editPassword) { toast.error("Please make a change"); return; }
     setEditLoading(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -112,14 +111,14 @@ const AdminUsers = () => {
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
-      toast.success("ইউজার আপডেট হয়েছে!");
+      toast.success("User updated!");
       setEditOpen(false);
       fetchUsers();
     } catch (err: any) { toast.error(err.message); } finally { setEditLoading(false); }
   };
 
   const handleDisableUser = async (userId: string, name: string | null) => {
-    const action = confirm(`"${name || userId}" কে ডিসেবল/ব্যান করতে চান? (ইতিমধ্যে ব্যান থাকলে আনব্যান হবে)`);
+    const action = confirm(`Disable/ban "${name || userId}"? (If already banned, this will unban)`);
     if (!action) return;
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -139,14 +138,14 @@ const AdminUsers = () => {
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
-      toast.success(data.disabled ? `"${name}" ডিসেবল হয়েছে` : `"${name}" আবার সক্রিয় হয়েছে`);
+      toast.success(data.disabled ? `"${name}" has been disabled` : `"${name}" has been re-enabled`);
     } catch (err: any) { toast.error(err.message); }
   };
 
   const handleDeleteUser = async (userId: string, name: string | null) => {
-    const confirmed = confirm(`⚠️ "${name || userId}" কে পার্মানেন্টলি ডিলিট করতে চান?\n\nএটি undo করা যাবে না!`);
+    const confirmed = confirm(`⚠️ Permanently delete "${name || userId}"?\n\nThis cannot be undone!`);
     if (!confirmed) return;
-    const doubleConfirm = confirm(`সত্যিই "${name}" ডিলিট করবেন? সব ডাটা মুছে যাবে।`);
+    const doubleConfirm = confirm(`Really delete "${name}"? All data will be lost.`);
     if (!doubleConfirm) return;
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -157,7 +156,7 @@ const AdminUsers = () => {
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
-      toast.success(`"${name}" ডিলিট হয়েছে`);
+      toast.success(`"${name}" deleted`);
       fetchUsers();
     } catch (err: any) { toast.error(err.message); }
   };
@@ -223,7 +222,7 @@ const AdminUsers = () => {
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success(`রোল "${role}" অ্যাসাইন হয়েছে`);
+      toast.success(`Role "${role}" assigned`);
       fetchUsers();
     }
   };
@@ -231,7 +230,7 @@ const AdminUsers = () => {
   const removeRole = async (userId: string, role: string) => {
     const { data: { user: currentUser } } = await supabase.auth.getUser();
     if (currentUser && currentUser.id === userId && role === "admin") {
-      toast.error("⚠️ নিজের অ্যাডমিন রোল ডিলিট করা যাবে না!");
+      toast.error("⚠️ Cannot remove your own admin role!");
       return;
     }
 
@@ -244,14 +243,14 @@ const AdminUsers = () => {
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success(`রোল "${role}" রিমুভ হয়েছে`);
+      toast.success(`Role "${role}" removed`);
       fetchUsers();
     }
   };
 
   const handleCreateAdmin = async () => {
     if (!newEmail || !newPassword || !newName) {
-      toast.error("সব ফিল্ড পূরণ করুন");
+      toast.error("Please fill all fields");
       return;
     }
     setCreating(true);
@@ -270,7 +269,7 @@ const AdminUsers = () => {
         if (roleError) throw roleError;
       }
 
-      toast.success(`${newRole} অ্যাকাউন্ট তৈরি হয়েছে!`);
+      toast.success(`${newRole} account created!`);
       setCreateOpen(false);
       setNewEmail("");
       setNewPassword("");
@@ -321,14 +320,14 @@ const AdminUsers = () => {
   ];
 
   const dateFilterOptions = [
-    { value: "today", label: "আজকে" },
-    { value: "yesterday", label: "গতকাল" },
-    { value: "last7", label: "গত ৭ দিন" },
-    { value: "last30", label: "গত ৩০ দিন" },
-    { value: "thisMonth", label: "এই মাস" },
-    { value: "lastMonth", label: "গত মাস" },
-    { value: "thisYear", label: "এই বছর" },
-    { value: "all", label: "সর্বকালীন" },
+    { value: "today", label: "Today" },
+    { value: "yesterday", label: "Yesterday" },
+    { value: "last7", label: "Last 7 Days" },
+    { value: "last30", label: "Last 30 Days" },
+    { value: "thisMonth", label: "This Month" },
+    { value: "lastMonth", label: "Last Month" },
+    { value: "thisYear", label: "This Year" },
+    { value: "all", label: "All Time" },
   ];
 
   // Helper: get user name from profiles or presence
@@ -420,7 +419,7 @@ const AdminUsers = () => {
                 <CardContent className="p-5 flex items-center gap-4">
                   <div className="p-2.5 rounded-xl bg-amber-500/10"><Users className="h-5 w-5 text-amber-600" /></div>
                   <div>
-                    <p className="text-sm text-muted-foreground">ম্যানেজার</p>
+                    <p className="text-sm text-muted-foreground">Managers</p>
                     <p className="text-2xl font-bold text-foreground">{modCount}</p>
                   </div>
                 </CardContent>
@@ -486,7 +485,7 @@ const AdminUsers = () => {
                             {user.roles.length > 0 ? (
                                 <div className="flex gap-1 flex-wrap">
                                   {user.roles.map((role) => {
-                                    const displayName = role === "moderator" ? "ম্যানেজার" : role === "manager" ? "ম্যানেজার" : role === "accounting" ? "অ্যাকাউন্টিং" : role === "ad_analytics" ? "অ্যাড অ্যানালিটিক্স" : role === "admin" ? "অ্যাডমিন" : "ইউজার";
+                                    const displayName = role === "moderator" ? "Moderator" : role === "manager" ? "Manager" : role === "accounting" ? "Accounting" : role === "ad_analytics" ? "Ad Analytics" : role === "admin" ? "Admin" : "User";
                                     return (
                                       <Badge
                                         key={role}
@@ -506,14 +505,14 @@ const AdminUsers = () => {
                             <TableCell>
                               <Select onValueChange={(val) => assignRole(user.user_id, val)}>
                                 <SelectTrigger className="w-36 h-8">
-                                  <SelectValue placeholder="রোল দিন..." />
+                                  <SelectValue placeholder="Assign role..." />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="admin">অ্যাডমিন</SelectItem>
-                                  <SelectItem value="manager">ম্যানেজার</SelectItem>
-                                  <SelectItem value="user">ইউজার</SelectItem>
-                                  <SelectItem value="accounting">অ্যাকাউন্টিং</SelectItem>
-                                  <SelectItem value="ad_analytics">অ্যাড অ্যানালিটিক্স</SelectItem>
+                                  <SelectItem value="admin">Admin</SelectItem>
+                                  <SelectItem value="manager">Manager</SelectItem>
+                                  <SelectItem value="user">User</SelectItem>
+                                  <SelectItem value="accounting">Accounting</SelectItem>
+                                  <SelectItem value="ad_analytics">Ad Analytics</SelectItem>
                                 </SelectContent>
                               </Select>
                             </TableCell>
@@ -590,7 +589,7 @@ const AdminUsers = () => {
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-foreground">Rules & Permissions Editor</h2>
-                  <p className="text-sm text-muted-foreground">প্রতিটা এমপ্লয়ির জন্য আলাদাভাবে পারমিশন এবং অর্ডার প্যানেল সেটিং করুন</p>
+                  <p className="text-sm text-muted-foreground">Set permissions and order panel settings for each employee</p>
                 </div>
               </div>
             </Card>
@@ -600,7 +599,7 @@ const AdminUsers = () => {
             ) : employees.length === 0 ? (
               <Card className="border-border/40 p-12 text-center">
                 <Users className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
-                <p className="text-muted-foreground">কোন ইউজার পাওয়া যায়নি।</p>
+                <p className="text-muted-foreground">No users found.</p>
               </Card>
             ) : (
               <div className="space-y-3">
@@ -644,8 +643,8 @@ const AdminUsers = () => {
                             <div className="flex items-center gap-3 p-4 rounded-xl bg-primary/5 border border-primary/20">
                               <Shield className="h-5 w-5 text-primary" />
                               <div>
-                                <p className="text-sm font-bold text-foreground">অ্যাডমিন ইউজার</p>
-                                <p className="text-xs text-muted-foreground">অ্যাডমিনের সব পারমিশন স্বয়ংক্রিয়ভাবে থাকে। নিচে দেখুন কোন কোন পারমিশন আছে।</p>
+                                <p className="text-sm font-bold text-foreground">Admin User</p>
+                                <p className="text-xs text-muted-foreground">Admins automatically have all permissions.</p>
                               </div>
                             </div>
                           )}
@@ -727,13 +726,13 @@ const AdminUsers = () => {
             {/* Online Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {[
-                { icon: Users, label: "মোট ইউজার", value: users.length, bg: "bg-primary/10", color: "text-primary" },
-                { icon: Activity, label: "এখন অনলাইন", value: onlineCount, bg: "bg-emerald-500/10", color: "text-emerald-600" },
+                { icon: Users, label: "Total Users", value: users.length, bg: "bg-primary/10", color: "text-primary" },
+                { icon: Activity, label: "Online Now", value: onlineCount, bg: "bg-emerald-500/10", color: "text-emerald-600" },
                 { icon: Clock, label: "Idle", value: presenceList.filter((p: any) => {
                   const d = Date.now() - new Date(p.last_seen_at).getTime();
                   return d >= 60000 && d < 300000;
                 }).length, bg: "bg-amber-500/10", color: "text-amber-600" },
-                { icon: XCircle, label: "অফলাইন", value: users.length - onlineCount, bg: "bg-destructive/10", color: "text-destructive" },
+                { icon: XCircle, label: "Offline", value: users.length - onlineCount, bg: "bg-destructive/10", color: "text-destructive" },
               ].map((s, i) => (
                 <Card key={i} className="border-border/40">
                   <CardContent className="p-5 flex items-center gap-4">
@@ -750,8 +749,8 @@ const AdminUsers = () => {
             {/* Sub tabs */}
             <div className="flex items-center justify-center gap-1">
               {[
-                { id: "live" as TrackingSubTab, label: "লাইভ স্ট্যাটাস", icon: Activity },
-                { id: "performance" as TrackingSubTab, label: "অর্ডার পারফরম্যান্স", icon: BarChart3 },
+                { id: "live" as TrackingSubTab, label: "Live Status", icon: Activity },
+                { id: "performance" as TrackingSubTab, label: "Order Performance", icon: BarChart3 },
               ].map(t => (
                 <button key={t.id} onClick={() => setTrackingSubTab(t.id)}
                   className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
@@ -770,11 +769,11 @@ const AdminUsers = () => {
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-lg font-bold flex items-center gap-2">
                       <Activity className="h-5 w-5 text-emerald-500" />
-                      লাইভ ইউজার স্ট্যাটাস
+                      Live User Status
                     </CardTitle>
                     <Badge variant="outline" className="gap-1.5 text-emerald-600">
                       <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                      রিয়েল-টাইম
+                      Real-time
                     </Badge>
                   </div>
                 </CardHeader>
@@ -843,7 +842,7 @@ const AdminUsers = () => {
                             <div className="hidden lg:flex items-center gap-2 bg-background/80 rounded-lg px-3 py-2 border border-border/50">
                               <Monitor className="h-4 w-4 text-emerald-500" />
                               <div>
-                                <p className="text-[10px] text-muted-foreground font-medium">বর্তমান পেজ</p>
+                                <p className="text-[10px] text-muted-foreground font-medium">Current Page</p>
                                 <p className="text-xs font-bold text-foreground">{presence.page.replace("/admin/", "").replace("/admin", "Dashboard") || "Dashboard"}</p>
                               </div>
                             </div>
@@ -854,8 +853,8 @@ const AdminUsers = () => {
                   </div>
 
                   <div className="mt-4 p-3 rounded-lg bg-secondary/30 border border-border/30">
-                    <p className="text-[11px] text-muted-foreground">
-                      💡 <strong>লাইভ ট্র্যাকিং:</strong> প্রতি ৩০ সেকেন্ডে অটো-আপডেট হয়। এখানে দেখতে পাচ্ছেন প্রতিটি ইউজার কোন পেজে আছে, কোন ডিভাইস ব্যবহার করছে এবং কখন শেষবার এক্টিভ ছিলো।
+                     <p className="text-[11px] text-muted-foreground">
+                       💡 <strong>Live Tracking:</strong> Auto-updates every 30 seconds. View each user's current page, device, and last active time.
                     </p>
                   </div>
                 </CardContent>
@@ -869,7 +868,7 @@ const AdminUsers = () => {
                   <div className="flex items-center justify-between flex-wrap gap-3">
                     <CardTitle className="text-lg font-bold flex items-center gap-2">
                       <BarChart3 className="h-5 w-5 text-primary" />
-                      অর্ডার পারফরম্যান্স
+                      Order Performance
                     </CardTitle>
                     <Select value={perfDateRange} onValueChange={setPerfDateRange}>
                       <SelectTrigger className="w-40">
@@ -890,18 +889,18 @@ const AdminUsers = () => {
                   ) : perfData.length === 0 ? (
                     <div className="text-center py-10">
                       <BarChart3 className="h-10 w-10 text-muted-foreground/20 mx-auto mb-3" />
-                      <p className="text-sm text-muted-foreground">এই সময়ে কোনো অর্ডার অ্যাক্টিভিটি নেই</p>
+                      <p className="text-sm text-muted-foreground">No order activity in this period</p>
                     </div>
                   ) : (
                     <div className="space-y-4">
                       {/* Summary row */}
                       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                         {[
-                          { label: "কনফার্মড", value: perfData.reduce((s, p) => s + p.confirmed, 0), icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50" },
-                          { label: "ক্যান্সেলড", value: perfData.reduce((s, p) => s + p.cancelled, 0), icon: XCircle, color: "text-destructive", bg: "bg-destructive/10" },
-                          { label: "রিটার্নড", value: perfData.reduce((s, p) => s + p.returned, 0), icon: RotateCcw, color: "text-amber-600", bg: "bg-amber-50" },
-                          { label: "ডেলিভারড", value: perfData.reduce((s, p) => s + p.delivered, 0), icon: Truck, color: "text-blue-600", bg: "bg-blue-50" },
-                          { label: "মোট", value: perfData.reduce((s, p) => s + p.total, 0), icon: ShoppingCart, color: "text-foreground", bg: "bg-secondary" },
+                          { label: "Confirmed", value: perfData.reduce((s, p) => s + p.confirmed, 0), icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50" },
+                          { label: "Cancelled", value: perfData.reduce((s, p) => s + p.cancelled, 0), icon: XCircle, color: "text-destructive", bg: "bg-destructive/10" },
+                          { label: "Returned", value: perfData.reduce((s, p) => s + p.returned, 0), icon: RotateCcw, color: "text-amber-600", bg: "bg-amber-50" },
+                          { label: "Delivered", value: perfData.reduce((s, p) => s + p.delivered, 0), icon: Truck, color: "text-blue-600", bg: "bg-blue-50" },
+                          { label: "Total", value: perfData.reduce((s, p) => s + p.total, 0), icon: ShoppingCart, color: "text-foreground", bg: "bg-secondary" },
                         ].map((s, i) => (
                           <div key={i} className={`${s.bg} rounded-lg p-3 text-center`}>
                             <s.icon className={`h-4 w-4 ${s.color} mx-auto mb-1`} />
@@ -915,14 +914,14 @@ const AdminUsers = () => {
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead>ইউজার</TableHead>
-                            <TableHead className="text-center"><div className="flex items-center justify-center gap-1"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />কনফার্মড</div></TableHead>
-                            <TableHead className="text-center"><div className="flex items-center justify-center gap-1"><XCircle className="h-3.5 w-3.5 text-destructive" />ক্যান্সেলড</div></TableHead>
-                            <TableHead className="text-center"><div className="flex items-center justify-center gap-1"><RotateCcw className="h-3.5 w-3.5 text-amber-500" />রিটার্নড</div></TableHead>
-                            <TableHead className="text-center"><div className="flex items-center justify-center gap-1"><Truck className="h-3.5 w-3.5 text-blue-500" />ডেলিভারড</div></TableHead>
-                            <TableHead className="text-center"><div className="flex items-center justify-center gap-1"><ShoppingCart className="h-3.5 w-3.5 text-primary" />ইন কুরিয়ার</div></TableHead>
-                            <TableHead className="text-center">মোট</TableHead>
-                            <TableHead className="text-center">সাকসেস রেট</TableHead>
+                             <TableHead>User</TableHead>
+                             <TableHead className="text-center"><div className="flex items-center justify-center gap-1"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />Confirmed</div></TableHead>
+                             <TableHead className="text-center"><div className="flex items-center justify-center gap-1"><XCircle className="h-3.5 w-3.5 text-destructive" />Cancelled</div></TableHead>
+                             <TableHead className="text-center"><div className="flex items-center justify-center gap-1"><RotateCcw className="h-3.5 w-3.5 text-amber-500" />Returned</div></TableHead>
+                             <TableHead className="text-center"><div className="flex items-center justify-center gap-1"><Truck className="h-3.5 w-3.5 text-blue-500" />Delivered</div></TableHead>
+                             <TableHead className="text-center"><div className="flex items-center justify-center gap-1"><ShoppingCart className="h-3.5 w-3.5 text-primary" />In Courier</div></TableHead>
+                             <TableHead className="text-center">Total</TableHead>
+                             <TableHead className="text-center">Success Rate</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -974,7 +973,7 @@ const AdminUsers = () => {
                   <div className="p-2.5 rounded-xl bg-emerald-500/10"><CheckCircle2 className="h-5 w-5 text-emerald-600" /></div>
                   <div>
                     <p className="text-2xl font-bold text-foreground">{successLogins}</p>
-                    <p className="text-sm text-muted-foreground">সফল লগইন</p>
+                    <p className="text-sm text-muted-foreground">Successful Logins</p>
                   </div>
                 </CardContent>
               </Card>
@@ -983,7 +982,7 @@ const AdminUsers = () => {
                   <div className="p-2.5 rounded-xl bg-destructive/10"><XCircle className="h-5 w-5 text-destructive" /></div>
                   <div>
                     <p className="text-2xl font-bold text-foreground">{failedLogins}</p>
-                    <p className="text-sm text-muted-foreground">ব্যর্থ লগইন</p>
+                    <p className="text-sm text-muted-foreground">Failed Logins</p>
                   </div>
                 </CardContent>
               </Card>
@@ -992,7 +991,7 @@ const AdminUsers = () => {
                   <div className="p-2.5 rounded-xl bg-blue-500/10"><MapPin className="h-5 w-5 text-blue-600" /></div>
                   <div>
                     <p className="text-2xl font-bold text-foreground">{uniqueIPs}</p>
-                    <p className="text-sm text-muted-foreground">ইউনিক IP</p>
+                    <p className="text-sm text-muted-foreground">Unique IPs</p>
                   </div>
                 </CardContent>
               </Card>
@@ -1001,7 +1000,7 @@ const AdminUsers = () => {
                   <div className="p-2.5 rounded-xl bg-amber-500/10"><AlertCircle className="h-5 w-5 text-amber-600" /></div>
                   <div>
                     <p className="text-2xl font-bold text-foreground">{loginLogs.length}</p>
-                    <p className="text-sm text-muted-foreground">মোট অ্যাটেম্পট</p>
+                    <p className="text-sm text-muted-foreground">Total Attempts</p>
                   </div>
                 </CardContent>
               </Card>
@@ -1028,16 +1027,16 @@ const AdminUsers = () => {
                   <Select value={activityStatus} onValueChange={setActivityStatus}>
                     <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">সব অ্যাটেম্পট</SelectItem>
-                      <SelectItem value="success">সফল</SelectItem>
-                      <SelectItem value="failed">ব্যর্থ</SelectItem>
+                       <SelectItem value="all">All Attempts</SelectItem>
+                       <SelectItem value="success">Successful</SelectItem>
+                       <SelectItem value="failed">Failed</SelectItem>
                     </SelectContent>
                   </Select>
                   <div className="flex-1 flex items-center gap-2 bg-secondary rounded-lg px-3 py-2 border border-border/50 min-w-[200px]">
                     <Search className="h-4 w-4 text-muted-foreground" />
                     <input
                       type="text"
-                      placeholder="Email দিয়ে সার্চ..."
+                      placeholder="Search by email..."
                       value={activitySearch}
                       onChange={(e) => setActivitySearch(e.target.value)}
                       className="bg-transparent text-sm outline-none flex-1 text-foreground placeholder:text-muted-foreground"
@@ -1054,19 +1053,19 @@ const AdminUsers = () => {
                 ) : loginLogs.length === 0 ? (
                   <div className="text-center py-10">
                     <Clock className="h-10 w-10 text-muted-foreground/20 mx-auto mb-3" />
-                    <p className="text-sm text-muted-foreground">এই সময়ে কোনো লগইন অ্যাক্টিভিটি নেই</p>
+                    <p className="text-sm text-muted-foreground">No login activity in this period</p>
                   </div>
                 ) : (
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>সময়</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>ডিভাইস</TableHead>
-                        <TableHead>ব্রাউজার / OS</TableHead>
-                        <TableHead>IP</TableHead>
-                        <TableHead>স্ট্যাটাস</TableHead>
-                        <TableHead>অ্যাকশন</TableHead>
+                         <TableHead>Time</TableHead>
+                         <TableHead>Email</TableHead>
+                         <TableHead>Device</TableHead>
+                         <TableHead>Browser / OS</TableHead>
+                         <TableHead>IP</TableHead>
+                         <TableHead>Status</TableHead>
+                         <TableHead>Action</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -1100,7 +1099,7 @@ const AdminUsers = () => {
                               <span className={`h-2 w-2 rounded-full ${
                                 log.status === "success" ? "bg-emerald-500" : "bg-destructive"
                               }`} />
-                              {log.status === "success" ? "সফল" : "ব্যর্থ"}
+                              {log.status === "success" ? "Success" : "Failed"}
                             </Badge>
                           </TableCell>
                           <TableCell>
@@ -1115,7 +1114,7 @@ const AdminUsers = () => {
                                     .from("blocked_ips")
                                     .insert({ ip_address: log.ip_address, reason: "Blocked from login activity" });
                                   if (error) toast.error(error.message);
-                                  else toast.success(`IP ${log.ip_address} ব্লক করা হয়েছে`);
+                                  else toast.success(`IP ${log.ip_address} has been blocked`);
                                 }
                               }}
                             >
@@ -1161,11 +1160,11 @@ const AdminUsers = () => {
               <Select value={newRole} onValueChange={(v) => setNewRole(v as any)}>
                 <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="admin">অ্যাডমিন (Full Access)</SelectItem>
-                  <SelectItem value="manager">ম্যানেজার (Limited Access)</SelectItem>
-                  <SelectItem value="user">ইউজার (Basic Access)</SelectItem>
-                  <SelectItem value="accounting">অ্যাকাউন্টিং (Finance Only)</SelectItem>
-                  <SelectItem value="ad_analytics">অ্যাড অ্যানালিটিক্স (Ads Only)</SelectItem>
+                   <SelectItem value="admin">Admin (Full Access)</SelectItem>
+                   <SelectItem value="manager">Manager (Limited Access)</SelectItem>
+                   <SelectItem value="user">User (Basic Access)</SelectItem>
+                   <SelectItem value="accounting">Accounting (Finance Only)</SelectItem>
+                   <SelectItem value="ad_analytics">Ad Analytics (Ads Only)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -1182,25 +1181,25 @@ const AdminUsers = () => {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <div className="p-2 rounded-xl bg-primary/10"><Edit className="h-5 w-5 text-primary" /></div>
-              ইউজার তথ্য পরিবর্তন
+              Edit User Details
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label className="text-xs font-semibold text-muted-foreground uppercase">নাম</Label>
+              <Label className="text-xs font-semibold text-muted-foreground uppercase">Name</Label>
               <Input className="mt-1" placeholder="Full Name" value={editName} onChange={(e) => setEditName(e.target.value)} />
             </div>
             <div>
-              <Label className="text-xs font-semibold text-muted-foreground uppercase">ইমেইল</Label>
-              <Input className="mt-1" type="email" placeholder={editFetching ? "লোড হচ্ছে..." : "email@example.com"} value={editEmail} onChange={(e) => setEditEmail(e.target.value)} disabled={editFetching} />
+               <Label className="text-xs font-semibold text-muted-foreground uppercase">Email</Label>
+               <Input className="mt-1" type="email" placeholder={editFetching ? "Loading..." : "email@example.com"} value={editEmail} onChange={(e) => setEditEmail(e.target.value)} disabled={editFetching} />
             </div>
             <div>
-              <Label className="text-xs font-semibold text-muted-foreground uppercase">নতুন পাসওয়ার্ড</Label>
-              <Input className="mt-1" type="password" placeholder="খালি রাখলে আগেরটাই থাকবে" value={editPassword} onChange={(e) => setEditPassword(e.target.value)} />
+               <Label className="text-xs font-semibold text-muted-foreground uppercase">New Password</Label>
+               <Input className="mt-1" type="password" placeholder="Leave empty to keep current" value={editPassword} onChange={(e) => setEditPassword(e.target.value)} />
             </div>
             <Button className="w-full h-11 gap-2" onClick={handleEditUser} disabled={editLoading}>
               {editLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-              আপডেট করুন
+              Update
             </Button>
           </div>
         </DialogContent>

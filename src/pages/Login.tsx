@@ -192,7 +192,7 @@ const Login = () => {
       setPortalOpen(true);
       setShakePortal(true);
       setTimeout(() => setShakePortal(false), 600);
-      toast({ title: "🎉 পোর্টাল খুলেছে!", description: "এখন প্রবেশ করুন QUICK SHOP BD তে!" });
+      toast({ title: "🎉 Portal Opened!", description: "Now enter QUICK SHOP BD!" });
     }
   };
 
@@ -202,7 +202,7 @@ const Login = () => {
     try {
       // Input validation
       if (!isValidEmail(email)) {
-        toast({ title: "ত্রুটি", description: "সঠিক ইমেইল দিন", variant: "destructive" });
+        toast({ title: "Error", description: "Please enter a valid email", variant: "destructive" });
         setLoading(false);
         return;
       }
@@ -211,7 +211,7 @@ const Login = () => {
         // Strong password validation for signup
         const pwCheck = validatePassword(password);
         if (!pwCheck.valid) {
-          toast({ title: "দুর্বল পাসওয়ার্ড", description: pwCheck.message, variant: "destructive" });
+          toast({ title: "Weak Password", description: pwCheck.message, variant: "destructive" });
           setLoading(false);
           return;
         }
@@ -223,13 +223,13 @@ const Login = () => {
         });
         if (error) throw error;
         await recordLoginAttempt(email, true);
-        toast({ title: "সফল!", description: "অ্যাকাউন্ট তৈরি হয়েছে। ইমেইল ভেরিফাই করুন।" });
+        toast({ title: "Success!", description: "Account created. Please verify your email." });
       } else {
         // Rate limiting check
         const rateCheck = await isLoginRateLimited(email);
         if (rateCheck.limited) {
           const mins = Math.ceil(rateCheck.remainingSeconds / 60);
-          toast({ title: "🚫 সাময়িক ব্লক", description: `অনেকবার ভুল পাসওয়ার্ড দিয়েছেন। ${mins} মিনিট পর আবার চেষ্টা করুন।`, variant: "destructive" });
+          toast({ title: "🚫 Temporarily Blocked", description: `Too many failed attempts. Try again in ${mins} minute(s).`, variant: "destructive" });
           setLoading(false);
           return;
         }
@@ -240,7 +240,7 @@ const Login = () => {
           throw error;
         }
         await recordLoginAttempt(email, true);
-        toast({ title: "🏆 সফল!", description: "সফলভাবে লগইন হয়েছে!" });
+        toast({ title: "🏆 Success!", description: "Logged in successfully!" });
         const { data: roleData } = await supabase
           .from("user_roles")
           .select("role")
@@ -248,7 +248,7 @@ const Login = () => {
         navigate(roleData && roleData.length > 0 ? "/admin" : "/", { replace: true });
       }
     } catch (error: any) {
-      toast({ title: "ত্রুটি", description: error.message, variant: "destructive" });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -297,7 +297,7 @@ const Login = () => {
       {/* Title */}
       <div className="absolute top-4 right-4 z-30 text-right">
         <div className="text-xs font-medium" style={{ color: "rgba(255,255,255,0.4)" }}>
-          {portalOpen ? "✨ পোর্টাল সক্রিয়" : "🎮 অর্ব সংগ্রহ করুন"}
+          {portalOpen ? "✨ Portal Active" : "🎮 Collect the Orbs"}
         </div>
       </div>
 
@@ -306,7 +306,7 @@ const Login = () => {
         <div className="absolute bottom-5 sm:bottom-6 left-1/2 z-30 -translate-x-1/2 animate-pulse rounded-full px-4 sm:px-6 py-2 text-xs sm:text-sm max-w-[90vw] text-center"
           style={{ background: "rgba(255,255,255,0.08)", backdropFilter: "blur(10px)", border: "1px solid rgba(78,205,196,0.3)", color: "#4ECDC4" }}>
           <Sparkles className="mr-1.5 sm:mr-2 inline h-3.5 w-3.5 sm:h-4 sm:w-4" />
-          ঝলমলে অর্বগুলোতে ক্লিক করুন! ৩টি সংগ্রহ করলে পোর্টাল খুলবে
+          Click the glowing orbs! Collect 3 to open the portal
         </div>
       )}
 
@@ -366,7 +366,7 @@ const Login = () => {
               className="flex h-full w-full cursor-pointer items-center justify-center rounded-full"
               onClick={() => {
                 if (score < 3) {
-                  toast({ title: "🔒 লক আছে!", description: `আরো ${3 - score}টি অর্ব সংগ্রহ করুন!`, variant: "destructive" });
+                  toast({ title: "🔒 Locked!", description: `Collect ${3 - score} more orb(s)!`, variant: "destructive" });
                 }
               }}
               style={{
@@ -379,7 +379,7 @@ const Login = () => {
               <div className="text-center">
                 <div className="text-4xl mb-2">🔒</div>
                 <div className="text-xs font-medium" style={{ color: "rgba(78,205,196,0.8)" }}>
-                  {score}/3 অর্ব
+                  {score}/3 Orbs
                 </div>
               </div>
             </div>
@@ -408,7 +408,7 @@ const Login = () => {
                 <h1 className="text-xl sm:text-2xl font-bold" style={{ color: "#fff" }}>QUICK SHOP BD</h1>
                 <p className="mt-1 flex items-center justify-center gap-1 text-xs sm:text-sm" style={{ color: "rgba(78,205,196,0.8)" }}>
                   <Star className="h-3 w-3" />
-                  {isSignUp ? "নতুন অ্যাকাউন্ট তৈরি করুন" : "পোর্টালে প্রবেশ করুন"}
+                  {isSignUp ? "Create a new account" : "Enter the portal"}
                   <Star className="h-3 w-3" />
                 </p>
               </div>
@@ -418,7 +418,7 @@ const Login = () => {
                   <div>
                     <Input
                       type="text"
-                      placeholder="✨ আপনার নাম"
+                      placeholder="✨ Your Name"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       required
@@ -436,7 +436,7 @@ const Login = () => {
                 <div>
                   <Input
                     type="email"
-                    placeholder="📧 ইমেইল"
+                    placeholder="📧 Email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -453,7 +453,7 @@ const Login = () => {
                 <div className="relative">
                   <Input
                     type={showPassword ? "text" : "password"}
-                    placeholder="🔐 পাসওয়ার্ড"
+                    placeholder="🔐 Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
@@ -487,11 +487,11 @@ const Login = () => {
                   }}
                 >
                   {loading ? (
-                    <span className="flex items-center gap-2"><Zap className="h-4 w-4 animate-spin" /> লোডিং...</span>
+                    <span className="flex items-center gap-2"><Zap className="h-4 w-4 animate-spin" /> Loading...</span>
                   ) : (
                     <span className="flex items-center gap-2">
                       <Zap className="h-4 w-4" />
-                      {isSignUp ? "রেজিস্টার" : "প্রবেশ করুন"}
+                      {isSignUp ? "Register" : "Sign In"}
                     </span>
                   )}
                 </Button>
@@ -499,7 +499,7 @@ const Login = () => {
 
               <div className="my-5 flex items-center gap-3">
                 <div className="h-px flex-1" style={{ background: "rgba(78,205,196,0.2)" }} />
-                <span className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>অথবা</span>
+                <span className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>or</span>
                 <div className="h-px flex-1" style={{ background: "rgba(78,205,196,0.2)" }} />
               </div>
 
@@ -516,7 +516,7 @@ const Login = () => {
                   const { error } = await lovable.auth.signInWithOAuth("google", {
                     redirect_uri: window.location.origin,
                   });
-                  if (error) toast({ title: "ত্রুটি", description: error.message, variant: "destructive" });
+                  if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
                 }}
               >
                 <svg className="h-5 w-5" viewBox="0 0 24 24">
@@ -525,13 +525,13 @@ const Login = () => {
                   <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
                   <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
                 </svg>
-                Google দিয়ে প্রবেশ
+                Sign in with Google
               </Button>
 
               <p className="mt-5 text-center text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>
-                {isSignUp ? "অ্যাকাউন্ট আছে?" : "অ্যাকাউন্ট নেই?"}{" "}
+                {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
                 <button onClick={() => setIsSignUp(!isSignUp)} className="font-medium hover:underline" style={{ color: "#4ECDC4" }}>
-                  {isSignUp ? "প্রবেশ করুন" : "রেজিস্টার করুন"}
+                  {isSignUp ? "Sign In" : "Register"}
                 </button>
               </p>
 

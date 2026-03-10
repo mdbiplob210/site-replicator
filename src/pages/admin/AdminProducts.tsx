@@ -116,7 +116,7 @@ const AdminProducts = () => {
 
   const handleSave = async () => {
     if (!form.name || !form.product_code) {
-      toast.error("Product Name এবং Code আবশ্যক");
+      toast.error("Product Name and Code are required");
       return;
     }
     setSaving(true);
@@ -156,7 +156,7 @@ const AdminProducts = () => {
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success(editingId ? "প্রোডাক্ট আপডেট হয়েছে!" : "প্রোডাক্ট সেভ হয়েছে!");
+      toast.success(editingId ? "Product updated!" : "Product saved!");
       setView("list");
       setEditingId(null);
       setForm(emptyProduct);
@@ -192,7 +192,7 @@ const AdminProducts = () => {
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success("প্রোডাক্ট ডিলিট হয়েছে!");
+      toast.success("Product deleted!");
       fetchProducts();
     }
   };
@@ -202,14 +202,14 @@ const AdminProducts = () => {
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success("ক্যাটেগরি ডিলিট হয়েছে!");
+      toast.success("Category deleted!");
       fetchCategories();
     }
   };
 
   const saveCategory = async () => {
     if (!newCategory.name) {
-      toast.error("Category Name আবশ্যক");
+      toast.error("Category Name is required");
       return;
     }
     const slug = newCategory.slug || newCategory.name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
@@ -223,7 +223,7 @@ const AdminProducts = () => {
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success("ক্যাটেগরি তৈরি হয়েছে!");
+      toast.success("Category created!");
       setShowCategoryDialog(false);
       setNewCategory({ name: "", slug: "", parent_id: "", description: "" });
       fetchCategories();
@@ -267,7 +267,7 @@ const AdminProducts = () => {
                 <div>
                   <Label className="text-sm font-semibold">URL Slug</Label>
                   <Input placeholder="auto-generated if empty" value={form.slug} onChange={e => setForm({...form, slug: e.target.value})} className="mt-1.5 font-mono text-xs" />
-                  <p className="text-[10px] text-muted-foreground mt-1">খালি রাখলে নাম থেকে স্বয়ংক্রিয় তৈরি হবে</p>
+                  <p className="text-[10px] text-muted-foreground mt-1">Leave empty to auto-generate from name</p>
                 </div>
                 <div>
                   <Label className="text-sm font-semibold">Product Code <span className="text-destructive">*</span></Label>
@@ -356,11 +356,11 @@ const AdminProducts = () => {
               {/* Toggles */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/30 border border-border/40">
-                  <div><p className="text-sm font-bold text-foreground">ফ্রি ডেলিভারি</p><p className="text-xs text-muted-foreground">এটি চালু থাকলে ডেলিভারি চার্জ যোগ হবে না</p></div>
+                  <div><p className="text-sm font-bold text-foreground">Free Delivery</p><p className="text-xs text-muted-foreground">If enabled, no delivery charge will be added</p></div>
                   <Switch checked={form.free_delivery} onCheckedChange={v => setForm({...form, free_delivery: v})} />
                 </div>
                 <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/30 border border-border/40">
-                  <div><p className="text-sm font-bold text-foreground">স্টক শেষ হলেও অর্ডার নিন</p><p className="text-xs text-muted-foreground">স্টক ০ হলেও কাস্টমার অর্ডার দিতে পারবে</p></div>
+                  <div><p className="text-sm font-bold text-foreground">Accept Orders When Out of Stock</p><p className="text-xs text-muted-foreground">Customers can order even when stock is 0</p></div>
                   <Switch checked={form.allow_out_of_stock_orders} onCheckedChange={v => setForm({...form, allow_out_of_stock_orders: v})} />
                 </div>
               </div>
