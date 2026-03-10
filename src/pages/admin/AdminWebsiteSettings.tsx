@@ -720,7 +720,7 @@ function BuyDomainTab() {
 
         <div className="flex items-start gap-2 text-sm text-muted-foreground bg-secondary/30 rounded-xl p-4">
           <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
-          <p>পার্চেজ রিকোয়েস্ট সাবমিট করার পর আমাদের টিম ডোমেইনটি কিনে আপনার স্টোরের সাথে কানেক্ট করে দেবে। সাধারণত ২৪-৪৮ ঘণ্টা সময় লাগে।</p>
+          <p>After submitting a purchase request, our team will buy the domain and connect it to your store. This usually takes 24-48 hours.</p>
         </div>
       </div>
     </div>
