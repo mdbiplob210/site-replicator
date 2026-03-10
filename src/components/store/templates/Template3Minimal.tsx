@@ -97,7 +97,7 @@ const Template3Minimal = () => {
                       <div className="w-full h-full flex items-center justify-center text-stone-300"><ShoppingBag className="h-10 w-10" /></div>
                     )}
                     {(p as any).free_delivery && (
-                      <div className="absolute top-2 left-2 bg-stone-800 text-white text-[9px] font-medium px-2 py-0.5 rounded-full tracking-wide">ফ্রি ডেলিভারি</div>
+                      <div className="absolute top-2 left-2 bg-stone-800 text-white text-[9px] font-medium px-2 py-0.5 rounded-full tracking-wide">Free Delivery</div>
                     )}
                   </div>
                   <h3 className="text-sm font-normal text-stone-800">{p.name}</h3>
