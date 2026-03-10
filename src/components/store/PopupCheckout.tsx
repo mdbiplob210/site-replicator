@@ -399,7 +399,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
                   </button>
                   <button type="button" onClick={() => setDeliveryArea("outside")}
                     className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition ${deliveryArea === "outside" ? "border-green-500 bg-green-50 text-green-700" : "border-gray-200 text-gray-500"}`}>
-                    ঢাকার বাইরে (৳{outsideDhaka})
+                    Outside Dhaka (৳{outsideDhaka})
                   </button>
                 </div>
               </div>
