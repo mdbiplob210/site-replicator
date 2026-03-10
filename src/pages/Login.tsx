@@ -229,7 +229,7 @@ const Login = () => {
         const rateCheck = await isLoginRateLimited(email);
         if (rateCheck.limited) {
           const mins = Math.ceil(rateCheck.remainingSeconds / 60);
-          toast({ title: "🚫 সাময়িক ব্লক", description: `অনেকবার ভুল পাসওয়ার্ড দিয়েছেন। ${mins} মিনিট পর আবার চেষ্টা করুন।`, variant: "destructive" });
+          toast({ title: "🚫 Temporarily Blocked", description: `Too many failed attempts. Try again in ${mins} minute(s).`, variant: "destructive" });
           setLoading(false);
           return;
         }
