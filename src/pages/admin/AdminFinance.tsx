@@ -436,7 +436,7 @@ export default function AdminFinance() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <SelectField label="Purpose" value={expensePurpose} onChange={setExpensePurpose} options={expenseSources.length > 0 ? expenseSources.map((s: any) => s.name) : ["Ads", "Courier", "Product Cost", "Salary", "Rent", "Other"]} />
-              <SelectField label="ব্যাংক অ্যাকাউন্ট" value={expenseBank} onChange={setExpenseBank} options={bankAccounts.map((b) => b.label)} placeholder="সিলেক্ট করুন (ঐচ্ছিক)" />
+              <SelectField label="Bank Account" value={expenseBank} onChange={setExpenseBank} options={bankAccounts.map((b) => b.label)} placeholder="Select (optional)" />
             </div>
             <div>
               <label className="text-xs font-semibold text-muted-foreground uppercase">Amount (৳)</label>
