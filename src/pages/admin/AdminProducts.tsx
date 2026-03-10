@@ -356,7 +356,7 @@ const AdminProducts = () => {
               {/* Toggles */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/30 border border-border/40">
-                  <div><p className="text-sm font-bold text-foreground">ফ্রি ডেলিভারি</p><p className="text-xs text-muted-foreground">এটি চালু থাকলে ডেলিভারি চার্জ যোগ হবে না</p></div>
+                  <div><p className="text-sm font-bold text-foreground">Free Delivery</p><p className="text-xs text-muted-foreground">If enabled, no delivery charge will be added</p></div>
                   <Switch checked={form.free_delivery} onCheckedChange={v => setForm({...form, free_delivery: v})} />
                 </div>
                 <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/30 border border-border/40">
