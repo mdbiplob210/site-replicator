@@ -218,7 +218,7 @@ const Template1Classic = () => {
                 !selectedCategory ? "bg-green-600 text-white shadow-sm" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
             >
-              সব দেখুন
+              View All
             </button>
             {categories.map(c => (
               <button
