@@ -690,7 +690,7 @@ function BuyDomainTab() {
         <p className="text-sm text-muted-foreground">Find and buy a custom domain for your brand.</p>
 
         <div>
-          <label className="text-sm font-bold text-foreground">ডোমেইন নাম সার্চ করুন</label>
+          <label className="text-sm font-bold text-foreground">Search Domain Name</label>
           <div className="flex items-center gap-2 mt-2">
             <Input
               className="flex-1"
