@@ -486,9 +486,9 @@ function SuggestedProducts({ categoryId, currentProductId, onOrder }: { category
     <div className="mt-8 mb-8">
       <div className="text-center mb-6">
         <h2 className="text-xl font-bold text-gray-800 border-b-2 border-green-500 inline-block pb-1">
-          হয়তো আপনি এই পণ্যগুলিও পছন্দ করবেন
+          You might also like these products
         </h2>
-        <p className="text-sm text-gray-500 mt-1">আমাদের আরও পণ্য রয়েছে, আপনি চাইলে সেগুলোও দেখতে পারেন</p>
+        <p className="text-sm text-gray-500 mt-1">We have more products you might want to check out</p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
