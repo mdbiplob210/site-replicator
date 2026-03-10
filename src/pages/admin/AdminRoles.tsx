@@ -249,7 +249,7 @@ const AdminRoles = () => {
                           <div className="border-t border-border/40 p-5 bg-secondary/5">
                             {/* Quick Actions */}
                             <div className="flex items-center justify-between mb-5">
-                              <p className="text-sm font-bold text-foreground">পারমিশন সেট করুন</p>
+                              <p className="text-sm font-bold text-foreground">Set Permissions</p>
                               <div className="flex gap-2">
                                 <Button size="sm" variant="outline" className="gap-1.5 text-xs rounded-lg" onClick={() => handleGrantAll(emp.user_id)}>
                                   <Check className="h-3 w-3" /> সব দিন
