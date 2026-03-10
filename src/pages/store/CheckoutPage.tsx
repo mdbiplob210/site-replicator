@@ -278,7 +278,7 @@ const CheckoutPage = () => {
       </div>
       <div className="space-y-1.5">
         <Label className="text-sm font-semibold">Note (optional)</Label>
-        <Input placeholder="অতিরিক্ত তথ্য..." value={form.notes} onChange={e => updateForm({ notes: e.target.value })} />
+        <Input placeholder="Additional info..." value={form.notes} onChange={e => updateForm({ notes: e.target.value })} />
       </div>
     </>
   );
