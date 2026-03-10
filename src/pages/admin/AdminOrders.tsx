@@ -4089,6 +4089,7 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                 </div>
               )}
             </div>
+            )}
 
             {/* Save Button */}
             <Button className="w-full rounded-xl shadow-sm" onClick={handleSaveChanges} disabled={isSaving}>
