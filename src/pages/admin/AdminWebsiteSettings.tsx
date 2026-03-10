@@ -388,7 +388,7 @@ function GeneralTab() {
 
             <div>
               <label className="text-sm font-medium text-foreground">Instagram URL</label>
-              <p className="text-xs text-muted-foreground">ফুটারে Instagram লিংক দেখাবে</p>
+              <p className="text-xs text-muted-foreground">Instagram link shown in footer</p>
               <Input 
                 className="mt-1.5" 
                 placeholder="https://instagram.com/..."
