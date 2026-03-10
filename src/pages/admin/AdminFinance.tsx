@@ -527,7 +527,7 @@ export default function AdminFinance() {
                               </div>
                             </div>
                             <div className="text-right">
-                              <p className="text-[10px] font-semibold text-muted-foreground uppercase">মোট কেনা</p>
+                              <p className="text-[10px] font-semibold text-muted-foreground uppercase">Total Bought</p>
                               <p className="text-base font-bold text-destructive">৳{data.totalPurchase.toLocaleString()}</p>
                             </div>
                           </div>
