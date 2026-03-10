@@ -462,8 +462,8 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
         {/* Block Number Tab */}
         <TabsContent value="phones" className="mt-6 space-y-4">
           <Card className="p-6 border-border/40">
-            <h3 className="font-bold text-foreground text-sm mb-1">ফোন নম্বর ব্লক করুন</h3>
-            <p className="text-xs text-muted-foreground mb-4">এই নম্বর থেকে কোনোদিন অর্ডার আসবে না — সব ল্যান্ডিং পেজ, ওয়েবসাইট ও API-তে কার্যকর</p>
+            <h3 className="font-bold text-foreground text-sm mb-1">Block Phone Number</h3>
+            <p className="text-xs text-muted-foreground mb-4">Orders from this number will be permanently blocked — applies to all landing pages, website and APIs</p>
             <div className="flex gap-2">
               <Input
                 value={newPhone}
