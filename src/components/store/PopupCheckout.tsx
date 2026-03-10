@@ -374,7 +374,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
               </div>
               <div>
                 <Label className="flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold text-gray-600 mb-1">
-                  <Phone className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> ফোন নম্বর
+                  <Phone className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> Phone number
                 </Label>
                 <Input placeholder="01XXXXXXXXX" value={form.phone} onChange={e => updateForm({ phone: e.target.value })} className="h-11 sm:h-11 rounded-xl text-sm" required name="tel" autoComplete="tel" inputMode="tel" />
               </div>
