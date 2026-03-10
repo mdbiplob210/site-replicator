@@ -230,7 +230,7 @@ const AdminUsers = () => {
   const removeRole = async (userId: string, role: string) => {
     const { data: { user: currentUser } } = await supabase.auth.getUser();
     if (currentUser && currentUser.id === userId && role === "admin") {
-      toast.error("⚠️ নিজের অ্যাডমিন রোল ডিলিট করা যাবে না!");
+      toast.error("⚠️ Cannot remove your own admin role!");
       return;
     }
 
