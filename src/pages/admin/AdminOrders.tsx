@@ -1929,6 +1929,7 @@ const AdminOrders = () => {
               </SelectContent>
             </Select>
             {/* Bulk Print */}
+            {canPrintMemo && (
             <Button variant="outline" size="sm" className="gap-1.5 h-8 rounded-xl text-xs border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100 dark:bg-violet-900/20 dark:border-violet-700 dark:text-violet-400" onClick={() => {
               const selectedOrders = filteredOrders.filter(o => selectedOrderIds.has(o.id));
               if (selectedOrders.length === 0) return;
@@ -1936,6 +1937,7 @@ const AdminOrders = () => {
             }}>
               <Printer className="h-3.5 w-3.5" /> মেমো প্রিন্ট ({selectedOrderIds.size})
             </Button>
+            )}
             {/* Bulk Delete */}
             <Button variant="destructive" size="sm" className="gap-1.5 h-8 rounded-xl text-xs" onClick={handleBulkDelete}>
               <Trash2 className="h-3.5 w-3.5" /> ডিলিট
