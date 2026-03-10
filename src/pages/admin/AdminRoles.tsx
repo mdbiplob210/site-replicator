@@ -20,36 +20,36 @@ import {
 import { PanelManagement } from "@/components/admin/PanelManagement";
 
 const groupIcons: Record<string, any> = {
-  "অর্ডার": ShoppingCart,
-  "প্রোডাক্ট": Package,
-  "ফিন্যান্স": DollarSign,
-  "ড্যাশবোর্ড ও রিপোর্ট": BarChart3,
-  "ওয়েবসাইট": Globe,
-  "মার্কেটিং": Megaphone,
-  "কুরিয়ার": Truck,
-  "সিস্টেম": Settings,
+  "Orders": ShoppingCart,
+  "Products": Package,
+  "Finance": DollarSign,
+  "Dashboard & Reports": BarChart3,
+  "Website": Globe,
+  "Marketing": Megaphone,
+  "Courier": Truck,
+  "System": Settings,
 };
 
 const groupColors: Record<string, string> = {
-  "অর্ডার": "from-blue-500/10 to-blue-500/5 border-blue-500/20",
-  "প্রোডাক্ট": "from-emerald-500/10 to-emerald-500/5 border-emerald-500/20",
-  "ফিন্যান্স": "from-amber-500/10 to-amber-500/5 border-amber-500/20",
-  "ড্যাশবোর্ড ও রিপোর্ট": "from-purple-500/10 to-purple-500/5 border-purple-500/20",
-  "ওয়েবসাইট": "from-cyan-500/10 to-cyan-500/5 border-cyan-500/20",
-  "মার্কেটিং": "from-pink-500/10 to-pink-500/5 border-pink-500/20",
-  "কুরিয়ার": "from-orange-500/10 to-orange-500/5 border-orange-500/20",
-  "সিস্টেম": "from-red-500/10 to-red-500/5 border-red-500/20",
+  "Orders": "from-blue-500/10 to-blue-500/5 border-blue-500/20",
+  "Products": "from-emerald-500/10 to-emerald-500/5 border-emerald-500/20",
+  "Finance": "from-amber-500/10 to-amber-500/5 border-amber-500/20",
+  "Dashboard & Reports": "from-purple-500/10 to-purple-500/5 border-purple-500/20",
+  "Website": "from-cyan-500/10 to-cyan-500/5 border-cyan-500/20",
+  "Marketing": "from-pink-500/10 to-pink-500/5 border-pink-500/20",
+  "Courier": "from-orange-500/10 to-orange-500/5 border-orange-500/20",
+  "System": "from-red-500/10 to-red-500/5 border-red-500/20",
 };
 
 const groupIconColors: Record<string, string> = {
-  "অর্ডার": "text-blue-600",
-  "প্রোডাক্ট": "text-emerald-600",
-  "ফিন্যান্স": "text-amber-600",
-  "ড্যাশবোর্ড ও রিপোর্ট": "text-purple-600",
-  "ওয়েবসাইট": "text-cyan-600",
-  "মার্কেটিং": "text-pink-600",
-  "কুরিয়ার": "text-orange-600",
-  "সিস্টেম": "text-red-600",
+  "Orders": "text-blue-600",
+  "Products": "text-emerald-600",
+  "Finance": "text-amber-600",
+  "Dashboard & Reports": "text-purple-600",
+  "Website": "text-cyan-600",
+  "Marketing": "text-pink-600",
+  "Courier": "text-orange-600",
+  "System": "text-red-600",
 };
 
 const AdminRoles = () => {
