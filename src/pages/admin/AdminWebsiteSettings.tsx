@@ -366,7 +366,7 @@ function GeneralTab() {
 
             <div>
               <label className="text-sm font-medium text-foreground">Free Delivery Above (৳)</label>
-              <p className="text-xs text-muted-foreground">এই পরিমাণের বেশি অর্ডারে ডেলিভারি ফ্রি হবে</p>
+              <p className="text-xs text-muted-foreground">Orders above this amount get free delivery</p>
               <Input 
                 className="mt-1.5" 
                 placeholder="Leave empty to disable"
