@@ -269,7 +269,7 @@ const AdminUsers = () => {
         if (roleError) throw roleError;
       }
 
-      toast.success(`${newRole} অ্যাকাউন্ট তৈরি হয়েছে!`);
+      toast.success(`${newRole} account created!`);
       setCreateOpen(false);
       setNewEmail("");
       setNewPassword("");
