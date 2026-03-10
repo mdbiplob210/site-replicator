@@ -477,7 +477,7 @@ const AdminOrders = () => {
         const q = searchQuery.toLowerCase();
         if (!(o.customer_name.toLowerCase().includes(q) || o.order_number.toLowerCase().includes(q) || (o.customer_phone && o.customer_phone.toLowerCase().includes(q)))) return false;
       }
-      if (filterSource && !(o.source || "প্যানেল").toLowerCase().includes(filterSource.toLowerCase())) return false;
+      if (filterSource && !(o.source || "Panel").toLowerCase().includes(filterSource.toLowerCase())) return false;
       if (filterPhone && !(o.customer_phone && o.customer_phone.includes(filterPhone))) return false;
       if (filterAmountMin && Number(o.total_amount) < Number(filterAmountMin)) return false;
       if (filterAmountMax && Number(o.total_amount) > Number(filterAmountMax)) return false;
