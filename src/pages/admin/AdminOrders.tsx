@@ -4047,54 +4047,12 @@ function CourierStatusModal({
   );
 }
 
-function IncompleteOrderCard({ io, activeIncompleteTab, convertIncomplete, deleteIncomplete }: {
-  io: any; activeIncompleteTab: string; convertIncomplete: any; deleteIncomplete: any;
+function IncompleteOrderCard({ io, activeIncompleteTab, onConvert, deleteIncomplete }: {
+  io: any; activeIncompleteTab: string; onConvert: (io: any) => void; deleteIncomplete: any;
 }) {
   const [noteInput, setNoteInput] = useState("");
   const [isSavingNote, setIsSavingNote] = useState(false);
   const queryClient = useQueryClient();
-
-  // Convert dialog state
-  const [convertOpen, setConvertOpen] = useState(false);
-  const [cName, setCName] = useState("");
-  const [cPhone, setCPhone] = useState("");
-  const [cAddress, setCAddress] = useState("");
-  const [cDelivery, setCDelivery] = useState(0);
-  const [cDiscount, setCDiscount] = useState(0);
-  const [cNotes, setCNotes] = useState("");
-
-  const openConvertDialog = () => {
-    setCName(io.customer_name || "");
-    setCPhone(io.customer_phone || "");
-    setCAddress(io.customer_address || "");
-    setCDelivery(io.delivery_charge || 0);
-    setCDiscount(io.discount || 0);
-    setCNotes(io.notes || "");
-    setConvertOpen(true);
-  };
-
-  const handleConvert = () => {
-    if (!cName.trim()) {
-      toast.error("কাস্টমারের নাম দিন!");
-      return;
-    }
-    convertIncomplete.mutate({
-      order: io,
-      overrides: {
-        customer_name: cName,
-        customer_phone: cPhone || null,
-        customer_address: cAddress || null,
-        delivery_charge: cDelivery,
-        discount: cDiscount,
-        notes: cNotes || null,
-      },
-    }, {
-      onSuccess: () => setConvertOpen(false),
-    });
-  };
-
-  const productTotal = (io.unit_price || 0) * (io.quantity || 1);
-  const computedTotal = productTotal + cDelivery - cDiscount;
 
   const handleSaveNote = async () => {
     if (!noteInput.trim()) return;
