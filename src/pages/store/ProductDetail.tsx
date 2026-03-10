@@ -411,15 +411,15 @@ const ProductDetail = () => {
             <div className="grid grid-cols-3 gap-3 pt-4 border-t">
               <div className="text-center text-xs text-gray-500">
                 <Truck className="h-5 w-5 mx-auto mb-1 text-green-600" />
-                দ্রুত ডেলিভারি
+                Fast delivery
               </div>
               <div className="text-center text-xs text-gray-500">
                 <Shield className="h-5 w-5 mx-auto mb-1 text-green-600" />
-                গ্যারান্টি
+                Warranty
               </div>
               <div className="text-center text-xs text-gray-500">
                 <RotateCcw className="h-5 w-5 mx-auto mb-1 text-green-600" />
-                রিটার্ন পলিসি
+                Return policy
               </div>
             </div>
           </div>
