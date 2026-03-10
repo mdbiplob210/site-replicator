@@ -891,11 +891,11 @@ function TrackingTab() {
           <div className="flex items-start gap-2">
             <Info className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
             <div className="text-xs text-amber-800 dark:text-amber-300 space-y-1">
-              <p className="font-medium">টোকেন এক্সপায়ার হলে কি করবেন?</p>
+              <p className="font-medium">What to do when token expires?</p>
               <ol className="list-decimal list-inside space-y-0.5">
-                <li>নতুন Short-Lived Token জেনারেট করুন (Graph API Explorer থেকে)</li>
-                <li>উপরে "Conversions API Access Token" ফিল্ডে পেস্ট করুন</li>
-                <li>Save করুন — Meta Ads পেজে গিয়ে "Exchange Token" ক্লিক করলে ৬০ দিনের টোকেন পাবেন</li>
+                <li>Generate a new Short-Lived Token (from Graph API Explorer)</li>
+                <li>Paste it in the "Conversions API Access Token" field above</li>
+                <li>Save — click "Exchange Token" on Meta Ads page for a 60-day token</li>
               </ol>
             </div>
           </div>
