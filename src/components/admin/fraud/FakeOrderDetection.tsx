@@ -479,13 +479,13 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
               />
               <Button
                 onClick={() => {
-                  if (!newPhone.trim()) return toast.error("নম্বর দিন");
+                  if (!newPhone.trim()) return toast.error("Enter a number");
                   addBlockedPhone.mutate({ phone: newPhone.trim(), reason: newPhoneReason.trim() });
                 }}
                 disabled={addBlockedPhone.isPending}
                 className="gap-1 rounded-xl"
               >
-                <Plus className="h-4 w-4" /> ব্লক করুন
+                <Plus className="h-4 w-4" /> Block
               </Button>
             </div>
           </Card>
