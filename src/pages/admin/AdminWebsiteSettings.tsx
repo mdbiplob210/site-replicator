@@ -333,7 +333,7 @@ function GeneralTab() {
           {/* Contact Email */}
           <div>
             <label className="text-sm font-medium text-foreground">Contact Email</label>
-            <p className="text-xs text-muted-foreground">ফুটারে ইমেইল অ্যাড্রেস দেখাবে</p>
+            <p className="text-xs text-muted-foreground">Email address shown in footer</p>
             <Input className="mt-1.5" placeholder="support@store.com" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} />
           </div>
         </div>
