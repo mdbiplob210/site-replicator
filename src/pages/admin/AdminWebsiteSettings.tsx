@@ -716,7 +716,7 @@ function BuyDomainTab() {
           </div>
         </div>
 
-        <p className="text-sm text-muted-foreground">.com রেজিস্ট্রেশন: ৳1200/বছর &nbsp;&nbsp; রিনিউয়াল: ৳1500/বছর</p>
+        <p className="text-sm text-muted-foreground">.com registration: ৳1200/year &nbsp;&nbsp; Renewal: ৳1500/year</p>
 
         <div className="flex items-start gap-2 text-sm text-muted-foreground bg-secondary/30 rounded-xl p-4">
           <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
