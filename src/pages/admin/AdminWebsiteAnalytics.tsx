@@ -232,6 +232,9 @@ export default function AdminWebsiteAnalytics() {
             </Card>
           </>
         )}
+
+        {/* Snippet Generator for external sites */}
+        <AnalyticsSnippetGenerator apiKey={firstActiveKey} projectId={projectId} />
       </div>
     </AdminLayout>
   );
