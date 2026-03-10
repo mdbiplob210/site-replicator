@@ -502,7 +502,7 @@ export default function AdminFinance() {
                       <div><p className="font-semibold text-foreground">Supplier Summary</p><p className="text-xs text-muted-foreground">Total purchases by supplier</p></div>
                     </div>
                     <div className="text-right">
-                      <p className="text-[10px] font-semibold text-muted-foreground uppercase">মোট পারচেজ</p>
+                      <p className="text-[10px] font-semibold text-muted-foreground uppercase">Total Purchases</p>
                       <p className="text-lg font-bold text-destructive">৳{totalPurchaseAll.toLocaleString()}</p>
                     </div>
                   </div>
