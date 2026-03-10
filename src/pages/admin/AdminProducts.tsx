@@ -360,7 +360,7 @@ const AdminProducts = () => {
                   <Switch checked={form.free_delivery} onCheckedChange={v => setForm({...form, free_delivery: v})} />
                 </div>
                 <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/30 border border-border/40">
-                  <div><p className="text-sm font-bold text-foreground">স্টক শেষ হলেও অর্ডার নিন</p><p className="text-xs text-muted-foreground">স্টক ০ হলেও কাস্টমার অর্ডার দিতে পারবে</p></div>
+                  <div><p className="text-sm font-bold text-foreground">Accept Orders When Out of Stock</p><p className="text-xs text-muted-foreground">Customers can order even when stock is 0</p></div>
                   <Switch checked={form.allow_out_of_stock_orders} onCheckedChange={v => setForm({...form, allow_out_of_stock_orders: v})} />
                 </div>
               </div>

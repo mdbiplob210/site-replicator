@@ -529,9 +529,9 @@ const Login = () => {
               </Button>
 
               <p className="mt-5 text-center text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>
-                {isSignUp ? "অ্যাকাউন্ট আছে?" : "অ্যাকাউন্ট নেই?"}{" "}
+                {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
                 <button onClick={() => setIsSignUp(!isSignUp)} className="font-medium hover:underline" style={{ color: "#4ECDC4" }}>
-                  {isSignUp ? "প্রবেশ করুন" : "রেজিস্টার করুন"}
+                  {isSignUp ? "Sign In" : "Register"}
                 </button>
               </p>
 
