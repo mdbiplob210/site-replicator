@@ -170,7 +170,10 @@ const CheckoutPage = () => {
   // Mark form as interacted when user types
   const updateForm = (updates: Partial<typeof form>) => {
     formInteracted.current = true;
-    abandonedSaved.current = false; // Reset if user comes back
+    abandonedSaved.current = false;
+    if (updates.phone !== undefined) {
+      updates.phone = sanitizePhoneInput(updates.phone);
+    }
     setForm(prev => ({ ...prev, ...updates }));
   };
 
