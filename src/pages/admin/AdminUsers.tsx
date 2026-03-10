@@ -769,7 +769,7 @@ const AdminUsers = () => {
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-lg font-bold flex items-center gap-2">
                       <Activity className="h-5 w-5 text-emerald-500" />
-                      লাইভ ইউজার স্ট্যাটাস
+                      Live User Status
                     </CardTitle>
                     <Badge variant="outline" className="gap-1.5 text-emerald-600">
                       <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
