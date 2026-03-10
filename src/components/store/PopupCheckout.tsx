@@ -219,7 +219,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
       });
 
       setOrderComplete(true);
-      toast.success("অর্ডার সফল হয়েছে! 🎉");
+      toast.success("Order placed successfully! 🎉");
     } catch (err: any) {
       orderSubmitted.current = false;
       toast.error(err.message);
