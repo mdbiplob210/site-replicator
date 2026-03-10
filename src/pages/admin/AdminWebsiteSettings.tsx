@@ -830,7 +830,7 @@ function TrackingTab() {
         <div>
           <label className="text-sm font-medium text-foreground">Facebook Pixel ID</label>
           <Input className="mt-1.5" placeholder="123456789012345" value={fbPixelId} onChange={(e) => setFbPixelId(e.target.value)} />
-          <p className="text-xs text-muted-foreground mt-1">Meta Events Manager → Data Sources → আপনার Pixel ID কপি করুন</p>
+          <p className="text-xs text-muted-foreground mt-1">Meta Events Manager → Data Sources → Copy your Pixel ID</p>
         </div>
 
         <div>
