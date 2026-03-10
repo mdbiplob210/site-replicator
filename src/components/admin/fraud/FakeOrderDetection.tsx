@@ -500,7 +500,7 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
                 <Input
                   value={phoneSearch}
                   onChange={(e) => setPhoneSearch(e.target.value)}
-                  placeholder="নম্বর সার্চ..."
+                  placeholder="Search number..."
                   className="pl-9 w-[200px] h-8 rounded-lg text-xs"
                 />
               </div>
