@@ -190,7 +190,7 @@ const ProductDetail = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Top bar */}
       <div className="bg-gradient-to-r from-green-600 to-green-700 text-white text-center py-2 sm:py-2 text-[11px] sm:text-xs font-medium">
-        🚚 সারা দেশে ক্যাশ অন ডেলিভারি | ২-৫ দিনে ডেলিভারি
+        🚚 Cash on delivery all over Bangladesh | Delivery in 2-5 days
       </div>
 
       {/* Urgency Countdown Timer */}
