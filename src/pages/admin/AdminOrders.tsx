@@ -608,7 +608,7 @@ const AdminOrders = () => {
   const orderSourcesSummary = useMemo(() => {
     const sourceMap: Record<string, { count: number; totalAmount: number }> = {};
     filteredOrders.forEach((o) => {
-      const src = o.source || "প্যানেল (Manual)";
+      const src = o.source || "Panel (Manual)";
       if (!sourceMap[src]) sourceMap[src] = { count: 0, totalAmount: 0 };
       sourceMap[src].count += 1;
       sourceMap[src].totalAmount += Number(o.total_amount);
