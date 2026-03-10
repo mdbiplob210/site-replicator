@@ -197,7 +197,7 @@ const Template1Classic = () => {
         {/* Mobile Menu */}
         {mobileMenu && (
           <div className="lg:hidden border-t bg-white px-4 py-2 space-y-0.5">
-            <button onClick={() => { setSelectedCategory(null); setMobileMenu(false); }} className="block w-full text-left py-2.5 px-3 text-sm font-medium hover:text-green-600 hover:bg-green-50 rounded-lg transition">সব প্রোডাক্ট</button>
+            <button onClick={() => { setSelectedCategory(null); setMobileMenu(false); }} className="block w-full text-left py-2.5 px-3 text-sm font-medium hover:text-green-600 hover:bg-green-50 rounded-lg transition">All Products</button>
             {categories.map(c => (
               <button key={c.id} onClick={() => { setSelectedCategory(c.id); setMobileMenu(false); }} className="block w-full text-left py-2.5 px-3 text-sm hover:text-green-600 hover:bg-green-50 rounded-lg transition">{c.name}</button>
             ))}
