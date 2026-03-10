@@ -320,7 +320,7 @@ const Template1Classic = () => {
                     {/* Free delivery badge */}
                     {(p as any).free_delivery && (
                       <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 bg-green-600 text-white text-[8px] sm:text-[9px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full">
-                        🚚 ফ্রি ডেলিভারি
+                        🚚 Free Delivery
                       </div>
                     )}
                   </Link>
