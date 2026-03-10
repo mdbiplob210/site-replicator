@@ -284,7 +284,7 @@ const CheckoutPage = () => {
       </div>
       <div className="space-y-1.5">
         <Label className="flex items-center gap-2 text-sm font-semibold"><Phone className="h-4 w-4" /> Phone Number</Label>
-        <Input placeholder="01XXXXXXXXX" value={form.phone} onChange={e => updateForm({ phone: e.target.value })} required />
+        <Input placeholder="01XXXXXXXXX" value={form.phone} onChange={e => updateForm({ phone: e.target.value })} required maxLength={11} pattern="01[3-9][0-9]{8}" inputMode="tel" />
       </div>
       <div className="space-y-1.5">
         <Label className="flex items-center gap-2 text-sm font-semibold"><MapPin className="h-4 w-4" /> Delivery Address</Label>
