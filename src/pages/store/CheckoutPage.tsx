@@ -327,7 +327,7 @@ const CheckoutPage = () => {
 
   // ===== CHECKOUT 2: Multi-Step Wizard =====
   if (checkoutType === "2") {
-    const steps = ["আপনার তথ্য", "ডেলিভারি", "কনফার্ম"];
+    const steps = ["Your Info", "Delivery", "Confirm"];
     return (
       <div className="min-h-screen bg-gray-950 text-white">
         <div className="max-w-xl mx-auto px-4 py-8">
