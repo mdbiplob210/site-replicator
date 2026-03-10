@@ -1053,7 +1053,7 @@ const AdminUsers = () => {
                 ) : loginLogs.length === 0 ? (
                   <div className="text-center py-10">
                     <Clock className="h-10 w-10 text-muted-foreground/20 mx-auto mb-3" />
-                    <p className="text-sm text-muted-foreground">এই সময়ে কোনো লগইন অ্যাক্টিভিটি নেই</p>
+                    <p className="text-sm text-muted-foreground">No login activity in this period</p>
                   </div>
                 ) : (
                   <Table>
