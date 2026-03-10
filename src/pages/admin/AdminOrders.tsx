@@ -25,7 +25,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Plus, Search, Calendar, AlertCircle, ShieldAlert, Truck, Key,
-  Settings, Download, Printer, RefreshCw, ChevronDown, Wifi, Ban,
+  Settings, Download, Printer, RefreshCw, ChevronDown, Wifi, Ban, Users,
   Trash2, Copy, X, ShoppingCart, ArrowLeft, Clock, CheckCircle2,
   GitMerge, PauseCircle, XCircle, Trash, Smartphone, BarChart3,
   MessageSquare, Filter, Loader2, Package, Globe, SlidersHorizontal, AlertTriangle, History,
