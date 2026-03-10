@@ -518,8 +518,8 @@ function SuggestedProducts({ categoryId, currentProductId, onOrder }: { category
                   {pDiscount > 0 && (
                     <div className="absolute top-2 right-2 w-12 h-12 rounded-full border-2 border-dashed border-red-400 bg-white flex flex-col items-center justify-center">
                       <span className="text-red-500 font-bold text-[10px] leading-none">{pDiscountAmount}</span>
-                      <span className="text-red-500 font-bold text-[9px] leading-none">টাকা</span>
-                      <span className="text-red-500 font-bold text-[9px] leading-none">ছাড়</span>
+                      <span className="text-red-500 font-bold text-[9px] leading-none">BDT</span>
+                      <span className="text-red-500 font-bold text-[9px] leading-none">OFF</span>
                     </div>
                   )}
                 </div>
