@@ -599,7 +599,7 @@ const AdminUsers = () => {
             ) : employees.length === 0 ? (
               <Card className="border-border/40 p-12 text-center">
                 <Users className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
-                <p className="text-muted-foreground">কোন ইউজার পাওয়া যায়নি।</p>
+                <p className="text-muted-foreground">No users found.</p>
               </Card>
             ) : (
               <div className="space-y-3">
