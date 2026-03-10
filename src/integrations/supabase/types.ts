@@ -1653,6 +1653,7 @@ export type Database = {
         | "create_admin_users"
         | "create_moderator_users"
         | "create_basic_users"
+        | "print_memo"
       order_status:
         | "processing"
         | "confirmed"
@@ -1829,6 +1830,7 @@ export const Constants = {
         "create_admin_users",
         "create_moderator_users",
         "create_basic_users",
+        "print_memo",
       ],
       order_status: [
         "processing",
