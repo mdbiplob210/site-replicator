@@ -75,7 +75,7 @@ const Template4Colorful = () => {
         <div className="absolute bottom-10 right-10 w-80 h-80 bg-violet-300/20 rounded-full blur-3xl" />
         <div className="max-w-7xl mx-auto px-4 text-center relative z-10">
           <div className="inline-flex items-center gap-2 bg-gradient-to-r from-rose-100 to-violet-100 rounded-full px-5 py-2 text-sm font-semibold text-rose-600 mb-6">
-            <Sparkles className="h-4 w-4" /> ✨ নতুন কালেকশন এসেছে!
+            <Sparkles className="h-4 w-4" /> ✨ New Collection Arrived!
           </div>
           <h1 className="text-5xl md:text-6xl font-black mb-6">
             <span className="bg-gradient-to-r from-rose-600 via-violet-600 to-indigo-600 bg-clip-text text-transparent">আপনার স্টাইল,</span>
