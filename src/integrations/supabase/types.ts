@@ -1654,6 +1654,7 @@ export type Database = {
         | "create_moderator_users"
         | "create_basic_users"
         | "print_memo"
+        | "transfer_orders"
       order_status:
         | "processing"
         | "confirmed"
@@ -1831,6 +1832,7 @@ export const Constants = {
         "create_moderator_users",
         "create_basic_users",
         "print_memo",
+        "transfer_orders",
       ],
       order_status: [
         "processing",
