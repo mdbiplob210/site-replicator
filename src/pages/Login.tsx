@@ -211,7 +211,7 @@ const Login = () => {
         // Strong password validation for signup
         const pwCheck = validatePassword(password);
         if (!pwCheck.valid) {
-          toast({ title: "দুর্বল পাসওয়ার্ড", description: pwCheck.message, variant: "destructive" });
+          toast({ title: "Weak Password", description: pwCheck.message, variant: "destructive" });
           setLoading(false);
           return;
         }
