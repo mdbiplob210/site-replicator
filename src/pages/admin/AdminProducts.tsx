@@ -116,7 +116,7 @@ const AdminProducts = () => {
 
   const handleSave = async () => {
     if (!form.name || !form.product_code) {
-      toast.error("Product Name এবং Code আবশ্যক");
+      toast.error("Product Name and Code are required");
       return;
     }
     setSaving(true);
