@@ -246,7 +246,7 @@ export function AdminSidebar() {
 
       {/* User Footer */}
       <SidebarFooter className="border-t border-sidebar-border/50 sidebar-gradient p-2">
-        <NavLink to="/admin/profile" className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-sidebar-accent/50 transition-all cursor-pointer">
+        <NavLink to="/admin/profile" onClick={closeMobileSidebar} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-sidebar-accent/50 transition-all cursor-pointer">
           <Avatar className="h-9 w-9 ring-2 ring-[hsl(187,85%,53%)]/30">
             <AvatarFallback className="bg-gradient-to-br from-[hsl(187,85%,53%)]/20 to-[hsl(210,100%,50%)]/20 text-[hsl(187,85%,53%)] font-bold text-sm">
               {initials}
