@@ -647,7 +647,7 @@ function ButtonsTab() {
           <div className="flex items-center justify-between">
             <div>
               <h4 className="font-medium text-foreground">Floating WhatsApp Button</h4>
-              <p className="text-xs text-muted-foreground">General ট্যাবে দেওয়া WhatsApp নম্বর ব্যবহার হবে</p>
+              <p className="text-xs text-muted-foreground">Uses WhatsApp number from General tab</p>
             </div>
             <Switch checked={floatingWhatsapp} onCheckedChange={setFloatingWhatsapp} />
           </div>
