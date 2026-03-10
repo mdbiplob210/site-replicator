@@ -3142,8 +3142,10 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
       const transferredBy = user?.email || "Unknown";
       await logActivity("order_transferred", "assigned_to", fromPanel?.full_name || currentAssignment?.assigned_to || "unassigned", targetPanel?.full_name || transferToUserId, `অর্ডার ট্রান্সফার: ${fromPanel?.full_name || "Unassigned"} → ${targetPanel?.full_name || "Unknown"} (by ${transferredBy})`);
       queryClient.invalidateQueries({ queryKey: ["order-assignments"] });
+      queryClient.invalidateQueries({ queryKey: ["order-assignments-list"] });
       queryClient.invalidateQueries({ queryKey: ["order-assignment-detail", orderId] });
       queryClient.invalidateQueries({ queryKey: ["panel-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["order-activity-logs", orderId] });
       toast.success(`অর্ডার সফলভাবে ${targetPanel?.full_name || "অন্য প্যানেলে"} ট্রান্সফার হয়েছে!`);
       setTransferOpen(false);
       setTransferToUserId(null);
