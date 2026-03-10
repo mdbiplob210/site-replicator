@@ -901,6 +901,38 @@ const AdminOrders = () => {
     setBulkCourierId("");
   };
 
+  // Open convert as new order - pre-fill form from incomplete order
+  const openConvertAsNewOrder = (io: any) => {
+    setCustomerName(io.customer_name || "");
+    setCustomerPhone(io.customer_phone || "");
+    setCustomerAddress(io.customer_address || "");
+    setDeliveryCharge(io.delivery_charge || 0);
+    setDiscount(io.discount || 0);
+    setNotes(io.notes || `[Converted from incomplete] [LP: ${io.landing_page_slug || "unknown"}]`);
+    setCourierNote("");
+    setSelectedOrderSource("Failed Order");
+    setNewOrderStatus("processing");
+    setProductCost(0);
+    setTotalAmount(0);
+    if (io.product_name) {
+      const matchedProduct = allProducts.find((p: any) => 
+        p.product_code === io.product_code || p.name === io.product_name
+      );
+      setOrderItems([{
+        product_id: matchedProduct?.id || null,
+        product_name: io.product_name,
+        product_code: io.product_code || "",
+        quantity: io.quantity || 1,
+        unit_price: io.unit_price || 0,
+        total_price: (io.unit_price || 0) * (io.quantity || 1),
+      }]);
+    } else {
+      setOrderItems([]);
+    }
+    setConvertingIncompleteId(io.id);
+    setNewOrderOpen(true);
+  };
+
   const handleCreateOrder = () => {
     if (!customerName.trim()) return;
     if (newOrderStatus === "cancelled" && !newOrderCancelReason && !newOrderCancelCustom.trim()) {
@@ -933,7 +965,6 @@ const AdminOrders = () => {
       onSuccess: async (data: any) => {
         if (data?.id) {
           logActivity(data.id, "created", undefined, undefined, undefined, `Order ${nextOrderNumber} created by ${user?.email || "Admin"}`);
-          // Create courier_orders entry if courier selected
           if (selectedCourierId) {
             await supabase.from("courier_orders").insert({
               order_id: data.id,
@@ -942,7 +973,17 @@ const AdminOrders = () => {
             } as any);
           }
         }
+        // If converting from incomplete, mark as converted
+        if (convertingIncompleteId) {
+          await supabase
+            .from("incomplete_orders" as any)
+            .update({ status: "converted", updated_at: new Date().toISOString() } as any)
+            .eq("id", convertingIncompleteId);
+          queryClient.invalidateQueries({ queryKey: ["incomplete-orders"] });
+          queryClient.invalidateQueries({ queryKey: ["incomplete-order-counts"] });
+        }
         setNewOrderOpen(false);
+        setConvertingIncompleteId(null);
         resetForm();
       }
     });
