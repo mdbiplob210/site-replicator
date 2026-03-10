@@ -243,7 +243,7 @@ const AdminUsers = () => {
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success(`রোল "${role}" রিমুভ হয়েছে`);
+      toast.success(`Role "${role}" removed`);
       fetchUsers();
     }
   };
