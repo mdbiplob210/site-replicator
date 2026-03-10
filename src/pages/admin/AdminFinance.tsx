@@ -499,7 +499,7 @@ export default function AdminFinance() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="h-9 w-9 rounded-lg bg-destructive/10 flex items-center justify-center"><ShoppingCart className="h-4 w-4 text-destructive" /></div>
-                      <div><p className="font-semibold text-foreground">সাপ্লায়ার হিসাব</p><p className="text-xs text-muted-foreground">সাপ্লায়ার অনুযায়ী মোট কেনাকাটার সারাংশ</p></div>
+                      <div><p className="font-semibold text-foreground">Supplier Summary</p><p className="text-xs text-muted-foreground">Total purchases by supplier</p></div>
                     </div>
                     <div className="text-right">
                       <p className="text-[10px] font-semibold text-muted-foreground uppercase">মোট পারচেজ</p>
