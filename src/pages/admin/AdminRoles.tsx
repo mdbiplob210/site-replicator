@@ -178,7 +178,7 @@ const AdminRoles = () => {
               {/* Permission Summary */}
               <Card className="border-border/40">
                 <CardContent className="p-5">
-                  <p className="text-sm font-bold text-foreground mb-3">পারমিশন ক্যাটাগরি সারাংশ</p>
+                  <p className="text-sm font-bold text-foreground mb-3">Permission Category Summary</p>
                   <div className="flex flex-wrap gap-2">
                     {Object.entries(permissionGroups).map(([group, perms]) => {
                       const GroupIcon = groupIcons[group] || Shield;
