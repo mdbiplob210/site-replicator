@@ -143,9 +143,9 @@ const AdminUsers = () => {
   };
 
   const handleDeleteUser = async (userId: string, name: string | null) => {
-    const confirmed = confirm(`⚠️ "${name || userId}" কে পার্মানেন্টলি ডিলিট করতে চান?\n\nএটি undo করা যাবে না!`);
+    const confirmed = confirm(`⚠️ Permanently delete "${name || userId}"?\n\nThis cannot be undone!`);
     if (!confirmed) return;
-    const doubleConfirm = confirm(`সত্যিই "${name}" ডিলিট করবেন? সব ডাটা মুছে যাবে।`);
+    const doubleConfirm = confirm(`Really delete "${name}"? All data will be lost.`);
     if (!doubleConfirm) return;
     try {
       const { data: { session } } = await supabase.auth.getSession();
