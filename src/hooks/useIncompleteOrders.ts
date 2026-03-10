@@ -119,7 +119,7 @@ export function useUpdateIncompleteOrderStatus() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["incomplete-orders"] });
       qc.invalidateQueries({ queryKey: ["incomplete-order-counts"] });
-      toast.success("স্ট্যাটাস আপডেট হয়েছে");
+      toast.success("Status updated");
     },
     onError: (e: Error) => toast.error(e.message),
   });
