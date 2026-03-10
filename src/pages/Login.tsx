@@ -244,10 +244,8 @@ const Login = () => {
         const { data: roleData } = await supabase
           .from("user_roles")
           .select("role")
-          .eq("user_id", data.user.id)
-          .eq("role", "admin")
-          .maybeSingle();
-        navigate(roleData ? "/admin" : "/", { replace: true });
+          .eq("user_id", data.user.id);
+        navigate(roleData && roleData.length > 0 ? "/admin" : "/", { replace: true });
       }
     } catch (error: any) {
       toast({ title: "ত্রুটি", description: error.message, variant: "destructive" });
