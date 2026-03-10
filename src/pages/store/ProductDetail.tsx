@@ -6,6 +6,7 @@ import { useProductSEO } from "@/hooks/useProductSEO";
 import { Button } from "@/components/ui/button";
 import { ShoppingBag, ArrowLeft, Minus, Plus, Truck, Shield, RotateCcw, Phone, MessageCircle } from "lucide-react";
 import { useTracking, useEngagementTracking } from "@/hooks/useTracking";
+import { trackWebsiteEvent } from "@/hooks/useWebsiteAnalytics";
 import { PopupCheckout } from "@/components/store/PopupCheckout";
 import { ExitDiscountBanner } from "@/components/store/ExitDiscountBanner";
 import { OptimizedImage } from "@/components/ui/optimized-image";
