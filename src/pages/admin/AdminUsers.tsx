@@ -485,7 +485,7 @@ const AdminUsers = () => {
                             {user.roles.length > 0 ? (
                                 <div className="flex gap-1 flex-wrap">
                                   {user.roles.map((role) => {
-                                    const displayName = role === "moderator" ? "ম্যানেজার" : role === "manager" ? "ম্যানেজার" : role === "accounting" ? "অ্যাকাউন্টিং" : role === "ad_analytics" ? "অ্যাড অ্যানালিটিক্স" : role === "admin" ? "অ্যাডমিন" : "ইউজার";
+                                    const displayName = role === "moderator" ? "Moderator" : role === "manager" ? "Manager" : role === "accounting" ? "Accounting" : role === "ad_analytics" ? "Ad Analytics" : role === "admin" ? "Admin" : "User";
                                     return (
                                       <Badge
                                         key={role}
