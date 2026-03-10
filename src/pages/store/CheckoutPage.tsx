@@ -176,7 +176,7 @@ const CheckoutPage = () => {
     e.preventDefault();
     if (!item) return;
     if (!form.name || !form.phone || !form.address) {
-      toast.error("সব ফিল্ড পূরণ করুন");
+      toast.error("Please fill in all fields");
       return;
     }
     setSubmitting(true);
