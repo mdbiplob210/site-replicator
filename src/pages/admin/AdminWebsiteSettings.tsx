@@ -458,28 +458,28 @@ function GeneralTab() {
 
       {/* Footer Settings */}
       <div className="bg-card rounded-2xl border border-border p-6 space-y-5">
-        <h3 className="font-bold text-foreground">📋 ফুটার সেটিংস</h3>
+        <h3 className="font-bold text-foreground">📋 Footer Settings</h3>
         <div>
-          <label className="text-sm font-medium text-foreground">ফুটার বর্ণনা</label>
-          <Input className="mt-1.5" placeholder="বাংলাদেশের সেরা অনলাইন শপিং..." value={footerDescription} onChange={(e) => setFooterDescription(e.target.value)} />
+          <label className="text-sm font-medium text-foreground">Footer Description</label>
+          <Input className="mt-1.5" placeholder="Best online shopping in Bangladesh..." value={footerDescription} onChange={(e) => setFooterDescription(e.target.value)} />
         </div>
         <div>
-          <label className="text-sm font-medium text-foreground">কুইক লিংকস</label>
-          <p className="text-xs text-muted-foreground">কমা দিয়ে আলাদা করুন (যেমন: হোম,সব প্রোডাক্ট,অফার,যোগাযোগ)</p>
-          <Input className="mt-1.5" placeholder="হোম,সব প্রোডাক্ট,অফার,যোগাযোগ" value={footerQuickLinks} onChange={(e) => setFooterQuickLinks(e.target.value)} />
+          <label className="text-sm font-medium text-foreground">Quick Links</label>
+          <p className="text-xs text-muted-foreground">Separate with commas (e.g. Home,All Products,Offers,Contact)</p>
+          <Input className="mt-1.5" placeholder="Home,All Products,Offers,Contact" value={footerQuickLinks} onChange={(e) => setFooterQuickLinks(e.target.value)} />
         </div>
         <div>
-          <label className="text-sm font-medium text-foreground">সাহায্য লিংকস</label>
-          <p className="text-xs text-muted-foreground">কমা দিয়ে আলাদা করুন</p>
-          <Input className="mt-1.5" placeholder="ডেলিভারি তথ্য,রিটার্ন পলিসি,প্রাইভেসি পলিসি" value={footerHelpLinks} onChange={(e) => setFooterHelpLinks(e.target.value)} />
+          <label className="text-sm font-medium text-foreground">Help Links</label>
+          <p className="text-xs text-muted-foreground">Separate with commas</p>
+          <Input className="mt-1.5" placeholder="Delivery Info,Return Policy,Privacy Policy" value={footerHelpLinks} onChange={(e) => setFooterHelpLinks(e.target.value)} />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-sm font-medium text-foreground">ঠিকানা</label>
-            <Input className="mt-1.5" placeholder="ঢাকা, বাংলাদেশ" value={footerAddress} onChange={(e) => setFooterAddress(e.target.value)} />
+            <label className="text-sm font-medium text-foreground">Address</label>
+            <Input className="mt-1.5" placeholder="Dhaka, Bangladesh" value={footerAddress} onChange={(e) => setFooterAddress(e.target.value)} />
           </div>
           <div>
-            <label className="text-sm font-medium text-foreground">কপিরাইট টেক্সট</label>
+            <label className="text-sm font-medium text-foreground">Copyright Text</label>
             <Input className="mt-1.5" placeholder="© 2026 SHOP BD — All rights reserved" value={footerCopyright} onChange={(e) => setFooterCopyright(e.target.value)} />
           </div>
         </div>
