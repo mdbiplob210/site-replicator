@@ -118,7 +118,7 @@ const AdminUsers = () => {
   };
 
   const handleDisableUser = async (userId: string, name: string | null) => {
-    const action = confirm(`"${name || userId}" কে ডিসেবল/ব্যান করতে চান? (ইতিমধ্যে ব্যান থাকলে আনব্যান হবে)`);
+    const action = confirm(`Disable/ban "${name || userId}"? (If already banned, this will unban)`);
     if (!action) return;
     try {
       const { data: { session } } = await supabase.auth.getSession();
