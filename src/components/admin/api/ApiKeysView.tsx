@@ -8,16 +8,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useApiKeys, useCreateApiKey, useUpdateApiKey, useDeleteApiKey, useSyncOrders } from "@/hooks/useApiKeys";
-import { Key, Plus, Trash2, Copy, Eye, EyeOff, BookOpen, Code, ArrowLeft, RefreshCw, Globe, Loader2 } from "lucide-react";
+import { Key, Plus, Trash2, Copy, Eye, EyeOff, BookOpen, Code, ArrowLeft, RefreshCw, Globe, Loader2, Link2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
 const ALL_PERMISSIONS = [
-  { value: "orders:create", label: "অর্ডার তৈরি" },
-  { value: "orders:read", label: "অর্ডার দেখা" },
-  { value: "orders:update", label: "অর্ডার আপডেট" },
-  { value: "incomplete_orders:create", label: "ইনকমপ্লিট অর্ডার তৈরি" },
-  { value: "incomplete_orders:read", label: "ইনকমপ্লিট অর্ডার দেখা" },
+  { value: "orders:create", label: "Create Orders" },
+  { value: "orders:read", label: "View Orders" },
+  { value: "orders:update", label: "Update Orders" },
+  { value: "incomplete_orders:create", label: "Create Incomplete Orders" },
+  { value: "incomplete_orders:read", label: "View Incomplete Orders" },
 ];
 
 interface ApiKeysViewProps {
@@ -36,12 +36,14 @@ export function ApiKeysView({ onBack }: ApiKeysViewProps) {
   const [newPerms, setNewPerms] = useState<string[]>(["orders:create", "incomplete_orders:create"]);
   const [visibleKeys, setVisibleKeys] = useState<Record<string, boolean>>({});
   const [editingSourceUrl, setEditingSourceUrl] = useState<Record<string, string>>({});
+  const [editingFirstKey, setEditingFirstKey] = useState<Record<string, string>>({});
+  const [editingSecondKey, setEditingSecondKey] = useState<Record<string, string>>({});
   const [syncingKeyId, setSyncingKeyId] = useState<string | null>(null);
 
   const apiBaseUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/order-api`;
 
   const handleCreate = () => {
-    if (!newLabel.trim()) { toast.error("লেবেল দিন"); return; }
+    if (!newLabel.trim()) { toast.error("Please enter a label"); return; }
     createKey.mutate({ label: newLabel, permissions: newPerms, source_url: newSourceUrl || undefined }, {
       onSuccess: () => { setShowCreate(false); setNewLabel(""); setNewSourceUrl(""); }
     });
@@ -68,6 +70,22 @@ export function ApiKeysView({ onBack }: ApiKeysViewProps) {
     }
   };
 
+  const saveFirstKey = (keyId: string) => {
+    const val = editingFirstKey[keyId];
+    if (val !== undefined) {
+      updateKey.mutate({ id: keyId, updates: { api_first_key: val || null } as any });
+      setEditingFirstKey(prev => { const n = { ...prev }; delete n[keyId]; return n; });
+    }
+  };
+
+  const saveSecondKey = (keyId: string) => {
+    const val = editingSecondKey[keyId];
+    if (val !== undefined) {
+      updateKey.mutate({ id: keyId, updates: { api_second_key: val || null } as any });
+      setEditingSecondKey(prev => { const n = { ...prev }; delete n[keyId]; return n; });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -80,27 +98,27 @@ export function ApiKeysView({ onBack }: ApiKeysViewProps) {
           </div>
           <div>
             <h1 className="text-xl font-bold text-foreground tracking-tight">Order API Keys</h1>
-            <p className="text-sm text-muted-foreground">বাহ্যিক ওয়েবসাইট থেকে অর্ডার রিসিভ ও সিঙ্ক করুন</p>
+            <p className="text-sm text-muted-foreground">Receive & sync orders from external websites</p>
           </div>
         </div>
         <Dialog open={showCreate} onOpenChange={setShowCreate}>
           <DialogTrigger asChild>
-            <Button><Plus className="h-4 w-4 mr-1" /> নতুন API Key</Button>
+            <Button><Plus className="h-4 w-4 mr-1" /> New API Key</Button>
           </DialogTrigger>
           <DialogContent>
-            <DialogHeader><DialogTitle>নতুন API Key তৈরি করুন</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>Create New API Key</DialogTitle></DialogHeader>
             <div className="space-y-4">
               <div>
-                <Label>লেবেল (কোন সাইটের জন্য)</Label>
-                <Input placeholder="যেমন: মূল ওয়েবসাইট, Laravel Site" value={newLabel} onChange={e => setNewLabel(e.target.value)} />
+                <Label>Label (which site is this for)</Label>
+                <Input placeholder="e.g. Main Website, Laravel Site" value={newLabel} onChange={e => setNewLabel(e.target.value)} />
               </div>
               <div>
-                <Label>Source URL (অর্ডার সিঙ্ক করতে)</Label>
+                <Label>Source URL (for order sync)</Label>
                 <Input placeholder="https://yoursite.com/api/orders" value={newSourceUrl} onChange={e => setNewSourceUrl(e.target.value)} />
-                <p className="text-xs text-muted-foreground mt-1">বাহ্যিক সাইটের API endpoint যেখান থেকে অর্ডার টেনে আনা হবে। না দিলেও চলবে।</p>
+                <p className="text-xs text-muted-foreground mt-1">External API endpoint to pull orders from. Optional.</p>
               </div>
               <div>
-                <Label>পার্মিশন</Label>
+                <Label>Permissions</Label>
                 <div className="space-y-2 mt-2">
                   {ALL_PERMISSIONS.map(p => (
                     <div key={p.value} className="flex items-center gap-2">
@@ -112,7 +130,7 @@ export function ApiKeysView({ onBack }: ApiKeysViewProps) {
               </div>
             </div>
             <DialogFooter>
-              <Button onClick={handleCreate} disabled={createKey.isPending}>তৈরি করুন</Button>
+              <Button onClick={handleCreate} disabled={createKey.isPending}>Create</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -121,14 +139,14 @@ export function ApiKeysView({ onBack }: ApiKeysViewProps) {
       <Tabs defaultValue="keys">
         <TabsList>
           <TabsTrigger value="keys"><Key className="h-4 w-4 mr-1" /> API Keys</TabsTrigger>
-          <TabsTrigger value="docs"><BookOpen className="h-4 w-4 mr-1" /> ডকুমেন্টেশন</TabsTrigger>
+          <TabsTrigger value="docs"><BookOpen className="h-4 w-4 mr-1" /> Documentation</TabsTrigger>
         </TabsList>
 
         <TabsContent value="keys" className="space-y-4">
           {isLoading ? (
-            <div className="text-center py-10 text-muted-foreground">লোড হচ্ছে...</div>
+            <div className="text-center py-10 text-muted-foreground">Loading...</div>
           ) : keys?.length === 0 ? (
-            <Card><CardContent className="py-10 text-center text-muted-foreground">কোনো API Key নেই। নতুন তৈরি করুন।</CardContent></Card>
+            <Card><CardContent className="py-10 text-center text-muted-foreground">No API Keys yet. Create a new one.</CardContent></Card>
           ) : (
             keys?.map(key => (
               <Card key={key.id} className="border-border/40">
@@ -137,11 +155,11 @@ export function ApiKeysView({ onBack }: ApiKeysViewProps) {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <h3 className="font-semibold">{key.label}</h3>
-                      <Badge variant={key.is_active ? "default" : "secondary"}>{key.is_active ? "সক্রিয়" : "নিষ্ক্রিয়"}</Badge>
+                      <Badge variant={key.is_active ? "default" : "secondary"}>{key.is_active ? "Active" : "Inactive"}</Badge>
                     </div>
                     <div className="flex items-center gap-2">
                       <Switch checked={key.is_active} onCheckedChange={(v) => updateKey.mutate({ id: key.id, updates: { is_active: v } })} />
-                      <Button size="icon" variant="ghost" onClick={() => { if (confirm("ডিলিট করবেন?")) deleteKey.mutate(key.id) }}>
+                      <Button size="icon" variant="ghost" onClick={() => { if (confirm("Delete this key?")) deleteKey.mutate(key.id) }}>
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                     </div>
@@ -155,16 +173,57 @@ export function ApiKeysView({ onBack }: ApiKeysViewProps) {
                     <Button size="icon" variant="outline" onClick={() => setVisibleKeys(v => ({ ...v, [key.id]: !v[key.id] }))}>
                       {visibleKeys[key.id] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>
-                    <Button size="icon" variant="outline" onClick={() => { navigator.clipboard.writeText(key.api_key); toast.success("কপি হয়েছে!"); }}>
+                    <Button size="icon" variant="outline" onClick={() => { navigator.clipboard.writeText(key.api_key); toast.success("Copied!"); }}>
                       <Copy className="h-4 w-4" />
                     </Button>
+                  </div>
+
+                  {/* BizMation API Keys */}
+                  <div className="bg-muted/30 rounded-xl p-3 border border-border/40 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Link2 className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm font-medium">BizMation API Keys (for order sync)</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <Label className="text-xs">API First Key</Label>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Input
+                            placeholder="Enter API First Key"
+                            value={editingFirstKey[key.id] !== undefined ? editingFirstKey[key.id] : (key.api_first_key || "")}
+                            onChange={e => setEditingFirstKey(prev => ({ ...prev, [key.id]: e.target.value }))}
+                            className="text-sm"
+                          />
+                          {editingFirstKey[key.id] !== undefined && (
+                            <Button size="sm" onClick={() => saveFirstKey(key.id)} disabled={updateKey.isPending}>Save</Button>
+                          )}
+                        </div>
+                      </div>
+                      <div>
+                        <Label className="text-xs">API Second Key</Label>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Input
+                            placeholder="Enter API Second Key"
+                            value={editingSecondKey[key.id] !== undefined ? editingSecondKey[key.id] : (key.api_second_key || "")}
+                            onChange={e => setEditingSecondKey(prev => ({ ...prev, [key.id]: e.target.value }))}
+                            className="text-sm"
+                          />
+                          {editingSecondKey[key.id] !== undefined && (
+                            <Button size="sm" onClick={() => saveSecondKey(key.id)} disabled={updateKey.isPending}>Save</Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      💡 Enter the API First Key and API Second Key from your BizMation website to sync orders automatically.
+                    </p>
                   </div>
 
                   {/* Source URL */}
                   <div className="bg-muted/30 rounded-xl p-3 border border-border/40 space-y-2">
                     <div className="flex items-center gap-2">
                       <Globe className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm font-medium">Source URL (অর্ডার সিঙ্ক)</span>
+                      <span className="text-sm font-medium">Source URL (Order Sync)</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Input
@@ -175,7 +234,7 @@ export function ApiKeysView({ onBack }: ApiKeysViewProps) {
                       />
                       {editingSourceUrl[key.id] !== undefined && (
                         <Button size="sm" onClick={() => saveSourceUrl(key.id)} disabled={updateKey.isPending}>
-                          সেভ
+                          Save
                         </Button>
                       )}
                     </div>
@@ -184,7 +243,7 @@ export function ApiKeysView({ onBack }: ApiKeysViewProps) {
                         size="sm"
                         variant="outline"
                         className="gap-2"
-                        disabled={!key.source_url || syncingKeyId === key.id}
+                        disabled={(!key.source_url && !key.api_first_key) || syncingKeyId === key.id}
                         onClick={() => handleSync(key.id)}
                       >
                         {syncingKeyId === key.id ? (
@@ -192,17 +251,17 @@ export function ApiKeysView({ onBack }: ApiKeysViewProps) {
                         ) : (
                           <RefreshCw className="h-3.5 w-3.5" />
                         )}
-                        {syncingKeyId === key.id ? "সিঙ্ক হচ্ছে..." : "অর্ডার সিঙ্ক করুন"}
+                        {syncingKeyId === key.id ? "Syncing..." : "Sync Orders"}
                       </Button>
                       {key.last_synced_at && (
                         <span className="text-xs text-muted-foreground">
-                          সর্বশেষ সিঙ্ক: {new Date(key.last_synced_at).toLocaleString("bn-BD")}
+                          Last synced: {new Date(key.last_synced_at).toLocaleString()}
                         </span>
                       )}
                     </div>
-                    {!key.source_url && (
+                    {!key.source_url && !key.api_first_key && (
                       <p className="text-xs text-muted-foreground">
-                        💡 Source URL দিন যাতে বাহ্যিক সাইট থেকে অর্ডার সিঙ্ক করতে পারেন। URL টি GET রিকোয়েস্টে অর্ডার JSON রিটার্ন করবে।
+                        💡 Set a Source URL or BizMation API Keys to enable order syncing from external sites.
                       </p>
                     )}
                   </div>
@@ -213,7 +272,7 @@ export function ApiKeysView({ onBack }: ApiKeysViewProps) {
                   </div>
 
                   {key.last_used_at && (
-                    <p className="text-xs text-muted-foreground">সর্বশেষ ব্যবহার: {new Date(key.last_used_at).toLocaleString("bn-BD")}</p>
+                    <p className="text-xs text-muted-foreground">Last used: {new Date(key.last_used_at).toLocaleString()}</p>
                   )}
                 </CardContent>
               </Card>
@@ -233,7 +292,7 @@ function ApiDocumentation({ apiBaseUrl }: { apiBaseUrl: string }) {
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader><CardTitle className="flex items-center gap-2"><Code className="h-5 w-5" /> API ডকুমেন্টেশন</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="flex items-center gap-2"><Code className="h-5 w-5" /> API Documentation</CardTitle></CardHeader>
         <CardContent className="space-y-6">
 
           <div className="bg-muted/50 p-4 rounded-lg space-y-2">
@@ -243,14 +302,14 @@ function ApiDocumentation({ apiBaseUrl }: { apiBaseUrl: string }) {
 
           <div className="bg-muted/50 p-4 rounded-lg space-y-2">
             <h3 className="font-bold text-lg">🔑 Authentication</h3>
-            <p className="text-sm">প্রতিটি রিকোয়েস্টে <code className="bg-background px-1 rounded">X-API-Key</code> হেডার পাঠাতে হবে।</p>
+            <p className="text-sm">Include the <code className="bg-background px-1 rounded">X-API-Key</code> header in every request.</p>
             <pre className="bg-background p-3 rounded border text-xs overflow-x-auto">{`Headers:
   X-API-Key: your_api_key_here
   Content-Type: application/json`}</pre>
           </div>
 
           <div className="bg-muted/50 p-4 rounded-lg space-y-3">
-            <h3 className="font-bold text-lg">📦 POST — অর্ডার তৈরি করুন</h3>
+            <h3 className="font-bold text-lg">📦 POST — Create Order</h3>
             <p className="text-sm">Permission: <code className="bg-background px-1 rounded">orders:create</code></p>
             <pre className="bg-background p-3 rounded border text-xs overflow-x-auto">{`POST ${apiBaseUrl}
 Content-Type: application/json
@@ -258,17 +317,17 @@ X-API-Key: your_api_key_here
 
 {
   "type": "order",
-  "customer_name": "রহিম উদ্দিন",
+  "customer_name": "John Doe",
   "customer_phone": "01700000000",
-  "customer_address": "ঢাকা, বাংলাদেশ",
+  "customer_address": "Dhaka, Bangladesh",
   "product_cost": 500,
   "delivery_charge": 60,
   "discount": 0,
   "total_amount": 560,
-  "notes": "ফ্রাজাইল পণ্য",
+  "notes": "Fragile product",
   "items": [
     {
-      "product_name": "স্মার্ট ওয়াচ",
+      "product_name": "Smart Watch",
       "product_code": "SW-001",
       "quantity": 1,
       "unit_price": 500,
@@ -279,7 +338,7 @@ X-API-Key: your_api_key_here
           </div>
 
           <div className="bg-muted/50 p-4 rounded-lg space-y-3">
-            <h3 className="font-bold text-lg">⚠️ POST — ইনকমপ্লিট অর্ডার তৈরি</h3>
+            <h3 className="font-bold text-lg">⚠️ POST — Create Incomplete Order</h3>
             <p className="text-sm">Permission: <code className="bg-background px-1 rounded">incomplete_orders:create</code></p>
             <pre className="bg-background p-3 rounded border text-xs overflow-x-auto">{`POST ${apiBaseUrl}
 Content-Type: application/json
@@ -287,10 +346,10 @@ X-API-Key: your_api_key_here
 
 {
   "type": "incomplete_order",
-  "customer_name": "করিম সাহেব",
+  "customer_name": "Jane Doe",
   "customer_phone": "01800000000",
-  "customer_address": "চট্টগ্রাম",
-  "product_name": "ব্লুটুথ স্পিকার",
+  "customer_address": "Chittagong",
+  "product_name": "Bluetooth Speaker",
   "product_code": "BS-002",
   "quantity": 1,
   "unit_price": 800,
@@ -302,21 +361,29 @@ X-API-Key: your_api_key_here
           </div>
 
           <div className="bg-muted/50 p-4 rounded-lg space-y-3">
-            <h3 className="font-bold text-lg">🔄 Source URL — অর্ডার সিঙ্ক সিস্টেম</h3>
-            <p className="text-sm">API Key-তে Source URL দিলে "অর্ডার সিঙ্ক" বাটনে ক্লিক করে বাহ্যিক সাইট থেকে অর্ডার টেনে আনা যায়।</p>
-            <p className="text-sm font-medium mt-2">আপনার বাহ্যিক সাইটে এই রকম একটি GET endpoint তৈরি করুন:</p>
+            <h3 className="font-bold text-lg">🔄 BizMation Integration</h3>
+            <p className="text-sm">If your external site uses <strong>BizMation</strong>, you can sync orders automatically:</p>
+            <ol className="text-sm list-decimal ml-5 space-y-1">
+              <li>Create a new API Key and enter a label for the site</li>
+              <li>Enter the <strong>API First Key</strong> and <strong>API Second Key</strong> from your BizMation site</li>
+              <li>Set the <strong>Source URL</strong> to your BizMation missing orders endpoint (e.g. <code className="bg-background px-1 rounded text-xs">https://yourdomain.com/api/missing-orders</code>)</li>
+              <li>Click <strong>"Sync Orders"</strong> to pull all orders into your panel</li>
+            </ol>
+            <p className="text-xs text-muted-foreground mt-2">The system will automatically pass api_1 and api_2 as query parameters when fetching from the source URL.</p>
+          </div>
+
+          <div className="bg-muted/50 p-4 rounded-lg space-y-3">
+            <h3 className="font-bold text-lg">🔄 Source URL — Order Sync System</h3>
+            <p className="text-sm">Set a Source URL on your API Key, then click "Sync Orders" to pull orders from your external site.</p>
+            <p className="text-sm font-medium mt-2">Create a GET endpoint on your external site like this:</p>
             <pre className="bg-background p-3 rounded border text-xs overflow-x-auto">{`// Laravel Example - GET /api/orders
 Route::get('/api/orders', function(Request $request) {
-    // API Key verify করুন (optional)
-    $apiKey = $request->header('X-API-Key');
-    
-    // আজকের বা নতুন অর্ডারগুলো রিটার্ন করুন
     $orders = Order::where('synced', false)
         ->orWhere('created_at', '>=', now()->subDay())
         ->get()
         ->map(function($order) {
             return [
-                'type' => 'order',    // বা 'incomplete_order'
+                'type' => 'order',
                 'order_number' => $order->order_number,
                 'customer_name' => $order->customer_name,
                 'customer_phone' => $order->customer_phone,
@@ -336,13 +403,12 @@ Route::get('/api/orders', function(Request $request) {
             ];
         });
     
-    // Mark as synced
     Order::where('synced', false)->update(['synced' => true]);
     
     return response()->json(['data' => $orders]);
 });`}</pre>
             <div className="mt-3 space-y-1">
-              <p className="text-xs font-semibold text-foreground">সাপোর্টেড রেসপন্স ফরম্যাট:</p>
+              <p className="text-xs font-semibold text-foreground">Supported Response Formats:</p>
               <pre className="bg-background p-2 rounded border text-xs">{`// Format 1: Array
 [{ "customer_name": "...", ... }, ...]
 
@@ -350,69 +416,72 @@ Route::get('/api/orders', function(Request $request) {
 { "data": [{ "customer_name": "...", ... }] }
 
 // Format 3: orders key
-{ "orders": [{ "customer_name": "...", ... }] }`}</pre>
+{ "orders": [{ "customer_name": "...", ... }] }
+
+// Format 4: BizMation format
+{ "success": true, "data": [{ "name": "...", "mobile_number": "...", ... }] }`}</pre>
             </div>
-            <p className="text-xs text-muted-foreground mt-2">💡 ডুপ্লিকেট চেক: একই order_number বা একই phone+name থাকলে অর্ডার বাদ দেওয়া হবে।</p>
+            <p className="text-xs text-muted-foreground mt-2">💡 Duplicate check: Orders with the same order_number or same phone+name will be skipped.</p>
           </div>
 
           <div className="bg-muted/50 p-4 rounded-lg space-y-3">
-            <h3 className="font-bold text-lg">🛡️ ডুপ্লিকেট প্রোটেকশন (স্বয়ংক্রিয়)</h3>
-            <p className="text-sm">API-তে অর্ডার পাঠালে স্বয়ংক্রিয়ভাবে IP ও ফোন নম্বর চেক করে। ১-২৪ ঘণ্টার মধ্যে একই IP বা ফোন থেকে ডুপ্লিকেট অর্ডার আসলে সেটি <strong>Incomplete Orders</strong>-এ চলে যাবে।</p>
-            <pre className="bg-background p-3 rounded border text-xs overflow-x-auto">{`// ডুপ্লিকেট হলে 429 রেসপন্স আসবে:
+            <h3 className="font-bold text-lg">🛡️ Duplicate Protection (Automatic)</h3>
+            <p className="text-sm">When orders are pushed via API, the system automatically checks IP and phone number. Duplicate orders within the configured time window (1-24 hours) will be moved to <strong>Incomplete Orders</strong>.</p>
+            <pre className="bg-background p-3 rounded border text-xs overflow-x-auto">{`// Duplicate response (429):
 {
   "success": false,
   "blocked": true,
   "duplicate": true,
-  "reason": "একই ফোন (017...) থেকে 24ঘণ্টার মধ্যে আগেই অর্ডার হয়েছে",
+  "reason": "Duplicate order from same phone within 24 hours",
   "incomplete_order_id": "uuid...",
   "tracking": { "ip": "...", "device": "Mobile | Android | Chrome" }
 }
 
-// কাস্টম ডুপ্লিকেট উইন্ডো (১-৪৮ ঘণ্টা):
+// Custom duplicate window (1-48 hours):
 { "duplicate_window_hours": 12, ... }`}</pre>
           </div>
 
           <div className="bg-muted/50 p-4 rounded-lg space-y-3">
-            <h3 className="font-bold text-lg">📱 ইউজার ট্র্যাকিং (স্বয়ংক্রিয়)</h3>
-            <p className="text-sm">প্রতিটি অর্ডারের সাথে স্বয়ংক্রিয়ভাবে ট্র্যাক হয়:</p>
+            <h3 className="font-bold text-lg">📱 User Tracking (Automatic)</h3>
+            <p className="text-sm">Each order automatically tracks:</p>
             <ul className="text-sm list-disc ml-5 space-y-1">
-              <li><strong>IP Address</strong> — ক্লায়েন্টের আইপি</li>
+              <li><strong>IP Address</strong> — Client IP</li>
               <li><strong>Device Type</strong> — Mobile / Desktop / Tablet</li>
-              <li><strong>OS</strong> — Android 14, iOS 17, Windows 10 ইত্যাদি</li>
+              <li><strong>OS</strong> — Android 14, iOS 17, Windows 10, etc.</li>
               <li><strong>Browser</strong> — Chrome, Safari, Firefox, Edge</li>
-              <li><strong>User-Agent</strong> — সম্পূর্ণ ব্রাউজার স্ট্রিং</li>
-              <li><strong>Source</strong> — কোন ওয়েবসাইট থেকে এসেছে</li>
+              <li><strong>User-Agent</strong> — Full browser string</li>
+              <li><strong>Source</strong> — Which website the order came from</li>
             </ul>
           </div>
 
           <div className="bg-muted/50 p-4 rounded-lg space-y-3">
-            <h3 className="font-bold text-lg">📋 GET — অর্ডার লিস্ট (পেজিনেশন সহ)</h3>
-            <pre className="bg-background p-3 rounded border text-xs overflow-x-auto">{`// সব অর্ডার (order_items সহ)
+            <h3 className="font-bold text-lg">📋 GET — Order List (with pagination)</h3>
+            <pre className="bg-background p-3 rounded border text-xs overflow-x-auto">{`// All orders (with order_items)
 GET ${apiBaseUrl}?type=orders&limit=50&offset=0
 X-API-Key: your_api_key_here
 
-// ফিল্টার সহ
+// With filters
 GET ${apiBaseUrl}?type=orders&status=processing&phone=01700000000&since=2026-03-01
 GET ${apiBaseUrl}?type=incomplete_orders&limit=20&offset=40
 
-// রেসপন্স:
+// Response:
 { "success": true, "data": [...], "total": 150, "returned": 50, "limit": 50, "offset": 0 }`}</pre>
           </div>
 
           <div className="bg-muted/50 p-4 rounded-lg space-y-3">
-            <h3 className="font-bold text-lg">✏️ PATCH — অর্ডার স্ট্যাটাস আপডেট</h3>
+            <h3 className="font-bold text-lg">✏️ PATCH — Update Order Status</h3>
             <pre className="bg-background p-3 rounded border text-xs overflow-x-auto">{`PATCH ${apiBaseUrl}
 X-API-Key: your_api_key_here
 
 {
   "order_id": "uuid-of-order",
   "status": "confirmed",
-  "notes": "ফোনে কনফার্ম হয়েছে"
+  "notes": "Confirmed via phone"
 }`}</pre>
           </div>
 
           <div className="bg-muted/50 p-4 rounded-lg space-y-3">
-            <h3 className="font-bold text-lg">✅ সফল রেসপন্স</h3>
+            <h3 className="font-bold text-lg">✅ Success Response</h3>
             <pre className="bg-background p-3 rounded border text-xs overflow-x-auto">{`{
   "success": true,
   "data": { ... },
@@ -428,7 +497,7 @@ X-API-Key: your_api_key_here
           </div>
 
           <div className="bg-muted/50 p-4 rounded-lg space-y-3">
-            <h3 className="font-bold text-lg">❌ Error রেসপন্স</h3>
+            <h3 className="font-bold text-lg">❌ Error Responses</h3>
             <pre className="bg-background p-3 rounded border text-xs overflow-x-auto">{`// 400 - Missing required fields
 { "error": "customer_name is required" }
 
@@ -446,7 +515,7 @@ X-API-Key: your_api_key_here
           </div>
 
           <div className="bg-muted/50 p-4 rounded-lg space-y-3">
-            <h3 className="font-bold text-lg">🔧 Laravel উদাহরণ</h3>
+            <h3 className="font-bold text-lg">🔧 Laravel Example</h3>
             <pre className="bg-background p-3 rounded border text-xs overflow-x-auto">{`// Laravel Controller Example
 use Illuminate\\Support\\Facades\\Http;
 
@@ -478,7 +547,7 @@ if ($response->successful()) {
           </div>
 
           <div className="bg-muted/50 p-4 rounded-lg space-y-3">
-            <h3 className="font-bold text-lg">🌐 JavaScript/Fetch উদাহরণ</h3>
+            <h3 className="font-bold text-lg">🌐 JavaScript/Fetch Example</h3>
             <pre className="bg-background p-3 rounded border text-xs overflow-x-auto">{`const response = await fetch('${apiBaseUrl}', {
   method: 'POST',
   headers: {
@@ -487,9 +556,9 @@ if ($response->successful()) {
   },
   body: JSON.stringify({
     type: 'order',
-    customer_name: 'রহিম',
+    customer_name: 'John Doe',
     customer_phone: '01700000000',
-    customer_address: 'ঢাকা',
+    customer_address: 'Dhaka',
     total_amount: 560,
     delivery_charge: 60,
     items: [{
@@ -507,7 +576,7 @@ console.log(result.order_number);`}</pre>
           </div>
 
           <div className="bg-muted/50 p-4 rounded-lg space-y-3">
-            <h3 className="font-bold text-lg">🐘 PHP (cURL) উদাহরণ</h3>
+            <h3 className="font-bold text-lg">🐘 PHP (cURL) Example</h3>
             <pre className="bg-background p-3 rounded border text-xs overflow-x-auto">{`$ch = curl_init('${apiBaseUrl}');
 curl_setopt_array($ch, [
     CURLOPT_POST => true,
@@ -518,7 +587,7 @@ curl_setopt_array($ch, [
     ],
     CURLOPT_POSTFIELDS => json_encode([
         'type' => 'order',
-        'customer_name' => 'রহিম',
+        'customer_name' => 'John Doe',
         'customer_phone' => '01700000000',
         'total_amount' => 560,
         'items' => [['product_name' => 'Item', 'quantity' => 1, 'unit_price' => 500, 'total_price' => 500]]

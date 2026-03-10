@@ -43,7 +43,9 @@ export type Database = {
       }
       api_keys: {
         Row: {
+          api_first_key: string | null
           api_key: string
+          api_second_key: string | null
           created_at: string
           id: string
           is_active: boolean
@@ -55,7 +57,9 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          api_first_key?: string | null
           api_key?: string
+          api_second_key?: string | null
           created_at?: string
           id?: string
           is_active?: boolean
@@ -67,7 +71,9 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          api_first_key?: string | null
           api_key?: string
+          api_second_key?: string | null
           created_at?: string
           id?: string
           is_active?: boolean
