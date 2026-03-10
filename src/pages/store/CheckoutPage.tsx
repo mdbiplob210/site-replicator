@@ -373,7 +373,7 @@ const CheckoutPage = () => {
                 </div>
                 <div className="flex gap-3">
                   <Button type="button" variant="outline" onClick={() => setStep(1)} className="flex-1 border-gray-700 text-gray-300">← Back</Button>
-                  <Button type="button" onClick={() => { if (form.address) setStep(3); else toast.error("ঠিকানা দিন"); }} className="flex-1 bg-amber-500 text-gray-950 font-bold hover:bg-amber-400">Next →</Button>
+                  <Button type="button" onClick={() => { if (form.address) setStep(3); else toast.error("Please enter address"); }} className="flex-1 bg-amber-500 text-gray-950 font-bold hover:bg-amber-400">Next →</Button>
                 </div>
               </div>
             )}
