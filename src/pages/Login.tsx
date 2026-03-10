@@ -487,11 +487,11 @@ const Login = () => {
                   }}
                 >
                   {loading ? (
-                    <span className="flex items-center gap-2"><Zap className="h-4 w-4 animate-spin" /> লোডিং...</span>
+                    <span className="flex items-center gap-2"><Zap className="h-4 w-4 animate-spin" /> Loading...</span>
                   ) : (
                     <span className="flex items-center gap-2">
                       <Zap className="h-4 w-4" />
-                      {isSignUp ? "রেজিস্টার" : "প্রবেশ করুন"}
+                      {isSignUp ? "Register" : "Sign In"}
                     </span>
                   )}
                 </Button>
