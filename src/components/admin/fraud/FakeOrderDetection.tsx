@@ -413,7 +413,7 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
                 <Input
                   value={ipSearch}
                   onChange={(e) => setIpSearch(e.target.value)}
-                  placeholder="IP সার্চ..."
+                  placeholder="Search IP..."
                   className="pl-9 w-[200px] h-8 rounded-lg text-xs"
                 />
               </div>
