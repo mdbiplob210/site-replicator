@@ -39,6 +39,9 @@ export const ALL_PERMISSIONS = [
   { key: "print_memo", label: "Print Memo", group: "Orders", description: "Can print order memos" },
   { key: "transfer_orders", label: "Transfer Orders", group: "Orders", description: "Can transfer orders between employees" },
 
+  // WhatsApp
+  { key: "manage_whatsapp", label: "Manage WhatsApp", group: "WhatsApp", description: "Can view and manage WhatsApp messages" },
+
   // System
   { key: "manage_users", label: "Manage Users", group: "System", description: "Can edit/delete users and employees" },
   { key: "create_users", label: "Create Users", group: "System", description: "Can create new user accounts" },

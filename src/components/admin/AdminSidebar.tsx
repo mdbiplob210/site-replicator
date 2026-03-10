@@ -97,6 +97,7 @@ export function AdminSidebar() {
     if (item.title === "Planning") return canSeePlanning;
     if (item.title === "Tasks") return canSeeTasks;
     if (item.title === "Analytics") return canSeeAnalytics;
+    if (item.title === "WhatsApp") return canSeeWhatsApp;
     return true;
   });
 
