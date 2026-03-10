@@ -41,14 +41,14 @@ type TabType = "users" | "rules" | "tracking" | "activity";
 type TrackingSubTab = "live" | "performance";
 
 const groupIcons: Record<string, any> = {
-  "অর্ডার": ShoppingCart,
-  "প্রোডাক্ট": Package,
-  "ফিন্যান্স": DollarSign,
-  "ড্যাশবোর্ড ও রিপোর্ট": BarChart3,
-  "ওয়েবসাইট": Globe,
-  "মার্কেটিং": ShoppingCart,
-  "কুরিয়ার": Truck,
-  "সিস্টেম": Settings,
+  "Orders": ShoppingCart,
+  "Products": Package,
+  "Finance": DollarSign,
+  "Dashboard & Reports": BarChart3,
+  "Website": Globe,
+  "Marketing": ShoppingCart,
+  "Courier": Truck,
+  "System": Settings,
 };
 
 const AdminUsers = () => {
