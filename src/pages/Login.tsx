@@ -240,7 +240,7 @@ const Login = () => {
           throw error;
         }
         await recordLoginAttempt(email, true);
-        toast({ title: "🏆 সফল!", description: "সফলভাবে লগইন হয়েছে!" });
+        toast({ title: "🏆 Success!", description: "Logged in successfully!" });
         const { data: roleData } = await supabase
           .from("user_roles")
           .select("role")
