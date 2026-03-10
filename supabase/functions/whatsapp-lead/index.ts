@@ -17,41 +17,46 @@ Deno.serve(async (req) => {
     )
 
     const body = await req.json()
-    const { customer_phone, customer_name, message, product_name } = body
+    const { customer_phone, customer_name, message, product_name, visitor_id } = body
 
-    if (!customer_phone) {
-      return new Response(JSON.stringify({ error: 'customer_phone is required' }), {
+    if (!customer_phone && !visitor_id) {
+      return new Response(JSON.stringify({ error: 'customer_phone or visitor_id is required' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
     }
 
+    // Use visitor_id as placeholder phone if no phone provided
+    const phone = customer_phone || `visitor-${visitor_id || Date.now()}`
+    const name = customer_name || (product_name ? `${product_name} - WhatsApp Lead` : 'WhatsApp Lead')
+
     // Check if conversation already exists for this phone
     const { data: existingConv } = await supabase
       .from('whatsapp_conversations')
-      .select('id')
-      .eq('customer_phone', customer_phone)
+      .select('id, unread_count')
+      .eq('customer_phone', phone)
       .limit(1)
       .maybeSingle()
 
     let conversationId: string
+    const msgContent = message || (product_name
+      ? `📦 "${product_name}" প্রোডাক্টটি সম্পর্কে WhatsApp এ মেসেজ করেছে।`
+      : '💬 WhatsApp এ মেসেজ করেছে।')
 
     if (existingConv) {
       conversationId = existingConv.id
-      // Update conversation
       await supabase.from('whatsapp_conversations').update({
-        last_message: message || `${product_name} সম্পর্কে জানতে চাই`,
+        last_message: msgContent,
         last_message_at: new Date().toISOString(),
-        unread_count: (await supabase.from('whatsapp_conversations').select('unread_count').eq('id', conversationId).single()).data?.unread_count + 1 || 1,
+        unread_count: (existingConv.unread_count || 0) + 1,
         status: 'open',
       }).eq('id', conversationId)
     } else {
-      // Create new conversation
       const { data: newConv, error: convError } = await supabase
         .from('whatsapp_conversations')
         .insert({
-          customer_phone,
-          customer_name: customer_name || null,
-          last_message: message || `${product_name} সম্পর্কে জানতে চাই`,
+          customer_phone: phone,
+          customer_name: name,
+          last_message: msgContent,
           last_message_at: new Date().toISOString(),
           unread_count: 1,
           status: 'open',
@@ -64,10 +69,6 @@ Deno.serve(async (req) => {
     }
 
     // Insert the message
-    const msgContent = message || (product_name
-      ? `আমি "${product_name}" প্রোডাক্টটি সম্পর্কে জানতে চাই।`
-      : 'হ্যালো, আমি আপনাদের প্রোডাক্ট সম্পর্কে জানতে চাই।')
-
     const { error: msgError } = await supabase.from('whatsapp_messages').insert({
       conversation_id: conversationId,
       direction: 'incoming',
@@ -81,7 +82,6 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({
       success: true,
       conversation_id: conversationId,
-      message: 'Conversation created/updated',
     }), {
       status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })
