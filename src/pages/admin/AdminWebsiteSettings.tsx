@@ -871,8 +871,8 @@ function TrackingTab() {
 
         <div>
           <label className="text-sm font-medium text-foreground">Ad Account ID</label>
-          <Input className="mt-1.5" placeholder="act_123456789 অথবা 123456789" value={fbAdAccountId} onChange={(e) => setFbAdAccountId(e.target.value)} />
-          <p className="text-xs text-muted-foreground mt-1">Meta Business Suite → Ad Accounts → আপনার Ad Account ID কপি করুন</p>
+          <Input className="mt-1.5" placeholder="act_123456789 or 123456789" value={fbAdAccountId} onChange={(e) => setFbAdAccountId(e.target.value)} />
+          <p className="text-xs text-muted-foreground mt-1">Meta Business Suite → Ad Accounts → Copy your Ad Account ID</p>
         </div>
 
         <div>
