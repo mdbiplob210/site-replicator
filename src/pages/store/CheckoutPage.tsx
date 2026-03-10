@@ -364,7 +364,7 @@ const CheckoutPage = () => {
             {step === 2 && (
               <div className="space-y-4">
                 <div className="space-y-1.5">
-                  <Label className="text-gray-300">ডেলিভারি ঠিকানা</Label>
+                  <Label className="text-gray-300">Delivery Address</Label>
                   <Textarea className="bg-gray-900 border-gray-800 text-white" value={form.address} onChange={e => updateForm({ address: e.target.value })} required />
                 </div>
                 <div className="space-y-1.5">
