@@ -298,7 +298,7 @@ function GeneralTab() {
           {/* Contact Phone */}
           <div>
             <label className="text-sm font-medium text-foreground">Contact Phone</label>
-            <p className="text-xs text-muted-foreground">হেডার মার্কি, ফুটার ও প্রোডাক্ট পেজে দেখাবে</p>
+            <p className="text-xs text-muted-foreground">Shown in header marquee, footer & product page</p>
             <Input className="mt-1.5" placeholder="+880..." value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} />
           </div>
 
