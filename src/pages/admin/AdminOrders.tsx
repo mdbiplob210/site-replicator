@@ -690,7 +690,7 @@ const AdminOrders = () => {
       <html><head><title>Orders Print</title></head>
       <body style="font-family:Arial,sans-serif;padding:20px">
         <h2 style="margin-bottom:10px">Orders Report — ${format(new Date(), "dd MMM yyyy")}</h2>
-        <p style="color:#666;margin-bottom:15px">${filteredOrders.length}টি অর্ডার</p>
+        <p style="color:#666;margin-bottom:15px">${filteredOrders.length} orders</p>
         <table style="width:100%;border-collapse:collapse;font-size:13px">
           <thead><tr style="background:#f5f5f5">
             <th style="padding:8px 10px;border:1px solid #ddd;text-align:left">Order #</th>
