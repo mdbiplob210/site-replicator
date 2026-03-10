@@ -79,9 +79,9 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["fraud-settings"] });
-      toast.success("সেটিংস সেভ হয়েছে!");
+      toast.success("Settings saved!");
     },
-    onError: (e: Error) => toast.error("সেভ ব্যর্থ: " + e.message),
+    onError: (e: Error) => toast.error("Save failed: " + e.message),
   });
 
   const handleSaveAll = () => {
