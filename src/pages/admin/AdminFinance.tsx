@@ -474,7 +474,7 @@ export default function AdminFinance() {
               </div>
               <div>
                 <label className="text-xs font-semibold text-muted-foreground uppercase">Note (Optional)</label>
-                <Textarea className="mt-1" placeholder="কি প্রোডাক্ট কিনলেন, পরিমাণ ইত্যাদি..." value={purchaseNote} onChange={(e) => setPurchaseNote(e.target.value)} />
+                <Textarea className="mt-1" placeholder="What products, quantity, etc..." value={purchaseNote} onChange={(e) => setPurchaseNote(e.target.value)} />
               </div>
               <Button className="w-full h-12 rounded-2xl text-base font-semibold bg-destructive hover:bg-destructive/90 text-destructive-foreground" onClick={handleSubmitPurchase} disabled={createRecord.isPending || !purchaseAmount || !purchaseSupplier}>
                 {createRecord.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Record Purchase"}
