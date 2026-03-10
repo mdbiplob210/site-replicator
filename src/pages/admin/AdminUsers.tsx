@@ -111,7 +111,7 @@ const AdminUsers = () => {
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
-      toast.success("ইউজার আপডেট হয়েছে!");
+      toast.success("User updated!");
       setEditOpen(false);
       fetchUsers();
     } catch (err: any) { toast.error(err.message); } finally { setEditLoading(false); }
