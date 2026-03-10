@@ -590,12 +590,12 @@ const BlockedOrdersList = () => {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="text-xs">কাস্টমার</TableHead>
-            <TableHead className="text-xs">ফোন</TableHead>
+            <TableHead className="text-xs">Customer</TableHead>
+            <TableHead className="text-xs">Phone</TableHead>
             <TableHead className="text-xs">IP</TableHead>
-            <TableHead className="text-xs">ব্লক কারণ</TableHead>
-            <TableHead className="text-xs">তারিখ</TableHead>
-            <TableHead className="text-xs">মোট</TableHead>
+            <TableHead className="text-xs">Block Reason</TableHead>
+            <TableHead className="text-xs">Date</TableHead>
+            <TableHead className="text-xs">Total</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
