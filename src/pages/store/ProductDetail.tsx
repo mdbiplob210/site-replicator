@@ -490,6 +490,7 @@ const ProductDetail = () => {
           {/* WhatsApp */}
           {whatsappNumber && (
             <a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noopener noreferrer"
+              onClick={handleWhatsAppClick}
               className="w-12 h-12 rounded-xl bg-green-500 hover:bg-green-600 text-white flex items-center justify-center flex-shrink-0 transition shadow">
               <MessageCircle className="h-5 w-5" />
             </a>
