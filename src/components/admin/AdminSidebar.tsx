@@ -80,6 +80,7 @@ export function AdminSidebar() {
   const canSeePlanning = isAdmin;
   const canSeeTasks = isAdmin || hasRole("manager") || hasRole("moderator");
   const canSeeAnalytics = isAdmin || hasRole("ad_analytics");
+  const canSeeWhatsApp = isAdmin || hasRole("moderator") || hasRole("user");
   const canSeeMetaAds = isAdmin || hasRole("ad_analytics");
   const canSeeAutomation = isAdmin;
   const canSeeBackup = isAdmin;
