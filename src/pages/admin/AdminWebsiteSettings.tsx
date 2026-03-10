@@ -377,7 +377,7 @@ function GeneralTab() {
 
             <div>
               <label className="text-sm font-medium text-foreground">Facebook Page URL</label>
-              <p className="text-xs text-muted-foreground">ফুটারে Facebook লিংক দেখাবে</p>
+              <p className="text-xs text-muted-foreground">Facebook link shown in footer</p>
               <Input 
                 className="mt-1.5" 
                 placeholder="https://facebook.com/..."
