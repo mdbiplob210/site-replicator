@@ -643,8 +643,8 @@ const AdminUsers = () => {
                             <div className="flex items-center gap-3 p-4 rounded-xl bg-primary/5 border border-primary/20">
                               <Shield className="h-5 w-5 text-primary" />
                               <div>
-                                <p className="text-sm font-bold text-foreground">অ্যাডমিন ইউজার</p>
-                                <p className="text-xs text-muted-foreground">অ্যাডমিনের সব পারমিশন স্বয়ংক্রিয়ভাবে থাকে। নিচে দেখুন কোন কোন পারমিশন আছে।</p>
+                                <p className="text-sm font-bold text-foreground">Admin User</p>
+                                <p className="text-xs text-muted-foreground">Admins automatically have all permissions.</p>
                               </div>
                             </div>
                           )}
