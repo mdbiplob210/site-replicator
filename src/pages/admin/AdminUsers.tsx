@@ -973,7 +973,7 @@ const AdminUsers = () => {
                   <div className="p-2.5 rounded-xl bg-emerald-500/10"><CheckCircle2 className="h-5 w-5 text-emerald-600" /></div>
                   <div>
                     <p className="text-2xl font-bold text-foreground">{successLogins}</p>
-                    <p className="text-sm text-muted-foreground">সফল লগইন</p>
+                    <p className="text-sm text-muted-foreground">Successful Logins</p>
                   </div>
                 </CardContent>
               </Card>
