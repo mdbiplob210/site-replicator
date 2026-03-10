@@ -255,7 +255,7 @@ const AdminRoles = () => {
                                   <Check className="h-3 w-3" /> Grant All
                                 </Button>
                                 <Button size="sm" variant="outline" className="gap-1.5 text-xs rounded-lg text-destructive" onClick={() => handleRevokeAll(emp.user_id)}>
-                                  <X className="h-3 w-3" /> সব সরান
+                                  <X className="h-3 w-3" /> Revoke All
                                 </Button>
                               </div>
                             </div>
