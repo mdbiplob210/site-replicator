@@ -152,7 +152,7 @@ const AdminRoles = () => {
             <Card className="border-border/40">
               <CardContent className="p-5 flex items-center gap-4">
                 <div className="p-2.5 rounded-xl bg-amber-50"><Shield className="h-5 w-5 text-amber-600" /></div>
-                <div><p className="text-2xl font-bold text-foreground">{ALL_PERMISSIONS.length}</p><p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">মোট পারমিশন</p></div>
+                <div><p className="text-2xl font-bold text-foreground">{ALL_PERMISSIONS.length}</p><p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Total Permissions</p></div>
               </CardContent>
             </Card>
           </div>
