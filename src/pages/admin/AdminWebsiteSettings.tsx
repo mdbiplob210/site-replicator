@@ -711,7 +711,7 @@ function BuyDomainTab() {
               </SelectContent>
             </Select>
             <Button className="gap-2">
-              <Search className="h-4 w-4" /> সার্চ
+              <Search className="h-4 w-4" /> Search
             </Button>
           </div>
         </div>
