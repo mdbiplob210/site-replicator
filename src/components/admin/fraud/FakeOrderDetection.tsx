@@ -289,7 +289,7 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
                 </div>
                 <div>
                   <h3 className="font-bold text-foreground text-sm">Device Block (VPN Protection)</h3>
-                  <p className="text-xs text-muted-foreground">VPN দিয়ে IP পরিবর্তন করলেও ডিভাইস ট্র্যাক করে ব্লক</p>
+                  <p className="text-xs text-muted-foreground">Block devices even when IP is changed via VPN</p>
                 </div>
               </div>
               <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/40 border border-border/40">
