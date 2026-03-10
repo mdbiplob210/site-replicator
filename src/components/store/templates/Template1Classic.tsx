@@ -350,7 +350,7 @@ const Template1Classic = () => {
                       )}
                     </div>
                     {p.stock_quantity !== undefined && p.stock_quantity <= 0 && !(p as any).allow_out_of_stock_orders && (
-                      <span className="text-[10px] text-red-500 font-semibold">স্টকে নেই</span>
+                      <span className="text-[10px] text-red-500 font-semibold">Out of stock</span>
                     )}
                   </div>
 
