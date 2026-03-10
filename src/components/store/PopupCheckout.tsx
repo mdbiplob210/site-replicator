@@ -330,7 +330,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
             {/* Scarcity Banner */}
             <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white px-4 sm:px-5 py-2.5 sm:py-2.5 flex items-center justify-center gap-2 text-[11px] sm:text-sm font-semibold rounded-t-3xl sm:rounded-t-3xl">
               <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-pulse" />
-              <span>এই অফারটি পাবে আর মাত্র <span className="font-black text-sm sm:text-base">{scarcityCount}</span> জন!</span>
+              <span>Only <span className="font-black text-sm sm:text-base">{scarcityCount}</span> slots left for this offer!</span>
               <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             </div>
 
