@@ -1027,9 +1027,9 @@ const AdminUsers = () => {
                   <Select value={activityStatus} onValueChange={setActivityStatus}>
                     <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">সব অ্যাটেম্পট</SelectItem>
-                      <SelectItem value="success">সফল</SelectItem>
-                      <SelectItem value="failed">ব্যর্থ</SelectItem>
+                       <SelectItem value="all">All Attempts</SelectItem>
+                       <SelectItem value="success">Successful</SelectItem>
+                       <SelectItem value="failed">Failed</SelectItem>
                     </SelectContent>
                   </Select>
                   <div className="flex-1 flex items-center gap-2 bg-secondary rounded-lg px-3 py-2 border border-border/50 min-w-[200px]">
