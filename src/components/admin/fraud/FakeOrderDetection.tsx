@@ -184,7 +184,7 @@ export const FakeOrderDetection = ({ onBack }: FakeOrderDetectionProps) => {
   );
 
   const getDurationLabel = (d: string) => {
-    const map: Record<string, string> = { off: "Off", "1h": "১ ঘণ্টা", "6h": "৬ ঘণ্টা", "12h": "১২ ঘণ্টা", "24h": "২৪ ঘণ্টা" };
+    const map: Record<string, string> = { off: "Off", "1h": "1 Hour", "6h": "6 Hours", "12h": "12 Hours", "24h": "24 Hours" };
     return map[d] || d;
   };
 
