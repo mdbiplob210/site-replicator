@@ -198,7 +198,7 @@ export default function AdminMemoTemplate() {
                     {/* POS badge */}
                     {t.isPOS && (
                       <div className="absolute top-3 left-3">
-                        <span className="text-[10px] font-bold bg-amber-500/20 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded-full">
+                        <span className="text-[10px] font-bold bg-accent text-accent-foreground px-2 py-0.5 rounded-full">
                           POS
                         </span>
                       </div>
