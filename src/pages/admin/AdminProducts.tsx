@@ -37,6 +37,8 @@ interface Product {
   internal_note: string | null;
   free_delivery: boolean;
   allow_out_of_stock_orders: boolean;
+  main_image_url: string | null;
+  additional_images: string[] | null;
 }
 
 interface Category {
@@ -68,6 +70,10 @@ const AdminProducts = () => {
   const [statusFilter, setStatusFilter] = useState("all-status");
   const [stockFilter, setStockFilter] = useState("all-stock");
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [uploadingMain, setUploadingMain] = useState(false);
+  const [uploadingAdditional, setUploadingAdditional] = useState(false);
+  const [mainImageUrl, setMainImageUrl] = useState<string>("");
+  const [additionalImages, setAdditionalImages] = useState<string[]>([]);
 
   const [form, setForm] = useState(emptyProduct);
 
@@ -114,6 +120,41 @@ const AdminProducts = () => {
     return (sell - buy - extra).toFixed(2);
   };
 
+  const uploadImage = async (file: File, folder: string): Promise<string | null> => {
+    const ext = file.name.split('.').pop();
+    const fileName = `${folder}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+    const { error } = await supabase.storage.from("product-images").upload(fileName, file);
+    if (error) { toast.error("Image upload failed: " + error.message); return null; }
+    const { data: urlData } = supabase.storage.from("product-images").getPublicUrl(fileName);
+    return urlData.publicUrl;
+  };
+
+  const handleMainImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingMain(true);
+    const url = await uploadImage(file, "main");
+    if (url) setMainImageUrl(url);
+    setUploadingMain(false);
+  };
+
+  const handleAdditionalImagesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setUploadingAdditional(true);
+    const urls: string[] = [];
+    for (const file of Array.from(files)) {
+      const url = await uploadImage(file, "additional");
+      if (url) urls.push(url);
+    }
+    setAdditionalImages(prev => [...prev, ...urls]);
+    setUploadingAdditional(false);
+  };
+
+  const removeAdditionalImage = (index: number) => {
+    setAdditionalImages(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleSave = async () => {
     if (!form.name || !form.product_code) {
       toast.error("Product Name and Code are required");
@@ -136,12 +177,13 @@ const AdminProducts = () => {
       allow_out_of_stock_orders: form.allow_out_of_stock_orders,
       category_id: form.category_id || null,
       status: form.status,
+      main_image_url: mainImageUrl || null,
+      additional_images: additionalImages.length > 0 ? additionalImages : [],
     };
     // Only set slug if user provided one; otherwise let DB trigger auto-generate
     if (form.slug.trim()) {
       payload.slug = form.slug.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
     } else if (!editingId) {
-      // New product: let DB handle it (slug = null triggers the auto-generate function)
       payload.slug = null;
     }
 
@@ -160,12 +202,16 @@ const AdminProducts = () => {
       setView("list");
       setEditingId(null);
       setForm(emptyProduct);
+      setMainImageUrl("");
+      setAdditionalImages([]);
       fetchProducts();
     }
   };
 
   const handleEdit = (p: Product) => {
     setEditingId(p.id);
+    setMainImageUrl(p.main_image_url || "");
+    setAdditionalImages(p.additional_images || []);
     setForm({
       name: p.name,
       product_code: p.product_code,
@@ -236,7 +282,7 @@ const AdminProducts = () => {
       <AdminLayout>
         <div className="max-w-[1400px] space-y-6">
           <div className="flex items-center gap-3">
-            <button onClick={() => { setView("list"); setEditingId(null); setForm(emptyProduct); }} className="p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors">
+            <button onClick={() => { setView("list"); setEditingId(null); setForm(emptyProduct); setMainImageUrl(""); setAdditionalImages([]); }} className="p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors">
               <ArrowLeft className="h-5 w-5" />
             </button>
             <div>
@@ -251,9 +297,47 @@ const AdminProducts = () => {
               <div className="space-y-4">
                 <div>
                   <Label className="text-sm font-semibold">Main Image</Label>
-                  <div className="mt-2 h-28 w-28 border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-primary/50 transition-colors">
-                    <ImageIcon className="h-6 w-6 text-muted-foreground" />
-                    <span className="text-[11px] text-muted-foreground">Upload</span>
+                  <div className="mt-2 flex items-center gap-4">
+                    {mainImageUrl ? (
+                      <div className="relative h-28 w-28 rounded-xl overflow-hidden border border-border">
+                        <img src={mainImageUrl} alt="Main" className="w-full h-full object-cover" />
+                        <button onClick={() => setMainImageUrl("")} className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-0.5">
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="mt-0 h-28 w-28 border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-primary/50 transition-colors">
+                        {uploadingMain ? <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /> : (
+                          <>
+                            <Upload className="h-6 w-6 text-muted-foreground" />
+                            <span className="text-[11px] text-muted-foreground">Upload</span>
+                          </>
+                        )}
+                        <input type="file" accept="image/*" className="hidden" onChange={handleMainImageUpload} disabled={uploadingMain} />
+                      </label>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-sm font-semibold">Additional Images</Label>
+                  <div className="mt-2 flex items-center gap-3 flex-wrap">
+                    {additionalImages.map((url, i) => (
+                      <div key={i} className="relative h-20 w-20 rounded-lg overflow-hidden border border-border">
+                        <img src={url} alt={`Extra ${i + 1}`} className="w-full h-full object-cover" />
+                        <button onClick={() => removeAdditionalImage(i)} className="absolute top-0.5 right-0.5 bg-destructive text-destructive-foreground rounded-full p-0.5">
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                    <label className="h-20 w-20 border-2 border-dashed border-border rounded-lg flex flex-col items-center justify-center gap-0.5 cursor-pointer hover:border-primary/50 transition-colors">
+                      {uploadingAdditional ? <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /> : (
+                        <>
+                          <Plus className="h-5 w-5 text-muted-foreground" />
+                          <span className="text-[9px] text-muted-foreground">Add</span>
+                        </>
+                      )}
+                      <input type="file" accept="image/*" multiple className="hidden" onChange={handleAdditionalImagesUpload} disabled={uploadingAdditional} />
+                    </label>
                   </div>
                 </div>
               </div>
