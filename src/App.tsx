@@ -21,7 +21,7 @@ const OrderSuccess = lazy(() => import("./pages/store/OrderSuccess"));
 const Login = lazy(() => import("./pages/Login"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const LandingPageView = lazy(() => import("./pages/LandingPageView"));
-const LandingPageCheckout = lazy(() => import("./pages/LandingPageCheckout"));
+// LandingPageCheckout removed - checkout is now handled within single HTML
 const Landing = lazy(() => import("./pages/Landing"));
 
 // Lazy-loaded admin pages
@@ -151,7 +151,7 @@ const App = () => {
             <Route path="/admin/coming-soon" element={<Admin><AdminComingSoon /></Admin>} />
             <Route path="/admin/plan" element={P("Plan", "Subscription management")} />
             <Route path="/lp/:slug" element={<LandingPageView />} />
-            <Route path="/lp/:slug/checkout" element={<LandingPageCheckout />} />
+            {/* /lp/:slug/checkout route removed - single HTML handles everything */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

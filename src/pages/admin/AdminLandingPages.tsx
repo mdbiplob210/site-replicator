@@ -168,9 +168,8 @@ export default function AdminLandingPages() {
     // Warn about cdn.tailwindcss.com
     const cdnPattern = /cdn\.tailwindcss\.com/i;
     const hasCdnInHtml = cdnPattern.test(form.html_content || "");
-    const hasCdnInCheckout = cdnPattern.test(form.checkout_html || "");
     const hasCdnInScripts = cdnPattern.test(form.custom_head_scripts || "");
-    if (hasCdnInHtml || hasCdnInCheckout || hasCdnInScripts) {
+    if (hasCdnInHtml || hasCdnInScripts) {
       toast.warning("⚠️ আপনার HTML এ cdn.tailwindcss.com পাওয়া গেছে। এটি production এ console warning তৈরি করে। সেভ করা হচ্ছে, তবে এটি রিমুভ করা উচিত।", { duration: 8000 });
     }
 
@@ -204,7 +203,7 @@ export default function AdminLandingPages() {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-foreground">Landing Pages</h1>
-              <p className="text-sm text-muted-foreground">HTML কোড পেস্ট করে landing page ও checkout page তৈরি করুন</p>
+              <p className="text-sm text-muted-foreground">HTML কোড পেস্ট করে landing page তৈরি করুন — চেকআউট ফর্ম একই HTML এ থাকবে</p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -237,13 +236,9 @@ export default function AdminLandingPages() {
                       <Badge variant={page.is_active ? "default" : "secondary"}>
                         {page.is_active ? "Active" : "Inactive"}
                       </Badge>
-                      {page.checkout_html && (
-                        <Badge variant="outline" className="text-xs">Checkout</Badge>
-                      )}
                     </div>
                     <div className="flex items-center gap-3 text-sm text-muted-foreground">
                       <span className="font-mono">/lp/{page.slug}</span>
-                      {page.checkout_html && <span className="font-mono">/lp/{page.slug}/checkout</span>}
                       <div className="flex gap-1.5">
                         {page.fb_pixel_id && <Badge variant="outline" className="text-xs">FB</Badge>}
                         {page.tiktok_pixel_id && <Badge variant="outline" className="text-xs">TikTok</Badge>}
@@ -291,9 +286,8 @@ export default function AdminLandingPages() {
           </DialogHeader>
 
           <Tabs defaultValue="landing" className="w-full">
-            <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="landing">Landing Page</TabsTrigger>
-              <TabsTrigger value="checkout">Checkout Page</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="landing">HTML কোড</TabsTrigger>
               <TabsTrigger value="images">ছবি</TabsTrigger>
               <TabsTrigger value="tracking">ট্র্যাকিং</TabsTrigger>
               <TabsTrigger value="settings">সেটিংস</TabsTrigger>
@@ -318,72 +312,46 @@ export default function AdminLandingPages() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Landing Page HTML কোড</Label>
+                <Label>সম্পূর্ণ HTML কোড (Landing Page + Checkout Form)</Label>
                 <Textarea
                   value={form.html_content || ""}
                   onChange={(e) => setForm({ ...form, html_content: e.target.value })}
-                  placeholder="এখানে আপনার Landing Page এর সম্পূর্ণ HTML কোড পেস্ট করুন..."
+                  placeholder="এখানে আপনার সম্পূর্ণ HTML কোড পেস্ট করুন — Landing Page ও Checkout Form একসাথে..."
                   className="min-h-[400px] font-mono text-sm"
                 />
-                <div className="bg-muted/50 border rounded-lg p-4 space-y-2">
-                  <p className="text-sm font-semibold text-foreground">🔗 Checkout এ রিডাইরেক্ট করতে:</p>
+                <div className="bg-muted/50 border rounded-lg p-4 space-y-3">
+                  <p className="text-sm font-semibold text-foreground">📋 Checkout Form ব্যবহারবিধি:</p>
                   <p className="text-xs text-muted-foreground">
-                    Landing page এর "অর্ডার করুন" বাটনে এই লিংক দিন:
+                    আপনার HTML এর মধ্যে <code className="bg-background px-1 rounded">data-checkout-form</code> attribute সহ একটি form যোগ করুন।
+                    ফর্ম সাবমিট হলে অটোমেটিক অর্ডার তৈরি হয়ে সরাসরি Admin Panel এ চলে যাবে।
                   </p>
-                  <div className="bg-background border rounded p-3 font-mono text-xs">
-                    <p className="text-primary">{`<a href="/lp/${form.slug || "your-slug"}/checkout">অর্ডার করুন</a>`}</p>
+                  <div className="bg-background border rounded p-3 font-mono text-xs space-y-1 overflow-x-auto">
+                    <p className="text-primary">{`<form data-checkout-form`}</p>
+                    <p className="text-primary pl-4">{`data-product-name="প্রোডাক্ট নাম"`}</p>
+                    <p className="text-primary pl-4">{`data-product-code="SKU001"`}</p>
+                    <p className="text-primary pl-4">{`data-unit-price="1200"`}</p>
+                    <p className="text-primary pl-4">{`data-delivery-charge="60"`}</p>
+                    <p className="text-primary">{`>`}</p>
+                    <p className="text-muted-foreground pl-4">{`<input name="customer_name" placeholder="আপনার নাম" required />`}</p>
+                    <p className="text-muted-foreground pl-4">{`<input name="customer_phone" placeholder="ফোন নম্বর" required />`}</p>
+                    <p className="text-muted-foreground pl-4">{`<input name="customer_address" placeholder="ঠিকানা" />`}</p>
+                    <p className="text-muted-foreground pl-4">{`<select name="quantity">`}</p>
+                    <p className="text-muted-foreground pl-8">{`<option value="1">১ পিস</option>`}</p>
+                    <p className="text-muted-foreground pl-8">{`<option value="2">২ পিস</option>`}</p>
+                    <p className="text-muted-foreground pl-4">{`</select>`}</p>
+                    <p className="text-muted-foreground pl-4">{`<textarea name="notes" placeholder="নোট"></textarea>`}</p>
+                    <p className="text-muted-foreground pl-4">{`<button type="submit">অর্ডার করুন</button>`}</p>
+                    <p className="text-primary">{`</form>`}</p>
+                  </div>
+                  <div className="text-xs text-muted-foreground space-y-1 mt-2">
+                    <p><strong>Required fields:</strong> customer_name, customer_phone</p>
+                    <p><strong>Optional fields:</strong> customer_address, quantity, notes</p>
+                    <p><strong>Form attributes:</strong> data-product-name, data-product-code, data-unit-price, data-delivery-charge, data-discount</p>
+                    <p><strong>Success handling:</strong> data-success-url="/thank-you" অথবা data-success-message="ধন্যবাদ!"</p>
+                    <p className="text-primary/80">✅ অর্ডার সাবমিট হলে সরাসরি Admin Panel এ অর্ডার আসবে + FB Purchase ও TikTok CompletePayment ইভেন্ট অটো ফায়ার হবে</p>
                   </div>
                 </div>
               </div>
-            </TabsContent>
-
-            <TabsContent value="checkout" className="space-y-4 mt-4">
-              <div className="space-y-2">
-                <Label>Checkout Page HTML কোড</Label>
-                <Textarea
-                  value={form.checkout_html || ""}
-                  onChange={(e) => setForm({ ...form, checkout_html: e.target.value })}
-                  placeholder="এখানে আপনার Checkout Page এর HTML কোড পেস্ট করুন..."
-                  className="min-h-[350px] font-mono text-sm"
-                />
-              </div>
-              <div className="bg-muted/50 border rounded-lg p-4 space-y-3">
-                <p className="text-sm font-semibold text-foreground">📋 Checkout Form ব্যবহারবিধি:</p>
-                <p className="text-xs text-muted-foreground">
-                  আপনার HTML এ form ট্যাগে <code className="bg-background px-1 rounded">data-checkout-form</code> attribute যোগ করুন।
-                  ফর্ম সাবমিট হলে অটোমেটিক অর্ডার তৈরি হয়ে Admin Panel এ চলে যাবে।
-                </p>
-                <div className="bg-background border rounded p-3 font-mono text-xs space-y-1 overflow-x-auto">
-                  <p className="text-primary">{`<form data-checkout-form`}</p>
-                  <p className="text-primary pl-4">{`data-product-name="প্রোডাক্ট নাম"`}</p>
-                  <p className="text-primary pl-4">{`data-product-code="SKU001"`}</p>
-                  <p className="text-primary pl-4">{`data-unit-price="1200"`}</p>
-                  <p className="text-primary pl-4">{`data-delivery-charge="60"`}</p>
-                  <p className="text-primary">{`>`}</p>
-                  <p className="text-muted-foreground pl-4">{`<input name="customer_name" placeholder="আপনার নাম" required />`}</p>
-                  <p className="text-muted-foreground pl-4">{`<input name="customer_phone" placeholder="ফোন নম্বর" required />`}</p>
-                  <p className="text-muted-foreground pl-4">{`<input name="customer_address" placeholder="ঠিকানা" />`}</p>
-                  <p className="text-muted-foreground pl-4">{`<select name="quantity">`}</p>
-                  <p className="text-muted-foreground pl-8">{`<option value="1">১ পিস</option>`}</p>
-                  <p className="text-muted-foreground pl-8">{`<option value="2">২ পিস</option>`}</p>
-                  <p className="text-muted-foreground pl-4">{`</select>`}</p>
-                  <p className="text-muted-foreground pl-4">{`<textarea name="notes" placeholder="নোট"></textarea>`}</p>
-                  <p className="text-muted-foreground pl-4">{`<button type="submit">অর্ডার করুন</button>`}</p>
-                  <p className="text-primary">{`</form>`}</p>
-                </div>
-                <div className="text-xs text-muted-foreground space-y-1 mt-2">
-                  <p><strong>Required fields:</strong> customer_name, customer_phone</p>
-                  <p><strong>Optional fields:</strong> customer_address, quantity, notes</p>
-                  <p><strong>Form attributes:</strong> data-product-name, data-product-code, data-unit-price, data-delivery-charge, data-discount</p>
-                  <p><strong>Success handling:</strong> data-success-url="/thank-you" অথবা data-success-message="ধন্যবাদ!"</p>
-                  <p className="text-primary/80">✅ অর্ডার সাবমিট হলে FB Purchase ও TikTok CompletePayment ইভেন্ট অটো ফায়ার হবে</p>
-                </div>
-              </div>
-              {!form.checkout_html && (
-                <div className="bg-muted/30 border border-dashed rounded-lg p-6 text-center">
-                  <p className="text-sm text-muted-foreground">Checkout HTML না দিলে শুধু Landing Page কাজ করবে</p>
-                </div>
-              )}
             </TabsContent>
 
             <TabsContent value="images" className="space-y-4 mt-4">
@@ -561,11 +529,8 @@ export default function AdminLandingPages() {
 
               {editingPage && (
                 <div className="p-4 border rounded-lg space-y-2">
-                  <Label>পেজ URLs</Label>
+                  <Label>পেজ URL</Label>
                   <p className="text-sm font-mono text-primary">{baseUrl}/lp/{form.slug}</p>
-                  {form.checkout_html && (
-                    <p className="text-sm font-mono text-primary">{baseUrl}/lp/{form.slug}/checkout</p>
-                  )}
                 </div>
               )}
             </TabsContent>
