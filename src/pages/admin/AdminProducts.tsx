@@ -120,6 +120,41 @@ const AdminProducts = () => {
     return (sell - buy - extra).toFixed(2);
   };
 
+  const uploadImage = async (file: File, folder: string): Promise<string | null> => {
+    const ext = file.name.split('.').pop();
+    const fileName = `${folder}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+    const { error } = await supabase.storage.from("product-images").upload(fileName, file);
+    if (error) { toast.error("Image upload failed: " + error.message); return null; }
+    const { data: urlData } = supabase.storage.from("product-images").getPublicUrl(fileName);
+    return urlData.publicUrl;
+  };
+
+  const handleMainImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingMain(true);
+    const url = await uploadImage(file, "main");
+    if (url) setMainImageUrl(url);
+    setUploadingMain(false);
+  };
+
+  const handleAdditionalImagesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setUploadingAdditional(true);
+    const urls: string[] = [];
+    for (const file of Array.from(files)) {
+      const url = await uploadImage(file, "additional");
+      if (url) urls.push(url);
+    }
+    setAdditionalImages(prev => [...prev, ...urls]);
+    setUploadingAdditional(false);
+  };
+
+  const removeAdditionalImage = (index: number) => {
+    setAdditionalImages(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleSave = async () => {
     if (!form.name || !form.product_code) {
       toast.error("Product Name and Code are required");
@@ -142,12 +177,13 @@ const AdminProducts = () => {
       allow_out_of_stock_orders: form.allow_out_of_stock_orders,
       category_id: form.category_id || null,
       status: form.status,
+      main_image_url: mainImageUrl || null,
+      additional_images: additionalImages.length > 0 ? additionalImages : [],
     };
     // Only set slug if user provided one; otherwise let DB trigger auto-generate
     if (form.slug.trim()) {
       payload.slug = form.slug.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
     } else if (!editingId) {
-      // New product: let DB handle it (slug = null triggers the auto-generate function)
       payload.slug = null;
     }
 
@@ -166,12 +202,16 @@ const AdminProducts = () => {
       setView("list");
       setEditingId(null);
       setForm(emptyProduct);
+      setMainImageUrl("");
+      setAdditionalImages([]);
       fetchProducts();
     }
   };
 
   const handleEdit = (p: Product) => {
     setEditingId(p.id);
+    setMainImageUrl(p.main_image_url || "");
+    setAdditionalImages(p.additional_images || []);
     setForm({
       name: p.name,
       product_code: p.product_code,
