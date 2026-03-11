@@ -152,6 +152,27 @@ export default function AdminLandingPages() {
     setDialogOpen(true);
   };
 
+  const openCreateFromTemplate = () => {
+    setTemplateDialogOpen(true);
+  };
+
+  const handleGenerateTemplate = () => {
+    const html = getProductLandingTemplate(tplForm);
+    const slug = tplForm.productName
+      ? tplForm.productName.replace(/[^a-z0-9\s-]/gi, "").replace(/\s+/g, "-").toLowerCase().slice(0, 40)
+      : "product-offer";
+    setForm({
+      ...emptyPage,
+      title: tplForm.productName || "Product Landing Page",
+      slug,
+      html_content: html,
+    });
+    setEditingPage(null);
+    setTemplateDialogOpen(false);
+    setDialogOpen(true);
+    toast.success("টেমপ্লেট তৈরি হয়েছে! প্রয়োজনে HTML এডিট করুন।");
+  };
+
   const openEdit = (page: LandingPage) => {
     setEditingPage(page);
     setForm({
