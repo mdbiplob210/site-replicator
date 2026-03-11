@@ -34,6 +34,7 @@ const websiteSubItems = [
   { title: "Pages", url: "/admin/website/pages", icon: File },
   { title: "LP Analytics", url: "/admin/website/landing-pages/analytics", icon: PieChart },
   { title: "Website Analytics", url: "/admin/website/analytics", icon: BarChart3 },
+  { title: "Memo Template", url: "/admin/website/memo-template", icon: Printer },
   { title: "Settings", url: "/admin/website/settings", icon: Settings },
 ];
 
