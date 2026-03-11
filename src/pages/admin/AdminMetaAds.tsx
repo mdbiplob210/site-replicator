@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import {
   DollarSign, TrendingUp, BarChart3, ShoppingCart,
-  Upload, Save, Calendar, Plus, ArrowLeft, Facebook, Trash2, Loader2, FileSpreadsheet, CheckCircle2, RefreshCw, KeyRound, Bot
+  Upload, Save, Calendar, Plus, ArrowLeft, Facebook, Trash2, Loader2, FileSpreadsheet, CheckCircle2, RefreshCw, KeyRound
 } from "lucide-react";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { Button } from "@/components/ui/button";
