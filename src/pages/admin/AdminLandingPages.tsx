@@ -244,8 +244,11 @@ export default function AdminLandingPages() {
             <Button variant="outline" className="gap-2" onClick={() => navigate("/admin/website/landing-pages/analytics")}>
               <BarChart3 className="h-4 w-4" /> Analytics
             </Button>
+            <Button variant="outline" className="gap-2" onClick={openCreateFromTemplate}>
+              <FileText className="h-4 w-4" /> টেমপ্লেট থেকে তৈরি
+            </Button>
             <Button className="gap-2" onClick={openCreate}>
-              <Plus className="h-4 w-4" /> নতুন তৈরি করুন
+              <Plus className="h-4 w-4" /> কাস্টম HTML
             </Button>
           </div>
         </div>
