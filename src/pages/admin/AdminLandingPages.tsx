@@ -74,7 +74,6 @@ export default function AdminLandingPages() {
     phoneNumber: "",
     imageUrl: "",
   });
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch images for the editing page
   const { data: pageImages } = useQuery({
