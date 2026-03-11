@@ -556,27 +556,10 @@ export default function AdminMetaAds() {
           </div>
         )}
 
-        {/* Facebook Connection Status */}
-        <div className="bg-card rounded-2xl border border-border p-6 flex items-center justify-between max-w-2xl mx-auto">
-          <div className="flex items-center gap-4">
-            <div className="h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-950/30 flex items-center justify-center">
-              <Facebook className="h-6 w-6 text-blue-600" />
-            </div>
-            <div>
-              <h3 className="font-bold text-foreground">Facebook Ads</h3>
-              <p className="text-xs text-muted-foreground">
-                {fbConnected ? "Connected via Marketing API" : "কানেক্ট করা হয়নি"}
-              </p>
-            </div>
-          </div>
-          <Button
-            variant={fbConnected ? "outline" : "default"}
-            className={fbConnected ? "gap-2" : "gap-2 bg-blue-600 hover:bg-blue-700 text-white"}
-            onClick={() => setFbConnected(!fbConnected)}
-          >
-            <Facebook className="h-4 w-4" />
-            {fbConnected ? "Disconnect" : "Connect"}
-          </Button>
+        {/* Facebook Login & AI Analyzer */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <FacebookLogin />
+          <AdAnalyzerChat adAccountId={selectedAccountId !== "all" ? selectedAccountId : undefined} />
         </div>
       </div>
     </AdminLayout>
