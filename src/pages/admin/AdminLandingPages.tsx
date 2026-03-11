@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { Layers, Plus, Search, Edit, Trash2, ExternalLink, Copy, BarChart3, Upload, Image, X, GripVertical } from "lucide-react";
+import { Layers, Plus, Search, Edit, Trash2, ExternalLink, Copy, BarChart3, Upload, Image, X, GripVertical, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,6 +21,7 @@ import {
   useDeleteLandingPage,
   LandingPage,
 } from "@/hooks/useLandingPages";
+import { getProductLandingTemplate } from "@/lib/landingPageTemplates";
 
 type LandingPageImage = {
   id: string;
