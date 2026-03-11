@@ -19,6 +19,8 @@ import { ProductAdSpendTable } from "@/components/admin/meta-ads/ProductAdSpendT
 import { CampaignBreakdown } from "@/components/admin/meta-ads/CampaignBreakdown";
 import { ManualCampaignEntry } from "@/components/admin/meta-ads/ManualCampaignEntry";
 import { useExchangeToken, useAdAccounts, useSyncMetaAds } from "@/hooks/useMetaAds";
+import { FacebookLogin } from "@/components/admin/meta-ads/FacebookLogin";
+import { AdAnalyzerChat } from "@/components/admin/meta-ads/AdAnalyzerChat";
 
 type View = "main" | "import" | "manual-campaign";
 
