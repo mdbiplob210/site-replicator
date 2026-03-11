@@ -529,11 +529,8 @@ export default function AdminLandingPages() {
 
               {editingPage && (
                 <div className="p-4 border rounded-lg space-y-2">
-                  <Label>পেজ URLs</Label>
+                  <Label>পেজ URL</Label>
                   <p className="text-sm font-mono text-primary">{baseUrl}/lp/{form.slug}</p>
-                  {form.checkout_html && (
-                    <p className="text-sm font-mono text-primary">{baseUrl}/lp/{form.slug}/checkout</p>
-                  )}
                 </div>
               )}
             </TabsContent>
