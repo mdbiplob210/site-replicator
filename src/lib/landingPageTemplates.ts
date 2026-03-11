@@ -198,22 +198,22 @@ export function templateClassicOrange(p: TemplateConfig): string {
 .lp-footer{background:#f5f5f0;padding:24px 16px;text-align:center;margin-top:32px}.lp-footer p{color:#999;font-size:12px}
 </style></head><body>
 <div class="top-banner">${p.topBannerText}</div>
-<div class="countdown-bar">অফারটি পাবে আর মাত্র <span class="count-num" id="countdown-num">69</span> জন</div>
+<div class="countdown-bar">${p.countdownText} <span class="count-num" id="countdown-num">69</span> জন</div>
 <div class="product-hero"><img src="${p.imageUrl}" alt="${p.productName}"/></div>
 <div class="product-info">
   <h1>${p.productName}</h1><div class="subtitle">${p.subtitle}</div>
-  <div class="stars">⭐⭐⭐⭐⭐ <span class="reviews">(150+ Reviews)</span></div>
+  <div class="stars">⭐⭐⭐⭐⭐ <span class="reviews">${p.reviewText}</span></div>
   <div class="price-row"><span class="price-old">৳${p.originalPrice}</span><span class="price-new">৳ ${p.sellingPrice}</span><span class="discount-badge">${p.discountPercent}% ছাড়</span></div>
 </div>
 <div class="cta-section">
   <button class="btn-order" onclick="openCheckout()">🛒 ${p.ctaButtonText}</button>
-  <a href="tel:${p.phoneNumber}" class="btn-call">📞 অর্ডার করতে কল করুন: ${p.phoneNumber}</a>
+  <a href="tel:${p.phoneNumber}" class="btn-call">📞 ${p.callButtonText}: ${p.phoneNumber}</a>
 </div>
 <div class="trust-grid">
-  <div class="trust-card"><div class="icon">🛡️</div><p>১০০% অরিজিনাল</p></div>
-  <div class="trust-card"><div class="icon">🚚</div><p>দ্রুত ডেলিভারি</p></div>
-  <div class="trust-card"><div class="icon">🏅</div><p>প্রিমিয়াম কোয়ালিটি</p></div>
-  <div class="trust-card"><div class="icon">📞</div><p>ক্যাশ অন ডেলিভারি</p></div>
+  <div class="trust-card"><div class="icon">🛡️</div><p>${p.trustBadge1}</p></div>
+  <div class="trust-card"><div class="icon">🚚</div><p>${p.trustBadge2}</p></div>
+  <div class="trust-card"><div class="icon">🏅</div><p>${p.trustBadge3}</p></div>
+  <div class="trust-card"><div class="icon">📞</div><p>${p.trustBadge4}</p></div>
 </div>
 <div class="features-section">
   <h2>${p.whySectionTitle}</h2>
@@ -223,7 +223,7 @@ export function templateClassicOrange(p: TemplateConfig): string {
   <div class="feature-card"><h3>✅ ${p.feature4Title}</h3><p>${p.feature4Desc}</p></div>
 </div>
 <div class="cta-section"><button class="btn-order" onclick="openCheckout()">🛒 এখনই ${p.ctaButtonText}</button></div>
-<div class="lp-footer"><p>© ${new Date().getFullYear()} সর্বস্বত্ব সংরক্ষিত</p></div>
+<div class="lp-footer"><p>${p.footerText}</p></div>
 ${checkoutPopupHtml(p, '#ff6b00')}
 ${countdownScript()}
 </body></html>`;
