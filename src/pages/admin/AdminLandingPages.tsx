@@ -237,9 +237,6 @@ export default function AdminLandingPages() {
                       <Badge variant={page.is_active ? "default" : "secondary"}>
                         {page.is_active ? "Active" : "Inactive"}
                       </Badge>
-                      {page.checkout_html && (
-                        <Badge variant="outline" className="text-xs">Checkout</Badge>
-                      )}
                     </div>
                     <div className="flex items-center gap-3 text-sm text-muted-foreground">
                       <span className="font-mono">/lp/{page.slug}</span>
