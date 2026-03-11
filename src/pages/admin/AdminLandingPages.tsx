@@ -21,7 +21,7 @@ import {
   useDeleteLandingPage,
   LandingPage,
 } from "@/hooks/useLandingPages";
-import { getProductLandingTemplate } from "@/lib/landingPageTemplates";
+import { generateTemplate, templateList, defaultTemplateConfig, type TemplateConfig } from "@/lib/landingPageTemplates";
 
 type LandingPageImage = {
   id: string;
@@ -63,17 +63,8 @@ export default function AdminLandingPages() {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
-  const [tplForm, setTplForm] = useState({
-    productName: "",
-    subtitle: "",
-    originalPrice: "",
-    sellingPrice: "",
-    discountPercent: "",
-    deliveryCharge: "60",
-    productCode: "",
-    phoneNumber: "",
-    imageUrl: "",
-  });
+  const [selectedTemplateId, setSelectedTemplateId] = useState("classic-orange");
+  const [tplForm, setTplForm] = useState<TemplateConfig>({ ...defaultTemplateConfig });
 
   // Fetch images for the editing page
   const { data: pageImages } = useQuery({
@@ -157,8 +148,8 @@ export default function AdminLandingPages() {
   };
 
   const handleGenerateTemplate = () => {
-    const html = getProductLandingTemplate(tplForm);
-    const slug = tplForm.productName
+    const html = generateTemplate(selectedTemplateId, tplForm);
+    const slug = tplForm.productName && tplForm.productName !== defaultTemplateConfig.productName
       ? tplForm.productName.replace(/[^a-z0-9\s-]/gi, "").replace(/\s+/g, "-").toLowerCase().slice(0, 40)
       : "product-offer";
     setForm({
@@ -584,62 +575,140 @@ export default function AdminLandingPages() {
 
       {/* Template Config Dialog */}
       <Dialog open={templateDialogOpen} onOpenChange={setTemplateDialogOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>📄 টেমপ্লেট থেকে Landing Page তৈরি করুন</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 mt-2">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label className="text-xs">প্রোডাক্ট নাম *</Label>
-                <Input value={tplForm.productName} onChange={(e) => setTplForm({ ...tplForm, productName: e.target.value })} placeholder="যেমন: Aluminum Juicer" />
+
+          <Tabs defaultValue="template" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="template">টেমপ্লেট বেছে নিন</TabsTrigger>
+              <TabsTrigger value="product">প্রোডাক্ট তথ্য</TabsTrigger>
+              <TabsTrigger value="content">টেক্সট কাস্টমাইজ</TabsTrigger>
+            </TabsList>
+
+            {/* Tab 1: Template Selection */}
+            <TabsContent value="template" className="mt-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {templateList.map((t) => (
+                  <div
+                    key={t.id}
+                    onClick={() => setSelectedTemplateId(t.id)}
+                    className={`cursor-pointer border-2 rounded-xl p-4 text-center transition-all hover:shadow-md ${
+                      selectedTemplateId === t.id
+                        ? "border-primary bg-primary/5 shadow-md"
+                        : "border-border hover:border-primary/40"
+                    }`}
+                  >
+                    <div className="text-3xl mb-2">{t.preview}</div>
+                    <h4 className="font-bold text-sm text-foreground">{t.name}</h4>
+                    <p className="text-[11px] text-muted-foreground mt-1">{t.description}</p>
+                    <div className="mt-2 h-2 w-full rounded-full" style={{ background: t.color }} />
+                  </div>
+                ))}
+              </div>
+            </TabsContent>
+
+            {/* Tab 2: Product Info */}
+            <TabsContent value="product" className="space-y-4 mt-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">প্রোডাক্ট নাম *</Label>
+                  <Input value={tplForm.productName} onChange={(e) => setTplForm({ ...tplForm, productName: e.target.value })} placeholder="যেমন: Aluminum Juicer" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">সাবটাইটেল</Label>
+                  <Input value={tplForm.subtitle} onChange={(e) => setTplForm({ ...tplForm, subtitle: e.target.value })} placeholder="যেমন: (বড় সাইজ)" />
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">আসল দাম (৳)</Label>
+                  <Input value={tplForm.originalPrice} onChange={(e) => setTplForm({ ...tplForm, originalPrice: e.target.value })} placeholder="৯৯০" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">বিক্রয় দাম (৳)</Label>
+                  <Input value={tplForm.sellingPrice} onChange={(e) => setTplForm({ ...tplForm, sellingPrice: e.target.value })} placeholder="৬৯০" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">ছাড় (%)</Label>
+                  <Input value={tplForm.discountPercent} onChange={(e) => setTplForm({ ...tplForm, discountPercent: e.target.value })} placeholder="৩০" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">ডেলিভারি চার্জ (৳)</Label>
+                  <Input value={tplForm.deliveryCharge} onChange={(e) => setTplForm({ ...tplForm, deliveryCharge: e.target.value })} placeholder="60" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">প্রোডাক্ট কোড</Label>
+                  <Input value={tplForm.productCode} onChange={(e) => setTplForm({ ...tplForm, productCode: e.target.value })} placeholder="SKU001" />
+                </div>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">সাবটাইটেল</Label>
-                <Input value={tplForm.subtitle} onChange={(e) => setTplForm({ ...tplForm, subtitle: e.target.value })} placeholder="যেমন: (বড় সাইজ)" />
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-3">
-              <div className="space-y-1.5">
-                <Label className="text-xs">আসল দাম (৳)</Label>
-                <Input value={tplForm.originalPrice} onChange={(e) => setTplForm({ ...tplForm, originalPrice: e.target.value })} placeholder="৯৯০" />
+                <Label className="text-xs">ফোন নম্বর (কল বাটনের জন্য)</Label>
+                <Input value={tplForm.phoneNumber} onChange={(e) => setTplForm({ ...tplForm, phoneNumber: e.target.value })} placeholder="01XXXXXXXXX" />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">বিক্রয় দাম (৳)</Label>
-                <Input value={tplForm.sellingPrice} onChange={(e) => setTplForm({ ...tplForm, sellingPrice: e.target.value })} placeholder="৬৯০" />
+                <Label className="text-xs">প্রোডাক্ট ছবির URL</Label>
+                <Input value={tplForm.imageUrl} onChange={(e) => setTplForm({ ...tplForm, imageUrl: e.target.value })} placeholder="https://example.com/product.jpg" />
+                <p className="text-[11px] text-muted-foreground">পরে ছবি ট্যাব থেকেও চেঞ্জ করতে পারবেন</p>
               </div>
+            </TabsContent>
+
+            {/* Tab 3: Text Customization */}
+            <TabsContent value="content" className="space-y-4 mt-4">
               <div className="space-y-1.5">
-                <Label className="text-xs">ছাড় (%)</Label>
-                <Input value={tplForm.discountPercent} onChange={(e) => setTplForm({ ...tplForm, discountPercent: e.target.value })} placeholder="৩০" />
+                <Label className="text-xs">টপ ব্যানার টেক্সট</Label>
+                <Input value={tplForm.topBannerText} onChange={(e) => setTplForm({ ...tplForm, topBannerText: e.target.value })} />
               </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label className="text-xs">ডেলিভারি চার্জ (৳)</Label>
-                <Input value={tplForm.deliveryCharge} onChange={(e) => setTplForm({ ...tplForm, deliveryCharge: e.target.value })} placeholder="60" />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">অর্ডার বাটন টেক্সট</Label>
+                  <Input value={tplForm.ctaButtonText} onChange={(e) => setTplForm({ ...tplForm, ctaButtonText: e.target.value })} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">কেন বেছে নেবেন সেকশন শিরোনাম</Label>
+                  <Input value={tplForm.whySectionTitle} onChange={(e) => setTplForm({ ...tplForm, whySectionTitle: e.target.value })} />
+                </div>
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">প্রোডাক্ট কোড</Label>
-                <Input value={tplForm.productCode} onChange={(e) => setTplForm({ ...tplForm, productCode: e.target.value })} placeholder="SKU001" />
+
+              <div className="border rounded-lg p-3 space-y-3">
+                <p className="text-xs font-semibold text-foreground">ফিচার কার্ড ১</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <Input value={tplForm.feature1Title} onChange={(e) => setTplForm({ ...tplForm, feature1Title: e.target.value })} placeholder="শিরোনাম" />
+                  <Input value={tplForm.feature1Desc} onChange={(e) => setTplForm({ ...tplForm, feature1Desc: e.target.value })} placeholder="বিবরণ" />
+                </div>
               </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">ফোন নম্বর (কল বাটনের জন্য)</Label>
-              <Input value={tplForm.phoneNumber} onChange={(e) => setTplForm({ ...tplForm, phoneNumber: e.target.value })} placeholder="01XXXXXXXXX" />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">প্রোডাক্ট ছবির URL (পরে ছবি ট্যাব থেকে চেঞ্জ করতে পারবেন)</Label>
-              <Input value={tplForm.imageUrl} onChange={(e) => setTplForm({ ...tplForm, imageUrl: e.target.value })} placeholder="https://example.com/product.jpg" />
-            </div>
-            <div className="bg-muted/50 border rounded-lg p-3">
-              <p className="text-xs text-muted-foreground">✅ টেমপ্লেটে অটো থাকবে: কাউন্টডাউন, ট্রাস্ট ব্যাজ, ফিচার কার্ড, পপআপ চেকআউট ফর্ম, অর্ডার সামারি। তৈরি হওয়ার পর HTML কোড এডিট করে কাস্টমাইজ করতে পারবেন।</p>
-            </div>
-            <div className="flex justify-end gap-3">
-              <Button variant="outline" onClick={() => setTemplateDialogOpen(false)}>বাতিল</Button>
-              <Button onClick={handleGenerateTemplate} disabled={!tplForm.productName}>
-                🚀 টেমপ্লেট তৈরি করুন
-              </Button>
-            </div>
+              <div className="border rounded-lg p-3 space-y-3">
+                <p className="text-xs font-semibold text-foreground">ফিচার কার্ড ২</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <Input value={tplForm.feature2Title} onChange={(e) => setTplForm({ ...tplForm, feature2Title: e.target.value })} placeholder="শিরোনাম" />
+                  <Input value={tplForm.feature2Desc} onChange={(e) => setTplForm({ ...tplForm, feature2Desc: e.target.value })} placeholder="বিবরণ" />
+                </div>
+              </div>
+              <div className="border rounded-lg p-3 space-y-3">
+                <p className="text-xs font-semibold text-foreground">ফিচার কার্ড ৩</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <Input value={tplForm.feature3Title} onChange={(e) => setTplForm({ ...tplForm, feature3Title: e.target.value })} placeholder="শিরোনাম" />
+                  <Input value={tplForm.feature3Desc} onChange={(e) => setTplForm({ ...tplForm, feature3Desc: e.target.value })} placeholder="বিবরণ" />
+                </div>
+              </div>
+              <div className="border rounded-lg p-3 space-y-3">
+                <p className="text-xs font-semibold text-foreground">ফিচার কার্ড ৪</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <Input value={tplForm.feature4Title} onChange={(e) => setTplForm({ ...tplForm, feature4Title: e.target.value })} placeholder="শিরোনাম" />
+                  <Input value={tplForm.feature4Desc} onChange={(e) => setTplForm({ ...tplForm, feature4Desc: e.target.value })} placeholder="বিবরণ" />
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <Button variant="outline" onClick={() => setTemplateDialogOpen(false)}>বাতিল</Button>
+            <Button onClick={handleGenerateTemplate}>
+              🚀 টেমপ্লেট তৈরি করুন
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
