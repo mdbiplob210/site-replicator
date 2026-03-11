@@ -243,7 +243,6 @@ export default function AdminLandingPages() {
                     </div>
                     <div className="flex items-center gap-3 text-sm text-muted-foreground">
                       <span className="font-mono">/lp/{page.slug}</span>
-                      {page.checkout_html && <span className="font-mono">/lp/{page.slug}/checkout</span>}
                       <div className="flex gap-1.5">
                         {page.fb_pixel_id && <Badge variant="outline" className="text-xs">FB</Badge>}
                         {page.tiktok_pixel_id && <Badge variant="outline" className="text-xs">TikTok</Badge>}
