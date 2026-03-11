@@ -499,7 +499,187 @@ ttq.page();
 </script>
 `;
 
-    const allScripts = richTrackingHelper + trackingScripts + conversionScript + analyticsScript + exitIntentScript;
+    // ═══ Checkout form handling scripts (order submission, partial tracking, phone validation) ═══
+    const partialTrackingScript = `
+<script>
+(function(){
+  var PARTIAL_URL = '${supabaseUrl}/functions/v1/track-partial-order';
+  var SLUG = '${page.slug}';
+  var VID = localStorage.getItem('_lp_vid') || '';
+  var _partialTimer = null;
+  var _lastSent = '';
+
+  function getFormData(form) {
+    var fd = new FormData(form);
+    return {
+      customer_name: fd.get('customer_name') || '',
+      customer_phone: fd.get('customer_phone') || '',
+      customer_address: fd.get('customer_address') || '',
+      product_name: fd.get('product_name') || form.getAttribute('data-product-name') || '',
+      product_code: fd.get('product_code') || form.getAttribute('data-product-code') || '',
+      quantity: parseInt(fd.get('quantity') || form.getAttribute('data-quantity') || '1'),
+      unit_price: parseFloat(fd.get('unit_price') || form.getAttribute('data-unit-price') || '0'),
+      delivery_charge: parseFloat(fd.get('delivery_charge') || form.getAttribute('data-delivery-charge') || '0'),
+      discount: parseFloat(fd.get('discount') || form.getAttribute('data-discount') || '0')
+    };
+  }
+
+  function sendPartial(form) {
+    var d = getFormData(form);
+    if (!d.customer_name && !d.customer_phone && !d.customer_address) return;
+    var key = JSON.stringify(d);
+    if (key === _lastSent) return;
+    _lastSent = key;
+    var payload = Object.assign({}, d, { action: 'save_partial', landing_page_slug: SLUG, visitor_id: VID });
+    try { navigator.sendBeacon(PARTIAL_URL, JSON.stringify(payload)); } catch(e) { fetch(PARTIAL_URL, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)}).catch(function(){}); }
+  }
+
+  document.addEventListener('input', function(e) {
+    var form = e.target.closest('[data-checkout-form]');
+    if (!form) return;
+    if (_partialTimer) clearTimeout(_partialTimer);
+    _partialTimer = setTimeout(function(){ sendPartial(form); }, 2000);
+  });
+  document.addEventListener('focusout', function(e) {
+    var form = e.target.closest('[data-checkout-form]');
+    if (!form) return;
+    if (_partialTimer) clearTimeout(_partialTimer);
+    _partialTimer = setTimeout(function(){ sendPartial(form); }, 500);
+  });
+  window.addEventListener('beforeunload', function() {
+    var forms = document.querySelectorAll('[data-checkout-form]');
+    for (var i = 0; i < forms.length; i++) { sendPartial(forms[i]); }
+  });
+  window._removePartial = function() {
+    try { navigator.sendBeacon(PARTIAL_URL, JSON.stringify({ action: 'remove_partial', landing_page_slug: SLUG, visitor_id: VID })); } catch(e) {}
+  };
+})();
+</script>`;
+
+    const phoneValidationScript = `
+<script>
+(function(){
+  var bengaliMap = {'০':'0','১':'1','২':'2','৩':'3','৪':'4','৫':'5','৬':'6','৭':'7','৮':'8','৯':'9'};
+  function sanitizePhone(val) {
+    var result = '';
+    for (var i = 0; i < val.length; i++) {
+      var ch = val[i];
+      if (bengaliMap[ch]) { result += bengaliMap[ch]; }
+      else if (/[0-9]/.test(ch)) { result += ch; }
+      else if (ch === '+' && result.length === 0) { result += ch; }
+    }
+    return result;
+  }
+  function isValidBDPhone(phone) {
+    var cleaned = phone.replace(/^\\+?880/, '0');
+    return /^01[3-9]\\d{8}$/.test(cleaned);
+  }
+  document.addEventListener('input', function(e) {
+    if (e.target && (e.target.name === 'customer_phone' || e.target.name === 'phone' || e.target.type === 'tel')) {
+      e.target.value = sanitizePhone(e.target.value);
+    }
+  });
+  document.addEventListener('submit', function(e) {
+    var form = e.target.closest('[data-checkout-form]');
+    if (!form) return;
+    var phoneInput = form.querySelector('[name="customer_phone"]') || form.querySelector('[name="phone"]') || form.querySelector('[type="tel"]');
+    if (phoneInput && !isValidBDPhone(phoneInput.value)) {
+      e.preventDefault(); e.stopImmediatePropagation();
+      alert('অনুগ্রহ করে সঠিক বাংলাদেশের মোবাইল নম্বর দিন (01XXXXXXXXX)');
+      phoneInput.focus(); return false;
+    }
+  }, true);
+})();
+</script>`;
+
+    const orderScript = `
+<script>
+(function(){
+  var ORDER_URL = '${supabaseUrl}/functions/v1/submit-landing-order';
+  var SLUG = '${page.slug}';
+  var VID = localStorage.getItem('_lp_vid') || '';
+
+  document.addEventListener('submit', function(e) {
+    var form = e.target.closest('[data-checkout-form]');
+    if (!form) return;
+    e.preventDefault();
+
+    var btn = form.querySelector('[type="submit"], button:not([type])');
+    var btnOrigText = btn ? btn.textContent : '';
+    if (btn) { btn.disabled = true; btn.textContent = 'অপেক্ষা করুন...'; }
+
+    var formData = new FormData(form);
+    var payload = {
+      customer_name: formData.get('customer_name') || '',
+      customer_phone: formData.get('customer_phone') || '',
+      customer_address: formData.get('customer_address') || '',
+      product_name: formData.get('product_name') || form.getAttribute('data-product-name') || '',
+      product_code: formData.get('product_code') || form.getAttribute('data-product-code') || '',
+      quantity: parseInt(formData.get('quantity') || form.getAttribute('data-quantity') || '1'),
+      unit_price: parseFloat(formData.get('unit_price') || form.getAttribute('data-unit-price') || '0'),
+      delivery_charge: parseFloat(formData.get('delivery_charge') || form.getAttribute('data-delivery-charge') || '0'),
+      discount: parseFloat(formData.get('discount') || form.getAttribute('data-discount') || '0'),
+      notes: formData.get('notes') || '',
+      landing_page_slug: SLUG,
+      visitor_id: VID
+    };
+
+    fetch(ORDER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.success) {
+        if (window._removePartial) window._removePartial();
+        var totalValue = payload.unit_price * payload.quantity;
+        var eventId = window._lpTrack ? window._lpTrack.generateEventId() : '';
+        var baseParams = window._lpTrack ? window._lpTrack.getBaseParams() : {};
+
+        if (typeof fbq === 'function') {
+          var pp = { value: totalValue, currency: 'BDT', content_type: 'product', content_name: payload.product_name, content_ids: payload.product_code ? [payload.product_code] : [], num_items: payload.quantity, subtotal: totalValue, event_day: baseParams.event_day||'', event_hour: baseParams.event_hour||'', event_month: baseParams.event_month||'', event_url: baseParams.event_url||window.location.href, landing_page: baseParams.landing_page||window.location.href, page_title: document.title||'', traffic_source: baseParams.traffic_source||'direct', user_role:'guest', plugin:'LovableLP', order_id: data.order_number };
+          fbq('track', 'Purchase', pp, {eventID: eventId});
+        }
+        if (window._lpTrack && '${page.fb_pixel_id}') {
+          window._lpTrack.sendServerEvent('Purchase', { event_id: eventId, value: totalValue, currency: 'BDT', content_name: payload.product_name, content_ids: payload.product_code?[payload.product_code]:[], content_type:'product', num_items: payload.quantity, order_id: data.order_number });
+        }
+        if (typeof ttq !== 'undefined' && ttq.track) {
+          ttq.track('CompletePayment', { value: totalValue, currency: 'BDT', content_name: payload.product_name, content_id: payload.product_code||'', content_type:'product', quantity: payload.quantity });
+        }
+        if (typeof dataLayer !== 'undefined') {
+          dataLayer.push({ event:'conversion_Purchase', value: totalValue, currency:'BDT', content_name: payload.product_name, order_id: data.order_number, num_items: payload.quantity });
+        }
+
+        var successUrl = form.getAttribute('data-success-url');
+        if (successUrl) { window.location.href = successUrl; }
+        else {
+          var msg = form.getAttribute('data-success-message') || 'আপনার অর্ডার সফলভাবে জমা হয়েছে! অর্ডার নম্বর: ' + data.order_number;
+          document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:sans-serif;"><div style="text-align:center;padding:40px;"><h1 style="color:#10b981;font-size:48px;">✓</h1><h2 style="margin:16px 0;">অর্ডার সফল!</h2><p>' + msg + '</p></div></div>';
+        }
+      } else {
+        alert(data.error || 'অর্ডার সাবমিট করতে সমস্যা হয়েছে');
+        if (btn) { btn.disabled = false; btn.textContent = btnOrigText || 'অর্ডার করুন'; }
+      }
+    })
+    .catch(function(err) {
+      alert('ত্রুটি: ' + err.message);
+      if (btn) { btn.disabled = false; btn.textContent = btnOrigText || 'অর্ডার করুন'; }
+    });
+  });
+})();
+</script>`;
+
+    const autocompleteScript = `
+<script>
+(function(){
+  document.addEventListener('DOMContentLoaded', function(){
+    var map = {customer_name:'name', customer_phone:'tel', customer_address:'street-address'};
+    for(var n in map){
+      var el = document.querySelector('[name="'+n+'"]');
+      if(el && !el.getAttribute('autocomplete')) el.setAttribute('autocomplete', map[n]);
+    }
+  });
+})();
+</script>`;
+
+    const allScripts = richTrackingHelper + trackingScripts + conversionScript + analyticsScript + partialTrackingScript + phoneValidationScript + orderScript + autocompleteScript + exitIntentScript;
 
     const cleanHtml = sanitizeHtmlScripts(page.html_content);
 
@@ -519,3 +699,4 @@ ttq.page();
     />
   );
 }
+

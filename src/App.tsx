@@ -151,7 +151,7 @@ const App = () => {
             <Route path="/admin/coming-soon" element={<Admin><AdminComingSoon /></Admin>} />
             <Route path="/admin/plan" element={P("Plan", "Subscription management")} />
             <Route path="/lp/:slug" element={<LandingPageView />} />
-            <Route path="/lp/:slug/checkout" element={<LandingPageCheckout />} />
+            {/* /lp/:slug/checkout route removed - single HTML handles everything */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
