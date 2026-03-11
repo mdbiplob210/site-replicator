@@ -204,7 +204,7 @@ export default function AdminLandingPages() {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-foreground">Landing Pages</h1>
-              <p className="text-sm text-muted-foreground">HTML কোড পেস্ট করে landing page ও checkout page তৈরি করুন</p>
+              <p className="text-sm text-muted-foreground">HTML কোড পেস্ট করে landing page তৈরি করুন — চেকআউট ফর্ম একই HTML এ থাকবে</p>
             </div>
           </div>
           <div className="flex gap-2">
