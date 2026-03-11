@@ -264,17 +264,17 @@ export function templateModernBlue(p: TemplateConfig): string {
   <div class="hero-body">
     <span class="tag">${p.subtitle}</span>
     <h1>${p.productName}</h1>
-    <div class="rating"><span class="stars">★★★★★</span><span class="count">(200+ Reviews)</span></div>
+    <div class="rating"><span class="stars">★★★★★</span><span class="count">${p.reviewText}</span></div>
     <div class="price-box"><span class="old">৳${p.originalPrice}</span><span class="new">৳${p.sellingPrice}</span><span class="save">${p.discountPercent}% OFF</span></div>
     <button class="btn-primary" onclick="openCheckout()">🛒 ${p.ctaButtonText}</button>
-    <a href="tel:${p.phoneNumber}" class="btn-secondary">📞 কল করুন: ${p.phoneNumber}</a>
+    <a href="tel:${p.phoneNumber}" class="btn-secondary">📞 ${p.callButtonText}: ${p.phoneNumber}</a>
   </div>
 </div>
 <div class="badges">
-  <div class="badge-item"><span class="bi">✓</span><span>অরিজিনাল</span></div>
-  <div class="badge-item"><span class="bi">🚀</span><span>ফাস্ট শিপ</span></div>
-  <div class="badge-item"><span class="bi">🏅</span><span>প্রিমিয়াম</span></div>
-  <div class="badge-item"><span class="bi">💵</span><span>COD</span></div>
+  <div class="badge-item"><span class="bi">✓</span><span>${p.trustBadge1}</span></div>
+  <div class="badge-item"><span class="bi">🚀</span><span>${p.trustBadge2}</span></div>
+  <div class="badge-item"><span class="bi">🏅</span><span>${p.trustBadge3}</span></div>
+  <div class="badge-item"><span class="bi">💵</span><span>${p.trustBadge4}</span></div>
 </div>
 <div class="why-section">
   <h2>${p.whySectionTitle}</h2>
@@ -284,7 +284,7 @@ export function templateModernBlue(p: TemplateConfig): string {
   <div class="why-card"><h4>✨ ${p.feature4Title}</h4><p>${p.feature4Desc}</p></div>
 </div>
 <div style="padding:0 16px 20px"><button class="btn-primary" onclick="openCheckout()">🛒 এখনই ${p.ctaButtonText}</button></div>
-<div class="footer"><p>© ${new Date().getFullYear()} সর্বস্বত্ব সংরক্ষিত</p></div>
+<div class="footer"><p>${p.footerText}</p></div>
 ${checkoutPopupHtml(p, '#1a73e8')}
 </body></html>`;
 }
