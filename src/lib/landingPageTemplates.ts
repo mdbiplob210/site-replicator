@@ -441,20 +441,20 @@ export function templateVibrantGradient(p: TemplateConfig): string {
 .vg-footer{text-align:center;padding:20px;color:#ccc;font-size:11px}
 </style></head><body>
 <div class="vg-top">✨ ${p.topBannerText} ✨</div>
-<div class="vg-timer">অফার শেষ হবে <span class="num" id="countdown-num">49</span> জনের মধ্যে</div>
+<div class="vg-timer">${p.countdownText} <span class="num" id="countdown-num">49</span> জনের মধ্যে</div>
 <div class="vg-hero"><img src="${p.imageUrl}" alt="${p.productName}"/></div>
 <div class="vg-info">
   <h1>${p.productName}</h1><div class="sub">${p.subtitle}</div>
-  <div class="stars">⭐⭐⭐⭐⭐ <span class="rev">(250+ Reviews)</span></div>
+  <div class="stars">⭐⭐⭐⭐⭐ <span class="rev">${p.reviewText}</span></div>
   <div class="vg-price"><span class="old">৳${p.originalPrice}</span><span class="now">৳${p.sellingPrice}</span><span class="badge">${p.discountPercent}% ছাড়</span></div>
 </div>
 <button class="btn-gradient" onclick="openCheckout()">🛒 ${p.ctaButtonText}</button>
-<a href="tel:${p.phoneNumber}" class="btn-gradient-outline">📞 কল করুন: ${p.phoneNumber}</a>
+<a href="tel:${p.phoneNumber}" class="btn-gradient-outline">📞 ${p.callButtonText}: ${p.phoneNumber}</a>
 <div class="vg-badges">
-  <div class="vgb"><span class="icon">🛡️</span><span>১০০% অথেনটিক</span></div>
-  <div class="vgb"><span class="icon">⚡</span><span>এক্সপ্রেস ডেলিভারি</span></div>
-  <div class="vgb"><span class="icon">🏆</span><span>বেস্ট সেলার</span></div>
-  <div class="vgb"><span class="icon">💰</span><span>ক্যাশ অন ডেলিভারি</span></div>
+  <div class="vgb"><span class="icon">🛡️</span><span>${p.trustBadge1}</span></div>
+  <div class="vgb"><span class="icon">⚡</span><span>${p.trustBadge2}</span></div>
+  <div class="vgb"><span class="icon">🏆</span><span>${p.trustBadge3}</span></div>
+  <div class="vgb"><span class="icon">💰</span><span>${p.trustBadge4}</span></div>
 </div>
 <div class="vg-features">
   <h2>${p.whySectionTitle}</h2>
@@ -463,8 +463,8 @@ export function templateVibrantGradient(p: TemplateConfig): string {
   <div class="vgf"><div class="vgf-dot"></div><div><h4>${p.feature3Title}</h4><p>${p.feature3Desc}</p></div></div>
   <div class="vgf"><div class="vgf-dot"></div><div><h4>${p.feature4Title}</h4><p>${p.feature4Desc}</p></div></div>
 </div>
-<div style="padding:0 16px 20px"><button class="btn-gradient" onclick="openCheckout()">🛒 এখনই অর্ডার করুন</button></div>
-<div class="vg-footer"><p>© ${new Date().getFullYear()} সর্বস্বত্ব সংরক্ষিত</p></div>
+<div style="padding:0 16px 20px"><button class="btn-gradient" onclick="openCheckout()">🛒 এখনই ${p.ctaButtonText}</button></div>
+<div class="vg-footer"><p>${p.footerText}</p></div>
 ${checkoutPopupHtml(p, '#7c3aed')}
 ${countdownScript()}
 </body></html>`;
