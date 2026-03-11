@@ -70,6 +70,10 @@ const AdminProducts = () => {
   const [statusFilter, setStatusFilter] = useState("all-status");
   const [stockFilter, setStockFilter] = useState("all-stock");
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [uploadingMain, setUploadingMain] = useState(false);
+  const [uploadingAdditional, setUploadingAdditional] = useState(false);
+  const [mainImageUrl, setMainImageUrl] = useState<string>("");
+  const [additionalImages, setAdditionalImages] = useState<string[]>([]);
 
   const [form, setForm] = useState(emptyProduct);
 
