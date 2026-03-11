@@ -10,7 +10,7 @@ export interface TemplateConfig {
   productCode: string;
   phoneNumber: string;
   imageUrl: string;
-  // Extended customization
+  // Features
   feature1Title: string;
   feature1Desc: string;
   feature2Title: string;
@@ -19,9 +19,38 @@ export interface TemplateConfig {
   feature3Desc: string;
   feature4Title: string;
   feature4Desc: string;
+  // Texts
   topBannerText: string;
   ctaButtonText: string;
   whySectionTitle: string;
+  // Trust badges
+  trustBadge1: string;
+  trustBadge2: string;
+  trustBadge3: string;
+  trustBadge4: string;
+  // Additional texts
+  countdownText: string;
+  reviewText: string;
+  callButtonText: string;
+  footerText: string;
+  // Checkout popup texts
+  checkoutTitle: string;
+  nameLabel: string;
+  namePlaceholder: string;
+  phoneLabel: string;
+  phonePlaceholder: string;
+  addressLabel: string;
+  addressPlaceholder: string;
+  quantityLabel: string;
+  qty1Text: string;
+  qty2Text: string;
+  qty3Text: string;
+  productPriceLabel: string;
+  deliveryChargeLabel: string;
+  totalLabel: string;
+  confirmButtonText: string;
+  successTitle: string;
+  successMessage: string;
 }
 
 export const defaultTemplateConfig: TemplateConfig = {
@@ -45,6 +74,31 @@ export const defaultTemplateConfig: TemplateConfig = {
   topBannerText: "🎉 সীমিত সময়ের অফার - এখনই অর্ডার করুন! 🎉",
   ctaButtonText: "অর্ডার করুন",
   whySectionTitle: "কেন এই প্রোডাক্ট বেছে নেবেন?",
+  trustBadge1: "১০০% অরিজিনাল",
+  trustBadge2: "দ্রুত ডেলিভারি",
+  trustBadge3: "প্রিমিয়াম কোয়ালিটি",
+  trustBadge4: "ক্যাশ অন ডেলিভারি",
+  countdownText: "অফারটি পাবে আর মাত্র",
+  reviewText: "(150+ Reviews)",
+  callButtonText: "অর্ডার করতে কল করুন",
+  footerText: "© " + new Date().getFullYear() + " সর্বস্বত্ব সংরক্ষিত",
+  checkoutTitle: "🛒 অর্ডার করুন",
+  nameLabel: "আপনার নাম *",
+  namePlaceholder: "আপনার পুরো নাম লিখুন",
+  phoneLabel: "মোবাইল নম্বর *",
+  phonePlaceholder: "01XXXXXXXXX",
+  addressLabel: "সম্পূর্ণ ঠিকানা *",
+  addressPlaceholder: "বাসা, রাস্তা, এলাকা, জেলা",
+  quantityLabel: "পরিমাণ",
+  qty1Text: "১ পিস",
+  qty2Text: "২ পিস",
+  qty3Text: "৩ পিস",
+  productPriceLabel: "প্রোডাক্ট মূল্য:",
+  deliveryChargeLabel: "ডেলিভারি চার্জ:",
+  totalLabel: "সর্বমোট:",
+  confirmButtonText: "✅ অর্ডার কনফার্ম করুন",
+  successTitle: "অর্ডার সফল হয়েছে!",
+  successMessage: "আমরা শীঘ্রই আপনার সাথে যোগাযোগ করবো।",
 };
 
 export interface TemplateInfo {
@@ -72,23 +126,23 @@ function checkoutPopupHtml(p: TemplateConfig, accentColor: string, bgOverlay: st
   <div style="background:#fff;width:100%;max-width:500px;border-radius:20px 20px 0 0;padding:24px 20px 32px;max-height:90vh;overflow-y:auto;animation:slideUp .3s ease">
     <div style="position:relative;margin-bottom:8px">
       <button onclick="closeCheckout()" style="position:absolute;top:0;right:0;font-size:24px;background:none;border:none;cursor:pointer;color:#999">✕</button>
-      <h2 style="font-size:20px;font-weight:800;color:#111;text-align:center;margin:0 0 4px">🛒 ${p.ctaButtonText}</h2>
+      <h2 style="font-size:20px;font-weight:800;color:#111;text-align:center;margin:0 0 4px">${p.checkoutTitle}</h2>
       <p style="text-align:center;color:#888;font-size:13px;margin:0 0 20px">${p.productName} - ৳${p.sellingPrice}</p>
     </div>
     <form data-checkout-form data-product-name="${p.productName}" data-product-code="${p.productCode}" data-unit-price="${p.sellingPrice.replace(/[৳,\s]/g,'')}" data-delivery-charge="${p.deliveryCharge}" id="checkoutForm">
       <div id="formFields">
-        <div style="margin-bottom:14px"><label style="display:block;font-size:13px;font-weight:600;color:#555;margin-bottom:5px">আপনার নাম *</label><input type="text" name="customer_name" placeholder="আপনার পুরো নাম লিখুন" required style="width:100%;padding:13px 14px;border:2px solid #e0e0e0;border-radius:10px;font-size:15px;outline:none" onfocus="this.style.borderColor='${accentColor}'" onblur="this.style.borderColor='#e0e0e0'" /></div>
-        <div style="margin-bottom:14px"><label style="display:block;font-size:13px;font-weight:600;color:#555;margin-bottom:5px">মোবাইল নম্বর *</label><input type="tel" name="customer_phone" placeholder="01XXXXXXXXX" required style="width:100%;padding:13px 14px;border:2px solid #e0e0e0;border-radius:10px;font-size:15px;outline:none" onfocus="this.style.borderColor='${accentColor}'" onblur="this.style.borderColor='#e0e0e0'" /></div>
-        <div style="margin-bottom:14px"><label style="display:block;font-size:13px;font-weight:600;color:#555;margin-bottom:5px">সম্পূর্ণ ঠিকানা *</label><textarea name="customer_address" placeholder="বাসা, রাস্তা, এলাকা, জেলা" required style="width:100%;padding:13px 14px;border:2px solid #e0e0e0;border-radius:10px;font-size:15px;outline:none;resize:vertical;min-height:60px" onfocus="this.style.borderColor='${accentColor}'" onblur="this.style.borderColor='#e0e0e0'"></textarea></div>
-        <div style="margin-bottom:14px"><label style="display:block;font-size:13px;font-weight:600;color:#555;margin-bottom:5px">পরিমাণ</label><select name="quantity" id="qtySelect" onchange="updateSummary()" style="width:100%;padding:13px 14px;border:2px solid #e0e0e0;border-radius:10px;font-size:15px;outline:none"><option value="1">১ পিস</option><option value="2">২ পিস</option><option value="3">৩ পিস</option></select></div>
+        <div style="margin-bottom:14px"><label style="display:block;font-size:13px;font-weight:600;color:#555;margin-bottom:5px">${p.nameLabel}</label><input type="text" name="customer_name" placeholder="${p.namePlaceholder}" required style="width:100%;padding:13px 14px;border:2px solid #e0e0e0;border-radius:10px;font-size:15px;outline:none" onfocus="this.style.borderColor='${accentColor}'" onblur="this.style.borderColor='#e0e0e0'" /></div>
+        <div style="margin-bottom:14px"><label style="display:block;font-size:13px;font-weight:600;color:#555;margin-bottom:5px">${p.phoneLabel}</label><input type="tel" name="customer_phone" placeholder="${p.phonePlaceholder}" required style="width:100%;padding:13px 14px;border:2px solid #e0e0e0;border-radius:10px;font-size:15px;outline:none" onfocus="this.style.borderColor='${accentColor}'" onblur="this.style.borderColor='#e0e0e0'" /></div>
+        <div style="margin-bottom:14px"><label style="display:block;font-size:13px;font-weight:600;color:#555;margin-bottom:5px">${p.addressLabel}</label><textarea name="customer_address" placeholder="${p.addressPlaceholder}" required style="width:100%;padding:13px 14px;border:2px solid #e0e0e0;border-radius:10px;font-size:15px;outline:none;resize:vertical;min-height:60px" onfocus="this.style.borderColor='${accentColor}'" onblur="this.style.borderColor='#e0e0e0'"></textarea></div>
+        <div style="margin-bottom:14px"><label style="display:block;font-size:13px;font-weight:600;color:#555;margin-bottom:5px">${p.quantityLabel}</label><select name="quantity" id="qtySelect" onchange="updateSummary()" style="width:100%;padding:13px 14px;border:2px solid #e0e0e0;border-radius:10px;font-size:15px;outline:none"><option value="1">${p.qty1Text}</option><option value="2">${p.qty2Text}</option><option value="3">${p.qty3Text}</option></select></div>
         <div style="background:#f5f5f0;border-radius:12px;padding:14px;margin:16px 0">
-          <div style="display:flex;justify-content:space-between;font-size:14px;padding:4px 0"><span>প্রোডাক্ট মূল্য:</span><span id="sumProduct">৳${p.sellingPrice}</span></div>
-          <div style="display:flex;justify-content:space-between;font-size:14px;padding:4px 0"><span>ডেলিভারি চার্জ:</span><span>৳${p.deliveryCharge}</span></div>
-          <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:800;border-top:1px solid #ddd;margin-top:6px;padding-top:8px"><span>সর্বমোট:</span><span id="sumTotal">৳${(parseInt(p.sellingPrice.replace(/[^\d]/g,''))||0) + (parseInt(p.deliveryCharge)||0)}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:14px;padding:4px 0"><span>${p.productPriceLabel}</span><span id="sumProduct">৳${p.sellingPrice}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:14px;padding:4px 0"><span>${p.deliveryChargeLabel}</span><span>৳${p.deliveryCharge}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:800;border-top:1px solid #ddd;margin-top:6px;padding-top:8px"><span>${p.totalLabel}</span><span id="sumTotal">৳${(parseInt(p.sellingPrice.replace(/[^\d]/g,''))||0) + (parseInt(p.deliveryCharge)||0)}</span></div>
         </div>
-        <button type="submit" id="submitBtn" style="width:100%;padding:16px;font-size:18px;font-weight:700;color:#fff;background:${accentColor};border:none;border-radius:12px;cursor:pointer">✅ অর্ডার কনফার্ম করুন</button>
+        <button type="submit" id="submitBtn" style="width:100%;padding:16px;font-size:18px;font-weight:700;color:#fff;background:${accentColor};border:none;border-radius:12px;cursor:pointer">${p.confirmButtonText}</button>
       </div>
-      <div id="successMsg" style="display:none;text-align:center;padding:40px 20px"><div style="font-size:60px;color:#4caf50;margin-bottom:12px">✅</div><h3 style="font-size:22px;font-weight:800;color:#111;margin:0 0 8px">অর্ডার সফল হয়েছে!</h3><p style="color:#666;font-size:14px;margin:0">আমরা শীঘ্রই আপনার সাথে যোগাযোগ করবো।</p></div>
+      <div id="successMsg" style="display:none;text-align:center;padding:40px 20px"><div style="font-size:60px;color:#4caf50;margin-bottom:12px">✅</div><h3 style="font-size:22px;font-weight:800;color:#111;margin:0 0 8px">${p.successTitle}</h3><p style="color:#666;font-size:14px;margin:0">${p.successMessage}</p></div>
     </form>
   </div>
 </div>
@@ -144,22 +198,22 @@ export function templateClassicOrange(p: TemplateConfig): string {
 .lp-footer{background:#f5f5f0;padding:24px 16px;text-align:center;margin-top:32px}.lp-footer p{color:#999;font-size:12px}
 </style></head><body>
 <div class="top-banner">${p.topBannerText}</div>
-<div class="countdown-bar">অফারটি পাবে আর মাত্র <span class="count-num" id="countdown-num">69</span> জন</div>
+<div class="countdown-bar">${p.countdownText} <span class="count-num" id="countdown-num">69</span> জন</div>
 <div class="product-hero"><img src="${p.imageUrl}" alt="${p.productName}"/></div>
 <div class="product-info">
   <h1>${p.productName}</h1><div class="subtitle">${p.subtitle}</div>
-  <div class="stars">⭐⭐⭐⭐⭐ <span class="reviews">(150+ Reviews)</span></div>
+  <div class="stars">⭐⭐⭐⭐⭐ <span class="reviews">${p.reviewText}</span></div>
   <div class="price-row"><span class="price-old">৳${p.originalPrice}</span><span class="price-new">৳ ${p.sellingPrice}</span><span class="discount-badge">${p.discountPercent}% ছাড়</span></div>
 </div>
 <div class="cta-section">
   <button class="btn-order" onclick="openCheckout()">🛒 ${p.ctaButtonText}</button>
-  <a href="tel:${p.phoneNumber}" class="btn-call">📞 অর্ডার করতে কল করুন: ${p.phoneNumber}</a>
+  <a href="tel:${p.phoneNumber}" class="btn-call">📞 ${p.callButtonText}: ${p.phoneNumber}</a>
 </div>
 <div class="trust-grid">
-  <div class="trust-card"><div class="icon">🛡️</div><p>১০০% অরিজিনাল</p></div>
-  <div class="trust-card"><div class="icon">🚚</div><p>দ্রুত ডেলিভারি</p></div>
-  <div class="trust-card"><div class="icon">🏅</div><p>প্রিমিয়াম কোয়ালিটি</p></div>
-  <div class="trust-card"><div class="icon">📞</div><p>ক্যাশ অন ডেলিভারি</p></div>
+  <div class="trust-card"><div class="icon">🛡️</div><p>${p.trustBadge1}</p></div>
+  <div class="trust-card"><div class="icon">🚚</div><p>${p.trustBadge2}</p></div>
+  <div class="trust-card"><div class="icon">🏅</div><p>${p.trustBadge3}</p></div>
+  <div class="trust-card"><div class="icon">📞</div><p>${p.trustBadge4}</p></div>
 </div>
 <div class="features-section">
   <h2>${p.whySectionTitle}</h2>
@@ -169,7 +223,7 @@ export function templateClassicOrange(p: TemplateConfig): string {
   <div class="feature-card"><h3>✅ ${p.feature4Title}</h3><p>${p.feature4Desc}</p></div>
 </div>
 <div class="cta-section"><button class="btn-order" onclick="openCheckout()">🛒 এখনই ${p.ctaButtonText}</button></div>
-<div class="lp-footer"><p>© ${new Date().getFullYear()} সর্বস্বত্ব সংরক্ষিত</p></div>
+<div class="lp-footer"><p>${p.footerText}</p></div>
 ${checkoutPopupHtml(p, '#ff6b00')}
 ${countdownScript()}
 </body></html>`;
@@ -210,17 +264,17 @@ export function templateModernBlue(p: TemplateConfig): string {
   <div class="hero-body">
     <span class="tag">${p.subtitle}</span>
     <h1>${p.productName}</h1>
-    <div class="rating"><span class="stars">★★★★★</span><span class="count">(200+ Reviews)</span></div>
+    <div class="rating"><span class="stars">★★★★★</span><span class="count">${p.reviewText}</span></div>
     <div class="price-box"><span class="old">৳${p.originalPrice}</span><span class="new">৳${p.sellingPrice}</span><span class="save">${p.discountPercent}% OFF</span></div>
     <button class="btn-primary" onclick="openCheckout()">🛒 ${p.ctaButtonText}</button>
-    <a href="tel:${p.phoneNumber}" class="btn-secondary">📞 কল করুন: ${p.phoneNumber}</a>
+    <a href="tel:${p.phoneNumber}" class="btn-secondary">📞 ${p.callButtonText}: ${p.phoneNumber}</a>
   </div>
 </div>
 <div class="badges">
-  <div class="badge-item"><span class="bi">✓</span><span>অরিজিনাল</span></div>
-  <div class="badge-item"><span class="bi">🚀</span><span>ফাস্ট শিপ</span></div>
-  <div class="badge-item"><span class="bi">🏅</span><span>প্রিমিয়াম</span></div>
-  <div class="badge-item"><span class="bi">💵</span><span>COD</span></div>
+  <div class="badge-item"><span class="bi">✓</span><span>${p.trustBadge1}</span></div>
+  <div class="badge-item"><span class="bi">🚀</span><span>${p.trustBadge2}</span></div>
+  <div class="badge-item"><span class="bi">🏅</span><span>${p.trustBadge3}</span></div>
+  <div class="badge-item"><span class="bi">💵</span><span>${p.trustBadge4}</span></div>
 </div>
 <div class="why-section">
   <h2>${p.whySectionTitle}</h2>
@@ -230,7 +284,7 @@ export function templateModernBlue(p: TemplateConfig): string {
   <div class="why-card"><h4>✨ ${p.feature4Title}</h4><p>${p.feature4Desc}</p></div>
 </div>
 <div style="padding:0 16px 20px"><button class="btn-primary" onclick="openCheckout()">🛒 এখনই ${p.ctaButtonText}</button></div>
-<div class="footer"><p>© ${new Date().getFullYear()} সর্বস্বত্ব সংরক্ষিত</p></div>
+<div class="footer"><p>${p.footerText}</p></div>
 ${checkoutPopupHtml(p, '#1a73e8')}
 </body></html>`;
 }
@@ -271,16 +325,16 @@ export function templateElegantDark(p: TemplateConfig): string {
   <div class="hero-overlay"><h1>${p.productName}</h1><div class="sub">${p.subtitle}</div></div>
 </div>
 <div class="info-section">
-  <div class="stars">★★★★★ <span style="color:#888;font-size:13px">(120+ Reviews)</span></div>
+  <div class="stars">★★★★★ <span style="color:#888;font-size:13px">${p.reviewText}</span></div>
   <div class="price-display"><span class="was">৳${p.originalPrice}</span><span class="now">৳${p.sellingPrice}</span><span class="off">${p.discountPercent}% OFF</span></div>
 </div>
 <button class="btn-gold" onclick="openCheckout()">🛒 ${p.ctaButtonText}</button>
-<a href="tel:${p.phoneNumber}" class="btn-dark-call">📞 কল করুন: ${p.phoneNumber}</a>
+<a href="tel:${p.phoneNumber}" class="btn-dark-call">📞 ${p.callButtonText}: ${p.phoneNumber}</a>
 <div class="dark-badges">
-  <div class="db-item"><span class="di">🛡️</span><span>অরিজিনাল গ্যারান্টি</span></div>
-  <div class="db-item"><span class="di">🚚</span><span>দ্রুত ডেলিভারি</span></div>
-  <div class="db-item"><span class="di">💎</span><span>প্রিমিয়াম কোয়ালিটি</span></div>
-  <div class="db-item"><span class="di">💰</span><span>ক্যাশ অন ডেলিভারি</span></div>
+  <div class="db-item"><span class="di">🛡️</span><span>${p.trustBadge1}</span></div>
+  <div class="db-item"><span class="di">🚚</span><span>${p.trustBadge2}</span></div>
+  <div class="db-item"><span class="di">💎</span><span>${p.trustBadge3}</span></div>
+  <div class="db-item"><span class="di">💰</span><span>${p.trustBadge4}</span></div>
 </div>
 <div class="features-dark">
   <h2>${p.whySectionTitle}</h2>
@@ -290,7 +344,7 @@ export function templateElegantDark(p: TemplateConfig): string {
   <div class="fd-card"><h4>✦ ${p.feature4Title}</h4><p>${p.feature4Desc}</p></div>
 </div>
 <div style="padding:0 16px 20px"><button class="btn-gold" onclick="openCheckout()">🛒 এখনই ${p.ctaButtonText}</button></div>
-<div class="footer-dark"><p>© ${new Date().getFullYear()} সর্বস্বত্ব সংরক্ষিত</p></div>
+<div class="footer-dark"><p>${p.footerText}</p></div>
 ${checkoutPopupHtml(p, '#daa520', 'rgba(0,0,0,0.8)')}
 </body></html>`;
 }
@@ -330,16 +384,16 @@ export function templateFreshGreen(p: TemplateConfig): string {
 <div class="content">
   <span class="leaf-badge">🌿 ${p.subtitle}</span>
   <h1>${p.productName}</h1>
-  <div class="rating">★★★★★ <span>(180+ Reviews)</span></div>
+  <div class="rating">★★★★★ <span>${p.reviewText}</span></div>
   <div class="price-area"><span class="old">৳${p.originalPrice}</span><span class="current">৳${p.sellingPrice}</span><span class="tag">${p.discountPercent}% সেভ</span></div>
   <button class="btn-green" onclick="openCheckout()">🛒 ${p.ctaButtonText}</button>
-  <a href="tel:${p.phoneNumber}" class="btn-outline-green">📞 কল: ${p.phoneNumber}</a>
+  <a href="tel:${p.phoneNumber}" class="btn-outline-green">📞 ${p.callButtonText}: ${p.phoneNumber}</a>
 </div>
 <div class="eco-trust">
-  <div class="et-item"><span class="ei">🌱</span><span>অরিজিনাল</span></div>
-  <div class="et-item"><span class="ei">🚚</span><span>ফ্রি শিপিং</span></div>
-  <div class="et-item"><span class="ei">🏅</span><span>টপ কোয়ালিটি</span></div>
-  <div class="et-item"><span class="ei">💵</span><span>COD</span></div>
+  <div class="et-item"><span class="ei">🌱</span><span>${p.trustBadge1}</span></div>
+  <div class="et-item"><span class="ei">🚚</span><span>${p.trustBadge2}</span></div>
+  <div class="et-item"><span class="ei">🏅</span><span>${p.trustBadge3}</span></div>
+  <div class="et-item"><span class="ei">💵</span><span>${p.trustBadge4}</span></div>
 </div>
 <div class="eco-features">
   <h2>${p.whySectionTitle}</h2>
@@ -349,7 +403,7 @@ export function templateFreshGreen(p: TemplateConfig): string {
   <div class="ef-card"><div class="ef-icon">✨</div><div class="ef-text"><h4>${p.feature4Title}</h4><p>${p.feature4Desc}</p></div></div>
 </div>
 <div style="padding:0 16px 20px"><button class="btn-green" onclick="openCheckout()">🛒 এখনই ${p.ctaButtonText}</button></div>
-<div class="footer-green"><p>© ${new Date().getFullYear()} সর্বস্বত্ব সংরক্ষিত</p></div>
+<div class="footer-green"><p>${p.footerText}</p></div>
 ${checkoutPopupHtml(p, '#2e7d32')}
 </body></html>`;
 }
@@ -387,20 +441,20 @@ export function templateVibrantGradient(p: TemplateConfig): string {
 .vg-footer{text-align:center;padding:20px;color:#ccc;font-size:11px}
 </style></head><body>
 <div class="vg-top">✨ ${p.topBannerText} ✨</div>
-<div class="vg-timer">অফার শেষ হবে <span class="num" id="countdown-num">49</span> জনের মধ্যে</div>
+<div class="vg-timer">${p.countdownText} <span class="num" id="countdown-num">49</span> জনের মধ্যে</div>
 <div class="vg-hero"><img src="${p.imageUrl}" alt="${p.productName}"/></div>
 <div class="vg-info">
   <h1>${p.productName}</h1><div class="sub">${p.subtitle}</div>
-  <div class="stars">⭐⭐⭐⭐⭐ <span class="rev">(250+ Reviews)</span></div>
+  <div class="stars">⭐⭐⭐⭐⭐ <span class="rev">${p.reviewText}</span></div>
   <div class="vg-price"><span class="old">৳${p.originalPrice}</span><span class="now">৳${p.sellingPrice}</span><span class="badge">${p.discountPercent}% ছাড়</span></div>
 </div>
 <button class="btn-gradient" onclick="openCheckout()">🛒 ${p.ctaButtonText}</button>
-<a href="tel:${p.phoneNumber}" class="btn-gradient-outline">📞 কল করুন: ${p.phoneNumber}</a>
+<a href="tel:${p.phoneNumber}" class="btn-gradient-outline">📞 ${p.callButtonText}: ${p.phoneNumber}</a>
 <div class="vg-badges">
-  <div class="vgb"><span class="icon">🛡️</span><span>১০০% অথেনটিক</span></div>
-  <div class="vgb"><span class="icon">⚡</span><span>এক্সপ্রেস ডেলিভারি</span></div>
-  <div class="vgb"><span class="icon">🏆</span><span>বেস্ট সেলার</span></div>
-  <div class="vgb"><span class="icon">💰</span><span>ক্যাশ অন ডেলিভারি</span></div>
+  <div class="vgb"><span class="icon">🛡️</span><span>${p.trustBadge1}</span></div>
+  <div class="vgb"><span class="icon">⚡</span><span>${p.trustBadge2}</span></div>
+  <div class="vgb"><span class="icon">🏆</span><span>${p.trustBadge3}</span></div>
+  <div class="vgb"><span class="icon">💰</span><span>${p.trustBadge4}</span></div>
 </div>
 <div class="vg-features">
   <h2>${p.whySectionTitle}</h2>
@@ -409,8 +463,8 @@ export function templateVibrantGradient(p: TemplateConfig): string {
   <div class="vgf"><div class="vgf-dot"></div><div><h4>${p.feature3Title}</h4><p>${p.feature3Desc}</p></div></div>
   <div class="vgf"><div class="vgf-dot"></div><div><h4>${p.feature4Title}</h4><p>${p.feature4Desc}</p></div></div>
 </div>
-<div style="padding:0 16px 20px"><button class="btn-gradient" onclick="openCheckout()">🛒 এখনই অর্ডার করুন</button></div>
-<div class="vg-footer"><p>© ${new Date().getFullYear()} সর্বস্বত্ব সংরক্ষিত</p></div>
+<div style="padding:0 16px 20px"><button class="btn-gradient" onclick="openCheckout()">🛒 এখনই ${p.ctaButtonText}</button></div>
+<div class="vg-footer"><p>${p.footerText}</p></div>
 ${checkoutPopupHtml(p, '#7c3aed')}
 ${countdownScript()}
 </body></html>`;
@@ -453,17 +507,17 @@ export function templateMinimalWhite(p: TemplateConfig): string {
 <div class="mw-content">
   <h1>${p.productName}</h1>
   <div class="sub">${p.subtitle}</div>
-  <div class="rating"><span class="st">★★★★★</span> 4.8/5 · 200+ রিভিউ</div>
+  <div class="rating"><span class="st">★★★★★</span> ${p.reviewText}</div>
   <div class="mw-divider"></div>
   <div class="mw-price"><span class="old">৳${p.originalPrice}</span><span class="new">৳${p.sellingPrice}</span><span class="save">-${p.discountPercent}%</span></div>
   <button class="btn-black" onclick="openCheckout()">${p.ctaButtonText}</button>
-  <a href="tel:${p.phoneNumber}" class="btn-outline-black">কল করুন — ${p.phoneNumber}</a>
+  <a href="tel:${p.phoneNumber}" class="btn-outline-black">${p.callButtonText} — ${p.phoneNumber}</a>
 </div>
 <div class="mw-trust">
-  <div class="mt-item"><span class="mi">✓</span><span>অরিজিনাল</span></div>
-  <div class="mt-item"><span class="mi">⚡</span><span>ফাস্ট</span></div>
-  <div class="mt-item"><span class="mi">🏅</span><span>প্রিমিয়াম</span></div>
-  <div class="mt-item"><span class="mi">💵</span><span>COD</span></div>
+  <div class="mt-item"><span class="mi">✓</span><span>${p.trustBadge1}</span></div>
+  <div class="mt-item"><span class="mi">⚡</span><span>${p.trustBadge2}</span></div>
+  <div class="mt-item"><span class="mi">🏅</span><span>${p.trustBadge3}</span></div>
+  <div class="mt-item"><span class="mi">💵</span><span>${p.trustBadge4}</span></div>
 </div>
 <div class="mw-features">
   <h2>${p.whySectionTitle}</h2>
@@ -473,7 +527,7 @@ export function templateMinimalWhite(p: TemplateConfig): string {
   <div class="mwf"><div class="mwf-num">04</div><div><h4>${p.feature4Title}</h4><p>${p.feature4Desc}</p></div></div>
 </div>
 <div style="padding:0 20px 24px"><button class="btn-black" onclick="openCheckout()">এখনই ${p.ctaButtonText}</button></div>
-<div class="mw-footer"><p>© ${new Date().getFullYear()} সর্বস্বত্ব সংরক্ষিত</p></div>
+<div class="mw-footer"><p>${p.footerText}</p></div>
 ${checkoutPopupHtml(p, '#111')}
 </body></html>`;
 }
