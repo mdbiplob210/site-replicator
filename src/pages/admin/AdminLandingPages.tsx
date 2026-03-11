@@ -287,9 +287,8 @@ export default function AdminLandingPages() {
           </DialogHeader>
 
           <Tabs defaultValue="landing" className="w-full">
-            <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="landing">Landing Page</TabsTrigger>
-              <TabsTrigger value="checkout">Checkout Page</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="landing">HTML কোড</TabsTrigger>
               <TabsTrigger value="images">ছবি</TabsTrigger>
               <TabsTrigger value="tracking">ট্র্যাকিং</TabsTrigger>
               <TabsTrigger value="settings">সেটিংস</TabsTrigger>
