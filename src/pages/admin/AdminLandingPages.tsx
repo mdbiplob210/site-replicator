@@ -21,7 +21,7 @@ import {
   useDeleteLandingPage,
   LandingPage,
 } from "@/hooks/useLandingPages";
-import { getProductLandingTemplate } from "@/lib/landingPageTemplates";
+import { generateTemplate, templateList, defaultTemplateConfig, type TemplateConfig } from "@/lib/landingPageTemplates";
 
 type LandingPageImage = {
   id: string;
