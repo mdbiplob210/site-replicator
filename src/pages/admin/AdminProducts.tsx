@@ -282,7 +282,7 @@ const AdminProducts = () => {
       <AdminLayout>
         <div className="max-w-[1400px] space-y-6">
           <div className="flex items-center gap-3">
-            <button onClick={() => { setView("list"); setEditingId(null); setForm(emptyProduct); }} className="p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors">
+            <button onClick={() => { setView("list"); setEditingId(null); setForm(emptyProduct); setMainImageUrl(""); setAdditionalImages([]); }} className="p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors">
               <ArrowLeft className="h-5 w-5" />
             </button>
             <div>
