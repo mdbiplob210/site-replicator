@@ -37,6 +37,8 @@ interface Product {
   internal_note: string | null;
   free_delivery: boolean;
   allow_out_of_stock_orders: boolean;
+  main_image_url: string | null;
+  additional_images: string[] | null;
 }
 
 interface Category {
