@@ -325,16 +325,16 @@ export function templateElegantDark(p: TemplateConfig): string {
   <div class="hero-overlay"><h1>${p.productName}</h1><div class="sub">${p.subtitle}</div></div>
 </div>
 <div class="info-section">
-  <div class="stars">★★★★★ <span style="color:#888;font-size:13px">(120+ Reviews)</span></div>
+  <div class="stars">★★★★★ <span style="color:#888;font-size:13px">${p.reviewText}</span></div>
   <div class="price-display"><span class="was">৳${p.originalPrice}</span><span class="now">৳${p.sellingPrice}</span><span class="off">${p.discountPercent}% OFF</span></div>
 </div>
 <button class="btn-gold" onclick="openCheckout()">🛒 ${p.ctaButtonText}</button>
-<a href="tel:${p.phoneNumber}" class="btn-dark-call">📞 কল করুন: ${p.phoneNumber}</a>
+<a href="tel:${p.phoneNumber}" class="btn-dark-call">📞 ${p.callButtonText}: ${p.phoneNumber}</a>
 <div class="dark-badges">
-  <div class="db-item"><span class="di">🛡️</span><span>অরিজিনাল গ্যারান্টি</span></div>
-  <div class="db-item"><span class="di">🚚</span><span>দ্রুত ডেলিভারি</span></div>
-  <div class="db-item"><span class="di">💎</span><span>প্রিমিয়াম কোয়ালিটি</span></div>
-  <div class="db-item"><span class="di">💰</span><span>ক্যাশ অন ডেলিভারি</span></div>
+  <div class="db-item"><span class="di">🛡️</span><span>${p.trustBadge1}</span></div>
+  <div class="db-item"><span class="di">🚚</span><span>${p.trustBadge2}</span></div>
+  <div class="db-item"><span class="di">💎</span><span>${p.trustBadge3}</span></div>
+  <div class="db-item"><span class="di">💰</span><span>${p.trustBadge4}</span></div>
 </div>
 <div class="features-dark">
   <h2>${p.whySectionTitle}</h2>
@@ -344,7 +344,7 @@ export function templateElegantDark(p: TemplateConfig): string {
   <div class="fd-card"><h4>✦ ${p.feature4Title}</h4><p>${p.feature4Desc}</p></div>
 </div>
 <div style="padding:0 16px 20px"><button class="btn-gold" onclick="openCheckout()">🛒 এখনই ${p.ctaButtonText}</button></div>
-<div class="footer-dark"><p>© ${new Date().getFullYear()} সর্বস্বত্ব সংরক্ষিত</p></div>
+<div class="footer-dark"><p>${p.footerText}</p></div>
 ${checkoutPopupHtml(p, '#daa520', 'rgba(0,0,0,0.8)')}
 </body></html>`;
 }
