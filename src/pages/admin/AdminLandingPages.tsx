@@ -581,6 +581,68 @@ export default function AdminLandingPages() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Template Config Dialog */}
+      <Dialog open={templateDialogOpen} onOpenChange={setTemplateDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>📄 টেমপ্লেট থেকে Landing Page তৈরি করুন</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs">প্রোডাক্ট নাম *</Label>
+                <Input value={tplForm.productName} onChange={(e) => setTplForm({ ...tplForm, productName: e.target.value })} placeholder="যেমন: Aluminum Juicer" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">সাবটাইটেল</Label>
+                <Input value={tplForm.subtitle} onChange={(e) => setTplForm({ ...tplForm, subtitle: e.target.value })} placeholder="যেমন: (বড় সাইজ)" />
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs">আসল দাম (৳)</Label>
+                <Input value={tplForm.originalPrice} onChange={(e) => setTplForm({ ...tplForm, originalPrice: e.target.value })} placeholder="৯৯০" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">বিক্রয় দাম (৳)</Label>
+                <Input value={tplForm.sellingPrice} onChange={(e) => setTplForm({ ...tplForm, sellingPrice: e.target.value })} placeholder="৬৯০" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">ছাড় (%)</Label>
+                <Input value={tplForm.discountPercent} onChange={(e) => setTplForm({ ...tplForm, discountPercent: e.target.value })} placeholder="৩০" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs">ডেলিভারি চার্জ (৳)</Label>
+                <Input value={tplForm.deliveryCharge} onChange={(e) => setTplForm({ ...tplForm, deliveryCharge: e.target.value })} placeholder="60" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">প্রোডাক্ট কোড</Label>
+                <Input value={tplForm.productCode} onChange={(e) => setTplForm({ ...tplForm, productCode: e.target.value })} placeholder="SKU001" />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">ফোন নম্বর (কল বাটনের জন্য)</Label>
+              <Input value={tplForm.phoneNumber} onChange={(e) => setTplForm({ ...tplForm, phoneNumber: e.target.value })} placeholder="01XXXXXXXXX" />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">প্রোডাক্ট ছবির URL (পরে ছবি ট্যাব থেকে চেঞ্জ করতে পারবেন)</Label>
+              <Input value={tplForm.imageUrl} onChange={(e) => setTplForm({ ...tplForm, imageUrl: e.target.value })} placeholder="https://example.com/product.jpg" />
+            </div>
+            <div className="bg-muted/50 border rounded-lg p-3">
+              <p className="text-xs text-muted-foreground">✅ টেমপ্লেটে অটো থাকবে: কাউন্টডাউন, ট্রাস্ট ব্যাজ, ফিচার কার্ড, পপআপ চেকআউট ফর্ম, অর্ডার সামারি। তৈরি হওয়ার পর HTML কোড এডিট করে কাস্টমাইজ করতে পারবেন।</p>
+            </div>
+            <div className="flex justify-end gap-3">
+              <Button variant="outline" onClick={() => setTemplateDialogOpen(false)}>বাতিল</Button>
+              <Button onClick={handleGenerateTemplate} disabled={!tplForm.productName}>
+                🚀 টেমপ্লেট তৈরি করুন
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 }
