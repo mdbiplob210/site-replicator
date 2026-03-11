@@ -148,8 +148,8 @@ export default function AdminLandingPages() {
   };
 
   const handleGenerateTemplate = () => {
-    const html = getProductLandingTemplate(tplForm);
-    const slug = tplForm.productName
+    const html = generateTemplate(selectedTemplateId, tplForm);
+    const slug = tplForm.productName && tplForm.productName !== defaultTemplateConfig.productName
       ? tplForm.productName.replace(/[^a-z0-9\s-]/gi, "").replace(/\s+/g, "-").toLowerCase().slice(0, 40)
       : "product-offer";
     setForm({
