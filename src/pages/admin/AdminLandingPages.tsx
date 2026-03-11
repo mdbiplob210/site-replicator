@@ -581,10 +581,11 @@ export default function AdminLandingPages() {
           </DialogHeader>
 
           <Tabs defaultValue="template" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="template">টেমপ্লেট বেছে নিন</TabsTrigger>
-              <TabsTrigger value="product">প্রোডাক্ট তথ্য</TabsTrigger>
-              <TabsTrigger value="content">টেক্সট কাস্টমাইজ</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="template">টেমপ্লেট</TabsTrigger>
+              <TabsTrigger value="product">প্রোডাক্ট</TabsTrigger>
+              <TabsTrigger value="content">টেক্সট</TabsTrigger>
+              <TabsTrigger value="checkout">চেকআউট</TabsTrigger>
             </TabsList>
 
             {/* Tab 1: Template Selection */}
