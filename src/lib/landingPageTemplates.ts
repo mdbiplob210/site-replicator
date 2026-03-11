@@ -10,7 +10,7 @@ export interface TemplateConfig {
   productCode: string;
   phoneNumber: string;
   imageUrl: string;
-  // Extended customization
+  // Features
   feature1Title: string;
   feature1Desc: string;
   feature2Title: string;
@@ -19,9 +19,38 @@ export interface TemplateConfig {
   feature3Desc: string;
   feature4Title: string;
   feature4Desc: string;
+  // Texts
   topBannerText: string;
   ctaButtonText: string;
   whySectionTitle: string;
+  // Trust badges
+  trustBadge1: string;
+  trustBadge2: string;
+  trustBadge3: string;
+  trustBadge4: string;
+  // Additional texts
+  countdownText: string;
+  reviewText: string;
+  callButtonText: string;
+  footerText: string;
+  // Checkout popup texts
+  checkoutTitle: string;
+  nameLabel: string;
+  namePlaceholder: string;
+  phoneLabel: string;
+  phonePlaceholder: string;
+  addressLabel: string;
+  addressPlaceholder: string;
+  quantityLabel: string;
+  qty1Text: string;
+  qty2Text: string;
+  qty3Text: string;
+  productPriceLabel: string;
+  deliveryChargeLabel: string;
+  totalLabel: string;
+  confirmButtonText: string;
+  successTitle: string;
+  successMessage: string;
 }
 
 export const defaultTemplateConfig: TemplateConfig = {
@@ -45,6 +74,31 @@ export const defaultTemplateConfig: TemplateConfig = {
   topBannerText: "🎉 সীমিত সময়ের অফার - এখনই অর্ডার করুন! 🎉",
   ctaButtonText: "অর্ডার করুন",
   whySectionTitle: "কেন এই প্রোডাক্ট বেছে নেবেন?",
+  trustBadge1: "১০০% অরিজিনাল",
+  trustBadge2: "দ্রুত ডেলিভারি",
+  trustBadge3: "প্রিমিয়াম কোয়ালিটি",
+  trustBadge4: "ক্যাশ অন ডেলিভারি",
+  countdownText: "অফারটি পাবে আর মাত্র",
+  reviewText: "(150+ Reviews)",
+  callButtonText: "অর্ডার করতে কল করুন",
+  footerText: "© " + new Date().getFullYear() + " সর্বস্বত্ব সংরক্ষিত",
+  checkoutTitle: "🛒 অর্ডার করুন",
+  nameLabel: "আপনার নাম *",
+  namePlaceholder: "আপনার পুরো নাম লিখুন",
+  phoneLabel: "মোবাইল নম্বর *",
+  phonePlaceholder: "01XXXXXXXXX",
+  addressLabel: "সম্পূর্ণ ঠিকানা *",
+  addressPlaceholder: "বাসা, রাস্তা, এলাকা, জেলা",
+  quantityLabel: "পরিমাণ",
+  qty1Text: "১ পিস",
+  qty2Text: "২ পিস",
+  qty3Text: "৩ পিস",
+  productPriceLabel: "প্রোডাক্ট মূল্য:",
+  deliveryChargeLabel: "ডেলিভারি চার্জ:",
+  totalLabel: "সর্বমোট:",
+  confirmButtonText: "✅ অর্ডার কনফার্ম করুন",
+  successTitle: "অর্ডার সফল হয়েছে!",
+  successMessage: "আমরা শীঘ্রই আপনার সাথে যোগাযোগ করবো।",
 };
 
 export interface TemplateInfo {
