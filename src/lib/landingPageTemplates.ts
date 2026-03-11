@@ -507,17 +507,17 @@ export function templateMinimalWhite(p: TemplateConfig): string {
 <div class="mw-content">
   <h1>${p.productName}</h1>
   <div class="sub">${p.subtitle}</div>
-  <div class="rating"><span class="st">★★★★★</span> 4.8/5 · 200+ রিভিউ</div>
+  <div class="rating"><span class="st">★★★★★</span> ${p.reviewText}</div>
   <div class="mw-divider"></div>
   <div class="mw-price"><span class="old">৳${p.originalPrice}</span><span class="new">৳${p.sellingPrice}</span><span class="save">-${p.discountPercent}%</span></div>
   <button class="btn-black" onclick="openCheckout()">${p.ctaButtonText}</button>
-  <a href="tel:${p.phoneNumber}" class="btn-outline-black">কল করুন — ${p.phoneNumber}</a>
+  <a href="tel:${p.phoneNumber}" class="btn-outline-black">${p.callButtonText} — ${p.phoneNumber}</a>
 </div>
 <div class="mw-trust">
-  <div class="mt-item"><span class="mi">✓</span><span>অরিজিনাল</span></div>
-  <div class="mt-item"><span class="mi">⚡</span><span>ফাস্ট</span></div>
-  <div class="mt-item"><span class="mi">🏅</span><span>প্রিমিয়াম</span></div>
-  <div class="mt-item"><span class="mi">💵</span><span>COD</span></div>
+  <div class="mt-item"><span class="mi">✓</span><span>${p.trustBadge1}</span></div>
+  <div class="mt-item"><span class="mi">⚡</span><span>${p.trustBadge2}</span></div>
+  <div class="mt-item"><span class="mi">🏅</span><span>${p.trustBadge3}</span></div>
+  <div class="mt-item"><span class="mi">💵</span><span>${p.trustBadge4}</span></div>
 </div>
 <div class="mw-features">
   <h2>${p.whySectionTitle}</h2>
@@ -527,7 +527,7 @@ export function templateMinimalWhite(p: TemplateConfig): string {
   <div class="mwf"><div class="mwf-num">04</div><div><h4>${p.feature4Title}</h4><p>${p.feature4Desc}</p></div></div>
 </div>
 <div style="padding:0 20px 24px"><button class="btn-black" onclick="openCheckout()">এখনই ${p.ctaButtonText}</button></div>
-<div class="mw-footer"><p>© ${new Date().getFullYear()} সর্বস্বত্ব সংরক্ষিত</p></div>
+<div class="mw-footer"><p>${p.footerText}</p></div>
 ${checkoutPopupHtml(p, '#111')}
 </body></html>`;
 }
