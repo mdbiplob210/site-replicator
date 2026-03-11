@@ -297,9 +297,47 @@ const AdminProducts = () => {
               <div className="space-y-4">
                 <div>
                   <Label className="text-sm font-semibold">Main Image</Label>
-                  <div className="mt-2 h-28 w-28 border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-primary/50 transition-colors">
-                    <ImageIcon className="h-6 w-6 text-muted-foreground" />
-                    <span className="text-[11px] text-muted-foreground">Upload</span>
+                  <div className="mt-2 flex items-center gap-4">
+                    {mainImageUrl ? (
+                      <div className="relative h-28 w-28 rounded-xl overflow-hidden border border-border">
+                        <img src={mainImageUrl} alt="Main" className="w-full h-full object-cover" />
+                        <button onClick={() => setMainImageUrl("")} className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-0.5">
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="mt-0 h-28 w-28 border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-primary/50 transition-colors">
+                        {uploadingMain ? <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /> : (
+                          <>
+                            <Upload className="h-6 w-6 text-muted-foreground" />
+                            <span className="text-[11px] text-muted-foreground">Upload</span>
+                          </>
+                        )}
+                        <input type="file" accept="image/*" className="hidden" onChange={handleMainImageUpload} disabled={uploadingMain} />
+                      </label>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-sm font-semibold">Additional Images</Label>
+                  <div className="mt-2 flex items-center gap-3 flex-wrap">
+                    {additionalImages.map((url, i) => (
+                      <div key={i} className="relative h-20 w-20 rounded-lg overflow-hidden border border-border">
+                        <img src={url} alt={`Extra ${i + 1}`} className="w-full h-full object-cover" />
+                        <button onClick={() => removeAdditionalImage(i)} className="absolute top-0.5 right-0.5 bg-destructive text-destructive-foreground rounded-full p-0.5">
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                    <label className="h-20 w-20 border-2 border-dashed border-border rounded-lg flex flex-col items-center justify-center gap-0.5 cursor-pointer hover:border-primary/50 transition-colors">
+                      {uploadingAdditional ? <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /> : (
+                        <>
+                          <Plus className="h-5 w-5 text-muted-foreground" />
+                          <span className="text-[9px] text-muted-foreground">Add</span>
+                        </>
+                      )}
+                      <input type="file" accept="image/*" multiple className="hidden" onChange={handleAdditionalImagesUpload} disabled={uploadingAdditional} />
+                    </label>
                   </div>
                 </div>
               </div>
