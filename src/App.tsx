@@ -58,6 +58,7 @@ const AdminInvoices = lazy(() => import("./pages/admin/AdminInvoices"));
 const AdminPages = lazy(() => import("./pages/admin/AdminPages"));
 const AdminProfile = lazy(() => import("./pages/admin/AdminProfile"));
 const AdminWhatsApp = lazy(() => import("./pages/admin/AdminWhatsApp"));
+const AdminMemoTemplate = lazy(() => import("./pages/admin/AdminMemoTemplate"));
 
 // Minimal loading fallback
 const PageLoader = () => (
