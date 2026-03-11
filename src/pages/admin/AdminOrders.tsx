@@ -1263,6 +1263,87 @@ const AdminOrders = () => {
             </div>
           )}
         </div>
+
+          {/* Convert to Order Dialog - rendered in incomplete view */}
+          <Dialog open={newOrderOpen} onOpenChange={(open) => {
+            setNewOrderOpen(open);
+            if (!open) { setConvertingIncompleteId(null); }
+          }}>
+            <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl" onInteractOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()} onCloseAutoFocus={(e) => e.preventDefault()}>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2 text-lg">
+                  <div className="p-2 rounded-xl bg-amber-500/10">
+                    <GitMerge className="h-5 w-5 text-amber-600" />
+                  </div>
+                  ইনকমপ্লিট অর্ডার কনভার্ট
+                  <Badge variant="secondary" className="ml-2 text-xs">{nextOrderNumber}</Badge>
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-muted-foreground">কাস্টমার নাম *</Label>
+                    <Input value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="নাম লিখুন" className="rounded-xl" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-muted-foreground">ফোন নম্বর</Label>
+                    <Input value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} placeholder="01XXXXXXXXX" className="rounded-xl" />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground">ঠিকানা</Label>
+                  <Textarea value={customerAddress} onChange={(e) => setCustomerAddress(e.target.value)} placeholder="সম্পূর্ণ ঠিকানা" className="rounded-xl min-h-[60px]" />
+                </div>
+                <div className="space-y-3">
+                  <Label className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><Package className="h-3 w-3" /> প্রোডাক্ট</Label>
+                  {orderItems.map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-2 bg-secondary/30 rounded-xl p-3 border border-border/30">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{item.product_name || "Unknown"}</p>
+                        <p className="text-xs text-muted-foreground">{item.product_code}</p>
+                      </div>
+                      <Input type="number" value={item.quantity} onChange={(e) => { const q = parseInt(e.target.value) || 1; const updated = [...orderItems]; updated[idx] = {...item, quantity: q, total_price: q * item.unit_price}; setOrderItems(updated); }} className="w-16 rounded-lg text-center" min={1} />
+                      <span className="text-xs text-muted-foreground">×</span>
+                      <Input type="number" value={item.unit_price} onChange={(e) => { const p = parseFloat(e.target.value) || 0; const updated = [...orderItems]; updated[idx] = {...item, unit_price: p, total_price: item.quantity * p}; setOrderItems(updated); }} className="w-24 rounded-lg" />
+                      <Button size="sm" variant="ghost" onClick={() => setOrderItems(orderItems.filter((_, i) => i !== idx))}><X className="h-3 w-3" /></Button>
+                    </div>
+                  ))}
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-muted-foreground">ডেলিভারি চার্জ</Label>
+                    <Input type="number" value={deliveryCharge} onChange={(e) => setDeliveryCharge(parseFloat(e.target.value) || 0)} className="rounded-xl" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-muted-foreground">ডিসকাউন্ট</Label>
+                    <Input type="number" value={discount} onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)} className="rounded-xl" />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground">নোট</Label>
+                  <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} className="rounded-xl min-h-[50px]" />
+                </div>
+                <div className="flex items-center gap-2 text-sm bg-secondary/50 rounded-xl px-4 py-2.5 border border-border/40">
+                  <Package className="h-4 w-4 text-amber-600" />
+                  <span className="font-medium">Failed Order</span>
+                  <span className="text-muted-foreground text-xs">(সোর্স পরিবর্তন করা যাবে না)</span>
+                </div>
+                <div className="bg-primary/5 border border-primary/20 rounded-xl p-4">
+                  <div className="flex justify-between text-sm"><span>প্রোডাক্ট মূল্য</span><span>৳{orderItems.reduce((s, i) => s + i.total_price, 0)}</span></div>
+                  <div className="flex justify-between text-sm"><span>ডেলিভারি</span><span>৳{deliveryCharge}</span></div>
+                  <div className="flex justify-between text-sm"><span>ডিসকাউন্ট</span><span>-৳{discount}</span></div>
+                  <div className="border-t mt-2 pt-2 flex justify-between font-bold"><span>মোট</span><span>৳{orderItems.reduce((s, i) => s + i.total_price, 0) + deliveryCharge - discount}</span></div>
+                </div>
+                <Button className="w-full rounded-xl shadow-sm" onClick={handleCreateOrder} disabled={createOrder.isPending || !customerName.trim()}>
+                  {createOrder.isPending 
+                    ? <><Loader2 className="h-4 w-4 animate-spin" /> কনভার্ট হচ্ছে...</>
+                    : <><GitMerge className="h-4 w-4" /> অর্ডারে কনভার্ট করুন</>
+                  }
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
       </AdminLayout>
     );
   }
