@@ -1343,7 +1343,6 @@ const AdminOrders = () => {
               </div>
             </DialogContent>
           </Dialog>
-        </div>
       </AdminLayout>
     );
   }
