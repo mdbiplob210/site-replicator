@@ -142,17 +142,25 @@ function checkoutPopupHtml(p: TemplateConfig, accentColor: string, bgOverlay: st
         </div>
         <button type="submit" id="submitBtn" style="width:100%;padding:16px;font-size:18px;font-weight:700;color:#fff;background:${accentColor};border:none;border-radius:12px;cursor:pointer">${p.confirmButtonText}</button>
       </div>
-      <div id="successMsg" style="display:none;text-align:center;padding:40px 20px"><div style="font-size:60px;color:#4caf50;margin-bottom:12px">✅</div><h3 style="font-size:22px;font-weight:800;color:#111;margin:0 0 8px">${p.successTitle}</h3><p style="color:#666;font-size:14px;margin:0">${p.successMessage}</p></div>
+      <div id="successMsg" style="display:none;text-align:center;padding:40px 20px">
+        <div style="font-size:80px;margin-bottom:16px">🎉</div>
+        <div style="width:80px;height:80px;background:#e8f5e9;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px"><span style="font-size:40px;color:#4caf50">✅</span></div>
+        <h3 style="font-size:24px;font-weight:800;color:#111;margin:0 0 10px">${p.successTitle}</h3>
+        <p style="color:#666;font-size:15px;margin:0 0 8px;line-height:1.6">${p.successMessage}</p>
+        <p style="color:#888;font-size:13px;margin:0 0 24px">আপনাকে কিছুক্ষণের মধ্যে আমাদের Customer Care থেকে কল দেওয়া হবে।</p>
+        <button onclick="closeCheckout()" style="padding:12px 32px;font-size:15px;font-weight:600;color:#fff;background:${accentColor};border:none;border-radius:10px;cursor:pointer">ঠিক আছে</button>
+      </div>
     </form>
   </div>
 </div>
 <style>@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}</style>
 <script>
 function openCheckout(){document.getElementById('checkoutOverlay').style.display='flex';document.getElementById('checkoutOverlay').style.alignItems='flex-end';document.getElementById('checkoutOverlay').style.justifyContent='center';document.body.style.overflow='hidden'}
-function closeCheckout(){document.getElementById('checkoutOverlay').style.display='none';document.body.style.overflow=''}
+function closeCheckout(){document.getElementById('checkoutOverlay').style.display='none';document.body.style.overflow='';document.getElementById('formFields').style.display='';document.getElementById('successMsg').style.display='none'}
 document.getElementById('checkoutOverlay').addEventListener('click',function(e){if(e.target===this)closeCheckout()});
 var unitPrice=${p.sellingPrice.replace(/[^\d]/g,'')||0},deliveryCharge=${p.deliveryCharge||0};
 function updateSummary(){var q=parseInt(document.getElementById('qtySelect').value)||1;document.getElementById('sumProduct').textContent='৳'+(unitPrice*q);document.getElementById('sumTotal').textContent='৳'+(unitPrice*q+deliveryCharge)}
+document.getElementById('checkoutForm').addEventListener('submit',function(e){e.preventDefault();var btn=document.getElementById('submitBtn');btn.disabled=true;btn.textContent='⏳ সাবমিট হচ্ছে...';var fd=new FormData(this);var data={customer_name:fd.get('customer_name'),customer_phone:fd.get('customer_phone'),customer_address:fd.get('customer_address'),quantity:parseInt(fd.get('quantity'))||1,product_name:this.dataset.productName,product_code:this.dataset.productCode,unit_price:parseInt(this.dataset.unitPrice)||0,delivery_charge:parseInt(this.dataset.deliveryCharge)||0};data.total_amount=(data.unit_price*data.quantity)+data.delivery_charge;fetch((window.SUPABASE_URL||'')+ '/functions/v1/submit-landing-order',{method:'POST',headers:{'Content-Type':'application/json','apikey':window.SUPABASE_ANON_KEY||''},body:JSON.stringify(data)}).then(function(){document.getElementById('formFields').style.display='none';document.getElementById('successMsg').style.display='block'}).catch(function(){document.getElementById('formFields').style.display='none';document.getElementById('successMsg').style.display='block'}).finally(function(){btn.disabled=false;btn.textContent='${p.confirmButtonText}'})});
 </script>`;
 }
 
