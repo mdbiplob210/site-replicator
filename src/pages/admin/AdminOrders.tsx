@@ -599,6 +599,8 @@ const AdminOrders = () => {
     toast.success(`${orderIds.length} order memo(s) marked as printed!`);
   }, [queryClient]);
 
+  const memoTemplateId = (siteSettings?.memo_pos_mode === "true") ? "6" : (siteSettings?.active_memo_template || "1");
+
   const bulkPrint = useBulkMemoPrint({
     orders: selectedOrdersForPrint,
     courierByOrderId,
@@ -606,6 +608,7 @@ const AdminOrders = () => {
     siteName: shopName,
     siteLogo: shopLogo,
     onPrinted: handleMarkPrinted,
+    templateId: memoTemplateId,
   });
 
   const clearAllFilters = () => {
