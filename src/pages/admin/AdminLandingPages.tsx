@@ -168,9 +168,8 @@ export default function AdminLandingPages() {
     // Warn about cdn.tailwindcss.com
     const cdnPattern = /cdn\.tailwindcss\.com/i;
     const hasCdnInHtml = cdnPattern.test(form.html_content || "");
-    const hasCdnInCheckout = cdnPattern.test(form.checkout_html || "");
     const hasCdnInScripts = cdnPattern.test(form.custom_head_scripts || "");
-    if (hasCdnInHtml || hasCdnInCheckout || hasCdnInScripts) {
+    if (hasCdnInHtml || hasCdnInScripts) {
       toast.warning("⚠️ আপনার HTML এ cdn.tailwindcss.com পাওয়া গেছে। এটি production এ console warning তৈরি করে। সেভ করা হচ্ছে, তবে এটি রিমুভ করা উচিত।", { duration: 8000 });
     }
 
