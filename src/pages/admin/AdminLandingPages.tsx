@@ -62,6 +62,19 @@ export default function AdminLandingPages() {
   const [form, setForm] = useState<Partial<LandingPage>>(emptyPage);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
+  const [tplForm, setTplForm] = useState({
+    productName: "",
+    subtitle: "",
+    originalPrice: "",
+    sellingPrice: "",
+    discountPercent: "",
+    deliveryCharge: "60",
+    productCode: "",
+    phoneNumber: "",
+    imageUrl: "",
+  });
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch images for the editing page
   const { data: pageImages } = useQuery({
