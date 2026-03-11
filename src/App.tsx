@@ -21,7 +21,7 @@ const OrderSuccess = lazy(() => import("./pages/store/OrderSuccess"));
 const Login = lazy(() => import("./pages/Login"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const LandingPageView = lazy(() => import("./pages/LandingPageView"));
-const LandingPageCheckout = lazy(() => import("./pages/LandingPageCheckout"));
+// LandingPageCheckout removed - checkout is now handled within single HTML
 const Landing = lazy(() => import("./pages/Landing"));
 
 // Lazy-loaded admin pages
