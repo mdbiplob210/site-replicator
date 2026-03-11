@@ -102,8 +102,8 @@ export default function AdminMemoTemplate() {
             <Switch checked={posMode} onCheckedChange={handleTogglePOS} />
           </div>
           {posMode && (
-            <div className="mt-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
-              <p className="text-xs text-amber-700 dark:text-amber-400">
+            <div className="mt-3 p-3 rounded-xl bg-destructive/10 border border-destructive/20">
+              <p className="text-xs text-destructive">
                 ⚠️ POS মোড চালু থাকলে সব মেমো 80mm (3 inch) thermal receipt হিসেবে প্রিন্ট হবে। 
                 Template #6 (POS Receipt) অটো-সিলেক্ট হবে।
               </p>
