@@ -384,16 +384,16 @@ export function templateFreshGreen(p: TemplateConfig): string {
 <div class="content">
   <span class="leaf-badge">🌿 ${p.subtitle}</span>
   <h1>${p.productName}</h1>
-  <div class="rating">★★★★★ <span>(180+ Reviews)</span></div>
+  <div class="rating">★★★★★ <span>${p.reviewText}</span></div>
   <div class="price-area"><span class="old">৳${p.originalPrice}</span><span class="current">৳${p.sellingPrice}</span><span class="tag">${p.discountPercent}% সেভ</span></div>
   <button class="btn-green" onclick="openCheckout()">🛒 ${p.ctaButtonText}</button>
-  <a href="tel:${p.phoneNumber}" class="btn-outline-green">📞 কল: ${p.phoneNumber}</a>
+  <a href="tel:${p.phoneNumber}" class="btn-outline-green">📞 ${p.callButtonText}: ${p.phoneNumber}</a>
 </div>
 <div class="eco-trust">
-  <div class="et-item"><span class="ei">🌱</span><span>অরিজিনাল</span></div>
-  <div class="et-item"><span class="ei">🚚</span><span>ফ্রি শিপিং</span></div>
-  <div class="et-item"><span class="ei">🏅</span><span>টপ কোয়ালিটি</span></div>
-  <div class="et-item"><span class="ei">💵</span><span>COD</span></div>
+  <div class="et-item"><span class="ei">🌱</span><span>${p.trustBadge1}</span></div>
+  <div class="et-item"><span class="ei">🚚</span><span>${p.trustBadge2}</span></div>
+  <div class="et-item"><span class="ei">🏅</span><span>${p.trustBadge3}</span></div>
+  <div class="et-item"><span class="ei">💵</span><span>${p.trustBadge4}</span></div>
 </div>
 <div class="eco-features">
   <h2>${p.whySectionTitle}</h2>
@@ -403,7 +403,7 @@ export function templateFreshGreen(p: TemplateConfig): string {
   <div class="ef-card"><div class="ef-icon">✨</div><div class="ef-text"><h4>${p.feature4Title}</h4><p>${p.feature4Desc}</p></div></div>
 </div>
 <div style="padding:0 16px 20px"><button class="btn-green" onclick="openCheckout()">🛒 এখনই ${p.ctaButtonText}</button></div>
-<div class="footer-green"><p>© ${new Date().getFullYear()} সর্বস্বত্ব সংরক্ষিত</p></div>
+<div class="footer-green"><p>${p.footerText}</p></div>
 ${checkoutPopupHtml(p, '#2e7d32')}
 </body></html>`;
 }
