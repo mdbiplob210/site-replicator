@@ -37,7 +37,7 @@ const ProductDetail = () => {
 
   // Image gallery state
   const [selectedImage, setSelectedImage] = useState(0);
-  const allImages = product ? [product.main_image_url, ...(product.additional_images || [])].filter(Boolean) as string[] : [];
+  const allImages = product ? [product.main_image_url, ...(product.additional_images || [])].filter((url): url is string => !!url && /^(https?:\/\/|\/|data:)/i.test(url.trim())) : [];
 
   // Exit popup settings from site_settings
   const exitEnabled = settings?.exit_popup_enabled === 'true';

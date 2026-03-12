@@ -301,13 +301,18 @@ const Template1Classic = () => {
                   {/* Image */}
                   <Link to={`/product/${(p as any).slug || p.id}`} className="block relative">
                     <div className="aspect-square overflow-hidden bg-gray-50">
-                      {p.main_image_url ? (
-                        <OptimizedImage src={p.main_image_url} alt={p.name} width={400} quality={80} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <ShoppingBag className="h-10 w-10 text-gray-200" />
-                        </div>
-                      )}
+                      <OptimizedImage 
+                        src={p.main_image_url} 
+                        alt={p.name || ''} 
+                        width={400} 
+                        quality={80} 
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                        fallback={
+                          <div className="w-full h-full flex items-center justify-center">
+                            <ShoppingBag className="h-10 w-10 text-gray-200" />
+                          </div>
+                        }
+                      />
                     </div>
                     {/* Discount badge */}
                     {discount > 0 && (
