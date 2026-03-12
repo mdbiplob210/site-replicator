@@ -54,6 +54,7 @@ export function OptimizedImage({
   useEffect(() => {
     setLoaded(false);
     setError(false);
+    setUseOriginalSrc(false);
     // After state reset, check if new src is already cached
     requestAnimationFrame(() => checkIfCached());
   }, [src, checkIfCached]);
