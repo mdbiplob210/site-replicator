@@ -14,8 +14,9 @@ import { toast } from "sonner";
 import {
   Package, Layers, Plus, Search, RefreshCw, ArrowLeft,
   Upload, DollarSign, TrendingUp, AlertTriangle, ShoppingCart,
-  Image as ImageIcon, Filter, Pencil, Trash2, Loader2
+  Image as ImageIcon, Filter, Pencil, Trash2, Loader2, ExternalLink, FileText
 } from "lucide-react";
+import { generateTemplate, templateList, defaultTemplateConfig, type TemplateConfig } from "@/lib/landingPageTemplates";
 
 type TabType = "products" | "categories";
 type ViewType = "list" | "add" | "edit";
