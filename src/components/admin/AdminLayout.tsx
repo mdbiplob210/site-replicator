@@ -1,6 +1,7 @@
 import { ReactNode, useState, useEffect, useRef } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "./AdminSidebar";
+import { DesignPreviewPanel } from "./DesignPreviewPanel";
 import {
   Search, Sun, Moon, ExternalLink, Bell, MessageSquare,
   LayoutDashboard, BarChart3, Wallet, Package, ShoppingCart,
