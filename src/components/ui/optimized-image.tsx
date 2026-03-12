@@ -55,7 +55,7 @@ export function OptimizedImage({
     requestAnimationFrame(() => checkIfCached());
   }, [src, checkIfCached]);
 
-  if (!src || error) {
+  if (!src || !isValidImageUrl(src) || error) {
     return fallback ? <>{fallback}</> : null;
   }
 
