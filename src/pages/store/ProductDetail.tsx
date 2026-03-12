@@ -520,7 +520,7 @@ const ProductDetail = () => {
           {/* Order Now - takes most space */}
           <button
             onClick={handleOrder}
-            disabled={product.stock_quantity <= 0 && !product.allow_out_of_stock_orders}
+            disabled={false}
             className="flex-1 py-3 rounded-xl bg-green-600 hover:bg-green-700 active:scale-[0.98] text-white font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg shadow-green-200 disabled:opacity-50"
           >
             🛒 Order Now
