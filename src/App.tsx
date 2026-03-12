@@ -115,61 +115,60 @@ const App = () => {
             <Route path="/store/checkout" element={<CheckoutPage />} />
             <Route path="/store/order-success" element={<OrderSuccess />} />
             <Route path="/login" element={<Login />} />
-            {/* Dashboard - all roles */}
-            <Route path="/admin" element={<Admin><AdminDashboard /></Admin>} />
-            {/* Orders - admin, manager, moderator, user */}
-            <Route path="/admin/orders" element={<Admin allowedRoles={["manager", "moderator", "user"]}><AdminOrders /></Admin>} />
-            <Route path="/admin/orders/backfill-items" element={<Admin><AdminBackfillOrderItems /></Admin>} />
-            {/* Users & Roles - admin only */}
-            <Route path="/admin/users" element={<Admin allowedRoles={[]}><AdminUsers /></Admin>} />
-            <Route path="/admin/roles" element={<Admin allowedRoles={[]}><AdminRoles /></Admin>} />
-            <Route path="/admin/settings" element={<Admin allowedRoles={[]}><AdminSettings /></Admin>} />
-            {/* Products - admin, manager, moderator */}
-            <Route path="/admin/products" element={<Admin allowedRoles={["manager", "moderator"]}><AdminProducts /></Admin>} />
-            {/* Website - admin only */}
-            <Route path="/admin/website" element={<Admin allowedRoles={[]}><AdminMainTemplate /></Admin>} />
-            <Route path="/admin/website/main-template" element={<Admin allowedRoles={[]}><AdminMainTemplate /></Admin>} />
-            <Route path="/admin/website/checkout-template" element={<Admin allowedRoles={[]}><AdminCheckoutTemplate /></Admin>} />
-            <Route path="/admin/website/product-template" element={<Admin allowedRoles={[]}><AdminProductTemplate /></Admin>} />
-            <Route path="/admin/website/category-template" element={<Admin allowedRoles={[]}><AdminCategoryTemplate /></Admin>} />
-            <Route path="/admin/website/thank-you" element={<Admin allowedRoles={[]}><AdminThankYouTemplate /></Admin>} />
-            <Route path="/admin/website/landing-pages" element={<Admin allowedRoles={[]}><AdminLandingPages /></Admin>} />
-            <Route path="/admin/website/landing-pages/analytics" element={<Admin allowedRoles={[]}><AdminLandingPageAnalytics /></Admin>} />
-            <Route path="/admin/website/analytics" element={<Admin allowedRoles={[]}><AdminWebsiteAnalytics /></Admin>} />
-            <Route path="/admin/website/payment" element={<Admin allowedRoles={[]}><AdminPayment /></Admin>} />
-            <Route path="/admin/website/pages" element={<Admin allowedRoles={[]}><AdminPages /></Admin>} />
-            <Route path="/admin/website/settings" element={<Admin allowedRoles={[]}><AdminWebsiteSettings /></Admin>} />
-            <Route path="/admin/website/memo-template" element={<Admin allowedRoles={[]}><AdminMemoTemplate /></Admin>} />
-            {/* Reports - admin only */}
-            <Route path="/admin/reports" element={<Admin allowedRoles={[]}><AdminReports /></Admin>} />
-            {/* Finance - admin, accounting */}
-            <Route path="/admin/finance" element={<Admin allowedRoles={["accounting"]}><AdminFinance /></Admin>} />
-            {/* Invoices - admin, accounting */}
-            <Route path="/admin/invoices" element={<Admin allowedRoles={["accounting"]}><AdminInvoices /></Admin>} />
-            {/* Planning - admin only */}
-            <Route path="/admin/planning" element={<Admin allowedRoles={[]}><AdminPlanning /></Admin>} />
-            {/* Tasks - admin, manager, moderator */}
-            <Route path="/admin/tasks" element={<Admin allowedRoles={["manager", "moderator"]}><AdminTasks /></Admin>} />
-            {/* Analytics - admin, ad_analytics */}
-            <Route path="/admin/analytics" element={<Admin allowedRoles={["ad_analytics"]}><AdminAnalytics /></Admin>} />
-            {/* Meta Ads - admin, ad_analytics */}
-            <Route path="/admin/meta-ads" element={<Admin allowedRoles={["ad_analytics"]}><AdminMetaAds /></Admin>} />
-            {/* API Keys - admin only */}
-            <Route path="/admin/api-keys" element={<Admin allowedRoles={[]}><AdminApiKeys /></Admin>} />
-            {/* Courier - admin only */}
-            <Route path="/admin/courier" element={<Admin allowedRoles={[]}><AdminCourier /></Admin>} />
-            {/* Automation - admin only */}
-            <Route path="/admin/automation" element={<Admin allowedRoles={[]}><AdminAutomation /></Admin>} />
-            {/* Backup - admin only */}
-            <Route path="/admin/backup" element={<Admin allowedRoles={[]}><AdminBackup /></Admin>} />
-            {/* Profile - all roles */}
+            {/* Dashboard - needs view_dashboard */}
+            <Route path="/admin" element={<Admin requiredPermissions={["view_dashboard"]}><AdminDashboard /></Admin>} />
+            {/* Orders */}
+            <Route path="/admin/orders" element={<Admin requiredPermissions={["view_orders"]}><AdminOrders /></Admin>} />
+            <Route path="/admin/orders/backfill-items" element={<Admin requiredPermissions={["edit_orders"]}><AdminBackfillOrderItems /></Admin>} />
+            {/* Users & Roles - manage_users */}
+            <Route path="/admin/users" element={<Admin requiredPermissions={["manage_users"]}><AdminUsers /></Admin>} />
+            <Route path="/admin/roles" element={<Admin requiredPermissions={["manage_users"]}><AdminRoles /></Admin>} />
+            <Route path="/admin/settings" element={<Admin requiredPermissions={["manage_settings"]}><AdminSettings /></Admin>} />
+            {/* Products */}
+            <Route path="/admin/products" element={<Admin requiredPermissions={["view_products"]}><AdminProducts /></Admin>} />
+            {/* Website */}
+            <Route path="/admin/website" element={<Admin requiredPermissions={["manage_website"]}><AdminMainTemplate /></Admin>} />
+            <Route path="/admin/website/main-template" element={<Admin requiredPermissions={["manage_website"]}><AdminMainTemplate /></Admin>} />
+            <Route path="/admin/website/checkout-template" element={<Admin requiredPermissions={["manage_website"]}><AdminCheckoutTemplate /></Admin>} />
+            <Route path="/admin/website/product-template" element={<Admin requiredPermissions={["manage_website"]}><AdminProductTemplate /></Admin>} />
+            <Route path="/admin/website/category-template" element={<Admin requiredPermissions={["manage_website"]}><AdminCategoryTemplate /></Admin>} />
+            <Route path="/admin/website/thank-you" element={<Admin requiredPermissions={["manage_website"]}><AdminThankYouTemplate /></Admin>} />
+            <Route path="/admin/website/landing-pages" element={<Admin requiredPermissions={["manage_landing_pages"]}><AdminLandingPages /></Admin>} />
+            <Route path="/admin/website/landing-pages/analytics" element={<Admin requiredPermissions={["view_analytics"]}><AdminLandingPageAnalytics /></Admin>} />
+            <Route path="/admin/website/analytics" element={<Admin requiredPermissions={["view_analytics"]}><AdminWebsiteAnalytics /></Admin>} />
+            <Route path="/admin/website/payment" element={<Admin requiredPermissions={["manage_website"]}><AdminPayment /></Admin>} />
+            <Route path="/admin/website/pages" element={<Admin requiredPermissions={["manage_website"]}><AdminPages /></Admin>} />
+            <Route path="/admin/website/settings" element={<Admin requiredPermissions={["manage_website"]}><AdminWebsiteSettings /></Admin>} />
+            <Route path="/admin/website/memo-template" element={<Admin requiredPermissions={["manage_website"]}><AdminMemoTemplate /></Admin>} />
+            {/* Reports */}
+            <Route path="/admin/reports" element={<Admin requiredPermissions={["view_reports"]}><AdminReports /></Admin>} />
+            {/* Finance */}
+            <Route path="/admin/finance" element={<Admin requiredPermissions={["view_finance"]}><AdminFinance /></Admin>} />
+            <Route path="/admin/invoices" element={<Admin requiredPermissions={["view_finance"]}><AdminInvoices /></Admin>} />
+            {/* Planning - manage_settings as proxy */}
+            <Route path="/admin/planning" element={<Admin requiredPermissions={["manage_settings"]}><AdminPlanning /></Admin>} />
+            {/* Tasks */}
+            <Route path="/admin/tasks" element={<Admin requiredPermissions={["view_dashboard"]}><AdminTasks /></Admin>} />
+            {/* Analytics */}
+            <Route path="/admin/analytics" element={<Admin requiredPermissions={["view_analytics"]}><AdminAnalytics /></Admin>} />
+            {/* Meta Ads */}
+            <Route path="/admin/meta-ads" element={<Admin requiredPermissions={["manage_meta_ads"]}><AdminMetaAds /></Admin>} />
+            {/* API Keys */}
+            <Route path="/admin/api-keys" element={<Admin requiredPermissions={["manage_settings"]}><AdminApiKeys /></Admin>} />
+            {/* Courier */}
+            <Route path="/admin/courier" element={<Admin requiredPermissions={["manage_courier"]}><AdminCourier /></Admin>} />
+            {/* Automation */}
+            <Route path="/admin/automation" element={<Admin requiredPermissions={["manage_automation"]}><AdminAutomation /></Admin>} />
+            {/* Backup */}
+            <Route path="/admin/backup" element={<Admin requiredPermissions={["manage_backup"]}><AdminBackup /></Admin>} />
+            {/* Profile - always accessible */}
             <Route path="/admin/profile" element={<Admin><AdminProfile /></Admin>} />
-            {/* WhatsApp - admin, moderator, user */}
-            <Route path="/admin/whatsapp" element={<Admin allowedRoles={["moderator", "user"]}><AdminWhatsApp /></Admin>} />
+            {/* WhatsApp */}
+            <Route path="/admin/whatsapp" element={<Admin requiredPermissions={["manage_whatsapp"]}><AdminWhatsApp /></Admin>} />
             {/* Admin only pages */}
-            <Route path="/admin/support" element={P("Support", "Customer support", [])} />
-            <Route path="/admin/coming-soon" element={<Admin allowedRoles={[]}><AdminComingSoon /></Admin>} />
-            <Route path="/admin/plan" element={P("Plan", "Subscription management", [])} />
+            <Route path="/admin/support" element={P("Support", "Customer support", ["manage_settings"])} />
+            <Route path="/admin/coming-soon" element={<Admin requiredPermissions={["manage_settings"]}><AdminComingSoon /></Admin>} />
+            <Route path="/admin/plan" element={P("Plan", "Subscription management", ["manage_settings"])} />
             <Route path="/lp/:slug" element={<LandingPageView />} />
             {/* /lp/:slug/checkout route removed - single HTML handles everything */}
             <Route path="*" element={<NotFound />} />
