@@ -755,6 +755,97 @@ const AdminProducts = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Landing Page Creation Dialog */}
+      <Dialog open={lpDialogOpen} onOpenChange={setLpDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Layers className="h-5 w-5 text-primary" />
+              ল্যান্ডিং পেজ তৈরি করুন
+            </DialogTitle>
+          </DialogHeader>
+          {lpProduct && (
+            <div className="space-y-4 mt-2">
+              {/* Product Info */}
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-secondary/30 border border-border/40">
+                {lpProduct.main_image_url ? (
+                  <img src={lpProduct.main_image_url} alt="" className="w-12 h-12 rounded-lg object-cover border border-border/50" />
+                ) : (
+                  <div className="w-12 h-12 rounded-lg bg-secondary flex items-center justify-center">
+                    <Package className="h-6 w-6 text-muted-foreground" />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-foreground truncate">{lpProduct.name}</p>
+                  <p className="text-xs text-muted-foreground">{lpProduct.product_code} • ৳{Number(lpProduct.selling_price).toLocaleString()}</p>
+                </div>
+                <Badge variant="outline">Stock: {lpProduct.stock_quantity}</Badge>
+              </div>
+
+              {/* Existing Landing Pages */}
+              {productLandingPages.length > 0 && (
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground">এই প্রোডাক্টের বিদ্যমান ল্যান্ডিং পেজ</Label>
+                  <div className="space-y-1">
+                    {productLandingPages.map((lp: any) => (
+                      <div key={lp.id} className="flex items-center justify-between p-2 rounded-lg bg-secondary/20 border border-border/30 text-xs">
+                        <div className="flex items-center gap-2">
+                          <Badge variant={lp.is_active ? "default" : "secondary"} className="text-[9px]">{lp.is_active ? "Active" : "Inactive"}</Badge>
+                          <span className="font-medium">{lp.title}</span>
+                        </div>
+                        <a href={`/lp/${lp.slug}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1">
+                          /{lp.slug} <ExternalLink className="h-3 w-3" />
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Template Selection */}
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">টেমপ্লেট সিলেক্ট করুন</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {templateList.map(t => (
+                    <button
+                      key={t.id}
+                      onClick={() => setLpTemplateId(t.id)}
+                      className={`flex items-center gap-2.5 p-3 rounded-xl border-2 text-left transition-all ${
+                        lpTemplateId === t.id
+                          ? "border-primary bg-primary/5 shadow-sm"
+                          : "border-border/40 hover:border-border"
+                      }`}
+                    >
+                      <span className="text-xl">{t.preview}</span>
+                      <div>
+                        <p className="text-xs font-bold text-foreground">{t.name}</p>
+                        <p className="text-[10px] text-muted-foreground leading-tight">{t.description}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Info */}
+              <div className="p-3 rounded-xl bg-primary/5 border border-primary/20 text-xs text-muted-foreground space-y-1">
+                <p>✅ প্রোডাক্টের নাম, দাম, ছবি, কোড অটো-ফিল হবে</p>
+                <p>✅ অর্ডার আসলে স্টক অটো মাইনাস হবে (in_courier এ)</p>
+                <p>✅ ল্যান্ডিং পেজ পরে এডিট করতে পারবেন</p>
+              </div>
+
+              <Button
+                className="w-full gap-2"
+                onClick={handleCreateLandingPage}
+                disabled={lpCreating}
+              >
+                {lpCreating ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
+                ল্যান্ডিং পেজ তৈরি করুন
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 };
