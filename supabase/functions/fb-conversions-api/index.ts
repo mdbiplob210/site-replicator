@@ -60,9 +60,10 @@ Deno.serve(async (req) => {
     // Get access token from DB first, fallback to env secret
     const accessToken = await getSettingValue(supabaseAdmin, "fb_access_token", Deno.env.get("FB_ACCESS_TOKEN"));
     if (!accessToken) {
+      // No token configured - silently skip (not an error)
       return new Response(
-        JSON.stringify({ error: "FB_ACCESS_TOKEN not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ skipped: true, reason: "FB_ACCESS_TOKEN not configured" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
