@@ -1,7 +1,24 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { getDisplayImage } from "@/lib/imageUtils";
+import { getOptimizedImageUrl } from "@/lib/imageOptimizer";
 
 const PRODUCT_FIELDS = "id, name, product_code, selling_price, original_price, main_image_url, additional_images, short_description, detailed_description, youtube_url, category_id, status, stock_quantity, allow_out_of_stock_orders, free_delivery, created_at, updated_at, slug";
+
+// Preload first N product images immediately after data fetch
+function preloadProductImages(products: any[], count = 6) {
+  products.slice(0, count).forEach((p) => {
+    const src = getDisplayImage(p);
+    if (src) {
+      const url = getOptimizedImageUrl(src, { width: 400, quality: 80 });
+      const link = document.createElement("link");
+      link.rel = "preload";
+      link.as = "image";
+      link.href = url;
+      document.head.appendChild(link);
+    }
+  });
+}
 
 export function usePublicProducts() {
   return useQuery({
@@ -13,7 +30,10 @@ export function usePublicProducts() {
         .eq("status", "active")
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data || [];
+      const products = data || [];
+      // Preload above-fold images immediately
+      preloadProductImages(products);
+      return products;
     },
     staleTime: 2 * 60 * 1000,
   });
