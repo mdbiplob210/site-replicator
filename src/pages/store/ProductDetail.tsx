@@ -505,8 +505,10 @@ const ProductDetail = () => {
 
         {/* Suggested Products */}
         <SuggestedProducts categoryId={product.category_id} currentProductId={product.id} onOrder={(p: any) => {
+          const checkoutImage = [p.main_image_url, ...((p.additional_images || []) as string[])]
+            .find((url) => typeof url === "string" && /^(https?:\/\/|\/|data:)/i.test(url.trim())) || null;
           trackAddToCart({ id: p.id, name: p.name, price: p.selling_price, qty: 1, productCode: p.product_code });
-          setCheckoutItem({ productId: p.id, name: p.name, price: p.selling_price, qty: 1, image: p.main_image_url, productCode: p.product_code, categoryId: p.category_id });
+          setCheckoutItem({ productId: p.id, name: p.name, price: p.selling_price, qty: 1, image: checkoutImage, productCode: p.product_code, categoryId: p.category_id });
           setCheckoutOpen(true);
         }} />
       </div>

@@ -58,6 +58,13 @@ const Template1Classic = () => {
     return Math.round(((original - selling) / original) * 100);
   };
 
+  const getDisplayImage = (product: any): string | null => {
+    const candidates = [product?.main_image_url, ...(product?.additional_images || [])];
+    return candidates.find((url: unknown): url is string => (
+      typeof url === "string" && /^(https?:\/\/|\/|data:)/i.test(url.trim())
+    )) || null;
+  };
+
   const handleOrder = (product: any) => {
     trackAddToCart({
       id: product.id,
@@ -72,7 +79,7 @@ const Template1Classic = () => {
       name: product.name,
       price: product.selling_price,
       qty: 1,
-      image: product.main_image_url,
+      image: getDisplayImage(product),
       productCode: product.product_code,
       categoryId: product.category_id,
     });

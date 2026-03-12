@@ -46,7 +46,7 @@ export function useProduct(slugOrId: string) {
   });
 }
 
-const SUGGESTION_FIELDS = "id, name, product_code, selling_price, original_price, main_image_url, category_id, stock_quantity, allow_out_of_stock_orders, slug";
+const SUGGESTION_FIELDS = "id, name, product_code, selling_price, original_price, main_image_url, additional_images, category_id, stock_quantity, allow_out_of_stock_orders, slug";
 
 export function useSuggestedProducts(categoryId: string | null | undefined, currentProductId: string | undefined) {
   return useQuery({
