@@ -41,6 +41,8 @@ export function OptimizedImage({
 
   const optimizedSrc = getOptimizedImageUrl(src, { width, height, quality });
   const srcSet = getResponsiveSrcSet(src);
+  const effectiveSrc = useOriginalSrc ? (src || "") : optimizedSrc;
+  const effectiveSrcSet = useOriginalSrc ? "" : srcSet;
 
   // Check if image is already cached (loaded from browser cache)
   const checkIfCached = useCallback(() => {
