@@ -426,9 +426,10 @@ const AdminOrders = () => {
   const productImageMap = useMemo(() => {
     const map: Record<string, string> = {};
     allProducts.forEach((p: any) => {
-      if (p.main_image_url) {
-        map[p.id] = p.main_image_url;
-        map[p.name] = p.main_image_url;
+      const img = getDisplayImage(p);
+      if (img) {
+        map[p.id] = img;
+        map[p.name] = img;
       }
     });
     return map;
