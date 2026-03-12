@@ -656,6 +656,9 @@ const AdminProducts = () => {
                           <span className="text-muted-foreground">Stock: {p.stock_quantity}</span>
                           <span className="font-semibold text-foreground">৳{Number(p.selling_price).toLocaleString()}</span>
                           <Badge variant={p.status === "active" ? "default" : "secondary"}>{p.status}</Badge>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" title="Landing Page" onClick={() => openLpDialog(p)}>
+                            <Layers className="h-4 w-4" />
+                          </Button>
                           <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => handleEdit(p)}>
                             <Pencil className="h-4 w-4" />
                           </Button>
