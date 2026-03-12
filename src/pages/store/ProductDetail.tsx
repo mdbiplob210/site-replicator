@@ -395,7 +395,7 @@ const ProductDetail = () => {
               <Button
                 size="lg"
                 onClick={handleOrder}
-                disabled={product.stock_quantity <= 0 && !product.allow_out_of_stock_orders}
+                disabled={false}
                 className="w-full text-base font-bold py-6 sm:py-6 rounded-xl bg-green-600 hover:bg-green-700 active:scale-[0.98] text-white shadow-lg shadow-green-200 transition-all"
               >
                 🛒 Order now
