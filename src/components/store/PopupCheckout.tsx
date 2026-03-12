@@ -9,6 +9,7 @@ import { X, ShoppingBag, User, Phone, MapPin, Minus, Plus, CheckCircle2, Loader2
 import { useTracking } from "@/hooks/useTracking";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
 import { OptimizedImage } from "@/components/ui/optimized-image";
+import { getDisplayImage } from "@/lib/imageUtils";
 import { getClientIp, parseDeviceInfo } from "@/lib/deviceDetect";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { sanitizePhoneInput, isValidBDPhone } from "@/lib/phoneUtils";
