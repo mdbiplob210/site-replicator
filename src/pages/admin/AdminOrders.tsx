@@ -51,6 +51,7 @@ import { Constants } from "@/integrations/supabase/types";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import * as XLSX from "@datalens-tech/xlsx";
 import { toast } from "sonner";
+import { getDisplayImage } from "@/lib/imageUtils";
 
 const statusTabs = [
   { label: "All Orders", color: "bg-primary", icon: ShoppingCart },
@@ -425,9 +426,10 @@ const AdminOrders = () => {
   const productImageMap = useMemo(() => {
     const map: Record<string, string> = {};
     allProducts.forEach((p: any) => {
-      if (p.main_image_url) {
-        map[p.id] = p.main_image_url;
-        map[p.name] = p.main_image_url;
+      const img = getDisplayImage(p);
+      if (img) {
+        map[p.id] = img;
+        map[p.name] = img;
       }
     });
     return map;
