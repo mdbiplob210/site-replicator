@@ -323,16 +323,15 @@ const AdminProducts = () => {
       const html = generateTemplate(lpTemplateId, tplConfig);
       const slug = p.product_code.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-");
 
-      const { data, error } = await supabase.from("landing_pages" as any).insert({
+      const { data, error } = await (supabase.from("landing_pages" as any).insert({
         title: p.name,
         slug,
         html_content: html,
         is_active: true,
-      } as any).select("id, slug").single();
+      } as any).select("id, slug").single() as any);
 
       if (error) {
         if (error.message.includes("duplicate") || error.message.includes("unique")) {
-          // Try with timestamp suffix
           const slugWithTs = `${slug}-${Date.now().toString(36)}`;
           const { error: err2 } = await supabase.from("landing_pages" as any).insert({
             title: p.name,
