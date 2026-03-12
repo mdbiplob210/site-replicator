@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
-import { useAuth, ROLE_DISPLAY_NAMES } from "@/contexts/AuthContext";
+import { useAuth, ROLE_DISPLAY_NAMES, type PermissionKey } from "@/contexts/AuthContext";
 import {
   Sidebar,
   SidebarContent,
