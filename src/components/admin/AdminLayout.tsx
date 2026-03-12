@@ -1,6 +1,7 @@
 import { ReactNode, useState, useEffect, useRef } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "./AdminSidebar";
+import { DesignPreviewPanel } from "./DesignPreviewPanel";
 import {
   Search, Sun, Moon, ExternalLink, Bell, MessageSquare,
   LayoutDashboard, BarChart3, Wallet, Package, ShoppingCart,
@@ -363,6 +364,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
           <main className="flex-1 p-6 overflow-auto scrollbar-thin">
             {children}
           </main>
+          <DesignPreviewPanel />
         </div>
       </div>
     </SidebarProvider>
