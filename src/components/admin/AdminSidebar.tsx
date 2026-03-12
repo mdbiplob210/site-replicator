@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
-import { useAuth, ROLE_DISPLAY_NAMES } from "@/contexts/AuthContext";
+import { useAuth, ROLE_DISPLAY_NAMES, type PermissionKey } from "@/contexts/AuthContext";
 import {
   Sidebar,
   SidebarContent,
@@ -66,49 +66,36 @@ export function AdminSidebar() {
   const { state, setOpenMobile, isMobile } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
-  const { signOut, user, isAdmin, userRoles } = useAuth();
+  const { signOut, user, isAdmin, userRoles, hasPermission } = useAuth();
 
   const closeMobileSidebar = () => {
     if (isMobile) setOpenMobile(false);
   };
 
-  // Role-based menu filtering
-  const hasRole = (role: string) => userRoles.includes(role as any);
-  const canSeeOrders = isAdmin || hasRole("manager") || hasRole("moderator") || hasRole("user");
-  const canSeeProducts = isAdmin || hasRole("manager") || hasRole("moderator");
-  const canSeeWebsite = isAdmin;
-  const canSeeReports = isAdmin;
-  const canSeeFinance = isAdmin || hasRole("accounting");
-  const canSeePlanning = isAdmin;
-  const canSeeTasks = isAdmin || hasRole("manager") || hasRole("moderator");
-  const canSeeAnalytics = isAdmin || hasRole("ad_analytics");
-  const canSeeWhatsApp = isAdmin || hasRole("moderator") || hasRole("user");
-  const canSeeMetaAds = isAdmin || hasRole("ad_analytics");
-  const canSeeAutomation = isAdmin;
-  const canSeeBackup = isAdmin;
-  const canSeeUsers = isAdmin;
+  // Permission-based menu filtering
+  const canSee = (perm: PermissionKey) => isAdmin || hasPermission(perm);
 
   const filteredMainMenu = mainMenuItems.filter((item) => {
-    if (item.title === "Dashboard") return true; // everyone sees dashboard
-    if (item.title === "Orders") return canSeeOrders;
-    if (item.title === "Products") return canSeeProducts;
-    if (item.title === "Website") return canSeeWebsite;
-    if (item.title === "Invoices") return isAdmin || hasRole("accounting");
-    if (item.title === "Reports") return canSeeReports;
-    if (item.title === "Finance") return canSeeFinance;
-    if (item.title === "Planning") return canSeePlanning;
-    if (item.title === "Tasks") return canSeeTasks;
-    if (item.title === "Analytics") return canSeeAnalytics;
-    if (item.title === "WhatsApp") return canSeeWhatsApp;
-    return true;
+    if (item.title === "Dashboard") return canSee("view_dashboard");
+    if (item.title === "Orders") return canSee("view_orders");
+    if (item.title === "Products") return canSee("view_products");
+    if (item.title === "Website") return canSee("manage_website");
+    if (item.title === "Invoices") return canSee("view_finance");
+    if (item.title === "Reports") return canSee("view_reports");
+    if (item.title === "Finance") return canSee("view_finance");
+    if (item.title === "Planning") return canSee("manage_settings");
+    if (item.title === "Tasks") return canSee("view_dashboard");
+    if (item.title === "Analytics") return canSee("view_analytics");
+    if (item.title === "WhatsApp") return canSee("manage_whatsapp");
+    return isAdmin;
   });
 
   const filteredBottomMenu = bottomMenuItems.filter((item) => {
-    if (item.title === "Meta Ads") return canSeeMetaAds;
-    if (item.title === "Automation") return canSeeAutomation;
-    if (item.title === "Backup") return canSeeBackup;
-    if (item.title === "Users") return canSeeUsers;
-    return isAdmin; // Support, Coming Soon, Plan - admin only
+    if (item.title === "Meta Ads") return canSee("manage_meta_ads");
+    if (item.title === "Automation") return canSee("manage_automation");
+    if (item.title === "Backup") return canSee("manage_backup");
+    if (item.title === "Users") return canSee("manage_users");
+    return isAdmin;
   });
 
   const primaryRole = userRoles[0];
