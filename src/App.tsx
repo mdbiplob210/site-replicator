@@ -79,16 +79,16 @@ const queryClient = new QueryClient({
   },
 });
 
-const P = (title: string, desc?: string) => (
-  <ProtectedAdminRoute>
+const P = (title: string, desc?: string, allowedRoles?: AppRole[]) => (
+  <ProtectedAdminRoute allowedRoles={allowedRoles}>
     <Suspense fallback={<PageLoader />}>
       <AdminPlaceholder title={title} description={desc} />
     </Suspense>
   </ProtectedAdminRoute>
 );
 
-const Admin = ({ children }: { children: React.ReactNode }) => (
-  <ProtectedAdminRoute>
+const Admin = ({ children, allowedRoles }: { children: React.ReactNode; allowedRoles?: AppRole[] }) => (
+  <ProtectedAdminRoute allowedRoles={allowedRoles}>
     <Suspense fallback={<PageLoader />}>{children}</Suspense>
   </ProtectedAdminRoute>
 );
