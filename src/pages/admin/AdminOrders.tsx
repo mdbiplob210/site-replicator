@@ -2435,7 +2435,6 @@ const AdminOrders = () => {
             </Card>
           </CollapsibleContent>
         </Collapsible>
-        </div>
 
         {/* Order Items Modal */}
         <Dialog open={orderItemsModalOpen} onOpenChange={setOrderItemsModalOpen}>
