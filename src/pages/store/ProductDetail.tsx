@@ -11,6 +11,7 @@ import { PopupCheckout } from "@/components/store/PopupCheckout";
 import { ExitDiscountBanner } from "@/components/store/ExitDiscountBanner";
 import { OptimizedImage } from "@/components/ui/optimized-image";
 import { supabase } from "@/integrations/supabase/client";
+import { getDisplayImage } from "@/lib/imageUtils";
 
 const ProductDetail = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -201,7 +202,7 @@ const ProductDetail = () => {
       name: product.name,
       price: product.selling_price,
       qty,
-      image: product.main_image_url,
+      image: getDisplayImage(product),
       productCode: product.product_code,
       categoryId: product.category_id,
     });
