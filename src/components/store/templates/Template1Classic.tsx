@@ -58,6 +58,13 @@ const Template1Classic = () => {
     return Math.round(((original - selling) / original) * 100);
   };
 
+  const getDisplayImage = (product: any): string | null => {
+    const candidates = [product?.main_image_url, ...(product?.additional_images || [])];
+    return candidates.find((url: unknown): url is string => (
+      typeof url === "string" && /^(https?:\/\/|\/|data:)/i.test(url.trim())
+    )) || null;
+  };
+
   const handleOrder = (product: any) => {
     trackAddToCart({
       id: product.id,
@@ -72,7 +79,7 @@ const Template1Classic = () => {
       name: product.name,
       price: product.selling_price,
       qty: 1,
-      image: product.main_image_url,
+      image: getDisplayImage(product),
       productCode: product.product_code,
       categoryId: product.category_id,
     });
@@ -296,13 +303,14 @@ const Template1Classic = () => {
             {filteredProducts.map((p) => {
               const discount = getDiscount(p.original_price, p.selling_price);
               const discountAmount = p.original_price - p.selling_price;
+              const imageSrc = getDisplayImage(p);
               return (
                 <div key={p.id} className="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                   {/* Image */}
                   <Link to={`/product/${(p as any).slug || p.id}`} className="block relative">
                     <div className="aspect-square overflow-hidden bg-gray-50">
                       <OptimizedImage 
-                        src={p.main_image_url} 
+                        src={imageSrc} 
                         alt={p.name || ''} 
                         width={400} 
                         quality={80} 
