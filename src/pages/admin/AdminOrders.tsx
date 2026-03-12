@@ -4480,10 +4480,8 @@ function ActivityLogPopover({ orderId }: { orderId: string }) {
   );
 }
 
-// Mobile Filter Drawer Content
-function MobileFilterContent(props: any) {
-  const {
-    orderDateFilter, setOrderDateFilter, filterSource, setFilterSource,
+
+
     filterPhone, setFilterPhone, filterAmountMin, setFilterAmountMin,
     filterAmountMax, setFilterAmountMax, filterDeviceType, setFilterDeviceType,
     filterPaymentStatus, setFilterPaymentStatus, filterCourierProvider, setFilterCourierProvider,
