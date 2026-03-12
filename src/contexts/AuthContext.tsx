@@ -5,12 +5,26 @@ import { trackLoginActivity } from "@/hooks/useUserTracking";
 
 export type AppRole = "admin" | "moderator" | "manager" | "user" | "accounting" | "ad_analytics";
 
+export type PermissionKey =
+  | "view_orders" | "create_orders" | "edit_orders" | "delete_orders" | "change_order_status"
+  | "view_products" | "create_products" | "edit_products" | "delete_products" | "manage_categories"
+  | "view_finance" | "edit_finance"
+  | "view_dashboard" | "view_analytics" | "view_reports"
+  | "manage_website" | "manage_landing_pages" | "manage_banners"
+  | "manage_meta_ads"
+  | "manage_courier" | "print_memo" | "transfer_orders"
+  | "manage_whatsapp"
+  | "manage_users" | "create_users" | "create_admin_users" | "create_moderator_users" | "create_basic_users"
+  | "manage_settings" | "manage_automation" | "manage_backup";
+
 interface AuthContextType {
   session: Session | null;
   user: User | null;
   isAdmin: boolean;
   userRoles: AppRole[];
+  userPermissions: PermissionKey[];
   loading: boolean;
+  hasPermission: (perm: PermissionKey) => boolean;
   signOut: () => Promise<void>;
 }
 
@@ -19,7 +33,9 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   isAdmin: false,
   userRoles: [],
+  userPermissions: [],
   loading: true,
+  hasPermission: () => false,
   signOut: async () => {},
 });
 
@@ -40,17 +56,39 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [userRoles, setUserRoles] = useState<AppRole[]>([]);
+  const [userPermissions, setUserPermissions] = useState<PermissionKey[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const checkRoles = async (userId: string) => {
-    const { data } = await supabase
+  const checkRolesAndPermissions = async (userId: string) => {
+    // Fetch roles
+    const { data: rolesData } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", userId);
     
-    const roles = (data || []).map(r => r.role as AppRole);
+    const roles = (rolesData || []).map(r => r.role as AppRole);
     setUserRoles(roles);
-    setIsAdmin(roles.includes("admin"));
+    const admin = roles.includes("admin");
+    setIsAdmin(admin);
+
+    // Fetch explicit permissions
+    if (!admin) {
+      const { data: permsData } = await supabase
+        .from("employee_permissions")
+        .select("permission")
+        .eq("user_id", userId);
+      
+      const perms = (permsData || []).map(p => p.permission as PermissionKey);
+      setUserPermissions(perms);
+    } else {
+      // Admin has all permissions
+      setUserPermissions([]);
+    }
+  };
+
+  const hasPermission = (perm: PermissionKey): boolean => {
+    if (isAdmin) return true;
+    return userPermissions.includes(perm);
   };
 
   const loginTrackedRef = useRef<Set<string>>(new Set());
@@ -63,7 +101,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          setTimeout(() => checkRoles(session.user.id), 0);
+          setTimeout(() => checkRolesAndPermissions(session.user.id), 0);
 
           if (event === "SIGNED_IN" && !loginTrackedRef.current.has(session.user.id)) {
             loginTrackedRef.current.add(session.user.id);
@@ -74,6 +112,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         } else {
           setIsAdmin(false);
           setUserRoles([]);
+          setUserPermissions([]);
         }
         if (initialSessionResolved) {
           setLoading(false);
@@ -85,7 +124,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        checkRoles(session.user.id).finally(() => {
+        checkRolesAndPermissions(session.user.id).finally(() => {
           initialSessionResolved = true;
           setLoading(false);
         });
@@ -103,7 +142,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ session, user, isAdmin, userRoles, loading, signOut }}>
+    <AuthContext.Provider value={{ session, user, isAdmin, userRoles, userPermissions, loading, hasPermission, signOut }}>
       {children}
     </AuthContext.Provider>
   );
