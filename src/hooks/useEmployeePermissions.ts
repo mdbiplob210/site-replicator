@@ -127,7 +127,7 @@ export function useTogglePermission() {
       if (grant) {
         const { error } = await supabase
           .from("employee_permissions")
-          .insert({ user_id: userId, permission: permission as any, granted_by: (await supabase.auth.getUser()).data.user?.id } as any);
+          .upsert({ user_id: userId, permission: permission as any, granted_by: (await supabase.auth.getUser()).data.user?.id } as any, { onConflict: 'user_id,permission' });
         if (error) throw error;
       } else {
         const { error } = await supabase
