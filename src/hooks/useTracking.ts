@@ -231,6 +231,7 @@ async function sendCAPIEvent(params: {
 }) {
   try {
     const { pixelId, eventName, eventId, customData = {}, customerPhone, customerName } = params;
+    if (!pixelId) return; // No pixel configured, skip silently
     
     const body: Record<string, any> = {
       pixel_id: pixelId,
@@ -251,8 +252,8 @@ async function sendCAPIEvent(params: {
     if (customerName) body.custom_data.fn = customerName;
 
     await supabase.functions.invoke("fb-conversions-api", { body });
-  } catch (e) {
-    console.warn("[CAPI] Failed:", e);
+  } catch {
+    // Silent fail - CAPI is non-critical
   }
 }
 

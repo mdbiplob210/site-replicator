@@ -3,6 +3,7 @@ import { ShoppingBag, ArrowUpRight, Menu, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
 import { OptimizedImage } from "@/components/ui/optimized-image";
+import { getDisplayImage } from "@/lib/imageUtils";
 import { useState } from "react";
 import { useTracking } from "@/hooks/useTracking";
 import { PopupCheckout } from "@/components/store/PopupCheckout";
@@ -30,7 +31,7 @@ const Template5Bold = () => {
 
   const handleOrder = (product: any) => {
     trackAddToCart({ id: product.id, name: product.name, price: product.selling_price, qty: 1, productCode: product.product_code });
-    setCheckoutItem({ productId: product.id, name: product.name, price: product.selling_price, qty: 1, image: product.main_image_url, productCode: product.product_code, categoryId: product.category_id });
+    setCheckoutItem({ productId: product.id, name: product.name, price: product.selling_price, qty: 1, image: getDisplayImage(product), productCode: product.product_code, categoryId: product.category_id });
     setCheckoutOpen(true);
   };
 
@@ -104,7 +105,7 @@ const Template5Bold = () => {
               <div key={p.id} className="group bg-white overflow-hidden hover:shadow-2xl transition-all duration-300">
                 <Link to={`/product/${(p as any).slug || p.id}`}>
                   <div className="aspect-square bg-zinc-50 overflow-hidden relative">
-                    <OptimizedImage src={p.main_image_url} alt={p.name || ''} width={400} quality={80} className="w-full h-full object-cover group-hover:scale-110 transition duration-500" fallback={<div className="w-full h-full flex items-center justify-center text-zinc-300"><ShoppingBag className="h-12 w-12" /></div>} />
+                    <OptimizedImage src={getDisplayImage(p)} alt={p.name || ''} width={400} quality={80} className="w-full h-full object-cover group-hover:scale-110 transition duration-500" fallback={<div className="w-full h-full flex items-center justify-center text-zinc-300"><ShoppingBag className="h-12 w-12" /></div>} />
                     {(p as any).free_delivery && (
                       <div className="absolute top-2 left-2 bg-lime-400 text-zinc-900 text-[9px] font-black px-2 py-0.5 uppercase tracking-wider">FREE DELIVERY</div>
                     )}

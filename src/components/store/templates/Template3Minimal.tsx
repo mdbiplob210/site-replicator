@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { ShoppingBag, ArrowRight, ShoppingCart } from "lucide-react";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
 import { OptimizedImage } from "@/components/ui/optimized-image";
+import { getDisplayImage } from "@/lib/imageUtils";
 import { useState } from "react";
 import { useTracking } from "@/hooks/useTracking";
 import { PopupCheckout } from "@/components/store/PopupCheckout";
@@ -29,7 +30,7 @@ const Template3Minimal = () => {
 
   const handleOrder = (product: any) => {
     trackAddToCart({ id: product.id, name: product.name, price: product.selling_price, qty: 1, productCode: product.product_code });
-    setCheckoutItem({ productId: product.id, name: product.name, price: product.selling_price, qty: 1, image: product.main_image_url, productCode: product.product_code, categoryId: product.category_id });
+    setCheckoutItem({ productId: product.id, name: product.name, price: product.selling_price, qty: 1, image: getDisplayImage(product), productCode: product.product_code, categoryId: product.category_id });
     setCheckoutOpen(true);
   };
 
@@ -91,7 +92,7 @@ const Template3Minimal = () => {
               <div key={p.id} className="group">
                 <Link to={`/product/${(p as any).slug || p.id}`}>
                   <div className="aspect-[3/4] bg-stone-100 overflow-hidden mb-4 relative">
-                    <OptimizedImage src={p.main_image_url} alt={p.name || ''} width={400} quality={80} className="w-full h-full object-cover group-hover:scale-102 transition duration-700" fallback={<div className="w-full h-full flex items-center justify-center text-stone-300"><ShoppingBag className="h-10 w-10" /></div>} />
+                    <OptimizedImage src={getDisplayImage(p)} alt={p.name || ''} width={400} quality={80} className="w-full h-full object-cover group-hover:scale-102 transition duration-700" fallback={<div className="w-full h-full flex items-center justify-center text-stone-300"><ShoppingBag className="h-10 w-10" /></div>} />
                     {(p as any).free_delivery && (
                       <div className="absolute top-2 left-2 bg-stone-800 text-white text-[9px] font-medium px-2 py-0.5 rounded-full tracking-wide">Free Delivery</div>
                     )}

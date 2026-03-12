@@ -3,6 +3,7 @@ import { ShoppingBag, Sparkles, Heart, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
 import { OptimizedImage } from "@/components/ui/optimized-image";
+import { getDisplayImage } from "@/lib/imageUtils";
 import { useState } from "react";
 import { useTracking } from "@/hooks/useTracking";
 import { PopupCheckout } from "@/components/store/PopupCheckout";
@@ -30,7 +31,7 @@ const Template4Colorful = () => {
 
   const handleOrder = (product: any) => {
     trackAddToCart({ id: product.id, name: product.name, price: product.selling_price, qty: 1, productCode: product.product_code });
-    setCheckoutItem({ productId: product.id, name: product.name, price: product.selling_price, qty: 1, image: product.main_image_url, productCode: product.product_code, categoryId: product.category_id });
+    setCheckoutItem({ productId: product.id, name: product.name, price: product.selling_price, qty: 1, image: getDisplayImage(product), productCode: product.product_code, categoryId: product.category_id });
     setCheckoutOpen(true);
   };
 
@@ -104,7 +105,7 @@ const Template4Colorful = () => {
               <div key={p.id} className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-rose-50">
                 <Link to={`/product/${(p as any).slug || p.id}`}>
                   <div className="aspect-square bg-gray-50 relative overflow-hidden">
-                    <OptimizedImage src={p.main_image_url} alt={p.name || ''} width={400} quality={80} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" fallback={<div className="w-full h-full flex items-center justify-center text-rose-200"><ShoppingBag className="h-12 w-12" /></div>} />
+                    <OptimizedImage src={getDisplayImage(p)} alt={p.name || ''} width={400} quality={80} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" fallback={<div className="w-full h-full flex items-center justify-center text-rose-200"><ShoppingBag className="h-12 w-12" /></div>} />
                     <button className="absolute top-3 right-3 p-2 bg-white/80 rounded-full opacity-0 group-hover:opacity-100 transition">
                       <Heart className="h-4 w-4 text-rose-500" />
                     </button>

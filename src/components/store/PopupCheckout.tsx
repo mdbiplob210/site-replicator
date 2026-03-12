@@ -9,6 +9,7 @@ import { X, ShoppingBag, User, Phone, MapPin, Minus, Plus, CheckCircle2, Loader2
 import { useTracking } from "@/hooks/useTracking";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
 import { OptimizedImage } from "@/components/ui/optimized-image";
+import { getDisplayImage } from "@/lib/imageUtils";
 import { getClientIp, parseDeviceInfo } from "@/lib/deviceDetect";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { sanitizePhoneInput, isValidBDPhone } from "@/lib/phoneUtils";
@@ -472,13 +473,11 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
                     return (
                       <div key={p.id} className="border rounded-xl overflow-hidden bg-white">
                         <div className="aspect-square bg-gray-50 relative">
-                          {p.main_image_url ? (
-                            <OptimizedImage src={p.main_image_url} alt={p.name} width={200} quality={75} className="w-full h-full object-cover" />
-                          ) : (
+                          <OptimizedImage src={getDisplayImage(p)} alt={p.name} width={200} quality={75} className="w-full h-full object-cover" fallback={
                             <div className="w-full h-full flex items-center justify-center">
                               <ShoppingBag className="h-6 w-6 text-gray-200" />
                             </div>
-                          )}
+                          } />
                           {discount > 0 && (
                             <span className="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
                               -{discount}%
