@@ -1,14 +1,14 @@
 import { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
-import { useAuth, AppRole } from "@/contexts/AuthContext";
+import { useAuth, type PermissionKey } from "@/contexts/AuthContext";
 
 interface ProtectedAdminRouteProps {
   children: ReactNode;
-  allowedRoles?: AppRole[];
+  requiredPermissions?: PermissionKey[];
 }
 
-export function ProtectedAdminRoute({ children, allowedRoles }: ProtectedAdminRouteProps) {
-  const { user, userRoles, isAdmin, loading } = useAuth();
+export function ProtectedAdminRoute({ children, requiredPermissions }: ProtectedAdminRouteProps) {
+  const { user, userRoles, isAdmin, hasPermission, loading } = useAuth();
 
   if (loading) {
     return (
@@ -20,15 +20,15 @@ export function ProtectedAdminRoute({ children, allowedRoles }: ProtectedAdminRo
 
   if (!user) return <Navigate to="/login" replace />;
   
-  // Must have at least one role
+  // Must have at least one role to access admin panel
   if (userRoles.length === 0) return <Navigate to="/" replace />;
 
-  // Admin always has access to everything
+  // Admin always has full access
   if (isAdmin) return <>{children}</>;
 
-  // If specific roles are required, check them
-  if (allowedRoles && allowedRoles.length > 0) {
-    const hasAccess = userRoles.some(role => allowedRoles.includes(role));
+  // If specific permissions are required, check them
+  if (requiredPermissions && requiredPermissions.length > 0) {
+    const hasAccess = requiredPermissions.some(perm => hasPermission(perm));
     if (!hasAccess) {
       return <Navigate to="/admin" replace />;
     }
