@@ -340,10 +340,23 @@ Deno.serve(async (req) => {
     if (orderError) throw orderError;
 
     if (product_name && order) {
+      // Look up product_id by product_code for stock deduction
+      let productId = null;
+      if (product_code) {
+        const { data: productData } = await supabase
+          .from("products")
+          .select("id")
+          .eq("product_code", product_code)
+          .limit(1)
+          .single();
+        if (productData) productId = productData.id;
+      }
+
       await supabase.from("order_items").insert({
         order_id: order.id,
         product_name,
         product_code: product_code || "",
+        product_id: productId,
         quantity,
         unit_price,
         total_price: totalProductCost,

@@ -14,8 +14,9 @@ import { toast } from "sonner";
 import {
   Package, Layers, Plus, Search, RefreshCw, ArrowLeft,
   Upload, DollarSign, TrendingUp, AlertTriangle, ShoppingCart,
-  Image as ImageIcon, Filter, Pencil, Trash2, Loader2
+  Image as ImageIcon, Filter, Pencil, Trash2, Loader2, ExternalLink, FileText
 } from "lucide-react";
+import { generateTemplate, templateList, defaultTemplateConfig, type TemplateConfig } from "@/lib/landingPageTemplates";
 
 type TabType = "products" | "categories";
 type ViewType = "list" | "add" | "edit";
@@ -74,6 +75,14 @@ const AdminProducts = () => {
   const [uploadingAdditional, setUploadingAdditional] = useState(false);
   const [mainImageUrl, setMainImageUrl] = useState<string>("");
   const [additionalImages, setAdditionalImages] = useState<string[]>([]);
+
+  // Landing page creation from product
+  const [lpDialogOpen, setLpDialogOpen] = useState(false);
+  const [lpProduct, setLpProduct] = useState<Product | null>(null);
+  const [lpTemplateId, setLpTemplateId] = useState("classic-orange");
+  const [lpCreating, setLpCreating] = useState(false);
+  // Existing landing pages for this product
+  const [productLandingPages, setProductLandingPages] = useState<any[]>([]);
 
   const [form, setForm] = useState(emptyProduct);
 
@@ -273,6 +282,76 @@ const AdminProducts = () => {
       setShowCategoryDialog(false);
       setNewCategory({ name: "", slug: "", parent_id: "", description: "" });
       fetchCategories();
+    }
+  };
+
+  // Open landing page dialog for a product
+  const openLpDialog = async (p: Product) => {
+    setLpProduct(p);
+    setLpTemplateId("classic-orange");
+    // Fetch existing landing pages for this product (by product_code in notes or slug)
+    const { data: existingLps } = await supabase
+      .from("landing_pages" as any)
+      .select("id, title, slug, is_active, created_at")
+      .or(`slug.ilike.%${p.product_code.toLowerCase()}%,html_content.ilike.%${p.product_code}%`)
+      .order("created_at", { ascending: false })
+      .limit(10);
+    setProductLandingPages(existingLps || []);
+    setLpDialogOpen(true);
+  };
+
+  const handleCreateLandingPage = async () => {
+    if (!lpProduct) return;
+    setLpCreating(true);
+    try {
+      const p = lpProduct;
+      const discountPercent = p.original_price > p.selling_price
+        ? Math.round(((p.original_price - p.selling_price) / p.original_price) * 100)
+        : 0;
+
+      const tplConfig: TemplateConfig = {
+        ...defaultTemplateConfig,
+        productName: p.name,
+        originalPrice: String(p.original_price),
+        sellingPrice: String(p.selling_price),
+        discountPercent: String(discountPercent),
+        productCode: p.product_code,
+        imageUrl: p.main_image_url || defaultTemplateConfig.imageUrl,
+        subtitle: p.short_description || defaultTemplateConfig.subtitle,
+      };
+
+      const html = generateTemplate(lpTemplateId, tplConfig);
+      const slug = p.product_code.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-");
+
+      const { data, error } = await (supabase.from("landing_pages" as any).insert({
+        title: p.name,
+        slug,
+        html_content: html,
+        is_active: true,
+      } as any).select("id, slug").single() as any);
+
+      if (error) {
+        if (error.message.includes("duplicate") || error.message.includes("unique")) {
+          const slugWithTs = `${slug}-${Date.now().toString(36)}`;
+          const { error: err2 } = await supabase.from("landing_pages" as any).insert({
+            title: p.name,
+            slug: slugWithTs,
+            html_content: html,
+            is_active: true,
+          } as any);
+          if (err2) throw err2;
+          toast.success(`ল্যান্ডিং পেজ তৈরি হয়েছে! Slug: /${slugWithTs}`);
+        } else {
+          throw error;
+        }
+      } else {
+        toast.success(`ল্যান্ডিং পেজ তৈরি হয়েছে! Slug: /${data.slug}`);
+      }
+      setLpDialogOpen(false);
+    } catch (err: any) {
+      toast.error("ল্যান্ডিং পেজ তৈরিতে সমস্যা: " + err.message);
+    } finally {
+      setLpCreating(false);
     }
   };
 
@@ -577,6 +656,9 @@ const AdminProducts = () => {
                           <span className="text-muted-foreground">Stock: {p.stock_quantity}</span>
                           <span className="font-semibold text-foreground">৳{Number(p.selling_price).toLocaleString()}</span>
                           <Badge variant={p.status === "active" ? "default" : "secondary"}>{p.status}</Badge>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" title="Landing Page" onClick={() => openLpDialog(p)}>
+                            <Layers className="h-4 w-4" />
+                          </Button>
                           <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => handleEdit(p)}>
                             <Pencil className="h-4 w-4" />
                           </Button>
@@ -671,6 +753,97 @@ const AdminProducts = () => {
               <Button onClick={saveCategory}>Create</Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Landing Page Creation Dialog */}
+      <Dialog open={lpDialogOpen} onOpenChange={setLpDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Layers className="h-5 w-5 text-primary" />
+              ল্যান্ডিং পেজ তৈরি করুন
+            </DialogTitle>
+          </DialogHeader>
+          {lpProduct && (
+            <div className="space-y-4 mt-2">
+              {/* Product Info */}
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-secondary/30 border border-border/40">
+                {lpProduct.main_image_url ? (
+                  <img src={lpProduct.main_image_url} alt="" className="w-12 h-12 rounded-lg object-cover border border-border/50" />
+                ) : (
+                  <div className="w-12 h-12 rounded-lg bg-secondary flex items-center justify-center">
+                    <Package className="h-6 w-6 text-muted-foreground" />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-foreground truncate">{lpProduct.name}</p>
+                  <p className="text-xs text-muted-foreground">{lpProduct.product_code} • ৳{Number(lpProduct.selling_price).toLocaleString()}</p>
+                </div>
+                <Badge variant="outline">Stock: {lpProduct.stock_quantity}</Badge>
+              </div>
+
+              {/* Existing Landing Pages */}
+              {productLandingPages.length > 0 && (
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground">এই প্রোডাক্টের বিদ্যমান ল্যান্ডিং পেজ</Label>
+                  <div className="space-y-1">
+                    {productLandingPages.map((lp: any) => (
+                      <div key={lp.id} className="flex items-center justify-between p-2 rounded-lg bg-secondary/20 border border-border/30 text-xs">
+                        <div className="flex items-center gap-2">
+                          <Badge variant={lp.is_active ? "default" : "secondary"} className="text-[9px]">{lp.is_active ? "Active" : "Inactive"}</Badge>
+                          <span className="font-medium">{lp.title}</span>
+                        </div>
+                        <a href={`/lp/${lp.slug}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1">
+                          /{lp.slug} <ExternalLink className="h-3 w-3" />
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Template Selection */}
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">টেমপ্লেট সিলেক্ট করুন</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {templateList.map(t => (
+                    <button
+                      key={t.id}
+                      onClick={() => setLpTemplateId(t.id)}
+                      className={`flex items-center gap-2.5 p-3 rounded-xl border-2 text-left transition-all ${
+                        lpTemplateId === t.id
+                          ? "border-primary bg-primary/5 shadow-sm"
+                          : "border-border/40 hover:border-border"
+                      }`}
+                    >
+                      <span className="text-xl">{t.preview}</span>
+                      <div>
+                        <p className="text-xs font-bold text-foreground">{t.name}</p>
+                        <p className="text-[10px] text-muted-foreground leading-tight">{t.description}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Info */}
+              <div className="p-3 rounded-xl bg-primary/5 border border-primary/20 text-xs text-muted-foreground space-y-1">
+                <p>✅ প্রোডাক্টের নাম, দাম, ছবি, কোড অটো-ফিল হবে</p>
+                <p>✅ অর্ডার আসলে স্টক অটো মাইনাস হবে (in_courier এ)</p>
+                <p>✅ ল্যান্ডিং পেজ পরে এডিট করতে পারবেন</p>
+              </div>
+
+              <Button
+                className="w-full gap-2"
+                onClick={handleCreateLandingPage}
+                disabled={lpCreating}
+              >
+                {lpCreating ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
+                ল্যান্ডিং পেজ তৈরি করুন
+              </Button>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </AdminLayout>
