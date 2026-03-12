@@ -76,6 +76,14 @@ const AdminProducts = () => {
   const [mainImageUrl, setMainImageUrl] = useState<string>("");
   const [additionalImages, setAdditionalImages] = useState<string[]>([]);
 
+  // Landing page creation from product
+  const [lpDialogOpen, setLpDialogOpen] = useState(false);
+  const [lpProduct, setLpProduct] = useState<Product | null>(null);
+  const [lpTemplateId, setLpTemplateId] = useState("classic-orange");
+  const [lpCreating, setLpCreating] = useState(false);
+  // Existing landing pages for this product
+  const [productLandingPages, setProductLandingPages] = useState<any[]>([]);
+
   const [form, setForm] = useState(emptyProduct);
 
   // New category form
