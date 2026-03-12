@@ -300,10 +300,11 @@ const Template1Classic = () => {
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
-            {filteredProducts.map((p) => {
+            {filteredProducts.map((p, idx) => {
               const discount = getDiscount(p.original_price, p.selling_price);
               const discountAmount = p.original_price - p.selling_price;
               const imageSrc = getDisplayImage(p);
+              const isAboveFold = idx < 4;
               return (
                 <div key={p.id} className="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                   {/* Image */}
