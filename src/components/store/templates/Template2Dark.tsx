@@ -111,7 +111,7 @@ const Template2Dark = () => {
               <div key={p.id} className="group">
                 <Link to={`/product/${(p as any).slug || p.id}`}>
                   <div className="aspect-square bg-gray-900 rounded-xl overflow-hidden mb-3 border border-gray-800 group-hover:border-amber-500/50 transition relative">
-                    <OptimizedImage src={p.main_image_url} alt={p.name || ''} width={400} quality={80} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" fallback={<div className="w-full h-full flex items-center justify-center text-gray-700"><ShoppingBag className="h-12 w-12" /></div>} />
+                    <OptimizedImage src={getDisplayImage(p)} alt={p.name || ''} width={400} quality={80} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" fallback={<div className="w-full h-full flex items-center justify-center text-gray-700"><ShoppingBag className="h-12 w-12" /></div>} />
                     {(p as any).free_delivery && (
                       <div className="absolute top-2 left-2 bg-amber-500 text-gray-950 text-[9px] font-bold px-2 py-0.5 rounded-full">🚚 Free Delivery</div>
                     )}
