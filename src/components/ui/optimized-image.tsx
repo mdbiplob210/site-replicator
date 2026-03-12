@@ -36,6 +36,7 @@ export function OptimizedImage({
 }: OptimizedImageProps) {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
+  const [useOriginalSrc, setUseOriginalSrc] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
 
   const optimizedSrc = getOptimizedImageUrl(src, { width, height, quality });

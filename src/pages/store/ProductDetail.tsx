@@ -38,6 +38,13 @@ const ProductDetail = () => {
   // Image gallery state
   const [selectedImage, setSelectedImage] = useState(0);
   const allImages = product ? [product.main_image_url, ...(product.additional_images || [])].filter((url): url is string => !!url && /^(https?:\/\/|\/|data:)/i.test(url.trim())) : [];
+  const currentImage = allImages[selectedImage] ?? allImages[0] ?? null;
+
+  useEffect(() => {
+    if (selectedImage >= allImages.length) {
+      setSelectedImage(0);
+    }
+  }, [allImages.length, selectedImage]);
 
   // Exit popup settings from site_settings
   const exitEnabled = settings?.exit_popup_enabled === 'true';
