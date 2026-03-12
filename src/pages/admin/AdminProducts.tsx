@@ -285,6 +285,77 @@ const AdminProducts = () => {
     }
   };
 
+  // Open landing page dialog for a product
+  const openLpDialog = async (p: Product) => {
+    setLpProduct(p);
+    setLpTemplateId("classic-orange");
+    // Fetch existing landing pages for this product (by product_code in notes or slug)
+    const { data: existingLps } = await supabase
+      .from("landing_pages" as any)
+      .select("id, title, slug, is_active, created_at")
+      .or(`slug.ilike.%${p.product_code.toLowerCase()}%,html_content.ilike.%${p.product_code}%`)
+      .order("created_at", { ascending: false })
+      .limit(10);
+    setProductLandingPages(existingLps || []);
+    setLpDialogOpen(true);
+  };
+
+  const handleCreateLandingPage = async () => {
+    if (!lpProduct) return;
+    setLpCreating(true);
+    try {
+      const p = lpProduct;
+      const discountPercent = p.original_price > p.selling_price
+        ? Math.round(((p.original_price - p.selling_price) / p.original_price) * 100)
+        : 0;
+
+      const tplConfig: TemplateConfig = {
+        ...defaultTemplateConfig,
+        productName: p.name,
+        originalPrice: String(p.original_price),
+        sellingPrice: String(p.selling_price),
+        discountPercent: String(discountPercent),
+        productCode: p.product_code,
+        imageUrl: p.main_image_url || defaultTemplateConfig.imageUrl,
+        subtitle: p.short_description || defaultTemplateConfig.subtitle,
+      };
+
+      const html = generateTemplate(lpTemplateId, tplConfig);
+      const slug = p.product_code.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-");
+
+      const { data, error } = await supabase.from("landing_pages" as any).insert({
+        title: p.name,
+        slug,
+        html_content: html,
+        is_active: true,
+      } as any).select("id, slug").single();
+
+      if (error) {
+        if (error.message.includes("duplicate") || error.message.includes("unique")) {
+          // Try with timestamp suffix
+          const slugWithTs = `${slug}-${Date.now().toString(36)}`;
+          const { error: err2 } = await supabase.from("landing_pages" as any).insert({
+            title: p.name,
+            slug: slugWithTs,
+            html_content: html,
+            is_active: true,
+          } as any);
+          if (err2) throw err2;
+          toast.success(`ল্যান্ডিং পেজ তৈরি হয়েছে! Slug: /${slugWithTs}`);
+        } else {
+          throw error;
+        }
+      } else {
+        toast.success(`ল্যান্ডিং পেজ তৈরি হয়েছে! Slug: /${data.slug}`);
+      }
+      setLpDialogOpen(false);
+    } catch (err: any) {
+      toast.error("ল্যান্ডিং পেজ তৈরিতে সমস্যা: " + err.message);
+    } finally {
+      setLpCreating(false);
+    }
+  };
+
   // Add/Edit Product View
   if (view === "add" || view === "edit") {
     return (
