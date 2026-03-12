@@ -381,10 +381,10 @@ const ProductDetail = () => {
                   <Plus className="h-4 w-4" />
                 </button>
               </div>
-              {/* Stock & Free Delivery */}
-              <span className={`text-sm ${product.stock_quantity > 0 ? "text-green-600" : "text-red-500"}`}>
-                {product.stock_quantity > 0 ? `✓ In stock` : "✗ Out of stock"}
-              </span>
+              {/* Stock indicator - only show when in stock */}
+              {product.stock_quantity > 0 && (
+                <span className="text-sm text-green-600">✓ In stock</span>
+              )}
               {product.free_delivery && (
                 <span className="text-sm text-green-600 font-semibold bg-green-50 px-2 py-0.5 rounded-full">🚚 Free delivery</span>
               )}
@@ -395,7 +395,7 @@ const ProductDetail = () => {
               <Button
                 size="lg"
                 onClick={handleOrder}
-                disabled={product.stock_quantity <= 0 && !product.allow_out_of_stock_orders}
+                disabled={false}
                 className="w-full text-base font-bold py-6 sm:py-6 rounded-xl bg-green-600 hover:bg-green-700 active:scale-[0.98] text-white shadow-lg shadow-green-200 transition-all"
               >
                 🛒 Order now
@@ -520,7 +520,7 @@ const ProductDetail = () => {
           {/* Order Now - takes most space */}
           <button
             onClick={handleOrder}
-            disabled={product.stock_quantity <= 0 && !product.allow_out_of_stock_orders}
+            disabled={false}
             className="flex-1 py-3 rounded-xl bg-green-600 hover:bg-green-700 active:scale-[0.98] text-white font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg shadow-green-200 disabled:opacity-50"
           >
             🛒 Order Now
