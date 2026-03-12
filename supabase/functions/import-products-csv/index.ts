@@ -61,7 +61,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    const lines = csvContent.split("\n").filter((l: string) => l.trim());
+    const lines = csvContent.split(/\r?\n/).filter((l: string) => l.trim());
+    console.log(`CSV lines: ${lines.length}, first 100 chars: ${csvContent.substring(0, 100)}`);
     if (lines.length < 2) {
       return new Response(JSON.stringify({ error: "Empty CSV" }), {
         status: 400,
