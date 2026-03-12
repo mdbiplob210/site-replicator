@@ -38,6 +38,13 @@ const ProductDetail = () => {
   // Image gallery state
   const [selectedImage, setSelectedImage] = useState(0);
   const allImages = product ? [product.main_image_url, ...(product.additional_images || [])].filter((url): url is string => !!url && /^(https?:\/\/|\/|data:)/i.test(url.trim())) : [];
+  const currentImage = allImages[selectedImage] ?? allImages[0] ?? null;
+
+  useEffect(() => {
+    if (selectedImage >= allImages.length) {
+      setSelectedImage(0);
+    }
+  }, [allImages.length, selectedImage]);
 
   // Exit popup settings from site_settings
   const exitEnabled = settings?.exit_popup_enabled === 'true';
@@ -280,8 +287,20 @@ const ProductDetail = () => {
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
               {/* Main Image */}
               <div className="relative aspect-square overflow-hidden bg-gray-50">
-                {allImages.length > 0 ? (
-                  <OptimizedImage src={allImages[selectedImage]} alt={product.name} width={800} quality={85} eager className="w-full h-full object-contain" />
+                {currentImage ? (
+                  <OptimizedImage
+                    src={currentImage}
+                    alt={product.name}
+                    width={800}
+                    quality={85}
+                    eager
+                    className="w-full h-full object-contain"
+                    fallback={
+                      <div className="w-full h-full flex items-center justify-center">
+                        <ShoppingBag className="h-20 w-20 text-gray-200" />
+                      </div>
+                    }
+                  />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
                     <ShoppingBag className="h-20 w-20 text-gray-200" />

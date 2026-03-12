@@ -36,10 +36,13 @@ export function OptimizedImage({
 }: OptimizedImageProps) {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
+  const [useOriginalSrc, setUseOriginalSrc] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
 
   const optimizedSrc = getOptimizedImageUrl(src, { width, height, quality });
   const srcSet = getResponsiveSrcSet(src);
+  const effectiveSrc = useOriginalSrc ? (src || "") : optimizedSrc;
+  const effectiveSrcSet = useOriginalSrc ? "" : srcSet;
 
   // Check if image is already cached (loaded from browser cache)
   const checkIfCached = useCallback(() => {
@@ -51,6 +54,7 @@ export function OptimizedImage({
   useEffect(() => {
     setLoaded(false);
     setError(false);
+    setUseOriginalSrc(false);
     // After state reset, check if new src is already cached
     requestAnimationFrame(() => checkIfCached());
   }, [src, checkIfCached]);
@@ -62,14 +66,21 @@ export function OptimizedImage({
   return (
     <img
       ref={imgRef}
-      src={optimizedSrc}
-      srcSet={srcSet || undefined}
-      sizes={srcSet ? sizes : undefined}
+      src={effectiveSrc}
+      srcSet={effectiveSrcSet || undefined}
+      sizes={effectiveSrcSet ? sizes : undefined}
       alt={alt}
       loading={eager ? "eager" : "lazy"}
       decoding="async"
       onLoad={() => setLoaded(true)}
-      onError={() => setError(true)}
+      onError={() => {
+        if (!useOriginalSrc && src) {
+          setUseOriginalSrc(true);
+          setLoaded(false);
+          return;
+        }
+        setError(true);
+      }}
       className={cn(
         "transition-opacity duration-200",
         loaded ? "opacity-100" : "opacity-0",
