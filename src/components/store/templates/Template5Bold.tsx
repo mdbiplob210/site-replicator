@@ -31,7 +31,7 @@ const Template5Bold = () => {
 
   const handleOrder = (product: any) => {
     trackAddToCart({ id: product.id, name: product.name, price: product.selling_price, qty: 1, productCode: product.product_code });
-    setCheckoutItem({ productId: product.id, name: product.name, price: product.selling_price, qty: 1, image: product.main_image_url, productCode: product.product_code, categoryId: product.category_id });
+    setCheckoutItem({ productId: product.id, name: product.name, price: product.selling_price, qty: 1, image: getDisplayImage(product), productCode: product.product_code, categoryId: product.category_id });
     setCheckoutOpen(true);
   };
 
