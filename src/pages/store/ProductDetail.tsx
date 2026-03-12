@@ -589,24 +589,25 @@ function SuggestedProducts({ categoryId, currentProductId, onOrder }: { category
             ? Math.round(((p.original_price - p.selling_price) / p.original_price) * 100)
             : 0;
           const pDiscountAmount = p.original_price - p.selling_price;
+          const imageSrc = [p.main_image_url, ...((p.additional_images || []) as string[])]
+            .find((url) => typeof url === "string" && /^(https?:\/\/|\/|data:)/i.test(url.trim())) || null;
 
           return (
             <div key={p.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition group">
               <Link to={`/product/${p.slug || p.id}`} className="block">
                 <div className="relative aspect-square overflow-hidden bg-gray-50">
-                  {p.main_image_url ? (
-                    <OptimizedImage
-                      src={p.main_image_url}
-                      alt={p.name}
-                      width={300}
-                      quality={80}
-                      className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-300">
-                      <ShoppingBag className="h-10 w-10" />
-                    </div>
-                  )}
+                  <OptimizedImage
+                    src={imageSrc}
+                    alt={p.name}
+                    width={300}
+                    quality={80}
+                    className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                    fallback={
+                      <div className="w-full h-full flex items-center justify-center text-gray-300">
+                        <ShoppingBag className="h-10 w-10" />
+                      </div>
+                    }
+                  />
                   {pDiscount > 0 && (
                     <div className="absolute top-2 right-2 w-12 h-12 rounded-full border-2 border-dashed border-red-400 bg-white flex flex-col items-center justify-center">
                       <span className="text-red-500 font-bold text-[10px] leading-none">{pDiscountAmount}</span>

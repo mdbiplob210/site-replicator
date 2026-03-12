@@ -303,13 +303,14 @@ const Template1Classic = () => {
             {filteredProducts.map((p) => {
               const discount = getDiscount(p.original_price, p.selling_price);
               const discountAmount = p.original_price - p.selling_price;
+              const imageSrc = getDisplayImage(p);
               return (
                 <div key={p.id} className="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                   {/* Image */}
                   <Link to={`/product/${(p as any).slug || p.id}`} className="block relative">
                     <div className="aspect-square overflow-hidden bg-gray-50">
                       <OptimizedImage 
-                        src={p.main_image_url} 
+                        src={imageSrc} 
                         alt={p.name || ''} 
                         width={400} 
                         quality={80} 
