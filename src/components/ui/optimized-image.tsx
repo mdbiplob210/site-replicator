@@ -66,14 +66,21 @@ export function OptimizedImage({
   return (
     <img
       ref={imgRef}
-      src={optimizedSrc}
-      srcSet={srcSet || undefined}
-      sizes={srcSet ? sizes : undefined}
+      src={effectiveSrc}
+      srcSet={effectiveSrcSet || undefined}
+      sizes={effectiveSrcSet ? sizes : undefined}
       alt={alt}
       loading={eager ? "eager" : "lazy"}
       decoding="async"
       onLoad={() => setLoaded(true)}
-      onError={() => setError(true)}
+      onError={() => {
+        if (!useOriginalSrc && src) {
+          setUseOriginalSrc(true);
+          setLoaded(false);
+          return;
+        }
+        setError(true);
+      }}
       className={cn(
         "transition-opacity duration-200",
         loaded ? "opacity-100" : "opacity-0",

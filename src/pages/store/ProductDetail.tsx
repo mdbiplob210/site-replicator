@@ -287,8 +287,20 @@ const ProductDetail = () => {
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
               {/* Main Image */}
               <div className="relative aspect-square overflow-hidden bg-gray-50">
-                {allImages.length > 0 ? (
-                  <OptimizedImage src={allImages[selectedImage]} alt={product.name} width={800} quality={85} eager className="w-full h-full object-contain" />
+                {currentImage ? (
+                  <OptimizedImage
+                    src={currentImage}
+                    alt={product.name}
+                    width={800}
+                    quality={85}
+                    eager
+                    className="w-full h-full object-contain"
+                    fallback={
+                      <div className="w-full h-full flex items-center justify-center">
+                        <ShoppingBag className="h-20 w-20 text-gray-200" />
+                      </div>
+                    }
+                  />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
                     <ShoppingBag className="h-20 w-20 text-gray-200" />
