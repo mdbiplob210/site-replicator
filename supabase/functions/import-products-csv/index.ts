@@ -45,9 +45,17 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { csvContent } = await req.json();
+    const body = await req.json();
+    let csvContent = body.csvContent || "";
+    
+    // If csvUrl provided, fetch CSV from URL
+    if (body.csvUrl && !csvContent) {
+      const resp = await fetch(body.csvUrl);
+      csvContent = await resp.text();
+    }
+    
     if (!csvContent) {
-      return new Response(JSON.stringify({ error: "No CSV content" }), {
+      return new Response(JSON.stringify({ error: "No CSV content or csvUrl" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
