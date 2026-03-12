@@ -201,7 +201,7 @@ const ProductDetail = () => {
       name: product.name,
       price: product.selling_price,
       qty,
-      image: product.main_image_url,
+      image: getDisplayImage(product),
       productCode: product.product_code,
       categoryId: product.category_id,
     });
