@@ -5,7 +5,6 @@ import { cn } from "@/lib/utils";
 function isValidImageUrl(url: string | null | undefined): boolean {
   if (!url) return false;
   const trimmed = url.trim();
-  // Must start with http(s):// or / or data: to be a valid image source
   return /^(https?:\/\/|\/|data:)/i.test(trimmed);
 }
 
@@ -20,6 +19,8 @@ interface OptimizedImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, 
   eager?: boolean;
   /** Fallback element when no src */
   fallback?: React.ReactNode;
+  /** Show a shimmer placeholder while loading */
+  showPlaceholder?: boolean;
 }
 
 export function OptimizedImage({
@@ -31,7 +32,9 @@ export function OptimizedImage({
   sizes = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw",
   eager = false,
   fallback,
+  showPlaceholder = true,
   className,
+  style,
   ...props
 }: OptimizedImageProps) {
   const [loaded, setLoaded] = useState(false);
@@ -44,7 +47,7 @@ export function OptimizedImage({
   const effectiveSrc = useOriginalSrc ? (src || "") : optimizedSrc;
   const effectiveSrcSet = useOriginalSrc ? "" : srcSet;
 
-  // Check if image is already cached (loaded from browser cache)
+  // Check if image is already cached
   const checkIfCached = useCallback(() => {
     if (imgRef.current?.complete && imgRef.current?.naturalWidth > 0) {
       setLoaded(true);
@@ -55,7 +58,6 @@ export function OptimizedImage({
     setLoaded(false);
     setError(false);
     setUseOriginalSrc(false);
-    // After state reset, check if new src is already cached
     requestAnimationFrame(() => checkIfCached());
   }, [src, checkIfCached]);
 
@@ -64,29 +66,37 @@ export function OptimizedImage({
   }
 
   return (
-    <img
-      ref={imgRef}
-      src={effectiveSrc}
-      srcSet={effectiveSrcSet || undefined}
-      sizes={effectiveSrcSet ? sizes : undefined}
-      alt={alt}
-      loading={eager ? "eager" : "lazy"}
-      decoding="async"
-      onLoad={() => setLoaded(true)}
-      onError={() => {
-        if (!useOriginalSrc && src) {
-          setUseOriginalSrc(true);
-          setLoaded(false);
-          return;
-        }
-        setError(true);
-      }}
-      className={cn(
-        "transition-opacity duration-200",
-        loaded ? "opacity-100" : "opacity-0",
-        className
+    <div className="relative w-full h-full">
+      {/* Shimmer placeholder - visible until image loads */}
+      {showPlaceholder && !loaded && (
+        <div className="absolute inset-0 bg-muted animate-pulse" />
       )}
-      {...props}
-    />
+      <img
+        ref={imgRef}
+        src={effectiveSrc}
+        srcSet={effectiveSrcSet || undefined}
+        sizes={effectiveSrcSet ? sizes : undefined}
+        alt={alt}
+        loading={eager ? "eager" : "lazy"}
+        decoding={eager ? "sync" : "async"}
+        fetchPriority={eager ? "high" : undefined}
+        onLoad={() => setLoaded(true)}
+        onError={() => {
+          if (!useOriginalSrc && src) {
+            setUseOriginalSrc(true);
+            setLoaded(false);
+            return;
+          }
+          setError(true);
+        }}
+        className={cn(
+          "transition-opacity duration-150",
+          loaded ? "opacity-100" : "opacity-0",
+          className
+        )}
+        style={style}
+        {...props}
+      />
+    </div>
   );
 }

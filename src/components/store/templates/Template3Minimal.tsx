@@ -86,13 +86,14 @@ const Template3Minimal = () => {
           <div className="text-center py-12 text-stone-400 text-sm">No products available</div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-10">
-            {products.map((p) => {
+            {products.map((p, idx) => {
               const outOfStock = p.stock_quantity !== undefined && p.stock_quantity <= 0 && !(p as any).allow_out_of_stock_orders;
+              const isAboveFold = idx < 6;
               return (
               <div key={p.id} className="group">
                 <Link to={`/product/${(p as any).slug || p.id}`}>
                   <div className="aspect-[3/4] bg-stone-100 overflow-hidden mb-4 relative">
-                    <OptimizedImage src={getDisplayImage(p)} alt={p.name || ''} width={400} quality={80} className="w-full h-full object-cover group-hover:scale-102 transition duration-700" fallback={<div className="w-full h-full flex items-center justify-center text-stone-300"><ShoppingBag className="h-10 w-10" /></div>} />
+                    <OptimizedImage src={getDisplayImage(p)} alt={p.name || ''} width={400} quality={80} eager={isAboveFold} className="w-full h-full object-cover group-hover:scale-102 transition duration-700" fallback={<div className="w-full h-full flex items-center justify-center text-stone-300"><ShoppingBag className="h-10 w-10" /></div>} />
                     {(p as any).free_delivery && (
                       <div className="absolute top-2 left-2 bg-stone-800 text-white text-[9px] font-medium px-2 py-0.5 rounded-full tracking-wide">Free Delivery</div>
                     )}
