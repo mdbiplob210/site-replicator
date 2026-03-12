@@ -2,6 +2,13 @@ import { useState, useRef, useEffect, useCallback, ImgHTMLAttributes } from "rea
 import { getOptimizedImageUrl, getResponsiveSrcSet } from "@/lib/imageOptimizer";
 import { cn } from "@/lib/utils";
 
+function isValidImageUrl(url: string | null | undefined): boolean {
+  if (!url) return false;
+  const trimmed = url.trim();
+  // Must start with http(s):// or / or data: to be a valid image source
+  return /^(https?:\/\/|\/|data:)/i.test(trimmed);
+}
+
 interface OptimizedImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, "src"> {
   src: string | null | undefined;
   alt: string;
