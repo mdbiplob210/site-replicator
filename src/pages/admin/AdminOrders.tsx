@@ -51,6 +51,7 @@ import { Constants } from "@/integrations/supabase/types";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import * as XLSX from "@datalens-tech/xlsx";
 import { toast } from "sonner";
+import { getDisplayImage } from "@/lib/imageUtils";
 
 const statusTabs = [
   { label: "All Orders", color: "bg-primary", icon: ShoppingCart },
