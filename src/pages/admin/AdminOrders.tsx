@@ -4354,7 +4354,7 @@ function IncompleteOrderCard({ io, activeIncompleteTab, onConvert, deleteIncompl
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0 space-y-2">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-bold text-foreground">{io.customer_name}</span>
+            <span className="font-bold text-foreground text-sm">{io.customer_name}</span>
             {io.block_reason === "abandoned_form" ? (
               <Badge variant="secondary" className="text-xs bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">📝 Abandoned</Badge>
             ) : (
@@ -4362,9 +4362,14 @@ function IncompleteOrderCard({ io, activeIncompleteTab, onConvert, deleteIncompl
             )}
             {io.landing_page_slug && <Badge variant="outline" className="text-xs">LP: {io.landing_page_slug}</Badge>}
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-muted-foreground">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5 text-xs">
             <div className="flex items-center gap-1.5">
-              <span><span className="font-medium">ফোন:</span> {io.customer_phone || "N/A"}</span>
+              <span className="font-bold text-foreground">নাম:</span>
+              <span className="text-foreground font-semibold">{io.customer_name || "N/A"}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="font-bold text-foreground">ফোন:</span>
+              <span className="text-foreground font-semibold">{io.customer_phone || "N/A"}</span>
               {io.customer_phone && (
                 <a href={`tel:${io.customer_phone}`} onClick={(e) => e.stopPropagation()}>
                   <Button variant="ghost" size="icon" className="h-5 w-5 rounded text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 p-0">
@@ -4373,15 +4378,22 @@ function IncompleteOrderCard({ io, activeIncompleteTab, onConvert, deleteIncompl
                 </a>
               )}
             </div>
+            <div className="flex items-start gap-1.5 md:col-span-2">
+              <span className="font-bold text-foreground shrink-0">ঠিকানা:</span>
+              <span className="text-foreground font-semibold">{io.customer_address || "N/A"}</span>
+            </div>
+          </div>
+          {io.product_name && (
+            <div className="text-xs flex items-center gap-1.5">
+              <span className="font-bold text-foreground">প্রোডাক্ট:</span>
+              <span className="text-foreground font-semibold">{io.product_name} {io.product_code ? `(${io.product_code})` : ""} × {io.quantity}</span>
+            </div>
+          )}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-muted-foreground">
             <div><span className="font-medium">IP:</span> {io.client_ip || "N/A"}</div>
             <div><span className="font-medium">ডিভাইস:</span> {io.device_info || "N/A"}</div>
             <div><span className="font-medium">মোট:</span> ৳{io.total_amount}</div>
           </div>
-          {io.product_name && (
-            <p className="text-xs text-muted-foreground">
-              <span className="font-medium">প্রোডাক্ট:</span> {io.product_name} {io.product_code ? `(${io.product_code})` : ""} × {io.quantity}
-            </p>
-          )}
           <p className="text-xs text-destructive/80 bg-destructive/5 rounded px-2 py-1 inline-block">
             🚫 {io.block_reason}
           </p>
