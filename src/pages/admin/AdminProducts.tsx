@@ -81,8 +81,15 @@ const AdminProducts = () => {
   const [lpProduct, setLpProduct] = useState<Product | null>(null);
   const [lpTemplateId, setLpTemplateId] = useState("classic-orange");
   const [lpCreating, setLpCreating] = useState(false);
-  // Existing landing pages for this product
   const [productLandingPages, setProductLandingPages] = useState<any[]>([]);
+  // Tiered pricing state
+  const [lpTieredEnabled, setLpTieredEnabled] = useState(false);
+  const [lpTieredPrice1, setLpTieredPrice1] = useState("");
+  const [lpTieredPrice2, setLpTieredPrice2] = useState("");
+  const [lpTieredPrice3, setLpTieredPrice3] = useState("");
+  const [lpTieredLabel1, setLpTieredLabel1] = useState("");
+  const [lpTieredLabel2, setLpTieredLabel2] = useState("");
+  const [lpTieredLabel3, setLpTieredLabel3] = useState("");
 
   const [form, setForm] = useState(emptyProduct);
 
@@ -289,7 +296,14 @@ const AdminProducts = () => {
   const openLpDialog = async (p: Product) => {
     setLpProduct(p);
     setLpTemplateId("classic-orange");
-    // Fetch existing landing pages for this product (by product_code in notes or slug)
+    setLpTieredEnabled(false);
+    setLpTieredPrice1(String(p.selling_price));
+    setLpTieredPrice2(String(Math.round(p.selling_price * 2 * 0.9)));
+    setLpTieredPrice3(String(Math.round(p.selling_price * 3 * 0.85)));
+    setLpTieredLabel1(`১ পিস - ৳${p.selling_price}`);
+    setLpTieredLabel2(`২ পিস - ৳${Math.round(p.selling_price * 2 * 0.9)}`);
+    setLpTieredLabel3(`৩ পিস - ৳${Math.round(p.selling_price * 3 * 0.85)}`);
+    // Fetch existing landing pages for this product
     const { data: existingLps } = await supabase
       .from("landing_pages" as any)
       .select("id, title, slug, is_active, created_at")
@@ -318,6 +332,13 @@ const AdminProducts = () => {
         productCode: p.product_code,
         imageUrl: p.main_image_url || defaultTemplateConfig.imageUrl,
         subtitle: p.short_description || defaultTemplateConfig.subtitle,
+        tieredPricingEnabled: lpTieredEnabled,
+        tieredPrice1: lpTieredPrice1,
+        tieredPrice2: lpTieredPrice2,
+        tieredPrice3: lpTieredPrice3,
+        tieredLabel1: lpTieredLabel1,
+        tieredLabel2: lpTieredLabel2,
+        tieredLabel3: lpTieredLabel3,
       };
 
       const html = generateTemplate(lpTemplateId, tplConfig);
@@ -825,6 +846,48 @@ const AdminProducts = () => {
                     </button>
                   ))}
                 </div>
+              </div>
+
+              {/* Tiered Pricing Toggle */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-semibold">টায়ার্ড প্রাইসিং</Label>
+                  <Switch checked={lpTieredEnabled} onCheckedChange={setLpTieredEnabled} />
+                </div>
+                {lpTieredEnabled && (
+                  <div className="space-y-2 p-3 rounded-xl bg-secondary/30 border border-border/40">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label className="text-[10px] text-muted-foreground">১ পিস দাম</Label>
+                        <Input value={lpTieredPrice1} onChange={e => setLpTieredPrice1(e.target.value)} placeholder="৬৯০" className="h-8 text-xs" />
+                      </div>
+                      <div>
+                        <Label className="text-[10px] text-muted-foreground">১ পিস লেবেল</Label>
+                        <Input value={lpTieredLabel1} onChange={e => setLpTieredLabel1(e.target.value)} placeholder="১ পিস - ৳৬৯০" className="h-8 text-xs" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label className="text-[10px] text-muted-foreground">২ পিস দাম</Label>
+                        <Input value={lpTieredPrice2} onChange={e => setLpTieredPrice2(e.target.value)} placeholder="১২৮০" className="h-8 text-xs" />
+                      </div>
+                      <div>
+                        <Label className="text-[10px] text-muted-foreground">২ পিস লেবেল</Label>
+                        <Input value={lpTieredLabel2} onChange={e => setLpTieredLabel2(e.target.value)} placeholder="২ পিস - ৳১২৮০" className="h-8 text-xs" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label className="text-[10px] text-muted-foreground">৩ পিস দাম</Label>
+                        <Input value={lpTieredPrice3} onChange={e => setLpTieredPrice3(e.target.value)} placeholder="১৮০০" className="h-8 text-xs" />
+                      </div>
+                      <div>
+                        <Label className="text-[10px] text-muted-foreground">৩ পিস লেবেল</Label>
+                        <Input value={lpTieredLabel3} onChange={e => setLpTieredLabel3(e.target.value)} placeholder="৩ পিস - ৳১৮০০" className="h-8 text-xs" />
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Info */}
