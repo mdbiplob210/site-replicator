@@ -4,20 +4,25 @@ import { getDisplayImage } from "@/lib/imageUtils";
 import { getOptimizedImageUrl } from "@/lib/imageOptimizer";
 import { getPrefetchedData } from "@/lib/prefetch";
 
-const PRODUCT_FIELDS = "id, name, product_code, selling_price, original_price, main_image_url, additional_images, short_description, detailed_description, youtube_url, category_id, status, stock_quantity, allow_out_of_stock_orders, free_delivery, created_at, updated_at, slug";
+const PRODUCT_LIST_FIELDS = "id,name,product_code,selling_price,original_price,main_image_url,additional_images,category_id,stock_quantity,allow_out_of_stock_orders,free_delivery,slug";
+const PRODUCT_DETAIL_FIELDS = `${PRODUCT_LIST_FIELDS},short_description,detailed_description,youtube_url,status,created_at,updated_at`;
 
-// Preload first N product images immediately after data fetch
+const PRELOADED_IMAGE_URLS = new Set<string>();
+
 function preloadProductImages(products: any[], count = 6) {
   products.slice(0, count).forEach((p) => {
     const src = getDisplayImage(p);
-    if (src) {
-      const url = getOptimizedImageUrl(src, { width: 400, quality: 80 });
-      const link = document.createElement("link");
-      link.rel = "preload";
-      link.as = "image";
-      link.href = url;
-      document.head.appendChild(link);
-    }
+    if (!src) return;
+
+    const url = getOptimizedImageUrl(src, { width: 400, quality: 80 });
+    if (!url || PRELOADED_IMAGE_URLS.has(url)) return;
+
+    PRELOADED_IMAGE_URLS.add(url);
+    const link = document.createElement("link");
+    link.rel = "preload";
+    link.as = "image";
+    link.href = url;
+    document.head.appendChild(link);
   });
 }
 
@@ -27,9 +32,10 @@ export function usePublicProducts() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products_public")
-        .select(PRODUCT_FIELDS)
+        .select(PRODUCT_LIST_FIELDS)
         .eq("status", "active")
         .order("created_at", { ascending: false });
+
       if (error) throw error;
       const products = data || [];
       preloadProductImages(products);
@@ -51,39 +57,39 @@ export function useProduct(slugOrId: string) {
   return useQuery({
     queryKey: ["product", slugOrId],
     queryFn: async () => {
-      // Try slug first, then fall back to id
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from("products_public")
-        .select(PRODUCT_FIELDS)
+        .select(PRODUCT_DETAIL_FIELDS)
         .eq("slug", slugOrId)
         .maybeSingle();
-      
+
       if (data) return data;
-      
-      // Fallback: try by id (for backward compatibility)
+
       const { data: dataById, error: errorById } = await supabase
         .from("products_public")
-        .select(PRODUCT_FIELDS)
+        .select(PRODUCT_DETAIL_FIELDS)
         .eq("id", slugOrId)
         .single();
+
       if (errorById) throw errorById;
       return dataById;
     },
-    initialData: () => {
-      // Try to find in prefetched products list
+    placeholderData: () => {
+      const prefetchedProduct = getPrefetchedData<any[]>(`product-detail:${slugOrId}`);
+      if (prefetchedProduct?.[0]) return prefetchedProduct[0];
+
       const cached = getPrefetchedData<any[]>("public-products");
       if (cached) {
-        const found = cached.find(p => p.slug === slugOrId || p.id === slugOrId);
-        if (found) return found;
+        return cached.find((p) => p.slug === slugOrId || p.id === slugOrId);
       }
       return undefined;
     },
     enabled: !!slugOrId,
-    staleTime: 2 * 60 * 1000,
+    staleTime: 60 * 1000,
   });
 }
 
-const SUGGESTION_FIELDS = "id, name, product_code, selling_price, original_price, main_image_url, additional_images, category_id, stock_quantity, allow_out_of_stock_orders, slug";
+const SUGGESTION_FIELDS = "id,name,product_code,selling_price,original_price,main_image_url,additional_images,category_id,stock_quantity,allow_out_of_stock_orders,free_delivery,slug";
 
 export function useSuggestedProducts(categoryId: string | null | undefined, currentProductId: string | undefined) {
   return useQuery({
@@ -104,8 +110,9 @@ export function useSuggestedProducts(categoryId: string | null | undefined, curr
       if (error) throw error;
 
       if (data && data.length < 3) {
-        const existingIds = data.map(p => p.id);
+        const existingIds = data.map((p) => p.id);
         existingIds.push(currentProductId || "");
+
         const { data: moreData } = await supabase
           .from("products_public")
           .select(SUGGESTION_FIELDS)
@@ -113,19 +120,19 @@ export function useSuggestedProducts(categoryId: string | null | undefined, curr
           .not("id", "in", `(${existingIds.join(",")})`)
           .order("created_at", { ascending: false })
           .limit(6 - data.length);
+
         return [...data, ...(moreData || [])];
       }
 
       return data || [];
     },
     initialData: () => {
-      // Use prefetched products as initial suggestions
       const cached = getPrefetchedData<any[]>("public-products");
       if (cached && currentProductId) {
-        let filtered = cached.filter(p => p.id !== currentProductId);
+        let filtered = cached.filter((p) => p.id !== currentProductId);
         if (categoryId) {
-          const catFiltered = filtered.filter(p => p.category_id === categoryId);
-          if (catFiltered.length >= 3) filtered = catFiltered;
+          const categoryFiltered = filtered.filter((p) => p.category_id === categoryId);
+          if (categoryFiltered.length >= 3) filtered = categoryFiltered;
         }
         return filtered.slice(0, 6);
       }
