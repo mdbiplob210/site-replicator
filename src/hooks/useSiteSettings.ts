@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { getPrefetchedData } from "@/lib/prefetch";
 
 export function useSiteSettings() {
   return useQuery({
@@ -14,7 +15,16 @@ export function useSiteSettings() {
       data?.forEach((r: any) => { map[r.key] = r.value; });
       return map;
     },
-    staleTime: 10 * 60 * 1000, // Settings rarely change - 10 min cache
+    initialData: () => {
+      const cached = getPrefetchedData<{ key: string; value: string }[]>("site-settings");
+      if (cached) {
+        const map: Record<string, string> = {};
+        cached.forEach(r => { map[r.key] = r.value; });
+        return map;
+      }
+      return undefined;
+    },
+    staleTime: 10 * 60 * 1000,
   });
 }
 
@@ -22,7 +32,6 @@ export function useUpdateSiteSetting() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ key, value }: { key: string; value: string }) => {
-      // Use upsert so new keys are created if they don't exist
       const { error } = await supabase
         .from("site_settings")
         .upsert(

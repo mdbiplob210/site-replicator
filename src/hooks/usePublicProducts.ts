@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { getDisplayImage } from "@/lib/imageUtils";
 import { getOptimizedImageUrl } from "@/lib/imageOptimizer";
+import { getPrefetchedData } from "@/lib/prefetch";
 
 const PRODUCT_FIELDS = "id, name, product_code, selling_price, original_price, main_image_url, additional_images, short_description, detailed_description, youtube_url, category_id, status, stock_quantity, allow_out_of_stock_orders, free_delivery, created_at, updated_at, slug";
 
@@ -31,9 +32,16 @@ export function usePublicProducts() {
         .order("created_at", { ascending: false });
       if (error) throw error;
       const products = data || [];
-      // Preload above-fold images immediately
       preloadProductImages(products);
       return products;
+    },
+    initialData: () => {
+      const cached = getPrefetchedData<any[]>("public-products");
+      if (cached && cached.length > 0) {
+        preloadProductImages(cached);
+        return cached;
+      }
+      return undefined;
     },
     staleTime: 2 * 60 * 1000,
   });
@@ -60,6 +68,15 @@ export function useProduct(slugOrId: string) {
         .single();
       if (errorById) throw errorById;
       return dataById;
+    },
+    initialData: () => {
+      // Try to find in prefetched products list
+      const cached = getPrefetchedData<any[]>("public-products");
+      if (cached) {
+        const found = cached.find(p => p.slug === slugOrId || p.id === slugOrId);
+        if (found) return found;
+      }
+      return undefined;
     },
     enabled: !!slugOrId,
     staleTime: 2 * 60 * 1000,
@@ -100,6 +117,19 @@ export function useSuggestedProducts(categoryId: string | null | undefined, curr
       }
 
       return data || [];
+    },
+    initialData: () => {
+      // Use prefetched products as initial suggestions
+      const cached = getPrefetchedData<any[]>("public-products");
+      if (cached && currentProductId) {
+        let filtered = cached.filter(p => p.id !== currentProductId);
+        if (categoryId) {
+          const catFiltered = filtered.filter(p => p.category_id === categoryId);
+          if (catFiltered.length >= 3) filtered = catFiltered;
+        }
+        return filtered.slice(0, 6);
+      }
+      return undefined;
     },
     enabled: !!currentProductId,
     staleTime: 2 * 60 * 1000,
