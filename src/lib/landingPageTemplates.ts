@@ -51,6 +51,14 @@ export interface TemplateConfig {
   confirmButtonText: string;
   successTitle: string;
   successMessage: string;
+  // Tiered pricing
+  tieredPricingEnabled: boolean;
+  tieredPrice1: string; // price for 1 piece
+  tieredPrice2: string; // price for 2 pieces (total)
+  tieredPrice3: string; // price for 3 pieces (total)
+  tieredLabel1: string;
+  tieredLabel2: string;
+  tieredLabel3: string;
 }
 
 export const defaultTemplateConfig: TemplateConfig = {
@@ -99,6 +107,14 @@ export const defaultTemplateConfig: TemplateConfig = {
   confirmButtonText: "✅ অর্ডার কনফার্ম করুন",
   successTitle: "অর্ডার সফল হয়েছে!",
   successMessage: "আমরা শীঘ্রই আপনার সাথে যোগাযোগ করবো।",
+  // Tiered pricing defaults
+  tieredPricingEnabled: false,
+  tieredPrice1: "৬৯০",
+  tieredPrice2: "১২৮০",
+  tieredPrice3: "১৮০০",
+  tieredLabel1: "১ পিস - ৳৬৯০",
+  tieredLabel2: "২ পিস - ৳১২৮০ (সেভ ৳১০০)",
+  tieredLabel3: "৩ পিস - ৳১৮০০ (সেভ ৳২৭০)",
 };
 
 export interface TemplateInfo {
@@ -120,6 +136,47 @@ export const templateList: TemplateInfo[] = [
 
 // Shared checkout popup HTML
 function checkoutPopupHtml(p: TemplateConfig, accentColor: string, bgOverlay: string = "rgba(0,0,0,0.6)") {
+  const basePrice = parseInt(p.sellingPrice.replace(/[^\d]/g,'')) || 0;
+  const dc = parseInt(p.deliveryCharge) || 0;
+  const useTiered = p.tieredPricingEnabled;
+  const t1 = parseInt(p.tieredPrice1?.replace(/[^\d]/g,'') || '') || basePrice;
+  const t2 = parseInt(p.tieredPrice2?.replace(/[^\d]/g,'') || '') || (basePrice * 2);
+  const t3 = parseInt(p.tieredPrice3?.replace(/[^\d]/g,'') || '') || (basePrice * 3);
+
+  // Quantity selector: tiered radio buttons OR normal dropdown
+  const quantityHtml = useTiered ? `
+        <div style="margin-bottom:14px"><label style="display:block;font-size:13px;font-weight:600;color:#555;margin-bottom:8px">${p.quantityLabel}</label>
+          <div style="display:flex;flex-direction:column;gap:8px" id="tieredOptions">
+            <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;border:2px solid ${accentColor};border-radius:10px;cursor:pointer;background:${accentColor}11;font-size:14px;font-weight:600;color:#333" id="tierLabel1">
+              <input type="radio" name="quantity" value="1" checked onchange="updateTieredSummary()" style="accent-color:${accentColor};width:18px;height:18px"/> ${p.tieredLabel1 || '১ পিস - ৳' + t1}
+            </label>
+            <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;border:2px solid #e0e0e0;border-radius:10px;cursor:pointer;font-size:14px;font-weight:600;color:#333" id="tierLabel2">
+              <input type="radio" name="quantity" value="2" onchange="updateTieredSummary()" style="accent-color:${accentColor};width:18px;height:18px"/> ${p.tieredLabel2 || '২ পিস - ৳' + t2}
+            </label>
+            <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;border:2px solid #e0e0e0;border-radius:10px;cursor:pointer;font-size:14px;font-weight:600;color:#333" id="tierLabel3">
+              <input type="radio" name="quantity" value="3" onchange="updateTieredSummary()" style="accent-color:${accentColor};width:18px;height:18px"/> ${p.tieredLabel3 || '৩ পিস - ৳' + t3}
+            </label>
+          </div>
+        </div>` : `
+        <div style="margin-bottom:14px"><label style="display:block;font-size:13px;font-weight:600;color:#555;margin-bottom:5px">${p.quantityLabel}</label><select name="quantity" id="qtySelect" onchange="updateSummary()" style="width:100%;padding:13px 14px;border:2px solid #e0e0e0;border-radius:10px;font-size:15px;outline:none"><option value="1">${p.qty1Text}</option><option value="2">${p.qty2Text}</option><option value="3">${p.qty3Text}</option></select></div>`;
+
+  const summaryScript = useTiered ? `
+var tieredPrices={1:${t1},2:${t2},3:${t3}},deliveryCharge=${dc};
+function updateTieredSummary(){var radios=document.querySelectorAll('input[name="quantity"]');var q=1;radios.forEach(function(r){if(r.checked)q=parseInt(r.value)});var productPrice=tieredPrices[q]||tieredPrices[1];document.getElementById('sumProduct').textContent='৳'+productPrice;document.getElementById('sumTotal').textContent='৳'+(productPrice+deliveryCharge);
+  document.getElementById('tierLabel1').style.border='2px solid #e0e0e0';document.getElementById('tierLabel1').style.background='transparent';
+  document.getElementById('tierLabel2').style.border='2px solid #e0e0e0';document.getElementById('tierLabel2').style.background='transparent';
+  document.getElementById('tierLabel3').style.border='2px solid #e0e0e0';document.getElementById('tierLabel3').style.background='transparent';
+  document.getElementById('tierLabel'+q).style.border='2px solid ${accentColor}';document.getElementById('tierLabel'+q).style.background='${accentColor}11';
+  document.getElementById('checkoutForm').setAttribute('data-unit-price', String(Math.round(productPrice/q)));
+}
+` : `
+var unitPrice=${basePrice},deliveryCharge=${dc};
+function updateSummary(){var q=parseInt(document.getElementById('qtySelect').value)||1;document.getElementById('sumProduct').textContent='৳'+(unitPrice*q);document.getElementById('sumTotal').textContent='৳'+(unitPrice*q+deliveryCharge)}
+`;
+
+  const initialProductPrice = useTiered ? t1 : basePrice;
+  const initialTotal = initialProductPrice + dc;
+
   return `
 <!-- Checkout Popup -->
 <div class="checkout-overlay" id="checkoutOverlay" style="display:none;position:fixed;inset:0;background:${bgOverlay};z-index:9999;align-items:flex-end;justify-content:center">
@@ -129,16 +186,16 @@ function checkoutPopupHtml(p: TemplateConfig, accentColor: string, bgOverlay: st
       <h2 style="font-size:20px;font-weight:800;color:#111;text-align:center;margin:0 0 4px">${p.checkoutTitle}</h2>
       <p style="text-align:center;color:#888;font-size:13px;margin:0 0 20px">${p.productName} - ৳${p.sellingPrice}</p>
     </div>
-    <form data-checkout-form data-product-name="${p.productName}" data-product-code="${p.productCode}" data-unit-price="${p.sellingPrice.replace(/[৳,\s]/g,'')}" data-delivery-charge="${p.deliveryCharge}" id="checkoutForm">
+    <form data-checkout-form data-product-name="${p.productName}" data-product-code="${p.productCode}" data-unit-price="${useTiered ? t1 : basePrice}" data-delivery-charge="${p.deliveryCharge}" id="checkoutForm">
       <div id="formFields">
         <div style="margin-bottom:14px"><label style="display:block;font-size:13px;font-weight:600;color:#555;margin-bottom:5px">${p.nameLabel}</label><input type="text" name="customer_name" placeholder="${p.namePlaceholder}" required style="width:100%;padding:13px 14px;border:2px solid #e0e0e0;border-radius:10px;font-size:15px;outline:none" onfocus="this.style.borderColor='${accentColor}'" onblur="this.style.borderColor='#e0e0e0'" /></div>
         <div style="margin-bottom:14px"><label style="display:block;font-size:13px;font-weight:600;color:#555;margin-bottom:5px">${p.phoneLabel}</label><input type="tel" name="customer_phone" placeholder="${p.phonePlaceholder}" required style="width:100%;padding:13px 14px;border:2px solid #e0e0e0;border-radius:10px;font-size:15px;outline:none" onfocus="this.style.borderColor='${accentColor}'" onblur="this.style.borderColor='#e0e0e0'" /></div>
         <div style="margin-bottom:14px"><label style="display:block;font-size:13px;font-weight:600;color:#555;margin-bottom:5px">${p.addressLabel}</label><textarea name="customer_address" placeholder="${p.addressPlaceholder}" required style="width:100%;padding:13px 14px;border:2px solid #e0e0e0;border-radius:10px;font-size:15px;outline:none;resize:vertical;min-height:60px" onfocus="this.style.borderColor='${accentColor}'" onblur="this.style.borderColor='#e0e0e0'"></textarea></div>
-        <div style="margin-bottom:14px"><label style="display:block;font-size:13px;font-weight:600;color:#555;margin-bottom:5px">${p.quantityLabel}</label><select name="quantity" id="qtySelect" onchange="updateSummary()" style="width:100%;padding:13px 14px;border:2px solid #e0e0e0;border-radius:10px;font-size:15px;outline:none"><option value="1">${p.qty1Text}</option><option value="2">${p.qty2Text}</option><option value="3">${p.qty3Text}</option></select></div>
+        ${quantityHtml}
         <div style="background:#f5f5f0;border-radius:12px;padding:14px;margin:16px 0">
-          <div style="display:flex;justify-content:space-between;font-size:14px;padding:4px 0"><span>${p.productPriceLabel}</span><span id="sumProduct">৳${p.sellingPrice}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:14px;padding:4px 0"><span>${p.productPriceLabel}</span><span id="sumProduct">৳${initialProductPrice}</span></div>
           <div style="display:flex;justify-content:space-between;font-size:14px;padding:4px 0"><span>${p.deliveryChargeLabel}</span><span>৳${p.deliveryCharge}</span></div>
-          <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:800;border-top:1px solid #ddd;margin-top:6px;padding-top:8px"><span>${p.totalLabel}</span><span id="sumTotal">৳${(parseInt(p.sellingPrice.replace(/[^\d]/g,''))||0) + (parseInt(p.deliveryCharge)||0)}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:800;border-top:1px solid #ddd;margin-top:6px;padding-top:8px"><span>${p.totalLabel}</span><span id="sumTotal">৳${initialTotal}</span></div>
         </div>
         <button type="submit" id="submitBtn" style="width:100%;padding:16px;font-size:18px;font-weight:700;color:#fff;background:${accentColor};border:none;border-radius:12px;cursor:pointer">${p.confirmButtonText}</button>
       </div>
@@ -158,9 +215,8 @@ function checkoutPopupHtml(p: TemplateConfig, accentColor: string, bgOverlay: st
 function openCheckout(){document.getElementById('checkoutOverlay').style.display='flex';document.getElementById('checkoutOverlay').style.alignItems='flex-end';document.getElementById('checkoutOverlay').style.justifyContent='center';document.body.style.overflow='hidden'}
 function closeCheckout(){document.getElementById('checkoutOverlay').style.display='none';document.body.style.overflow='';document.getElementById('formFields').style.display='';document.getElementById('successMsg').style.display='none'}
 document.getElementById('checkoutOverlay').addEventListener('click',function(e){if(e.target===this)closeCheckout()});
-var unitPrice=${p.sellingPrice.replace(/[^\d]/g,'')||0},deliveryCharge=${p.deliveryCharge||0};
-function updateSummary(){var q=parseInt(document.getElementById('qtySelect').value)||1;document.getElementById('sumProduct').textContent='৳'+(unitPrice*q);document.getElementById('sumTotal').textContent='৳'+(unitPrice*q+deliveryCharge)}
-document.getElementById('checkoutForm').addEventListener('submit',function(e){e.preventDefault();var btn=document.getElementById('submitBtn');btn.disabled=true;btn.textContent='⏳ সাবমিট হচ্ছে...';var fd=new FormData(this);var data={customer_name:fd.get('customer_name'),customer_phone:fd.get('customer_phone'),customer_address:fd.get('customer_address'),quantity:parseInt(fd.get('quantity'))||1,product_name:this.dataset.productName,product_code:this.dataset.productCode,unit_price:parseInt(this.dataset.unitPrice)||0,delivery_charge:parseInt(this.dataset.deliveryCharge)||0};data.total_amount=(data.unit_price*data.quantity)+data.delivery_charge;fetch((window.SUPABASE_URL||'')+ '/functions/v1/submit-landing-order',{method:'POST',headers:{'Content-Type':'application/json','apikey':window.SUPABASE_ANON_KEY||''},body:JSON.stringify(data)}).then(function(){document.getElementById('formFields').style.display='none';document.getElementById('successMsg').style.display='block'}).catch(function(){document.getElementById('formFields').style.display='none';document.getElementById('successMsg').style.display='block'}).finally(function(){btn.disabled=false;btn.textContent='${p.confirmButtonText}'})});
+${summaryScript}
+document.getElementById('checkoutForm').addEventListener('submit',function(e){e.preventDefault();var btn=document.getElementById('submitBtn');btn.disabled=true;btn.textContent='⏳ সাবমিট হচ্ছে...';var fd=new FormData(this);var q=parseInt(fd.get('quantity'))||1;var data={customer_name:fd.get('customer_name'),customer_phone:fd.get('customer_phone'),customer_address:fd.get('customer_address'),quantity:q,product_name:this.dataset.productName,product_code:this.dataset.productCode,unit_price:parseInt(this.dataset.unitPrice)||0,delivery_charge:parseInt(this.dataset.deliveryCharge)||0};data.total_amount=(data.unit_price*q)+data.delivery_charge;${useTiered ? 'var tp={1:'+t1+',2:'+t2+',3:'+t3+'};data.unit_price=Math.round((tp[q]||tp[1])/q);data.total_amount=(tp[q]||tp[1])+data.delivery_charge;' : ''}fetch((window.SUPABASE_URL||'')+ '/functions/v1/submit-landing-order',{method:'POST',headers:{'Content-Type':'application/json','apikey':window.SUPABASE_ANON_KEY||''},body:JSON.stringify(data)}).then(function(){document.getElementById('formFields').style.display='none';document.getElementById('successMsg').style.display='block'}).catch(function(){document.getElementById('formFields').style.display='none';document.getElementById('successMsg').style.display='block'}).finally(function(){btn.disabled=false;btn.textContent='${p.confirmButtonText}'})});
 </script>`;
 }
 
