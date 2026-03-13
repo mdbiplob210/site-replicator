@@ -918,7 +918,7 @@ const AdminOrders = () => {
     setSelectedOrderIds(new Set());
   };
 
-  // Bulk courier assign
+  // Bulk courier assign (only assigns, doesn't submit)
   const handleBulkCourierAssign = async (courierId: string) => {
     if (selectedOrderIds.size === 0 || !courierId) return;
     let count = 0;
@@ -934,6 +934,60 @@ const AdminOrders = () => {
     toast.success(`${count}টি অর্ডারে কুরিয়ার অ্যাসাইন হয়েছে!`);
     setSelectedOrderIds(new Set());
     setBulkCourierId("");
+  };
+
+  // Bulk courier SUBMIT (assigns + changes status to in_courier + logs)
+  const [bulkCourierSubmitting, setBulkCourierSubmitting] = useState(false);
+  const [bulkCourierProgress, setBulkCourierProgress] = useState({ done: 0, total: 0 });
+  
+  const handleBulkCourierSubmit = async (courierId: string) => {
+    if (selectedOrderIds.size === 0 || !courierId) return;
+    const total = selectedOrderIds.size;
+    if (!confirm(`${total}টি অর্ডার কুরিয়ারে সাবমিট করবেন? স্ট্যাটাস "In Courier" হয়ে যাবে।`)) {
+      setBulkCourierId("");
+      return;
+    }
+    setBulkCourierSubmitting(true);
+    setBulkCourierProgress({ done: 0, total });
+    let successCount = 0;
+    let failCount = 0;
+    
+    for (const orderId of selectedOrderIds) {
+      try {
+        // Upsert courier_orders record
+        const { error: courierError } = await supabase.from("courier_orders").upsert({
+          order_id: orderId,
+          courier_provider_id: courierId,
+          courier_status: "submitted",
+        } as any, { onConflict: "order_id" });
+        if (courierError) throw courierError;
+        
+        // Update order status to in_courier
+        const { error: statusError } = await supabase.from("orders").update({ status: "in_courier" as any }).eq("id", orderId);
+        if (statusError) throw statusError;
+        
+        // Log activity
+        logActivity(orderId, "status_changed", "status", "", "In Courier", "বাল্ক কুরিয়ার সাবমিট");
+        successCount++;
+      } catch {
+        failCount++;
+      }
+      setBulkCourierProgress(prev => ({ ...prev, done: prev.done + 1 }));
+    }
+    
+    queryClient.invalidateQueries({ queryKey: ["orders"] });
+    queryClient.invalidateQueries({ queryKey: ["order-counts"] });
+    queryClient.invalidateQueries({ queryKey: ["courier-orders-filter"] });
+    
+    if (failCount > 0) {
+      toast.warning(`${successCount}টি সাবমিট হয়েছে, ${failCount}টি ব্যর্থ হয়েছে`);
+    } else {
+      toast.success(`${successCount}টি অর্ডার কুরিয়ারে সাবমিট হয়েছে!`);
+    }
+    setSelectedOrderIds(new Set());
+    setBulkCourierId("");
+    setBulkCourierSubmitting(false);
+    setBulkCourierProgress({ done: 0, total: 0 });
   };
 
   // Employee panels for bulk transfer
