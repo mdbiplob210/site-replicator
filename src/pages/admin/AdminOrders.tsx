@@ -2106,11 +2106,14 @@ const AdminOrders = () => {
                 ))}
               </SelectContent>
             </Select>
-            {/* Bulk Courier Assign */}
-            <Select value={bulkCourierId} onValueChange={(v) => { setBulkCourierId(v); handleBulkCourierAssign(v); }}>
-              <SelectTrigger className="w-[160px] h-8 rounded-xl text-xs font-semibold border-border/60">
-                <Truck className="h-3.5 w-3.5 mr-1" />
-                <SelectValue placeholder="কুরিয়ার অ্যাসাইন" />
+            {/* Bulk Courier Submit */}
+            <Select value={bulkCourierId} onValueChange={(v) => { setBulkCourierId(v); handleBulkCourierSubmit(v); }} disabled={bulkCourierSubmitting}>
+              <SelectTrigger className="w-[180px] h-8 rounded-xl text-xs font-semibold border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-700 dark:text-emerald-400">
+                {bulkCourierSubmitting ? (
+                  <><Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> সাবমিট হচ্ছে ({bulkCourierProgress.done}/{bulkCourierProgress.total})</>
+                ) : (
+                  <><Truck className="h-3.5 w-3.5 mr-1" /> <SelectValue placeholder="কুরিয়ারে সাবমিট" /></>
+                )}
               </SelectTrigger>
               <SelectContent>
                 {courierProviders.map((cp: any) => (
