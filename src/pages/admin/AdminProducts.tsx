@@ -296,7 +296,14 @@ const AdminProducts = () => {
   const openLpDialog = async (p: Product) => {
     setLpProduct(p);
     setLpTemplateId("classic-orange");
-    // Fetch existing landing pages for this product (by product_code in notes or slug)
+    setLpTieredEnabled(false);
+    setLpTieredPrice1(String(p.selling_price));
+    setLpTieredPrice2(String(Math.round(p.selling_price * 2 * 0.9)));
+    setLpTieredPrice3(String(Math.round(p.selling_price * 3 * 0.85)));
+    setLpTieredLabel1(`১ পিস - ৳${p.selling_price}`);
+    setLpTieredLabel2(`২ পিস - ৳${Math.round(p.selling_price * 2 * 0.9)}`);
+    setLpTieredLabel3(`৩ পিস - ৳${Math.round(p.selling_price * 3 * 0.85)}`);
+    // Fetch existing landing pages for this product
     const { data: existingLps } = await supabase
       .from("landing_pages" as any)
       .select("id, title, slug, is_active, created_at")
