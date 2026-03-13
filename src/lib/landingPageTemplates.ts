@@ -271,99 +271,109 @@ function updateSummary(){var q=currentQty;document.getElementById('sumProduct').
 
   return `
 <!-- Checkout Popup -->
-<div class="checkout-overlay" id="checkoutOverlay" style="display:none;position:fixed;inset:0;background:${bgOverlay};backdrop-filter:blur(4px);z-index:9999;align-items:flex-end;justify-content:center">
-  <div style="background:#fff;width:100%;max-width:500px;border-radius:24px 24px 0 0;max-height:92vh;overflow-y:auto;animation:slideUp .3s cubic-bezier(.4,0,.2,1);box-shadow:0 -10px 60px rgba(0,0,0,0.15)">
+<div class="checkout-overlay" id="checkoutOverlay" style="display:none;position:fixed;inset:0;background:${bgOverlay};backdrop-filter:blur(6px);z-index:9999;align-items:flex-end;justify-content:center">
+  <div style="background:#fff;width:100%;max-width:500px;border-radius:28px 28px 0 0;max-height:92vh;overflow-y:auto;animation:slideUp .35s cubic-bezier(.22,1,.36,1);box-shadow:0 -12px 60px rgba(0,0,0,0.2)">
     
-    <!-- Scarcity Banner -->
-    <div style="background:linear-gradient(135deg,#ef4444,#f97316);color:#fff;padding:10px 16px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:600;border-radius:24px 24px 0 0">
-      <span style="animation:pulse 2s infinite">👥</span>
-      <span>শুধুমাত্র <strong style="font-size:15px" id="scarcityNum">47</strong> জনের জন্য এই অফার!</span>
-      <span>⏰</span>
-    </div>
+    <!-- Drag Handle -->
+    <div style="display:flex;justify-content:center;padding:10px 0 0"><div style="width:40px;height:4px;border-radius:4px;background:#ddd"></div></div>
 
-    <!-- Close button -->
-    <button onclick="closeCheckout()" style="position:absolute;top:48px;right:16px;z-index:10;width:32px;height:32px;border-radius:50%;background:#f3f4f6;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:#666;transition:all .2s" onmouseover="this.style.background='#e5e7eb'" onmouseout="this.style.background='#f3f4f6'">✕</button>
-
-    <!-- Product Header -->
-    <div style="padding:16px 20px 12px;border-bottom:1px solid #f3f4f6">
+    <!-- Product Header with Gradient -->
+    <div style="position:relative;padding:16px 20px 14px;background:linear-gradient(135deg,${accentColor}08,${accentColor}03);border-bottom:1px solid #f0f0f0">
+      <button onclick="closeCheckout()" style="position:absolute;top:14px;right:16px;z-index:10;width:34px;height:34px;border-radius:50%;background:#f3f4f6;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:17px;color:#888;transition:all .2s;box-shadow:0 1px 4px rgba(0,0,0,0.06)" onmouseover="this.style.background='#e5e7eb';this.style.color='#333'" onmouseout="this.style.background='#f3f4f6';this.style.color='#888'">✕</button>
       <div style="display:flex;align-items:center;gap:14px">
-        <div style="width:56px;height:56px;border-radius:14px;overflow:hidden;background:#f5f5f0;flex-shrink:0">
+        <div style="width:64px;height:64px;border-radius:16px;overflow:hidden;background:#f5f5f0;flex-shrink:0;box-shadow:0 2px 12px rgba(0,0,0,0.08);border:2px solid #fff">
           <img src="${p.imageUrl}" alt="${p.productName}" style="width:100%;height:100%;object-fit:cover"/>
         </div>
-        <div style="flex:1;min-width:0">
-          <h3 style="font-size:14px;font-weight:700;color:#111;margin:0 0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:30px">${p.productName}</h3>
-          <div style="display:flex;align-items:baseline;gap:8px">
-            <span style="font-size:20px;font-weight:800;color:#16a34a">৳${p.sellingPrice}</span>
-            <span style="font-size:13px;text-decoration:line-through;color:#aaa">৳${p.originalPrice}</span>
+        <div style="flex:1;min-width:0;padding-right:36px">
+          <h3 style="font-size:15px;font-weight:800;color:#111;margin:0 0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.productName}</h3>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="font-size:22px;font-weight:800;color:${accentColor}">৳${p.sellingPrice}</span>
+            <span style="font-size:13px;text-decoration:line-through;color:#bbb">৳${p.originalPrice}</span>
+            <span style="background:#ff17441a;color:#ef4444;font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px">${p.discountPercent}% OFF</span>
           </div>
         </div>
       </div>
     </div>
 
+    <!-- Scarcity Banner -->
+    <div style="background:linear-gradient(135deg,#ef4444,#f97316);color:#fff;padding:10px 16px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:600">
+      <span style="animation:pulse 2s infinite">🔥</span>
+      <span>শুধুমাত্র <strong style="font-size:16px;background:rgba(255,255,255,0.2);padding:1px 8px;border-radius:6px" id="scarcityNum">47</strong> জনের জন্য এই অফার!</span>
+      <span style="animation:pulse 2s infinite">⏰</span>
+    </div>
+
     <!-- Form -->
-    <form data-checkout-form data-product-name="${p.productName}" data-product-code="${p.productCode}" data-unit-price="${useTiered ? t1 : basePrice}" data-delivery-charge="${p.deliveryCharge}" id="checkoutForm" style="padding:16px 20px 28px">
+    <form data-checkout-form data-product-name="${p.productName}" data-product-code="${p.productCode}" data-unit-price="${useTiered ? t1 : basePrice}" data-delivery-charge="${p.deliveryCharge}" id="checkoutForm" style="padding:18px 20px 28px">
       <div id="formFields">
         ${selectedTierDisplay}
 
         <!-- Name -->
         <div style="margin-bottom:14px">
-          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#666;margin-bottom:6px">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#555;margin-bottom:7px;text-transform:uppercase;letter-spacing:.3px">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${accentColor}" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             ${p.nameLabel}
           </label>
-          <input type="text" name="customer_name" placeholder="${p.namePlaceholder}" required style="width:100%;padding:14px 16px;border:2px solid #e8e8e8;border-radius:14px;font-size:15px;outline:none;transition:border-color .2s" onfocus="this.style.borderColor='${accentColor}'" onblur="this.style.borderColor='#e8e8e8'" />
+          <input type="text" name="customer_name" placeholder="${p.namePlaceholder}" required style="width:100%;padding:14px 16px;border:2px solid #e8e8e8;border-radius:14px;font-size:15px;outline:none;transition:all .25s;background:#fafafa" onfocus="this.style.borderColor='${accentColor}';this.style.background='#fff';this.style.boxShadow='0 0 0 3px ${accentColor}15'" onblur="this.style.borderColor='#e8e8e8';this.style.background='#fafafa';this.style.boxShadow='none'" />
         </div>
 
         <!-- Phone -->
         <div style="margin-bottom:14px">
-          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#666;margin-bottom:6px">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#555;margin-bottom:7px;text-transform:uppercase;letter-spacing:.3px">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${accentColor}" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
             ${p.phoneLabel}
           </label>
-          <input type="tel" name="customer_phone" placeholder="${p.phonePlaceholder}" required style="width:100%;padding:14px 16px;border:2px solid #e8e8e8;border-radius:14px;font-size:15px;outline:none;transition:border-color .2s" onfocus="this.style.borderColor='${accentColor}'" onblur="this.style.borderColor='#e8e8e8'" inputmode="tel" maxlength="11" />
+          <input type="tel" name="customer_phone" placeholder="${p.phonePlaceholder}" required style="width:100%;padding:14px 16px;border:2px solid #e8e8e8;border-radius:14px;font-size:15px;outline:none;transition:all .25s;background:#fafafa" onfocus="this.style.borderColor='${accentColor}';this.style.background='#fff';this.style.boxShadow='0 0 0 3px ${accentColor}15'" onblur="this.style.borderColor='#e8e8e8';this.style.background='#fafafa';this.style.boxShadow='none'" inputmode="tel" maxlength="11" />
         </div>
 
         <!-- Address -->
-        <div style="margin-bottom:14px">
-          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#666;margin-bottom:6px">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <div style="margin-bottom:16px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#555;margin-bottom:7px;text-transform:uppercase;letter-spacing:.3px">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${accentColor}" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
             ${p.addressLabel}
           </label>
-          <textarea name="customer_address" placeholder="${p.addressPlaceholder}" required style="width:100%;padding:14px 16px;border:2px solid #e8e8e8;border-radius:14px;font-size:15px;outline:none;resize:none;min-height:56px;transition:border-color .2s" onfocus="this.style.borderColor='${accentColor}'" onblur="this.style.borderColor='#e8e8e8'"></textarea>
+          <textarea name="customer_address" placeholder="${p.addressPlaceholder}" required style="width:100%;padding:14px 16px;border:2px solid #e8e8e8;border-radius:14px;font-size:15px;outline:none;resize:none;min-height:56px;transition:all .25s;background:#fafafa" onfocus="this.style.borderColor='${accentColor}';this.style.background='#fff';this.style.boxShadow='0 0 0 3px ${accentColor}15'" onblur="this.style.borderColor='#e8e8e8';this.style.background='#fafafa';this.style.boxShadow='none'"></textarea>
         </div>
 
         ${quantityHtml}
 
         <!-- Delivery Area -->
-        <div style="background:#f8fafc;border-radius:14px;padding:14px;margin-bottom:16px">
-          <label style="font-size:12px;font-weight:600;color:#666;margin-bottom:8px;display:block">📍 ডেলিভারি এরিয়া</label>
+        <div style="background:linear-gradient(135deg,#f8fafc,#f1f5f9);border-radius:16px;padding:14px;margin-bottom:16px;border:1px solid #e2e8f0">
+          <label style="font-size:12px;font-weight:700;color:#555;margin-bottom:10px;display:flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:.3px">📍 ডেলিভারি এরিয়া</label>
           <div style="display:flex;gap:8px">
-            <button type="button" onclick="setDeliveryArea('inside',${dc})" id="areaInside" style="flex:1;padding:10px;border-radius:10px;font-size:13px;font-weight:600;border:2px solid ${accentColor};background:${accentColor}08;color:${accentColor};cursor:pointer;transition:all .2s">ঢাকার ভিতরে (৳${dc})</button>
-            <button type="button" onclick="setDeliveryArea('outside',${Math.round(dc * 1.8)})" id="areaOutside" style="flex:1;padding:10px;border-radius:10px;font-size:13px;font-weight:600;border:2px solid #e8e8e8;background:#fff;color:#666;cursor:pointer;transition:all .2s">ঢাকার বাইরে (৳${Math.round(dc * 1.8)})</button>
+            <button type="button" onclick="setDeliveryArea('inside',${dc})" id="areaInside" style="flex:1;padding:12px;border-radius:12px;font-size:13px;font-weight:700;border:2px solid ${accentColor};background:${accentColor}0d;color:${accentColor};cursor:pointer;transition:all .25s">
+              <span style="display:block;font-size:15px;margin-bottom:2px">🏙️</span>ঢাকার ভিতরে<br/><strong>৳${dc}</strong>
+            </button>
+            <button type="button" onclick="setDeliveryArea('outside',${Math.round(dc * 1.8)})" id="areaOutside" style="flex:1;padding:12px;border-radius:12px;font-size:13px;font-weight:700;border:2px solid #e2e8f0;background:#fff;color:#666;cursor:pointer;transition:all .25s">
+              <span style="display:block;font-size:15px;margin-bottom:2px">🌍</span>ঢাকার বাইরে<br/><strong>৳${Math.round(dc * 1.8)}</strong>
+            </button>
           </div>
         </div>
 
         <!-- Summary -->
-        <div style="background:#f8fafc;border-radius:14px;padding:16px;margin-bottom:16px">
-          <div style="display:flex;justify-content:space-between;font-size:14px;padding:4px 0;color:#666"><span>${p.productPriceLabel}</span><span style="color:#111;font-weight:600" id="sumProduct">৳${initialProductPrice}</span></div>
-          <div style="display:flex;justify-content:space-between;font-size:14px;padding:4px 0;color:#666"><span>${p.deliveryChargeLabel}</span><span id="deliveryChargeAmount" data-charge="${dc}" style="color:#111;font-weight:600">৳${dc}</span></div>
-          <div style="display:flex;justify-content:space-between;font-size:17px;font-weight:800;border-top:2px solid #e8e8e8;margin-top:8px;padding-top:10px"><span>${p.totalLabel}</span><span style="color:#16a34a" id="sumTotal">৳${initialTotal}</span></div>
+        <div style="background:linear-gradient(135deg,#f8fafc,#f1f5f9);border-radius:16px;padding:16px;margin-bottom:18px;border:1px solid #e2e8f0">
+          <div style="display:flex;justify-content:space-between;font-size:14px;padding:5px 0;color:#666"><span>${p.productPriceLabel}</span><span style="color:#111;font-weight:700" id="sumProduct">৳${initialProductPrice}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:14px;padding:5px 0;color:#666"><span>${p.deliveryChargeLabel}</span><span id="deliveryChargeAmount" data-charge="${dc}" style="color:#111;font-weight:700">৳${dc}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:18px;font-weight:800;border-top:2px dashed #e2e8f0;margin-top:10px;padding-top:12px"><span>${p.totalLabel}</span><span style="color:${accentColor}" id="sumTotal">৳${initialTotal}</span></div>
         </div>
 
         <!-- Submit -->
-        <button type="submit" id="submitBtn" style="width:100%;padding:16px;font-size:17px;font-weight:700;color:#fff;background:linear-gradient(135deg,#16a34a,#22c55e);border:none;border-radius:14px;cursor:pointer;box-shadow:0 4px 14px rgba(22,163,74,0.3);transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 20px rgba(22,163,74,0.4)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 14px rgba(22,163,74,0.3)'">🛒 ${p.confirmButtonText}</button>
+        <button type="submit" id="submitBtn" style="width:100%;padding:17px;font-size:18px;font-weight:800;color:#fff;background:linear-gradient(135deg,${accentColor},${accentColor}cc);border:none;border-radius:16px;cursor:pointer;box-shadow:0 6px 20px ${accentColor}33;transition:all .25s;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:.3px" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 28px ${accentColor}44'" onmouseout="this.style.transform='';this.style.boxShadow='0 6px 20px ${accentColor}33'">🛒 ${p.confirmButtonText}</button>
 
-        <!-- Trust text -->
-        <p style="text-align:center;font-size:12px;color:#aaa;margin-top:12px;padding-bottom:4px">💳 ক্যাশ অন ডেলিভারি | 🚚 ২-৫ দিনে ডেলিভারি</p>
+        <!-- Trust icons row -->
+        <div style="display:flex;justify-content:center;gap:16px;margin-top:14px;padding-bottom:4px">
+          <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:#999"><span>💳</span> ক্যাশ অন ডেলিভারি</div>
+          <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:#999"><span>🚚</span> ২-৫ দিনে ডেলিভারি</div>
+          <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:#999"><span>🔒</span> নিরাপদ</div>
+        </div>
       </div>
 
       <!-- Success -->
-      <div id="successMsg" style="display:none;text-align:center;padding:40px 20px">
-        <div style="width:80px;height:80px;background:linear-gradient(135deg,#dcfce7,#bbf7d0);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;box-shadow:0 8px 24px rgba(22,163,74,0.15)"><span style="font-size:40px">✅</span></div>
-        <h3 style="font-size:22px;font-weight:800;color:#111;margin:0 0 8px">${p.successTitle} 🎉</h3>
-        <p style="color:#666;font-size:14px;margin:0 0 6px;line-height:1.6">${p.successMessage}</p>
-        <p style="color:#888;font-size:13px;margin:0 0 24px">আপনাকে কিছুক্ষণের মধ্যে আমাদের Customer Care থেকে কল দেওয়া হবে।</p>
-        <button onclick="closeCheckout()" style="padding:14px 36px;font-size:15px;font-weight:600;color:#fff;background:${accentColor};border:none;border-radius:12px;cursor:pointer">ঠিক আছে</button>
+      <div id="successMsg" style="display:none;text-align:center;padding:48px 20px">
+        <div style="width:88px;height:88px;background:linear-gradient(135deg,#dcfce7,#bbf7d0);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;box-shadow:0 8px 30px rgba(22,163,74,0.15);animation:popIn .5s cubic-bezier(.22,1,.36,1)"><span style="font-size:44px">✅</span></div>
+        <h3 style="font-size:24px;font-weight:800;color:#111;margin:0 0 10px">${p.successTitle} 🎉</h3>
+        <p style="color:#555;font-size:15px;margin:0 0 8px;line-height:1.7">${p.successMessage}</p>
+        <p style="color:#888;font-size:13px;margin:0 0 28px;line-height:1.5">আপনাকে কিছুক্ষণের মধ্যে আমাদের Customer Care থেকে কল দেওয়া হবে।</p>
+        <button onclick="closeCheckout()" style="padding:14px 40px;font-size:15px;font-weight:700;color:#fff;background:${accentColor};border:none;border-radius:14px;cursor:pointer;box-shadow:0 4px 14px ${accentColor}33;transition:all .2s">ঠিক আছে</button>
       </div>
     </form>
   </div>
@@ -371,6 +381,7 @@ function updateSummary(){var q=currentQty;document.getElementById('sumProduct').
 <style>
 @keyframes slideUp{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+@keyframes popIn{0%{transform:scale(0.5);opacity:0}100%{transform:scale(1);opacity:1}}
 </style>
 <script>
 var currentDeliveryCharge=${dc};
@@ -380,8 +391,8 @@ function setDeliveryArea(area,charge){
   document.getElementById('deliveryChargeAmount').dataset.charge=charge;
   document.getElementById('checkoutForm').setAttribute('data-delivery-charge',charge);
   var insBtn=document.getElementById('areaInside'),outBtn=document.getElementById('areaOutside');
-  if(area==='inside'){insBtn.style.borderColor='${accentColor}';insBtn.style.background='${accentColor}08';insBtn.style.color='${accentColor}';outBtn.style.borderColor='#e8e8e8';outBtn.style.background='#fff';outBtn.style.color='#666'}
-  else{outBtn.style.borderColor='${accentColor}';outBtn.style.background='${accentColor}08';outBtn.style.color='${accentColor}';insBtn.style.borderColor='#e8e8e8';insBtn.style.background='#fff';insBtn.style.color='#666'}
+  if(area==='inside'){insBtn.style.borderColor='${accentColor}';insBtn.style.background='${accentColor}0d';insBtn.style.color='${accentColor}';outBtn.style.borderColor='#e2e8f0';outBtn.style.background='#fff';outBtn.style.color='#666'}
+  else{outBtn.style.borderColor='${accentColor}';outBtn.style.background='${accentColor}0d';outBtn.style.color='${accentColor}';insBtn.style.borderColor='#e2e8f0';insBtn.style.background='#fff';insBtn.style.color='#666'}
   ${useTiered ? 'syncTierToCheckout()' : 'updateSummary()'}
 }
 // Scarcity countdown
@@ -391,7 +402,7 @@ function openCheckout(){document.getElementById('checkoutOverlay').style.display
 function closeCheckout(){document.getElementById('checkoutOverlay').style.display='none';document.body.style.overflow='';document.getElementById('formFields').style.display='';document.getElementById('successMsg').style.display='none'}
 document.getElementById('checkoutOverlay').addEventListener('click',function(e){if(e.target===this)closeCheckout()});
 ${summaryScript}
-document.getElementById('checkoutForm').addEventListener('submit',function(e){e.preventDefault();var btn=document.getElementById('submitBtn');btn.disabled=true;btn.innerHTML='<span style="display:inline-block;width:16px;height:16px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite;margin-right:8px"></span> সাবমিট হচ্ছে...';var fd=new FormData(this);var q=parseInt(fd.get('quantity'))||1;var dcVal=parseInt(this.dataset.deliveryCharge)||${dc};var data={customer_name:fd.get('customer_name'),customer_phone:fd.get('customer_phone'),customer_address:fd.get('customer_address'),quantity:q,product_name:this.dataset.productName,product_code:this.dataset.productCode,unit_price:parseInt(this.dataset.unitPrice)||0,delivery_charge:dcVal};data.total_amount=(data.unit_price*q)+dcVal;${useTiered ? 'var tp={1:'+t1+',2:'+t2+',3:'+t3+'};data.unit_price=Math.round((tp[q]||tp[1])/q);data.total_amount=(tp[q]||tp[1])+dcVal;' : ''}fetch((window.SUPABASE_URL||'')+ '/functions/v1/submit-landing-order',{method:'POST',headers:{'Content-Type':'application/json','apikey':window.SUPABASE_ANON_KEY||''},body:JSON.stringify(data)}).then(function(){document.getElementById('formFields').style.display='none';document.getElementById('successMsg').style.display='block'}).catch(function(){document.getElementById('formFields').style.display='none';document.getElementById('successMsg').style.display='block'}).finally(function(){btn.disabled=false;btn.innerHTML='🛒 ${p.confirmButtonText}'})});
+document.getElementById('checkoutForm').addEventListener('submit',function(e){e.preventDefault();var btn=document.getElementById('submitBtn');btn.disabled=true;btn.innerHTML='<span style="display:inline-block;width:18px;height:18px;border:2.5px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite;margin-right:8px"></span> সাবমিট হচ্ছে...';var fd=new FormData(this);var q=parseInt(fd.get('quantity'))||1;var dcVal=parseInt(this.dataset.deliveryCharge)||${dc};var data={customer_name:fd.get('customer_name'),customer_phone:fd.get('customer_phone'),customer_address:fd.get('customer_address'),quantity:q,product_name:this.dataset.productName,product_code:this.dataset.productCode,unit_price:parseInt(this.dataset.unitPrice)||0,delivery_charge:dcVal};data.total_amount=(data.unit_price*q)+dcVal;${useTiered ? 'var tp={1:'+t1+',2:'+t2+',3:'+t3+'};data.unit_price=Math.round((tp[q]||tp[1])/q);data.total_amount=(tp[q]||tp[1])+dcVal;' : ''}fetch((window.SUPABASE_URL||'')+ '/functions/v1/submit-landing-order',{method:'POST',headers:{'Content-Type':'application/json','apikey':window.SUPABASE_ANON_KEY||''},body:JSON.stringify(data)}).then(function(){document.getElementById('formFields').style.display='none';document.getElementById('successMsg').style.display='block'}).catch(function(){document.getElementById('formFields').style.display='none';document.getElementById('successMsg').style.display='block'}).finally(function(){btn.disabled=false;btn.innerHTML='🛒 ${p.confirmButtonText}'})});
 </script>
 <style>@keyframes spin{to{transform:rotate(360deg)}}</style>`;
 }
