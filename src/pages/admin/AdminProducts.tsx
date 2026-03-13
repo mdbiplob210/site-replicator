@@ -81,8 +81,15 @@ const AdminProducts = () => {
   const [lpProduct, setLpProduct] = useState<Product | null>(null);
   const [lpTemplateId, setLpTemplateId] = useState("classic-orange");
   const [lpCreating, setLpCreating] = useState(false);
-  // Existing landing pages for this product
   const [productLandingPages, setProductLandingPages] = useState<any[]>([]);
+  // Tiered pricing state
+  const [lpTieredEnabled, setLpTieredEnabled] = useState(false);
+  const [lpTieredPrice1, setLpTieredPrice1] = useState("");
+  const [lpTieredPrice2, setLpTieredPrice2] = useState("");
+  const [lpTieredPrice3, setLpTieredPrice3] = useState("");
+  const [lpTieredLabel1, setLpTieredLabel1] = useState("");
+  const [lpTieredLabel2, setLpTieredLabel2] = useState("");
+  const [lpTieredLabel3, setLpTieredLabel3] = useState("");
 
   const [form, setForm] = useState(emptyProduct);
 
