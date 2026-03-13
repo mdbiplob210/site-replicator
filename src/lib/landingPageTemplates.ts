@@ -156,8 +156,8 @@ function tieredPricingSectionHtml(p: TemplateConfig, accentColor: string, isDark
   return `
 <div id="tieredPricingSection" style="padding:0 16px;margin:20px 0">
   <style>
-    .tier-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-    @media(max-width:480px){.tier-grid{grid-template-columns:1fr;gap:10px}}
+    .tier-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    @media(max-width:480px){.tier-grid{gap:6px}.tier-card{padding:10px 6px}.tier-label{font-size:12px}.tier-price{font-size:17px}.tier-per{font-size:9px}}
     .tier-card{position:relative;border:2px solid ${borderDefault};border-radius:14px;padding:14px 10px;cursor:pointer;transition:all .3s ease;background:${bgCard};display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px}
     .tier-card:hover{border-color:${accentColor}88;transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,0.1)}
     .tier-card.selected{border-color:${accentColor};background:${bgSelected};box-shadow:0 4px 20px ${accentColor}22}
