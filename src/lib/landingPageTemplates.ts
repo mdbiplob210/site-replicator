@@ -107,6 +107,14 @@ export const defaultTemplateConfig: TemplateConfig = {
   confirmButtonText: "✅ অর্ডার কনফার্ম করুন",
   successTitle: "অর্ডার সফল হয়েছে!",
   successMessage: "আমরা শীঘ্রই আপনার সাথে যোগাযোগ করবো।",
+  // Tiered pricing defaults
+  tieredPricingEnabled: false,
+  tieredPrice1: "৬৯০",
+  tieredPrice2: "১২৮০",
+  tieredPrice3: "১৮০০",
+  tieredLabel1: "১ পিস - ৳৬৯০",
+  tieredLabel2: "২ পিস - ৳১২৮০ (সেভ ৳১০০)",
+  tieredLabel3: "৩ পিস - ৳১৮০০ (সেভ ৳২৭০)",
 };
 
 export interface TemplateInfo {
