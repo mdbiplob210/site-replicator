@@ -51,13 +51,19 @@ export const ROLE_DISPLAY_NAMES: Record<AppRole, string> = {
   ad_analytics: "Ad Analytics",
 };
 
+// Check if current route needs auth - public store pages don't
+function isPublicRoute(): boolean {
+  const path = window.location.pathname;
+  return !path.startsWith("/admin") && !path.startsWith("/login");
+}
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [userRoles, setUserRoles] = useState<AppRole[]>([]);
   const [userPermissions, setUserPermissions] = useState<PermissionKey[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => !isPublicRoute()); // Public pages don't need to wait
 
   const checkRolesAndPermissions = async (userId: string) => {
     // Fetch roles
