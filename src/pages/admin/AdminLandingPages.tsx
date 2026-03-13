@@ -731,6 +731,55 @@ export default function AdminLandingPages() {
             <TabsContent value="checkout" className="space-y-3 mt-4">
               <p className="text-xs font-semibold text-muted-foreground">🛒 চেকআউট পপআপের সব টেক্সট কাস্টমাইজ করুন</p>
               
+              {/* Tiered Pricing Toggle */}
+              <Card>
+                <CardContent className="p-4 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label className="text-sm font-semibold">💰 টায়ার্ড প্রাইসিং (কোয়ান্টিটি ভিত্তিক দাম)</Label>
+                      <p className="text-xs text-muted-foreground mt-0.5">১ পিস, ২ পিস, ৩ পিস আলাদা দামে সেট করুন</p>
+                    </div>
+                    <Switch
+                      checked={tplForm.tieredPricingEnabled ?? false}
+                      onCheckedChange={(v) => setTplForm({ ...tplForm, tieredPricingEnabled: v })}
+                    />
+                  </div>
+                  {tplForm.tieredPricingEnabled && (
+                    <div className="space-y-3 border-t pt-3">
+                      <div className="grid grid-cols-3 gap-3">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs">১ পিস মূল্য (৳)</Label>
+                          <Input value={tplForm.tieredPrice1} onChange={(e) => setTplForm({ ...tplForm, tieredPrice1: e.target.value })} placeholder="৬৯০" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs">২ পিস মূল্য (৳ মোট)</Label>
+                          <Input value={tplForm.tieredPrice2} onChange={(e) => setTplForm({ ...tplForm, tieredPrice2: e.target.value })} placeholder="১২৮০" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs">৩ পিস মূল্য (৳ মোট)</Label>
+                          <Input value={tplForm.tieredPrice3} onChange={(e) => setTplForm({ ...tplForm, tieredPrice3: e.target.value })} placeholder="১৮০০" />
+                        </div>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground">💡 ২ ও ৩ পিসের মোট দাম দিন (per piece নয়)। চেকআউটে রেডিও বাটন দেখাবে।</p>
+                      <div className="grid grid-cols-3 gap-3">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs">১ পিস লেবেল</Label>
+                          <Input value={tplForm.tieredLabel1} onChange={(e) => setTplForm({ ...tplForm, tieredLabel1: e.target.value })} placeholder="১ পিস - ৳৬৯০" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs">২ পিস লেবেল</Label>
+                          <Input value={tplForm.tieredLabel2} onChange={(e) => setTplForm({ ...tplForm, tieredLabel2: e.target.value })} placeholder="২ পিস - ৳১২৮০" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs">৩ পিস লেবেল</Label>
+                          <Input value={tplForm.tieredLabel3} onChange={(e) => setTplForm({ ...tplForm, tieredLabel3: e.target.value })} placeholder="৩ পিস - ৳১৮০০" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
               <div className="space-y-1.5">
                 <Label className="text-xs">চেকআউট শিরোনাম</Label>
                 <Input value={tplForm.checkoutTitle} onChange={(e) => setTplForm({ ...tplForm, checkoutTitle: e.target.value })} />
@@ -765,24 +814,30 @@ export default function AdminLandingPages() {
                   <Input value={tplForm.addressPlaceholder} onChange={(e) => setTplForm({ ...tplForm, addressPlaceholder: e.target.value })} />
                 </div>
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">পরিমাণ লেবেল</Label>
-                <Input value={tplForm.quantityLabel} onChange={(e) => setTplForm({ ...tplForm, quantityLabel: e.target.value })} />
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                <div className="space-y-1.5">
-                  <Label className="text-xs">১ পিস টেক্সট</Label>
-                  <Input value={tplForm.qty1Text} onChange={(e) => setTplForm({ ...tplForm, qty1Text: e.target.value })} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">২ পিস টেক্সট</Label>
-                  <Input value={tplForm.qty2Text} onChange={(e) => setTplForm({ ...tplForm, qty2Text: e.target.value })} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">৩ পিস টেক্সট</Label>
-                  <Input value={tplForm.qty3Text} onChange={(e) => setTplForm({ ...tplForm, qty3Text: e.target.value })} />
-                </div>
-              </div>
+              
+              {!tplForm.tieredPricingEnabled && (
+                <>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">পরিমাণ লেবেল</Label>
+                    <Input value={tplForm.quantityLabel} onChange={(e) => setTplForm({ ...tplForm, quantityLabel: e.target.value })} />
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">১ পিস টেক্সট</Label>
+                      <Input value={tplForm.qty1Text} onChange={(e) => setTplForm({ ...tplForm, qty1Text: e.target.value })} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">২ পিস টেক্সট</Label>
+                      <Input value={tplForm.qty2Text} onChange={(e) => setTplForm({ ...tplForm, qty2Text: e.target.value })} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">৩ পিস টেক্সট</Label>
+                      <Input value={tplForm.qty3Text} onChange={(e) => setTplForm({ ...tplForm, qty3Text: e.target.value })} />
+                    </div>
+                  </div>
+                </>
+              )}
+
               <div className="grid grid-cols-3 gap-2">
                 <div className="space-y-1.5">
                   <Label className="text-xs">প্রোডাক্ট মূল্য লেবেল</Label>
