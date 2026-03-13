@@ -332,6 +332,13 @@ const AdminProducts = () => {
         productCode: p.product_code,
         imageUrl: p.main_image_url || defaultTemplateConfig.imageUrl,
         subtitle: p.short_description || defaultTemplateConfig.subtitle,
+        tieredPricingEnabled: lpTieredEnabled,
+        tieredPrice1: lpTieredPrice1,
+        tieredPrice2: lpTieredPrice2,
+        tieredPrice3: lpTieredPrice3,
+        tieredLabel1: lpTieredLabel1,
+        tieredLabel2: lpTieredLabel2,
+        tieredLabel3: lpTieredLabel3,
       };
 
       const html = generateTemplate(lpTemplateId, tplConfig);
