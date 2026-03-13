@@ -123,6 +123,8 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
     if (!currentItem) return;
     abandonedSaved.current = true;
     try {
+      const clientIp = await getClientIp();
+      const { deviceInfo } = parseDeviceInfo();
       await supabase.from("incomplete_orders" as any).insert({
         customer_name: form.name || "Unknown",
         customer_phone: form.phone || null,
@@ -135,7 +137,8 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
         notes: form.notes || null,
         block_reason: "abandoned_form",
         landing_page_slug: "website-store",
-        device_info: /Mobi|Android/i.test(navigator.userAgent) ? "Mobile" : "Desktop",
+        client_ip: clientIp || null,
+        device_info: deviceInfo || (/Mobi|Android/i.test(navigator.userAgent) ? "Mobile" : "Desktop"),
         user_agent: navigator.userAgent.substring(0, 200),
         delivery_charge: 0,
         discount: 0,
