@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { X, ShoppingBag, User, Phone, MapPin, Minus, Plus, CheckCircle2, Loader2, Users, Clock } from "lucide-react";
 import { useTracking } from "@/hooks/useTracking";
-import { usePublicProducts } from "@/hooks/usePublicProducts";
+import { useProduct, useSuggestedProducts } from "@/hooks/usePublicProducts";
 import { OptimizedImage } from "@/components/ui/optimized-image";
 import { getDisplayImage } from "@/lib/imageUtils";
 import { getClientIp, parseDeviceInfo } from "@/lib/deviceDetect";
@@ -47,8 +47,9 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
   const initiateTracked = useRef(false);
 
   const { trackInitiateCheckout, trackAddPaymentInfo, trackPurchase, trackAddToCart, trackCustomEvent } = useTracking();
-  const { data: allProducts = [] } = usePublicProducts();
   const { data: settings } = useSiteSettings();
+  const { data: currentProduct } = useProduct(currentItem?.productId || "");
+  const { data: suggestedProductsData = [] } = useSuggestedProducts(currentItem?.categoryId, currentItem?.productId);
 
   // Scarcity counter - fake "people viewing" countdown
   const scarcityStart = Number(settings?.checkout_scarcity_count) || 47;
@@ -69,9 +70,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
   }, [open, scarcityStart]);
 
   // Same-category suggestions
-  const suggestedProducts = allProducts.filter(
-    p => p.category_id && currentItem?.categoryId && p.category_id === currentItem.categoryId && p.id !== currentItem.productId
-  ).slice(0, 4);
+  const suggestedProducts = suggestedProductsData.slice(0, 4);
 
   useEffect(() => {
     if (item && open) {
@@ -320,7 +319,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
   const freeDeliveryAbove = Number(settings?.free_delivery_above) || 0;
 
   // Determine if product has free delivery
-  const productHasFreeDelivery = currentItem ? allProducts.find(p => p.id === currentItem.productId)?.free_delivery : false;
+  const productHasFreeDelivery = Boolean(currentItem?.productId && currentProduct?.free_delivery);
 
   const subtotal = currentItem.price * qty;
   const deliveryCharge = productHasFreeDelivery ? 0 : (freeDeliveryAbove > 0 && subtotal >= freeDeliveryAbove) ? 0 : (deliveryArea === "inside" ? insideDhaka : outsideDhaka);
