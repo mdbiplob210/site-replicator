@@ -15,10 +15,9 @@ const Loader = () => (
 );
 
 const StorePage = () => {
-  const { data: settings, isLoading } = useSiteSettings();
+  const { data: settings } = useSiteSettings();
 
-  if (isLoading) return <Loader />;
-
+  // Don't block rendering - use default template while settings load
   const template = settings?.active_template || "1";
 
   const TemplateComponent = (() => {
