@@ -848,6 +848,48 @@ const AdminProducts = () => {
                 </div>
               </div>
 
+              {/* Tiered Pricing Toggle */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-semibold">টায়ার্ড প্রাইসিং</Label>
+                  <Switch checked={lpTieredEnabled} onCheckedChange={setLpTieredEnabled} />
+                </div>
+                {lpTieredEnabled && (
+                  <div className="space-y-2 p-3 rounded-xl bg-secondary/30 border border-border/40">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label className="text-[10px] text-muted-foreground">১ পিস দাম</Label>
+                        <Input value={lpTieredPrice1} onChange={e => setLpTieredPrice1(e.target.value)} placeholder="৬৯০" className="h-8 text-xs" />
+                      </div>
+                      <div>
+                        <Label className="text-[10px] text-muted-foreground">১ পিস লেবেল</Label>
+                        <Input value={lpTieredLabel1} onChange={e => setLpTieredLabel1(e.target.value)} placeholder="১ পিস - ৳৬৯০" className="h-8 text-xs" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label className="text-[10px] text-muted-foreground">২ পিস দাম</Label>
+                        <Input value={lpTieredPrice2} onChange={e => setLpTieredPrice2(e.target.value)} placeholder="১২৮০" className="h-8 text-xs" />
+                      </div>
+                      <div>
+                        <Label className="text-[10px] text-muted-foreground">২ পিস লেবেল</Label>
+                        <Input value={lpTieredLabel2} onChange={e => setLpTieredLabel2(e.target.value)} placeholder="২ পিস - ৳১২৮০" className="h-8 text-xs" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label className="text-[10px] text-muted-foreground">৩ পিস দাম</Label>
+                        <Input value={lpTieredPrice3} onChange={e => setLpTieredPrice3(e.target.value)} placeholder="১৮০০" className="h-8 text-xs" />
+                      </div>
+                      <div>
+                        <Label className="text-[10px] text-muted-foreground">৩ পিস লেবেল</Label>
+                        <Input value={lpTieredLabel3} onChange={e => setLpTieredLabel3(e.target.value)} placeholder="৩ পিস - ৳১৮০০" className="h-8 text-xs" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Info */}
               <div className="p-3 rounded-xl bg-primary/5 border border-primary/20 text-xs text-muted-foreground space-y-1">
                 <p>✅ প্রোডাক্টের নাম, দাম, ছবি, কোড অটো-ফিল হবে</p>
