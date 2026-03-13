@@ -156,48 +156,45 @@ function tieredPricingSectionHtml(p: TemplateConfig, accentColor: string, isDark
   return `
 <div id="tieredPricingSection" style="padding:0 16px;margin:20px 0">
   <style>
-    .tier-card{position:relative;border:2px solid ${borderDefault};border-radius:16px;padding:18px 16px;cursor:pointer;transition:all .3s ease;background:${bgCard};margin-bottom:12px;display:flex;align-items:center;gap:14px}
-    .tier-card:hover{border-color:${accentColor}88;transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,0.08)}
+    .tier-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    @media(max-width:480px){.tier-grid{grid-template-columns:1fr;gap:10px}}
+    .tier-card{position:relative;border:2px solid ${borderDefault};border-radius:14px;padding:14px 10px;cursor:pointer;transition:all .3s ease;background:${bgCard};display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px}
+    .tier-card:hover{border-color:${accentColor}88;transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,0.1)}
     .tier-card.selected{border-color:${accentColor};background:${bgSelected};box-shadow:0 4px 20px ${accentColor}22}
-    .tier-radio{width:24px;height:24px;border-radius:50%;border:2px solid ${borderDefault};display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+    .tier-radio{width:22px;height:22px;border-radius:50%;border:2px solid ${borderDefault};display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
     .tier-card.selected .tier-radio{border-color:${checkBg};background:${checkBg}}
-    .tier-radio-dot{width:10px;height:10px;border-radius:50%;background:#fff;display:none}
+    .tier-radio-dot{width:9px;height:9px;border-radius:50%;background:#fff;display:none}
     .tier-card.selected .tier-radio-dot{display:block}
-    .tier-info{flex:1}
-    .tier-label{font-size:16px;font-weight:700;color:${textPrimary};margin-bottom:2px}
-    .tier-price{font-size:22px;font-weight:800;color:${accentColor}}
-    .tier-per-piece{font-size:12px;color:${textSecondary};margin-top:2px}
-    .tier-save{display:inline-block;background:${saveBg};color:${saveColor};font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;margin-top:4px}
-    .tier-popular{position:absolute;top:-11px;right:14px;background:${popularBg.replace('linear-gradient', 'linear-gradient')};color:#fff;font-size:10px;font-weight:700;padding:3px 12px;border-radius:20px;letter-spacing:.5px}
+    .tier-label{font-size:14px;font-weight:700;color:${textPrimary}}
+    .tier-price{font-size:22px;font-weight:800;color:${accentColor};line-height:1.1}
+    .tier-per-piece{font-size:11px;color:${textSecondary}}
+    .tier-save{display:inline-block;background:${saveBg};color:${saveColor};font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-top:2px}
+    .tier-popular{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:${popularBg};color:#fff;font-size:9px;font-weight:700;padding:2px 10px;border-radius:20px;white-space:nowrap;letter-spacing:.3px}
   </style>
 
-  <div class="tier-card selected" onclick="selectTier(1)" id="tierCard1">
-    <div class="tier-radio"><div class="tier-radio-dot"></div></div>
-    <div class="tier-info">
+  <div class="tier-grid">
+    <div class="tier-card selected" onclick="selectTier(1)" id="tierCard1">
+      <div class="tier-radio"><div class="tier-radio-dot"></div></div>
       <div class="tier-label">${p.tieredLabel1 || '১ পিস'}</div>
       <div class="tier-price">৳${t1}</div>
       <div class="tier-per-piece">প্রতি পিস ৳${t1}</div>
     </div>
-  </div>
 
-  <div class="tier-card" onclick="selectTier(2)" id="tierCard2" style="position:relative">
-    <div style="position:absolute;top:-11px;right:14px;background:${popularBg};color:#fff;font-size:10px;font-weight:700;padding:3px 12px;border-radius:20px;letter-spacing:.5px">🔥 জনপ্রিয়</div>
-    <div class="tier-radio"><div class="tier-radio-dot"></div></div>
-    <div class="tier-info">
+    <div class="tier-card" onclick="selectTier(2)" id="tierCard2">
+      <div class="tier-popular">🔥 জনপ্রিয়</div>
+      <div class="tier-radio"><div class="tier-radio-dot"></div></div>
       <div class="tier-label">${p.tieredLabel2 || '২ পিস'}</div>
       <div class="tier-price">৳${t2}</div>
       <div class="tier-per-piece">প্রতি পিস ৳${Math.round(t2/2)}</div>
-      ${t2 < t1*2 ? `<div class="tier-save">🎁 সেভ করুন ৳${t1*2-t2}</div>` : ''}
+      ${t2 < t1*2 ? `<div class="tier-save">সেভ ৳${t1*2-t2}</div>` : ''}
     </div>
-  </div>
 
-  <div class="tier-card" onclick="selectTier(3)" id="tierCard3">
-    <div class="tier-radio"><div class="tier-radio-dot"></div></div>
-    <div class="tier-info">
+    <div class="tier-card" onclick="selectTier(3)" id="tierCard3">
+      <div class="tier-radio"><div class="tier-radio-dot"></div></div>
       <div class="tier-label">${p.tieredLabel3 || '৩ পিস'}</div>
       <div class="tier-price">৳${t3}</div>
       <div class="tier-per-piece">প্রতি পিস ৳${Math.round(t3/3)}</div>
-      ${t3 < t1*3 ? `<div class="tier-save">🎁 সেভ করুন ৳${t1*3-t3}</div>` : ''}
+      ${t3 < t1*3 ? `<div class="tier-save">সেভ ৳${t1*3-t3}</div>` : ''}
     </div>
   </div>
 </div>
