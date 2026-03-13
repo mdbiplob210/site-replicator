@@ -1888,7 +1888,7 @@ const AdminOrders = () => {
             {statusTabs.map((tab) => (
               <button
                 key={tab.label}
-                onClick={() => { setActiveTab(tab.label); setCancelReasonFilter("all"); }}
+                onClick={() => { setActiveTab(tab.label); setCancelReasonFilter("all"); queryClient.invalidateQueries({ queryKey: ["orders"] }); queryClient.invalidateQueries({ queryKey: ["order-counts"] }); }}
                 className={`flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-2 rounded-xl text-[11px] sm:text-xs font-medium whitespace-nowrap transition-all duration-200 ${
                   activeTab === tab.label
                     ? `${tab.color} text-white shadow-lg`
