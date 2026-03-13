@@ -70,9 +70,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
   }, [open, scarcityStart]);
 
   // Same-category suggestions
-  const suggestedProducts = allProducts.filter(
-    p => p.category_id && currentItem?.categoryId && p.category_id === currentItem.categoryId && p.id !== currentItem.productId
-  ).slice(0, 4);
+  const suggestedProducts = suggestedProductsData.slice(0, 4);
 
   useEffect(() => {
     if (item && open) {
