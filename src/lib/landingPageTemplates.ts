@@ -51,6 +51,14 @@ export interface TemplateConfig {
   confirmButtonText: string;
   successTitle: string;
   successMessage: string;
+  // Tiered pricing
+  tieredPricingEnabled: boolean;
+  tieredPrice1: string; // price for 1 piece
+  tieredPrice2: string; // price for 2 pieces (total)
+  tieredPrice3: string; // price for 3 pieces (total)
+  tieredLabel1: string;
+  tieredLabel2: string;
+  tieredLabel3: string;
 }
 
 export const defaultTemplateConfig: TemplateConfig = {
