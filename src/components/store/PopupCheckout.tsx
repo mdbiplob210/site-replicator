@@ -47,8 +47,9 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
   const initiateTracked = useRef(false);
 
   const { trackInitiateCheckout, trackAddPaymentInfo, trackPurchase, trackAddToCart, trackCustomEvent } = useTracking();
-  const { data: allProducts = [] } = usePublicProducts();
   const { data: settings } = useSiteSettings();
+  const { data: currentProduct } = useProduct(currentItem?.productId || "");
+  const { data: suggestedProductsData = [] } = useSuggestedProducts(currentItem?.categoryId, currentItem?.productId);
 
   // Scarcity counter - fake "people viewing" countdown
   const scarcityStart = Number(settings?.checkout_scarcity_count) || 47;
