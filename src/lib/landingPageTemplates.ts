@@ -217,7 +217,7 @@ function tieredPricingStyles() {
   return '';
 }
 
-// Shared checkout popup HTML
+// Shared checkout popup HTML — styled like main website PopupCheckout
 function checkoutPopupHtml(p: TemplateConfig, accentColor: string, bgOverlay: string = "rgba(0,0,0,0.6)") {
   const basePrice = parseInt(p.sellingPrice.replace(/[^\d]/g,'')) || 0;
   const dc = parseInt(p.deliveryCharge) || 0;
@@ -226,11 +226,20 @@ function checkoutPopupHtml(p: TemplateConfig, accentColor: string, bgOverlay: st
   const t2 = parseInt(p.tieredPrice2?.replace(/[^\d]/g,'') || '') || (basePrice * 2);
   const t3 = parseInt(p.tieredPrice3?.replace(/[^\d]/g,'') || '') || (basePrice * 3);
 
-  // When tiered is enabled, NO quantity selector in checkout - it's on the landing page
-  // When tiered is disabled, show normal dropdown
   const quantityHtml = useTiered ? `
         <input type="hidden" name="quantity" id="checkoutQtyHidden" value="1"/>` : `
-        <div style="margin-bottom:14px"><label style="display:block;font-size:13px;font-weight:600;color:#555;margin-bottom:5px">${p.quantityLabel}</label><select name="quantity" id="qtySelect" onchange="updateSummary()" style="width:100%;padding:13px 14px;border:2px solid #e0e0e0;border-radius:10px;font-size:15px;outline:none"><option value="1">${p.qty1Text}</option><option value="2">${p.qty2Text}</option><option value="3">${p.qty3Text}</option></select></div>`;
+        <div style="margin-bottom:16px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#666;margin-bottom:6px">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+            ${p.quantityLabel}
+          </label>
+          <div style="display:flex;align-items:center;border:2px solid #e8e8e8;border-radius:12px;overflow:hidden;width:fit-content">
+            <button type="button" onclick="changeQty(-1)" style="padding:10px 16px;background:none;border:none;cursor:pointer;font-size:18px;color:#555">−</button>
+            <span id="qtyDisplay" style="padding:8px 16px;font-weight:700;font-size:15px;min-width:40px;text-align:center">1</span>
+            <button type="button" onclick="changeQty(1)" style="padding:10px 16px;background:none;border:none;cursor:pointer;font-size:18px;color:#555">+</button>
+          </div>
+          <input type="hidden" name="quantity" id="qtyHidden" value="1"/>
+        </div>`;
 
   const summaryScript = useTiered ? `
 var tieredPrices={1:${t1},2:${t2},3:${t3}},deliveryCharge=${dc};
@@ -239,69 +248,155 @@ function syncTierToCheckout(){
   document.getElementById('checkoutQtyHidden').value=q;
   var productPrice=tieredPrices[q]||tieredPrices[1];
   document.getElementById('sumProduct').textContent='৳'+productPrice;
-  document.getElementById('sumTotal').textContent='৳'+(productPrice+deliveryCharge);
+  var dcArea=document.getElementById('deliveryChargeAmount');
+  var dcVal=dcArea?parseInt(dcArea.dataset.charge)||deliveryCharge:deliveryCharge;
+  document.getElementById('sumTotal').textContent='৳'+(productPrice+dcVal);
   document.getElementById('checkoutForm').setAttribute('data-unit-price', String(Math.round(productPrice/q)));
 }
 ` : `
-var unitPrice=${basePrice},deliveryCharge=${dc};
-function updateSummary(){var q=parseInt(document.getElementById('qtySelect').value)||1;document.getElementById('sumProduct').textContent='৳'+(unitPrice*q);document.getElementById('sumTotal').textContent='৳'+(unitPrice*q+deliveryCharge)}
+var unitPrice=${basePrice},deliveryCharge=${dc},currentQty=1;
+function changeQty(d){currentQty=Math.max(1,Math.min(10,currentQty+d));document.getElementById('qtyDisplay').textContent=currentQty;document.getElementById('qtyHidden').value=currentQty;updateSummary()}
+function updateSummary(){var q=currentQty;document.getElementById('sumProduct').textContent='৳'+(unitPrice*q);var dcArea=document.getElementById('deliveryChargeAmount');var dcVal=dcArea?parseInt(dcArea.dataset.charge)||deliveryCharge:deliveryCharge;document.getElementById('sumTotal').textContent='৳'+(unitPrice*q+dcVal)}
 `;
 
   const initialProductPrice = useTiered ? t1 : basePrice;
   const initialTotal = initialProductPrice + dc;
 
-  // For tiered: show selected tier info in checkout summary area
   const selectedTierDisplay = useTiered ? `
-        <div id="selectedTierInfo" style="background:${accentColor}0a;border:1px solid ${accentColor}33;border-radius:10px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px">
-          <span style="font-size:20px">📦</span>
-          <div>
-            <div style="font-size:14px;font-weight:700;color:#111" id="tierInfoLabel">১ পিস</div>
-            <div style="font-size:13px;color:${accentColor};font-weight:600" id="tierInfoPrice">৳${t1}</div>
+        <div id="selectedTierInfo" style="background:linear-gradient(135deg,${accentColor}08,${accentColor}04);border:2px solid ${accentColor}33;border-radius:14px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px">
+          <div style="width:40px;height:40px;background:${accentColor}15;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><span style="font-size:20px">📦</span></div>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:700;color:#111" id="tierInfoLabel">${p.tieredLabel1 || '১ পিস'}</div>
+            <div style="font-size:15px;color:${accentColor};font-weight:800" id="tierInfoPrice">৳${t1}</div>
           </div>
+          <div style="font-size:11px;color:#888;text-align:right">পেজ থেকে<br/>সিলেক্টেড</div>
         </div>` : '';
 
   return `
 <!-- Checkout Popup -->
-<div class="checkout-overlay" id="checkoutOverlay" style="display:none;position:fixed;inset:0;background:${bgOverlay};z-index:9999;align-items:flex-end;justify-content:center">
-  <div style="background:#fff;width:100%;max-width:500px;border-radius:20px 20px 0 0;padding:24px 20px 32px;max-height:90vh;overflow-y:auto;animation:slideUp .3s ease">
-    <div style="position:relative;margin-bottom:8px">
-      <button onclick="closeCheckout()" style="position:absolute;top:0;right:0;font-size:24px;background:none;border:none;cursor:pointer;color:#999">✕</button>
-      <h2 style="font-size:20px;font-weight:800;color:#111;text-align:center;margin:0 0 4px">${p.checkoutTitle}</h2>
-      <p style="text-align:center;color:#888;font-size:13px;margin:0 0 20px">${p.productName}</p>
+<div class="checkout-overlay" id="checkoutOverlay" style="display:none;position:fixed;inset:0;background:${bgOverlay};backdrop-filter:blur(4px);z-index:9999;align-items:flex-end;justify-content:center">
+  <div style="background:#fff;width:100%;max-width:500px;border-radius:24px 24px 0 0;max-height:92vh;overflow-y:auto;animation:slideUp .3s cubic-bezier(.4,0,.2,1);box-shadow:0 -10px 60px rgba(0,0,0,0.15)">
+    
+    <!-- Scarcity Banner -->
+    <div style="background:linear-gradient(135deg,#ef4444,#f97316);color:#fff;padding:10px 16px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:600;border-radius:24px 24px 0 0">
+      <span style="animation:pulse 2s infinite">👥</span>
+      <span>শুধুমাত্র <strong style="font-size:15px" id="scarcityNum">47</strong> জনের জন্য এই অফার!</span>
+      <span>⏰</span>
     </div>
-    <form data-checkout-form data-product-name="${p.productName}" data-product-code="${p.productCode}" data-unit-price="${useTiered ? t1 : basePrice}" data-delivery-charge="${p.deliveryCharge}" id="checkoutForm">
+
+    <!-- Close button -->
+    <button onclick="closeCheckout()" style="position:absolute;top:48px;right:16px;z-index:10;width:32px;height:32px;border-radius:50%;background:#f3f4f6;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:#666;transition:all .2s" onmouseover="this.style.background='#e5e7eb'" onmouseout="this.style.background='#f3f4f6'">✕</button>
+
+    <!-- Product Header -->
+    <div style="padding:16px 20px 12px;border-bottom:1px solid #f3f4f6">
+      <div style="display:flex;align-items:center;gap:14px">
+        <div style="width:56px;height:56px;border-radius:14px;overflow:hidden;background:#f5f5f0;flex-shrink:0">
+          <img src="${p.imageUrl}" alt="${p.productName}" style="width:100%;height:100%;object-fit:cover"/>
+        </div>
+        <div style="flex:1;min-width:0">
+          <h3 style="font-size:14px;font-weight:700;color:#111;margin:0 0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:30px">${p.productName}</h3>
+          <div style="display:flex;align-items:baseline;gap:8px">
+            <span style="font-size:20px;font-weight:800;color:#16a34a">৳${p.sellingPrice}</span>
+            <span style="font-size:13px;text-decoration:line-through;color:#aaa">৳${p.originalPrice}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <form data-checkout-form data-product-name="${p.productName}" data-product-code="${p.productCode}" data-unit-price="${useTiered ? t1 : basePrice}" data-delivery-charge="${p.deliveryCharge}" id="checkoutForm" style="padding:16px 20px 28px">
       <div id="formFields">
         ${selectedTierDisplay}
-        <div style="margin-bottom:14px"><label style="display:block;font-size:13px;font-weight:600;color:#555;margin-bottom:5px">${p.nameLabel}</label><input type="text" name="customer_name" placeholder="${p.namePlaceholder}" required style="width:100%;padding:13px 14px;border:2px solid #e0e0e0;border-radius:10px;font-size:15px;outline:none" onfocus="this.style.borderColor='${accentColor}'" onblur="this.style.borderColor='#e0e0e0'" /></div>
-        <div style="margin-bottom:14px"><label style="display:block;font-size:13px;font-weight:600;color:#555;margin-bottom:5px">${p.phoneLabel}</label><input type="tel" name="customer_phone" placeholder="${p.phonePlaceholder}" required style="width:100%;padding:13px 14px;border:2px solid #e0e0e0;border-radius:10px;font-size:15px;outline:none" onfocus="this.style.borderColor='${accentColor}'" onblur="this.style.borderColor='#e0e0e0'" /></div>
-        <div style="margin-bottom:14px"><label style="display:block;font-size:13px;font-weight:600;color:#555;margin-bottom:5px">${p.addressLabel}</label><textarea name="customer_address" placeholder="${p.addressPlaceholder}" required style="width:100%;padding:13px 14px;border:2px solid #e0e0e0;border-radius:10px;font-size:15px;outline:none;resize:vertical;min-height:60px" onfocus="this.style.borderColor='${accentColor}'" onblur="this.style.borderColor='#e0e0e0'"></textarea></div>
-        ${quantityHtml}
-        <div style="background:#f5f5f0;border-radius:12px;padding:14px;margin:16px 0">
-          <div style="display:flex;justify-content:space-between;font-size:14px;padding:4px 0"><span>${p.productPriceLabel}</span><span id="sumProduct">৳${initialProductPrice}</span></div>
-          <div style="display:flex;justify-content:space-between;font-size:14px;padding:4px 0"><span>${p.deliveryChargeLabel}</span><span>৳${p.deliveryCharge}</span></div>
-          <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:800;border-top:1px solid #ddd;margin-top:6px;padding-top:8px"><span>${p.totalLabel}</span><span id="sumTotal">৳${initialTotal}</span></div>
+
+        <!-- Name -->
+        <div style="margin-bottom:14px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#666;margin-bottom:6px">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            ${p.nameLabel}
+          </label>
+          <input type="text" name="customer_name" placeholder="${p.namePlaceholder}" required style="width:100%;padding:14px 16px;border:2px solid #e8e8e8;border-radius:14px;font-size:15px;outline:none;transition:border-color .2s" onfocus="this.style.borderColor='${accentColor}'" onblur="this.style.borderColor='#e8e8e8'" />
         </div>
-        <button type="submit" id="submitBtn" style="width:100%;padding:16px;font-size:18px;font-weight:700;color:#fff;background:${accentColor};border:none;border-radius:12px;cursor:pointer">${p.confirmButtonText}</button>
+
+        <!-- Phone -->
+        <div style="margin-bottom:14px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#666;margin-bottom:6px">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            ${p.phoneLabel}
+          </label>
+          <input type="tel" name="customer_phone" placeholder="${p.phonePlaceholder}" required style="width:100%;padding:14px 16px;border:2px solid #e8e8e8;border-radius:14px;font-size:15px;outline:none;transition:border-color .2s" onfocus="this.style.borderColor='${accentColor}'" onblur="this.style.borderColor='#e8e8e8'" inputmode="tel" maxlength="11" />
+        </div>
+
+        <!-- Address -->
+        <div style="margin-bottom:14px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#666;margin-bottom:6px">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            ${p.addressLabel}
+          </label>
+          <textarea name="customer_address" placeholder="${p.addressPlaceholder}" required style="width:100%;padding:14px 16px;border:2px solid #e8e8e8;border-radius:14px;font-size:15px;outline:none;resize:none;min-height:56px;transition:border-color .2s" onfocus="this.style.borderColor='${accentColor}'" onblur="this.style.borderColor='#e8e8e8'"></textarea>
+        </div>
+
+        ${quantityHtml}
+
+        <!-- Delivery Area -->
+        <div style="background:#f8fafc;border-radius:14px;padding:14px;margin-bottom:16px">
+          <label style="font-size:12px;font-weight:600;color:#666;margin-bottom:8px;display:block">📍 ডেলিভারি এরিয়া</label>
+          <div style="display:flex;gap:8px">
+            <button type="button" onclick="setDeliveryArea('inside',${dc})" id="areaInside" style="flex:1;padding:10px;border-radius:10px;font-size:13px;font-weight:600;border:2px solid ${accentColor};background:${accentColor}08;color:${accentColor};cursor:pointer;transition:all .2s">ঢাকার ভিতরে (৳${dc})</button>
+            <button type="button" onclick="setDeliveryArea('outside',${Math.round(dc * 1.8)})" id="areaOutside" style="flex:1;padding:10px;border-radius:10px;font-size:13px;font-weight:600;border:2px solid #e8e8e8;background:#fff;color:#666;cursor:pointer;transition:all .2s">ঢাকার বাইরে (৳${Math.round(dc * 1.8)})</button>
+          </div>
+        </div>
+
+        <!-- Summary -->
+        <div style="background:#f8fafc;border-radius:14px;padding:16px;margin-bottom:16px">
+          <div style="display:flex;justify-content:space-between;font-size:14px;padding:4px 0;color:#666"><span>${p.productPriceLabel}</span><span style="color:#111;font-weight:600" id="sumProduct">৳${initialProductPrice}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:14px;padding:4px 0;color:#666"><span>${p.deliveryChargeLabel}</span><span id="deliveryChargeAmount" data-charge="${dc}" style="color:#111;font-weight:600">৳${dc}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:17px;font-weight:800;border-top:2px solid #e8e8e8;margin-top:8px;padding-top:10px"><span>${p.totalLabel}</span><span style="color:#16a34a" id="sumTotal">৳${initialTotal}</span></div>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" id="submitBtn" style="width:100%;padding:16px;font-size:17px;font-weight:700;color:#fff;background:linear-gradient(135deg,#16a34a,#22c55e);border:none;border-radius:14px;cursor:pointer;box-shadow:0 4px 14px rgba(22,163,74,0.3);transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 20px rgba(22,163,74,0.4)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 14px rgba(22,163,74,0.3)'">🛒 ${p.confirmButtonText}</button>
+
+        <!-- Trust text -->
+        <p style="text-align:center;font-size:12px;color:#aaa;margin-top:12px;padding-bottom:4px">💳 ক্যাশ অন ডেলিভারি | 🚚 ২-৫ দিনে ডেলিভারি</p>
       </div>
+
+      <!-- Success -->
       <div id="successMsg" style="display:none;text-align:center;padding:40px 20px">
-        <div style="font-size:80px;margin-bottom:16px">🎉</div>
-        <div style="width:80px;height:80px;background:#e8f5e9;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px"><span style="font-size:40px;color:#4caf50">✅</span></div>
-        <h3 style="font-size:24px;font-weight:800;color:#111;margin:0 0 10px">${p.successTitle}</h3>
-        <p style="color:#666;font-size:15px;margin:0 0 8px;line-height:1.6">${p.successMessage}</p>
+        <div style="width:80px;height:80px;background:linear-gradient(135deg,#dcfce7,#bbf7d0);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;box-shadow:0 8px 24px rgba(22,163,74,0.15)"><span style="font-size:40px">✅</span></div>
+        <h3 style="font-size:22px;font-weight:800;color:#111;margin:0 0 8px">${p.successTitle} 🎉</h3>
+        <p style="color:#666;font-size:14px;margin:0 0 6px;line-height:1.6">${p.successMessage}</p>
         <p style="color:#888;font-size:13px;margin:0 0 24px">আপনাকে কিছুক্ষণের মধ্যে আমাদের Customer Care থেকে কল দেওয়া হবে।</p>
-        <button onclick="closeCheckout()" style="padding:12px 32px;font-size:15px;font-weight:600;color:#fff;background:${accentColor};border:none;border-radius:10px;cursor:pointer">ঠিক আছে</button>
+        <button onclick="closeCheckout()" style="padding:14px 36px;font-size:15px;font-weight:600;color:#fff;background:${accentColor};border:none;border-radius:12px;cursor:pointer">ঠিক আছে</button>
       </div>
     </form>
   </div>
 </div>
-<style>@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}</style>
+<style>
+@keyframes slideUp{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+</style>
 <script>
+var currentDeliveryCharge=${dc};
+function setDeliveryArea(area,charge){
+  currentDeliveryCharge=charge;
+  document.getElementById('deliveryChargeAmount').textContent='৳'+charge;
+  document.getElementById('deliveryChargeAmount').dataset.charge=charge;
+  document.getElementById('checkoutForm').setAttribute('data-delivery-charge',charge);
+  var insBtn=document.getElementById('areaInside'),outBtn=document.getElementById('areaOutside');
+  if(area==='inside'){insBtn.style.borderColor='${accentColor}';insBtn.style.background='${accentColor}08';insBtn.style.color='${accentColor}';outBtn.style.borderColor='#e8e8e8';outBtn.style.background='#fff';outBtn.style.color='#666'}
+  else{outBtn.style.borderColor='${accentColor}';outBtn.style.background='${accentColor}08';outBtn.style.color='${accentColor}';insBtn.style.borderColor='#e8e8e8';insBtn.style.background='#fff';insBtn.style.color='#666'}
+  ${useTiered ? 'syncTierToCheckout()' : 'updateSummary()'}
+}
+// Scarcity countdown
+var scCount=47;setInterval(function(){scCount=scCount<=3?47:scCount-1;var el=document.getElementById('scarcityNum');if(el)el.textContent=scCount},5000);
+
 function openCheckout(){document.getElementById('checkoutOverlay').style.display='flex';document.getElementById('checkoutOverlay').style.alignItems='flex-end';document.getElementById('checkoutOverlay').style.justifyContent='center';document.body.style.overflow='hidden';${useTiered ? 'syncTierToCheckout();var labels=["","'+p.tieredLabel1.replace(/'/g,"\\'")+'","'+p.tieredLabel2.replace(/'/g,"\\'")+'","'+p.tieredLabel3.replace(/'/g,"\\'")+'"];if(document.getElementById("tierInfoLabel"))document.getElementById("tierInfoLabel").textContent=labels[selectedTier]||labels[1];if(document.getElementById("tierInfoPrice"))document.getElementById("tierInfoPrice").textContent="৳"+tieredPrices[selectedTier];' : ''}}
 function closeCheckout(){document.getElementById('checkoutOverlay').style.display='none';document.body.style.overflow='';document.getElementById('formFields').style.display='';document.getElementById('successMsg').style.display='none'}
 document.getElementById('checkoutOverlay').addEventListener('click',function(e){if(e.target===this)closeCheckout()});
 ${summaryScript}
-document.getElementById('checkoutForm').addEventListener('submit',function(e){e.preventDefault();var btn=document.getElementById('submitBtn');btn.disabled=true;btn.textContent='⏳ সাবমিট হচ্ছে...';var fd=new FormData(this);var q=parseInt(fd.get('quantity'))||1;var data={customer_name:fd.get('customer_name'),customer_phone:fd.get('customer_phone'),customer_address:fd.get('customer_address'),quantity:q,product_name:this.dataset.productName,product_code:this.dataset.productCode,unit_price:parseInt(this.dataset.unitPrice)||0,delivery_charge:parseInt(this.dataset.deliveryCharge)||0};data.total_amount=(data.unit_price*q)+data.delivery_charge;${useTiered ? 'var tp={1:'+t1+',2:'+t2+',3:'+t3+'};data.unit_price=Math.round((tp[q]||tp[1])/q);data.total_amount=(tp[q]||tp[1])+data.delivery_charge;' : ''}fetch((window.SUPABASE_URL||'')+ '/functions/v1/submit-landing-order',{method:'POST',headers:{'Content-Type':'application/json','apikey':window.SUPABASE_ANON_KEY||''},body:JSON.stringify(data)}).then(function(){document.getElementById('formFields').style.display='none';document.getElementById('successMsg').style.display='block'}).catch(function(){document.getElementById('formFields').style.display='none';document.getElementById('successMsg').style.display='block'}).finally(function(){btn.disabled=false;btn.textContent='${p.confirmButtonText}'})});
-</script>`;
+document.getElementById('checkoutForm').addEventListener('submit',function(e){e.preventDefault();var btn=document.getElementById('submitBtn');btn.disabled=true;btn.innerHTML='<span style="display:inline-block;width:16px;height:16px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite;margin-right:8px"></span> সাবমিট হচ্ছে...';var fd=new FormData(this);var q=parseInt(fd.get('quantity'))||1;var dcVal=parseInt(this.dataset.deliveryCharge)||${dc};var data={customer_name:fd.get('customer_name'),customer_phone:fd.get('customer_phone'),customer_address:fd.get('customer_address'),quantity:q,product_name:this.dataset.productName,product_code:this.dataset.productCode,unit_price:parseInt(this.dataset.unitPrice)||0,delivery_charge:dcVal};data.total_amount=(data.unit_price*q)+dcVal;${useTiered ? 'var tp={1:'+t1+',2:'+t2+',3:'+t3+'};data.unit_price=Math.round((tp[q]||tp[1])/q);data.total_amount=(tp[q]||tp[1])+dcVal;' : ''}fetch((window.SUPABASE_URL||'')+ '/functions/v1/submit-landing-order',{method:'POST',headers:{'Content-Type':'application/json','apikey':window.SUPABASE_ANON_KEY||''},body:JSON.stringify(data)}).then(function(){document.getElementById('formFields').style.display='none';document.getElementById('successMsg').style.display='block'}).catch(function(){document.getElementById('formFields').style.display='none';document.getElementById('successMsg').style.display='block'}).finally(function(){btn.disabled=false;btn.innerHTML='🛒 ${p.confirmButtonText}'})});
+</script>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>`;
 }
 
 // Countdown script
