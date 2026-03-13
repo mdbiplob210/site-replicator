@@ -134,6 +134,89 @@ export const templateList: TemplateInfo[] = [
   { id: "minimal-white", name: "মিনিমাল হোয়াইট", description: "ক্লিন সাদা ব্যাকগ্রাউন্ড, সিম্পল ডিজাইন", preview: "⚪", color: "#333" },
 ];
 
+// ═══════════════════════════════════════════
+// Tiered pricing section for landing page body
+// ═══════════════════════════════════════════
+function tieredPricingSectionHtml(p: TemplateConfig, accentColor: string, isDark: boolean = false) {
+  if (!p.tieredPricingEnabled) return '';
+  const t1 = parseInt(p.tieredPrice1?.replace(/[^\d]/g,'') || '') || parseInt(p.sellingPrice.replace(/[^\d]/g,'')) || 0;
+  const t2 = parseInt(p.tieredPrice2?.replace(/[^\d]/g,'') || '') || (t1 * 2);
+  const t3 = parseInt(p.tieredPrice3?.replace(/[^\d]/g,'') || '') || (t1 * 3);
+
+  const bgCard = isDark ? '#1a1a1a' : '#fff';
+  const bgSelected = isDark ? '#2a2a2a' : `${accentColor}08`;
+  const borderDefault = isDark ? '#333' : '#e8e8e8';
+  const textPrimary = isDark ? '#e0e0e0' : '#111';
+  const textSecondary = isDark ? '#999' : '#666';
+  const saveBg = isDark ? 'rgba(76,175,80,0.15)' : '#e8f5e9';
+  const saveColor = isDark ? '#66bb6a' : '#2e7d32';
+  const checkBg = accentColor;
+  const popularBg = `linear-gradient(135deg, ${accentColor}, ${accentColor}dd)`;
+
+  return `
+<div id="tieredPricingSection" style="padding:0 16px;margin:20px 0">
+  <style>
+    .tier-card{position:relative;border:2px solid ${borderDefault};border-radius:16px;padding:18px 16px;cursor:pointer;transition:all .3s ease;background:${bgCard};margin-bottom:12px;display:flex;align-items:center;gap:14px}
+    .tier-card:hover{border-color:${accentColor}88;transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,0.08)}
+    .tier-card.selected{border-color:${accentColor};background:${bgSelected};box-shadow:0 4px 20px ${accentColor}22}
+    .tier-radio{width:24px;height:24px;border-radius:50%;border:2px solid ${borderDefault};display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+    .tier-card.selected .tier-radio{border-color:${checkBg};background:${checkBg}}
+    .tier-radio-dot{width:10px;height:10px;border-radius:50%;background:#fff;display:none}
+    .tier-card.selected .tier-radio-dot{display:block}
+    .tier-info{flex:1}
+    .tier-label{font-size:16px;font-weight:700;color:${textPrimary};margin-bottom:2px}
+    .tier-price{font-size:22px;font-weight:800;color:${accentColor}}
+    .tier-per-piece{font-size:12px;color:${textSecondary};margin-top:2px}
+    .tier-save{display:inline-block;background:${saveBg};color:${saveColor};font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;margin-top:4px}
+    .tier-popular{position:absolute;top:-11px;right:14px;background:${popularBg.replace('linear-gradient', 'linear-gradient')};color:#fff;font-size:10px;font-weight:700;padding:3px 12px;border-radius:20px;letter-spacing:.5px}
+  </style>
+
+  <div class="tier-card selected" onclick="selectTier(1)" id="tierCard1">
+    <div class="tier-radio"><div class="tier-radio-dot"></div></div>
+    <div class="tier-info">
+      <div class="tier-label">${p.tieredLabel1 || '১ পিস'}</div>
+      <div class="tier-price">৳${t1}</div>
+      <div class="tier-per-piece">প্রতি পিস ৳${t1}</div>
+    </div>
+  </div>
+
+  <div class="tier-card" onclick="selectTier(2)" id="tierCard2" style="position:relative">
+    <div style="position:absolute;top:-11px;right:14px;background:${popularBg};color:#fff;font-size:10px;font-weight:700;padding:3px 12px;border-radius:20px;letter-spacing:.5px">🔥 জনপ্রিয়</div>
+    <div class="tier-radio"><div class="tier-radio-dot"></div></div>
+    <div class="tier-info">
+      <div class="tier-label">${p.tieredLabel2 || '২ পিস'}</div>
+      <div class="tier-price">৳${t2}</div>
+      <div class="tier-per-piece">প্রতি পিস ৳${Math.round(t2/2)}</div>
+      ${t2 < t1*2 ? `<div class="tier-save">🎁 সেভ করুন ৳${t1*2-t2}</div>` : ''}
+    </div>
+  </div>
+
+  <div class="tier-card" onclick="selectTier(3)" id="tierCard3">
+    <div class="tier-radio"><div class="tier-radio-dot"></div></div>
+    <div class="tier-info">
+      <div class="tier-label">${p.tieredLabel3 || '৩ পিস'}</div>
+      <div class="tier-price">৳${t3}</div>
+      <div class="tier-per-piece">প্রতি পিস ৳${Math.round(t3/3)}</div>
+      ${t3 < t1*3 ? `<div class="tier-save">🎁 সেভ করুন ৳${t1*3-t3}</div>` : ''}
+    </div>
+  </div>
+</div>
+<script>
+var selectedTier=1;
+var tieredPricesPage={1:${t1},2:${t2},3:${t3}};
+function selectTier(n){
+  selectedTier=n;
+  document.querySelectorAll('.tier-card').forEach(function(c){c.classList.remove('selected')});
+  document.getElementById('tierCard'+n).classList.add('selected');
+}
+</script>`;
+}
+
+// Tiered CSS for the landing page
+function tieredPricingStyles() {
+  return '';
+}
+
 // Shared checkout popup HTML
 function checkoutPopupHtml(p: TemplateConfig, accentColor: string, bgOverlay: string = "rgba(0,0,0,0.6)") {
   const basePrice = parseInt(p.sellingPrice.replace(/[^\d]/g,'')) || 0;
@@ -143,30 +226,20 @@ function checkoutPopupHtml(p: TemplateConfig, accentColor: string, bgOverlay: st
   const t2 = parseInt(p.tieredPrice2?.replace(/[^\d]/g,'') || '') || (basePrice * 2);
   const t3 = parseInt(p.tieredPrice3?.replace(/[^\d]/g,'') || '') || (basePrice * 3);
 
-  // Quantity selector: tiered radio buttons OR normal dropdown
+  // When tiered is enabled, NO quantity selector in checkout - it's on the landing page
+  // When tiered is disabled, show normal dropdown
   const quantityHtml = useTiered ? `
-        <div style="margin-bottom:14px"><label style="display:block;font-size:13px;font-weight:600;color:#555;margin-bottom:8px">${p.quantityLabel}</label>
-          <div style="display:flex;flex-direction:column;gap:8px" id="tieredOptions">
-            <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;border:2px solid ${accentColor};border-radius:10px;cursor:pointer;background:${accentColor}11;font-size:14px;font-weight:600;color:#333" id="tierLabel1">
-              <input type="radio" name="quantity" value="1" checked onchange="updateTieredSummary()" style="accent-color:${accentColor};width:18px;height:18px"/> ${p.tieredLabel1 || '১ পিস - ৳' + t1}
-            </label>
-            <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;border:2px solid #e0e0e0;border-radius:10px;cursor:pointer;font-size:14px;font-weight:600;color:#333" id="tierLabel2">
-              <input type="radio" name="quantity" value="2" onchange="updateTieredSummary()" style="accent-color:${accentColor};width:18px;height:18px"/> ${p.tieredLabel2 || '২ পিস - ৳' + t2}
-            </label>
-            <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;border:2px solid #e0e0e0;border-radius:10px;cursor:pointer;font-size:14px;font-weight:600;color:#333" id="tierLabel3">
-              <input type="radio" name="quantity" value="3" onchange="updateTieredSummary()" style="accent-color:${accentColor};width:18px;height:18px"/> ${p.tieredLabel3 || '৩ পিস - ৳' + t3}
-            </label>
-          </div>
-        </div>` : `
+        <input type="hidden" name="quantity" id="checkoutQtyHidden" value="1"/>` : `
         <div style="margin-bottom:14px"><label style="display:block;font-size:13px;font-weight:600;color:#555;margin-bottom:5px">${p.quantityLabel}</label><select name="quantity" id="qtySelect" onchange="updateSummary()" style="width:100%;padding:13px 14px;border:2px solid #e0e0e0;border-radius:10px;font-size:15px;outline:none"><option value="1">${p.qty1Text}</option><option value="2">${p.qty2Text}</option><option value="3">${p.qty3Text}</option></select></div>`;
 
   const summaryScript = useTiered ? `
 var tieredPrices={1:${t1},2:${t2},3:${t3}},deliveryCharge=${dc};
-function updateTieredSummary(){var radios=document.querySelectorAll('input[name="quantity"]');var q=1;radios.forEach(function(r){if(r.checked)q=parseInt(r.value)});var productPrice=tieredPrices[q]||tieredPrices[1];document.getElementById('sumProduct').textContent='৳'+productPrice;document.getElementById('sumTotal').textContent='৳'+(productPrice+deliveryCharge);
-  document.getElementById('tierLabel1').style.border='2px solid #e0e0e0';document.getElementById('tierLabel1').style.background='transparent';
-  document.getElementById('tierLabel2').style.border='2px solid #e0e0e0';document.getElementById('tierLabel2').style.background='transparent';
-  document.getElementById('tierLabel3').style.border='2px solid #e0e0e0';document.getElementById('tierLabel3').style.background='transparent';
-  document.getElementById('tierLabel'+q).style.border='2px solid ${accentColor}';document.getElementById('tierLabel'+q).style.background='${accentColor}11';
+function syncTierToCheckout(){
+  var q=typeof selectedTier!=='undefined'?selectedTier:1;
+  document.getElementById('checkoutQtyHidden').value=q;
+  var productPrice=tieredPrices[q]||tieredPrices[1];
+  document.getElementById('sumProduct').textContent='৳'+productPrice;
+  document.getElementById('sumTotal').textContent='৳'+(productPrice+deliveryCharge);
   document.getElementById('checkoutForm').setAttribute('data-unit-price', String(Math.round(productPrice/q)));
 }
 ` : `
@@ -177,6 +250,16 @@ function updateSummary(){var q=parseInt(document.getElementById('qtySelect').val
   const initialProductPrice = useTiered ? t1 : basePrice;
   const initialTotal = initialProductPrice + dc;
 
+  // For tiered: show selected tier info in checkout summary area
+  const selectedTierDisplay = useTiered ? `
+        <div id="selectedTierInfo" style="background:${accentColor}0a;border:1px solid ${accentColor}33;border-radius:10px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px">
+          <span style="font-size:20px">📦</span>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#111" id="tierInfoLabel">১ পিস</div>
+            <div style="font-size:13px;color:${accentColor};font-weight:600" id="tierInfoPrice">৳${t1}</div>
+          </div>
+        </div>` : '';
+
   return `
 <!-- Checkout Popup -->
 <div class="checkout-overlay" id="checkoutOverlay" style="display:none;position:fixed;inset:0;background:${bgOverlay};z-index:9999;align-items:flex-end;justify-content:center">
@@ -184,10 +267,11 @@ function updateSummary(){var q=parseInt(document.getElementById('qtySelect').val
     <div style="position:relative;margin-bottom:8px">
       <button onclick="closeCheckout()" style="position:absolute;top:0;right:0;font-size:24px;background:none;border:none;cursor:pointer;color:#999">✕</button>
       <h2 style="font-size:20px;font-weight:800;color:#111;text-align:center;margin:0 0 4px">${p.checkoutTitle}</h2>
-      <p style="text-align:center;color:#888;font-size:13px;margin:0 0 20px">${p.productName} - ৳${p.sellingPrice}</p>
+      <p style="text-align:center;color:#888;font-size:13px;margin:0 0 20px">${p.productName}</p>
     </div>
     <form data-checkout-form data-product-name="${p.productName}" data-product-code="${p.productCode}" data-unit-price="${useTiered ? t1 : basePrice}" data-delivery-charge="${p.deliveryCharge}" id="checkoutForm">
       <div id="formFields">
+        ${selectedTierDisplay}
         <div style="margin-bottom:14px"><label style="display:block;font-size:13px;font-weight:600;color:#555;margin-bottom:5px">${p.nameLabel}</label><input type="text" name="customer_name" placeholder="${p.namePlaceholder}" required style="width:100%;padding:13px 14px;border:2px solid #e0e0e0;border-radius:10px;font-size:15px;outline:none" onfocus="this.style.borderColor='${accentColor}'" onblur="this.style.borderColor='#e0e0e0'" /></div>
         <div style="margin-bottom:14px"><label style="display:block;font-size:13px;font-weight:600;color:#555;margin-bottom:5px">${p.phoneLabel}</label><input type="tel" name="customer_phone" placeholder="${p.phonePlaceholder}" required style="width:100%;padding:13px 14px;border:2px solid #e0e0e0;border-radius:10px;font-size:15px;outline:none" onfocus="this.style.borderColor='${accentColor}'" onblur="this.style.borderColor='#e0e0e0'" /></div>
         <div style="margin-bottom:14px"><label style="display:block;font-size:13px;font-weight:600;color:#555;margin-bottom:5px">${p.addressLabel}</label><textarea name="customer_address" placeholder="${p.addressPlaceholder}" required style="width:100%;padding:13px 14px;border:2px solid #e0e0e0;border-radius:10px;font-size:15px;outline:none;resize:vertical;min-height:60px" onfocus="this.style.borderColor='${accentColor}'" onblur="this.style.borderColor='#e0e0e0'"></textarea></div>
@@ -212,7 +296,7 @@ function updateSummary(){var q=parseInt(document.getElementById('qtySelect').val
 </div>
 <style>@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}</style>
 <script>
-function openCheckout(){document.getElementById('checkoutOverlay').style.display='flex';document.getElementById('checkoutOverlay').style.alignItems='flex-end';document.getElementById('checkoutOverlay').style.justifyContent='center';document.body.style.overflow='hidden'}
+function openCheckout(){document.getElementById('checkoutOverlay').style.display='flex';document.getElementById('checkoutOverlay').style.alignItems='flex-end';document.getElementById('checkoutOverlay').style.justifyContent='center';document.body.style.overflow='hidden';${useTiered ? 'syncTierToCheckout();var labels=["","'+p.tieredLabel1.replace(/'/g,"\\'")+'","'+p.tieredLabel2.replace(/'/g,"\\'")+'","'+p.tieredLabel3.replace(/'/g,"\\'")+'"];if(document.getElementById("tierInfoLabel"))document.getElementById("tierInfoLabel").textContent=labels[selectedTier]||labels[1];if(document.getElementById("tierInfoPrice"))document.getElementById("tierInfoPrice").textContent="৳"+tieredPrices[selectedTier];' : ''}}
 function closeCheckout(){document.getElementById('checkoutOverlay').style.display='none';document.body.style.overflow='';document.getElementById('formFields').style.display='';document.getElementById('successMsg').style.display='none'}
 document.getElementById('checkoutOverlay').addEventListener('click',function(e){if(e.target===this)closeCheckout()});
 ${summaryScript}
@@ -269,6 +353,7 @@ export function templateClassicOrange(p: TemplateConfig): string {
   <div class="stars">⭐⭐⭐⭐⭐ <span class="reviews">${p.reviewText}</span></div>
   <div class="price-row"><span class="price-old">৳${p.originalPrice}</span><span class="price-new">৳ ${p.sellingPrice}</span><span class="discount-badge">${p.discountPercent}% ছাড়</span></div>
 </div>
+${tieredPricingSectionHtml(p, '#ff6b00')}
 <div class="cta-section">
   <button class="btn-order" onclick="openCheckout()">🛒 ${p.ctaButtonText}</button>
   <a href="tel:${p.phoneNumber}" class="btn-call">📞 ${p.callButtonText}: ${p.phoneNumber}</a>
@@ -330,6 +415,7 @@ export function templateModernBlue(p: TemplateConfig): string {
     <h1>${p.productName}</h1>
     <div class="rating"><span class="stars">★★★★★</span><span class="count">${p.reviewText}</span></div>
     <div class="price-box"><span class="old">৳${p.originalPrice}</span><span class="new">৳${p.sellingPrice}</span><span class="save">${p.discountPercent}% OFF</span></div>
+    ${tieredPricingSectionHtml(p, '#1a73e8')}
     <button class="btn-primary" onclick="openCheckout()">🛒 ${p.ctaButtonText}</button>
     <a href="tel:${p.phoneNumber}" class="btn-secondary">📞 ${p.callButtonText}: ${p.phoneNumber}</a>
   </div>
@@ -392,6 +478,7 @@ export function templateElegantDark(p: TemplateConfig): string {
   <div class="stars">★★★★★ <span style="color:#888;font-size:13px">${p.reviewText}</span></div>
   <div class="price-display"><span class="was">৳${p.originalPrice}</span><span class="now">৳${p.sellingPrice}</span><span class="off">${p.discountPercent}% OFF</span></div>
 </div>
+${tieredPricingSectionHtml(p, '#daa520', true)}
 <button class="btn-gold" onclick="openCheckout()">🛒 ${p.ctaButtonText}</button>
 <a href="tel:${p.phoneNumber}" class="btn-dark-call">📞 ${p.callButtonText}: ${p.phoneNumber}</a>
 <div class="dark-badges">
@@ -450,6 +537,7 @@ export function templateFreshGreen(p: TemplateConfig): string {
   <h1>${p.productName}</h1>
   <div class="rating">★★★★★ <span>${p.reviewText}</span></div>
   <div class="price-area"><span class="old">৳${p.originalPrice}</span><span class="current">৳${p.sellingPrice}</span><span class="tag">${p.discountPercent}% সেভ</span></div>
+  ${tieredPricingSectionHtml(p, '#2e7d32')}
   <button class="btn-green" onclick="openCheckout()">🛒 ${p.ctaButtonText}</button>
   <a href="tel:${p.phoneNumber}" class="btn-outline-green">📞 ${p.callButtonText}: ${p.phoneNumber}</a>
 </div>
@@ -512,6 +600,7 @@ export function templateVibrantGradient(p: TemplateConfig): string {
   <div class="stars">⭐⭐⭐⭐⭐ <span class="rev">${p.reviewText}</span></div>
   <div class="vg-price"><span class="old">৳${p.originalPrice}</span><span class="now">৳${p.sellingPrice}</span><span class="badge">${p.discountPercent}% ছাড়</span></div>
 </div>
+${tieredPricingSectionHtml(p, '#7c3aed')}
 <button class="btn-gradient" onclick="openCheckout()">🛒 ${p.ctaButtonText}</button>
 <a href="tel:${p.phoneNumber}" class="btn-gradient-outline">📞 ${p.callButtonText}: ${p.phoneNumber}</a>
 <div class="vg-badges">
@@ -574,6 +663,7 @@ export function templateMinimalWhite(p: TemplateConfig): string {
   <div class="rating"><span class="st">★★★★★</span> ${p.reviewText}</div>
   <div class="mw-divider"></div>
   <div class="mw-price"><span class="old">৳${p.originalPrice}</span><span class="new">৳${p.sellingPrice}</span><span class="save">-${p.discountPercent}%</span></div>
+  ${tieredPricingSectionHtml(p, '#111')}
   <button class="btn-black" onclick="openCheckout()">${p.ctaButtonText}</button>
   <a href="tel:${p.phoneNumber}" class="btn-outline-black">${p.callButtonText} — ${p.phoneNumber}</a>
 </div>
