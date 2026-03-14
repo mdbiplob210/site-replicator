@@ -553,12 +553,12 @@ export default function AdminLandingPages() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label className="text-xs">ঢাকার ভিতরে (৳)</Label>
-                      <Input type="number" min={0} placeholder="60" />
+                      <Input type="number" min={0} placeholder="60" value={editDeliveryInside} onChange={(e) => setEditDeliveryInside(e.target.value)} />
                       <p className="text-[11px] text-muted-foreground">ঢাকার ভিতরে ডেলিভারি চার্জ</p>
                     </div>
                     <div className="space-y-2">
                       <Label className="text-xs">ঢাকার বাইরে (৳)</Label>
-                      <Input type="number" min={0} placeholder="120" />
+                      <Input type="number" min={0} placeholder="120" value={editDeliveryOutside} onChange={(e) => setEditDeliveryOutside(e.target.value)} />
                       <p className="text-[11px] text-muted-foreground">ঢাকার বাইরে ডেলিভারি চার্জ</p>
                     </div>
                   </div>
