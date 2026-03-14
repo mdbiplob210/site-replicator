@@ -505,6 +505,29 @@ export default function AdminLandingPages() {
                 <Switch checked={form.is_active ?? true} onCheckedChange={(v) => setForm({ ...form, is_active: v })} />
               </div>
 
+              {/* Delivery Charge Settings */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">🚚 ডেলিভারি চার্জ</CardTitle>
+                  <p className="text-xs text-muted-foreground">HTML এর <code className="bg-muted px-1 rounded">data-delivery-charge</code> attribute দিয়ে ডিফল্ট চার্জ সেট করুন। এরিয়া ভিত্তিক চার্জ টেমপ্লেট থেকে তৈরি পেজে অটো সেট হয়।</p>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-xs">ঢাকার ভিতরে (৳)</Label>
+                      <Input type="number" min={0} placeholder="60" />
+                      <p className="text-[11px] text-muted-foreground">ঢাকার ভিতরে ডেলিভারি চার্জ</p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs">ঢাকার বাইরে (৳)</Label>
+                      <Input type="number" min={0} placeholder="120" />
+                      <p className="text-[11px] text-muted-foreground">ঢাকার বাইরে ডেলিভারি চার্জ</p>
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-3">💡 কাস্টম HTML পেজের জন্য সরাসরি HTML এ delivery area বাটন যোগ করুন। টেমপ্লেট থেকে তৈরি পেজে এটি অটোমেটিক থাকে।</p>
+                </CardContent>
+              </Card>
+
               {/* Exit Intent Popup Settings */}
               <Card>
                 <CardHeader>
