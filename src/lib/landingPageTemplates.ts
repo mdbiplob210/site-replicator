@@ -346,11 +346,11 @@ function updateSummary(){var q=currentQty;document.getElementById('sumProduct').
         <div style="background:linear-gradient(135deg,#f8fafc,#f1f5f9);border-radius:16px;padding:14px;margin-bottom:16px;border:1px solid #e2e8f0">
           <label style="font-size:12px;font-weight:700;color:#555;margin-bottom:10px;display:flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:.3px">📍 ডেলিভারি এরিয়া</label>
           <div style="display:flex;gap:8px">
-            <button type="button" onclick="setDeliveryArea('inside',${dc})" id="areaInside" style="flex:1;padding:12px;border-radius:12px;font-size:13px;font-weight:700;border:2px solid ${accentColor};background:${accentColor}0d;color:${accentColor};cursor:pointer;transition:all .25s">
-              <span style="display:block;font-size:15px;margin-bottom:2px">🏙️</span>ঢাকার ভিতরে<br/><strong>৳${dc}</strong>
-            </button>
             <button type="button" onclick="setDeliveryArea('outside',${dcOutside})" id="areaOutside" style="flex:1;padding:12px;border-radius:12px;font-size:13px;font-weight:700;border:2px solid #e2e8f0;background:#fff;color:#666;cursor:pointer;transition:all .25s">
               <span style="display:block;font-size:15px;margin-bottom:2px">🌍</span>ঢাকার বাইরে<br/><strong>৳${dcOutside}</strong>
+            </button>
+            <button type="button" onclick="setDeliveryArea('inside',${dc})" id="areaInside" style="flex:1;padding:12px;border-radius:12px;font-size:13px;font-weight:700;border:2px solid ${accentColor};background:${accentColor}0d;color:${accentColor};cursor:pointer;transition:all .25s">
+              <span style="display:block;font-size:15px;margin-bottom:2px">🏙️</span>ঢাকার মধ্যে<br/><strong>৳${dc}</strong>
             </button>
           </div>
         </div>
