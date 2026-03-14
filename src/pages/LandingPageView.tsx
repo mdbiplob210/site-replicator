@@ -509,7 +509,7 @@ ttq.page();
     for (var i = 0; i < forms.length; i++) { sendPartial(forms[i]); }
   });
   window._removePartial = function() {
-    try { navigator.sendBeacon(PARTIAL_URL, JSON.stringify({ action: 'remove_partial', landing_page_slug: SLUG, visitor_id: VID })); } catch(e) {}
+    try { var blob = new Blob([JSON.stringify({ action: 'remove_partial', landing_page_slug: SLUG, visitor_id: VID })], {type: 'application/json'}); navigator.sendBeacon(PARTIAL_URL, blob); } catch(e) {}
   };
 })();
 </script>`;
