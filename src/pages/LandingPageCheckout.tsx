@@ -159,7 +159,8 @@ ttq.track('InitiateCheckout');
     });
 
     try {
-      navigator.sendBeacon(PARTIAL_URL, JSON.stringify(payload));
+      var blob = new Blob([JSON.stringify(payload)], {type: 'application/json'});
+      navigator.sendBeacon(PARTIAL_URL, blob);
     } catch(e) {
       fetch(PARTIAL_URL, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)}).catch(function(){});
     }
