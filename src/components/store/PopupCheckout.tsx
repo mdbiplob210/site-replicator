@@ -403,15 +403,15 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
 
               {/* Delivery Area Selector */}
               <div className="bg-gray-50 rounded-xl p-3 space-y-2">
-                <label className="text-xs font-semibold text-gray-600">Delivery Area:</label>
+                <label className="text-xs font-semibold text-gray-600">ডেলিভারি এরিয়া:</label>
                 <div className="flex gap-2">
-                  <button type="button" onClick={() => setDeliveryArea("inside")}
-                    className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition ${deliveryArea === "inside" ? "border-green-500 bg-green-50 text-green-700" : "border-gray-200 text-gray-500"}`}>
-                    Inside Dhaka (৳{insideDhaka})
-                  </button>
                   <button type="button" onClick={() => setDeliveryArea("outside")}
                     className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition ${deliveryArea === "outside" ? "border-green-500 bg-green-50 text-green-700" : "border-gray-200 text-gray-500"}`}>
-                    Outside Dhaka (৳{outsideDhaka})
+                    ঢাকার বাইরে (৳{outsideDhaka})
+                  </button>
+                  <button type="button" onClick={() => setDeliveryArea("inside")}
+                    className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition ${deliveryArea === "inside" ? "border-green-500 bg-green-50 text-green-700" : "border-gray-200 text-gray-500"}`}>
+                    ঢাকার মধ্যে (৳{insideDhaka})
                   </button>
                 </div>
               </div>
