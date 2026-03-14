@@ -183,6 +183,12 @@ export default function AdminLandingPages() {
       exit_popup_timer: page.exit_popup_timer ?? 300,
       exit_popup_message: page.exit_popup_message || "এই ছাড়টি শুধু আপনার জন্য!",
     });
+    // Parse delivery charges from HTML
+    const html = page.html_content || "";
+    const insideMatch = html.match(/setDeliveryArea\('inside',\s*(\d+)\)/);
+    const outsideMatch = html.match(/setDeliveryArea\('outside',\s*(\d+)\)/);
+    setEditDeliveryInside(insideMatch ? insideMatch[1] : "");
+    setEditDeliveryOutside(outsideMatch ? outsideMatch[1] : "");
     setDialogOpen(true);
   };
 
