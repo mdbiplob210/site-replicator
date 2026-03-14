@@ -50,7 +50,7 @@ window._lpTrack = {
   sendServerEvent: function(eventName, customData) {
     var CAPI_URL = '${supabaseUrl}/functions/v1/fb-conversions-api';
     var payload = { pixel_id: '${page.fb_pixel_id || ''}', event_name: eventName, event_id: customData.event_id || this.generateEventId(), event_url: window.location.href, user_agent: navigator.userAgent, fbp: this.getFbp(), fbc: this.getFbc(), custom_data: customData };
-    try { navigator.sendBeacon(CAPI_URL, JSON.stringify(payload)); } catch(e) { fetch(CAPI_URL, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)}).catch(function(){}); }
+    try { var blob = new Blob([JSON.stringify(payload)], {type: 'application/json'}); navigator.sendBeacon(CAPI_URL, blob); } catch(e) { fetch(CAPI_URL, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)}).catch(function(){}); }
   }
 };
 </script>
