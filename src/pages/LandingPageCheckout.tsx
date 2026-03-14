@@ -50,7 +50,7 @@ window._lpTrack = {
   sendServerEvent: function(eventName, customData) {
     var CAPI_URL = '${supabaseUrl}/functions/v1/fb-conversions-api';
     var payload = { pixel_id: '${page.fb_pixel_id || ''}', event_name: eventName, event_id: customData.event_id || this.generateEventId(), event_url: window.location.href, user_agent: navigator.userAgent, fbp: this.getFbp(), fbc: this.getFbc(), custom_data: customData };
-    try { navigator.sendBeacon(CAPI_URL, JSON.stringify(payload)); } catch(e) { fetch(CAPI_URL, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)}).catch(function(){}); }
+    try { var blob = new Blob([JSON.stringify(payload)], {type: 'application/json'}); navigator.sendBeacon(CAPI_URL, blob); } catch(e) { fetch(CAPI_URL, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)}).catch(function(){}); }
   }
 };
 </script>
@@ -159,7 +159,8 @@ ttq.track('InitiateCheckout');
     });
 
     try {
-      navigator.sendBeacon(PARTIAL_URL, JSON.stringify(payload));
+      var blob = new Blob([JSON.stringify(payload)], {type: 'application/json'});
+      navigator.sendBeacon(PARTIAL_URL, blob);
     } catch(e) {
       fetch(PARTIAL_URL, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)}).catch(function(){});
     }
@@ -192,11 +193,12 @@ ttq.track('InitiateCheckout');
   // Expose remove function for after successful order
   window._removePartial = function() {
     try {
-      navigator.sendBeacon(PARTIAL_URL, JSON.stringify({
+      var blob = new Blob([JSON.stringify({
         action: 'remove_partial',
         landing_page_slug: SLUG,
         visitor_id: VID
-      }));
+      })], {type: 'application/json'});
+      navigator.sendBeacon(PARTIAL_URL, blob);
     } catch(e) {}
   };
 })();
