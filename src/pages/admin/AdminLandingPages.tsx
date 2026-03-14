@@ -638,9 +638,15 @@ export default function AdminLandingPages() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label className="text-xs">ডেলিভারি চার্জ (৳)</Label>
-                  <Input value={tplForm.deliveryCharge} onChange={(e) => setTplForm({ ...tplForm, deliveryCharge: e.target.value })} placeholder="60" />
+                  <Label className="text-xs">ডেলিভারি চার্জ - ঢাকার ভিতরে (৳)</Label>
+                  <Input value={tplForm.deliveryChargeInside} onChange={(e) => setTplForm({ ...tplForm, deliveryChargeInside: e.target.value, deliveryCharge: e.target.value })} placeholder="60" />
                 </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">ডেলিভারি চার্জ - ঢাকার বাইরে (৳)</Label>
+                  <Input value={tplForm.deliveryChargeOutside} onChange={(e) => setTplForm({ ...tplForm, deliveryChargeOutside: e.target.value })} placeholder="120" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label className="text-xs">প্রোডাক্ট কোড</Label>
                   <Input value={tplForm.productCode} onChange={(e) => setTplForm({ ...tplForm, productCode: e.target.value })} placeholder="SKU001" />
