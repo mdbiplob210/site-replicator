@@ -193,11 +193,12 @@ ttq.track('InitiateCheckout');
   // Expose remove function for after successful order
   window._removePartial = function() {
     try {
-      navigator.sendBeacon(PARTIAL_URL, JSON.stringify({
+      var blob = new Blob([JSON.stringify({
         action: 'remove_partial',
         landing_page_slug: SLUG,
         visitor_id: VID
-      }));
+      })], {type: 'application/json'});
+      navigator.sendBeacon(PARTIAL_URL, blob);
     } catch(e) {}
   };
 })();
