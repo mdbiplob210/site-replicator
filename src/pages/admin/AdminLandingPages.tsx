@@ -61,6 +61,8 @@ export default function AdminLandingPages() {
   const [editingPage, setEditingPage] = useState<Partial<LandingPage> | null>(null);
   const [form, setForm] = useState<Partial<LandingPage>>(emptyPage);
   const [uploading, setUploading] = useState(false);
+  const [editDeliveryInside, setEditDeliveryInside] = useState("");
+  const [editDeliveryOutside, setEditDeliveryOutside] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
   const [selectedTemplateId, setSelectedTemplateId] = useState("classic-orange");
