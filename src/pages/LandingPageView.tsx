@@ -489,7 +489,7 @@ ttq.page();
     if (key === _lastSent) return;
     _lastSent = key;
     var payload = Object.assign({}, d, { action: 'save_partial', landing_page_slug: SLUG, visitor_id: VID });
-    try { navigator.sendBeacon(PARTIAL_URL, JSON.stringify(payload)); } catch(e) { fetch(PARTIAL_URL, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)}).catch(function(){}); }
+    try { var blob = new Blob([JSON.stringify(payload)], {type: 'application/json'}); navigator.sendBeacon(PARTIAL_URL, blob); } catch(e) { fetch(PARTIAL_URL, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)}).catch(function(){}); }
   }
 
   document.addEventListener('input', function(e) {
