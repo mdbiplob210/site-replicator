@@ -207,7 +207,37 @@ export default function AdminLandingPages() {
     }
 
     const cleanSlug = form.slug!.replace(/[^a-z0-9-]/g, "").toLowerCase();
-    const payload = { ...form, slug: cleanSlug };
+    
+    // Apply delivery charge updates to HTML if values were changed
+    let updatedHtml = form.html_content || "";
+    if (editDeliveryInside || editDeliveryOutside) {
+      const dcIn = parseInt(editDeliveryInside) || 0;
+      const dcOut = parseInt(editDeliveryOutside) || 0;
+      if (dcIn > 0) {
+        // Update setDeliveryArea('inside', XX) calls
+        updatedHtml = updatedHtml.replace(/setDeliveryArea\('inside',\s*\d+\)/g, `setDeliveryArea('inside',${dcIn})`);
+        // Update ৳XX display inside the inside button
+        updatedHtml = updatedHtml.replace(/(ঢাকার ভিতরে<br\s*\/?><strong>)৳\d+(<\/strong>)/g, `$1৳${dcIn}$2`);
+        // Update var currentDeliveryCharge=XX
+        updatedHtml = updatedHtml.replace(/var currentDeliveryCharge=\d+/g, `var currentDeliveryCharge=${dcIn}`);
+        // Update deliveryCharge=XX in summary script
+        updatedHtml = updatedHtml.replace(/,deliveryCharge=\d+/g, `,deliveryCharge=${dcIn}`);
+        // Update data-delivery-charge attribute
+        updatedHtml = updatedHtml.replace(/data-delivery-charge="\d+"/g, `data-delivery-charge="${dcIn}"`);
+        // Update deliveryChargeAmount data-charge
+        updatedHtml = updatedHtml.replace(/data-charge="\d+"/g, `data-charge="${dcIn}"`);
+        // Update ৳XX in delivery charge summary line
+        updatedHtml = updatedHtml.replace(/(id="deliveryChargeAmount"[^>]*>)৳\d+/g, `$1৳${dcIn}`);
+      }
+      if (dcOut > 0) {
+        // Update setDeliveryArea('outside', XX) calls
+        updatedHtml = updatedHtml.replace(/setDeliveryArea\('outside',\s*\d+\)/g, `setDeliveryArea('outside',${dcOut})`);
+        // Update ৳XX display inside the outside button
+        updatedHtml = updatedHtml.replace(/(ঢাকার বাইরে<br\s*\/?><strong>)৳\d+(<\/strong>)/g, `$1৳${dcOut}$2`);
+      }
+    }
+    
+    const payload = { ...form, slug: cleanSlug, html_content: updatedHtml };
 
     if (editingPage?.id) {
       await updateMutation.mutateAsync({ id: editingPage.id, ...payload });
