@@ -222,7 +222,8 @@ function tieredPricingStyles() {
 // Shared checkout popup HTML — styled like main website PopupCheckout
 function checkoutPopupHtml(p: TemplateConfig, accentColor: string, bgOverlay: string = "rgba(0,0,0,0.6)") {
   const basePrice = parseInt(p.sellingPrice.replace(/[^\d]/g,'')) || 0;
-  const dc = parseInt(p.deliveryCharge) || 0;
+  const dc = parseInt(p.deliveryChargeInside || p.deliveryCharge) || 0;
+  const dcOutside = parseInt(p.deliveryChargeOutside || '') || Math.round(dc * 1.8);
   const useTiered = p.tieredPricingEnabled;
   const t1 = parseInt(p.tieredPrice1?.replace(/[^\d]/g,'') || '') || basePrice;
   const t2 = parseInt(p.tieredPrice2?.replace(/[^\d]/g,'') || '') || (basePrice * 2);
