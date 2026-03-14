@@ -217,7 +217,7 @@ export default function AdminLandingPages() {
         // Update setDeliveryArea('inside', XX) calls
         updatedHtml = updatedHtml.replace(/setDeliveryArea\('inside',\s*\d+\)/g, `setDeliveryArea('inside',${dcIn})`);
         // Update ৳XX display inside the inside button
-        updatedHtml = updatedHtml.replace(/(ঢাকার ভিতরে<br\s*\/?><strong>)৳\d+(<\/strong>)/g, `$1৳${dcIn}$2`);
+        updatedHtml = updatedHtml.replace(/(ঢাকার (?:ভিতরে|মধ্যে)<br\s*\/?><strong>)৳\d+(<\/strong>)/g, `$1৳${dcIn}$2`);
         // Update var currentDeliveryCharge=XX
         updatedHtml = updatedHtml.replace(/var currentDeliveryCharge=\d+/g, `var currentDeliveryCharge=${dcIn}`);
         // Update deliveryCharge=XX in summary script
