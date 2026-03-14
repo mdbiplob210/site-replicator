@@ -100,7 +100,8 @@ window._lpTrack = {
       custom_data: customData
     };
     try {
-      navigator.sendBeacon(CAPI_URL, JSON.stringify(payload));
+      var blob = new Blob([JSON.stringify(payload)], {type: 'application/json'});
+      navigator.sendBeacon(CAPI_URL, blob);
     } catch(e) {
       fetch(CAPI_URL, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)}).catch(function(){});
     }
