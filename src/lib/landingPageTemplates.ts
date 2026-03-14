@@ -59,6 +59,9 @@ export interface TemplateConfig {
   tieredLabel1: string;
   tieredLabel2: string;
   tieredLabel3: string;
+  // Delivery charge by area
+  deliveryChargeInside: string;
+  deliveryChargeOutside: string;
 }
 
 export const defaultTemplateConfig: TemplateConfig = {
@@ -115,6 +118,8 @@ export const defaultTemplateConfig: TemplateConfig = {
   tieredLabel1: "১ পিস - ৳৬৯০",
   tieredLabel2: "২ পিস - ৳১২৮০ (সেভ ৳১০০)",
   tieredLabel3: "৩ পিস - ৳১৮০০ (সেভ ৳২৭০)",
+  deliveryChargeInside: "60",
+  deliveryChargeOutside: "120",
 };
 
 export interface TemplateInfo {
@@ -217,7 +222,8 @@ function tieredPricingStyles() {
 // Shared checkout popup HTML — styled like main website PopupCheckout
 function checkoutPopupHtml(p: TemplateConfig, accentColor: string, bgOverlay: string = "rgba(0,0,0,0.6)") {
   const basePrice = parseInt(p.sellingPrice.replace(/[^\d]/g,'')) || 0;
-  const dc = parseInt(p.deliveryCharge) || 0;
+  const dc = parseInt(p.deliveryChargeInside || p.deliveryCharge) || 0;
+  const dcOutside = parseInt(p.deliveryChargeOutside || '') || Math.round(dc * 1.8);
   const useTiered = p.tieredPricingEnabled;
   const t1 = parseInt(p.tieredPrice1?.replace(/[^\d]/g,'') || '') || basePrice;
   const t2 = parseInt(p.tieredPrice2?.replace(/[^\d]/g,'') || '') || (basePrice * 2);
@@ -343,8 +349,8 @@ function updateSummary(){var q=currentQty;document.getElementById('sumProduct').
             <button type="button" onclick="setDeliveryArea('inside',${dc})" id="areaInside" style="flex:1;padding:12px;border-radius:12px;font-size:13px;font-weight:700;border:2px solid ${accentColor};background:${accentColor}0d;color:${accentColor};cursor:pointer;transition:all .25s">
               <span style="display:block;font-size:15px;margin-bottom:2px">🏙️</span>ঢাকার ভিতরে<br/><strong>৳${dc}</strong>
             </button>
-            <button type="button" onclick="setDeliveryArea('outside',${Math.round(dc * 1.8)})" id="areaOutside" style="flex:1;padding:12px;border-radius:12px;font-size:13px;font-weight:700;border:2px solid #e2e8f0;background:#fff;color:#666;cursor:pointer;transition:all .25s">
-              <span style="display:block;font-size:15px;margin-bottom:2px">🌍</span>ঢাকার বাইরে<br/><strong>৳${Math.round(dc * 1.8)}</strong>
+            <button type="button" onclick="setDeliveryArea('outside',${dcOutside})" id="areaOutside" style="flex:1;padding:12px;border-radius:12px;font-size:13px;font-weight:700;border:2px solid #e2e8f0;background:#fff;color:#666;cursor:pointer;transition:all .25s">
+              <span style="display:block;font-size:15px;margin-bottom:2px">🌍</span>ঢাকার বাইরে<br/><strong>৳${dcOutside}</strong>
             </button>
           </div>
         </div>

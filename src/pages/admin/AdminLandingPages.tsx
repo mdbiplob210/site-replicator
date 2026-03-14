@@ -505,6 +505,29 @@ export default function AdminLandingPages() {
                 <Switch checked={form.is_active ?? true} onCheckedChange={(v) => setForm({ ...form, is_active: v })} />
               </div>
 
+              {/* Delivery Charge Settings */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">🚚 ডেলিভারি চার্জ</CardTitle>
+                  <p className="text-xs text-muted-foreground">HTML এর <code className="bg-muted px-1 rounded">data-delivery-charge</code> attribute দিয়ে ডিফল্ট চার্জ সেট করুন। এরিয়া ভিত্তিক চার্জ টেমপ্লেট থেকে তৈরি পেজে অটো সেট হয়।</p>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-xs">ঢাকার ভিতরে (৳)</Label>
+                      <Input type="number" min={0} placeholder="60" />
+                      <p className="text-[11px] text-muted-foreground">ঢাকার ভিতরে ডেলিভারি চার্জ</p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs">ঢাকার বাইরে (৳)</Label>
+                      <Input type="number" min={0} placeholder="120" />
+                      <p className="text-[11px] text-muted-foreground">ঢাকার বাইরে ডেলিভারি চার্জ</p>
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-3">💡 কাস্টম HTML পেজের জন্য সরাসরি HTML এ delivery area বাটন যোগ করুন। টেমপ্লেট থেকে তৈরি পেজে এটি অটোমেটিক থাকে।</p>
+                </CardContent>
+              </Card>
+
               {/* Exit Intent Popup Settings */}
               <Card>
                 <CardHeader>
@@ -638,9 +661,15 @@ export default function AdminLandingPages() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label className="text-xs">ডেলিভারি চার্জ (৳)</Label>
-                  <Input value={tplForm.deliveryCharge} onChange={(e) => setTplForm({ ...tplForm, deliveryCharge: e.target.value })} placeholder="60" />
+                  <Label className="text-xs">ডেলিভারি চার্জ - ঢাকার ভিতরে (৳)</Label>
+                  <Input value={tplForm.deliveryChargeInside} onChange={(e) => setTplForm({ ...tplForm, deliveryChargeInside: e.target.value, deliveryCharge: e.target.value })} placeholder="60" />
                 </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">ডেলিভারি চার্জ - ঢাকার বাইরে (৳)</Label>
+                  <Input value={tplForm.deliveryChargeOutside} onChange={(e) => setTplForm({ ...tplForm, deliveryChargeOutside: e.target.value })} placeholder="120" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label className="text-xs">প্রোডাক্ট কোড</Label>
                   <Input value={tplForm.productCode} onChange={(e) => setTplForm({ ...tplForm, productCode: e.target.value })} placeholder="SKU001" />
