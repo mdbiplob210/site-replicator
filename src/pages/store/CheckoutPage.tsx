@@ -301,15 +301,15 @@ const CheckoutPage = () => {
       </div>
       {/* Delivery Area Selector */}
       <div className="space-y-1.5">
-        <Label className="text-sm font-semibold">Delivery Area</Label>
+        <Label className="text-sm font-semibold">ডেলিভারি এরিয়া</Label>
         <div className="flex gap-2">
-          <button type="button" onClick={() => setDeliveryArea("inside")}
-            className={`flex-1 py-2.5 rounded-lg text-sm font-semibold border transition ${deliveryArea === "inside" ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"}`}>
-            Inside Dhaka — ৳{insideDhaka}
-          </button>
           <button type="button" onClick={() => setDeliveryArea("outside")}
             className={`flex-1 py-2.5 rounded-lg text-sm font-semibold border transition ${deliveryArea === "outside" ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"}`}>
-            Outside Dhaka — ৳{outsideDhaka}
+            ঢাকার বাইরে — ৳{outsideDhaka}
+          </button>
+          <button type="button" onClick={() => setDeliveryArea("inside")}
+            className={`flex-1 py-2.5 rounded-lg text-sm font-semibold border transition ${deliveryArea === "inside" ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"}`}>
+            ঢাকার মধ্যে — ৳{insideDhaka}
           </button>
         </div>
       </div>
