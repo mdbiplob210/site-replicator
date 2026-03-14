@@ -295,7 +295,8 @@ ttq.page();
 
   function send(eventType, eventName) {
     try {
-      navigator.sendBeacon(TRACK_URL, JSON.stringify({slug:SLUG,event_type:eventType,event_name:eventName||null,visitor_id:VID,referrer:document.referrer||null}));
+      var blob = new Blob([JSON.stringify({slug:SLUG,event_type:eventType,event_name:eventName||null,visitor_id:VID,referrer:document.referrer||null})], {type: 'application/json'});
+      navigator.sendBeacon(TRACK_URL, blob);
     } catch(e) {
       fetch(TRACK_URL, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({slug:SLUG,event_type:eventType,event_name:eventName||null,visitor_id:VID,referrer:document.referrer||null})}).catch(function(){});
     }
