@@ -61,6 +61,8 @@ export default function AdminLandingPages() {
   const [editingPage, setEditingPage] = useState<Partial<LandingPage> | null>(null);
   const [form, setForm] = useState<Partial<LandingPage>>(emptyPage);
   const [uploading, setUploading] = useState(false);
+  const [editDeliveryInside, setEditDeliveryInside] = useState("");
+  const [editDeliveryOutside, setEditDeliveryOutside] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
   const [selectedTemplateId, setSelectedTemplateId] = useState("classic-orange");
@@ -181,6 +183,12 @@ export default function AdminLandingPages() {
       exit_popup_timer: page.exit_popup_timer ?? 300,
       exit_popup_message: page.exit_popup_message || "এই ছাড়টি শুধু আপনার জন্য!",
     });
+    // Parse delivery charges from HTML
+    const html = page.html_content || "";
+    const insideMatch = html.match(/setDeliveryArea\('inside',\s*(\d+)\)/);
+    const outsideMatch = html.match(/setDeliveryArea\('outside',\s*(\d+)\)/);
+    setEditDeliveryInside(insideMatch ? insideMatch[1] : "");
+    setEditDeliveryOutside(outsideMatch ? outsideMatch[1] : "");
     setDialogOpen(true);
   };
 
@@ -199,7 +207,37 @@ export default function AdminLandingPages() {
     }
 
     const cleanSlug = form.slug!.replace(/[^a-z0-9-]/g, "").toLowerCase();
-    const payload = { ...form, slug: cleanSlug };
+    
+    // Apply delivery charge updates to HTML if values were changed
+    let updatedHtml = form.html_content || "";
+    if (editDeliveryInside || editDeliveryOutside) {
+      const dcIn = parseInt(editDeliveryInside) || 0;
+      const dcOut = parseInt(editDeliveryOutside) || 0;
+      if (dcIn > 0) {
+        // Update setDeliveryArea('inside', XX) calls
+        updatedHtml = updatedHtml.replace(/setDeliveryArea\('inside',\s*\d+\)/g, `setDeliveryArea('inside',${dcIn})`);
+        // Update ৳XX display inside the inside button
+        updatedHtml = updatedHtml.replace(/(ঢাকার ভিতরে<br\s*\/?><strong>)৳\d+(<\/strong>)/g, `$1৳${dcIn}$2`);
+        // Update var currentDeliveryCharge=XX
+        updatedHtml = updatedHtml.replace(/var currentDeliveryCharge=\d+/g, `var currentDeliveryCharge=${dcIn}`);
+        // Update deliveryCharge=XX in summary script
+        updatedHtml = updatedHtml.replace(/,deliveryCharge=\d+/g, `,deliveryCharge=${dcIn}`);
+        // Update data-delivery-charge attribute
+        updatedHtml = updatedHtml.replace(/data-delivery-charge="\d+"/g, `data-delivery-charge="${dcIn}"`);
+        // Update deliveryChargeAmount data-charge
+        updatedHtml = updatedHtml.replace(/data-charge="\d+"/g, `data-charge="${dcIn}"`);
+        // Update ৳XX in delivery charge summary line
+        updatedHtml = updatedHtml.replace(/(id="deliveryChargeAmount"[^>]*>)৳\d+/g, `$1৳${dcIn}`);
+      }
+      if (dcOut > 0) {
+        // Update setDeliveryArea('outside', XX) calls
+        updatedHtml = updatedHtml.replace(/setDeliveryArea\('outside',\s*\d+\)/g, `setDeliveryArea('outside',${dcOut})`);
+        // Update ৳XX display inside the outside button
+        updatedHtml = updatedHtml.replace(/(ঢাকার বাইরে<br\s*\/?><strong>)৳\d+(<\/strong>)/g, `$1৳${dcOut}$2`);
+      }
+    }
+    
+    const payload = { ...form, slug: cleanSlug, html_content: updatedHtml };
 
     if (editingPage?.id) {
       await updateMutation.mutateAsync({ id: editingPage.id, ...payload });
@@ -515,12 +553,12 @@ export default function AdminLandingPages() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label className="text-xs">ঢাকার ভিতরে (৳)</Label>
-                      <Input type="number" min={0} placeholder="60" />
+                      <Input type="number" min={0} placeholder="60" value={editDeliveryInside} onChange={(e) => setEditDeliveryInside(e.target.value)} />
                       <p className="text-[11px] text-muted-foreground">ঢাকার ভিতরে ডেলিভারি চার্জ</p>
                     </div>
                     <div className="space-y-2">
                       <Label className="text-xs">ঢাকার বাইরে (৳)</Label>
-                      <Input type="number" min={0} placeholder="120" />
+                      <Input type="number" min={0} placeholder="120" value={editDeliveryOutside} onChange={(e) => setEditDeliveryOutside(e.target.value)} />
                       <p className="text-[11px] text-muted-foreground">ঢাকার বাইরে ডেলিভারি চার্জ</p>
                     </div>
                   </div>
