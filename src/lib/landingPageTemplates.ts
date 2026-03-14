@@ -118,6 +118,8 @@ export const defaultTemplateConfig: TemplateConfig = {
   tieredLabel1: "১ পিস - ৳৬৯০",
   tieredLabel2: "২ পিস - ৳১২৮০ (সেভ ৳১০০)",
   tieredLabel3: "৩ পিস - ৳১৮০০ (সেভ ৳২৭০)",
+  deliveryChargeInside: "60",
+  deliveryChargeOutside: "120",
 };
 
 export interface TemplateInfo {
