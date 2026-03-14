@@ -402,16 +402,20 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
               </div>
 
               {/* Delivery Area Selector */}
-              <div className="bg-gray-50 rounded-xl p-3 space-y-2">
-                <label className="text-xs font-semibold text-gray-600">ডেলিভারি এরিয়া:</label>
+              <div className="bg-gradient-to-br from-slate-50 to-gray-100 rounded-2xl p-3.5 space-y-2.5 border border-slate-200">
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide flex items-center gap-1.5">📍 ডেলিভারি এরিয়া</label>
                 <div className="flex gap-2">
                   <button type="button" onClick={() => setDeliveryArea("outside")}
-                    className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition ${deliveryArea === "outside" ? "border-green-500 bg-green-50 text-green-700" : "border-gray-200 text-gray-500"}`}>
-                    ঢাকার বাইরে (৳{outsideDhaka})
+                    className={`flex-1 py-3 rounded-xl text-center font-bold border-2 transition-all duration-200 ${deliveryArea === "outside" ? "border-green-500 bg-green-50 text-green-700 shadow-sm shadow-green-100" : "border-slate-200 bg-white text-gray-500 hover:border-slate-300"}`}>
+                    <span className="block text-base mb-0.5">🌍</span>
+                    <span className="text-xs block">ঢাকার বাইরে</span>
+                    <strong className="text-sm block mt-0.5">৳{outsideDhaka}</strong>
                   </button>
                   <button type="button" onClick={() => setDeliveryArea("inside")}
-                    className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition ${deliveryArea === "inside" ? "border-green-500 bg-green-50 text-green-700" : "border-gray-200 text-gray-500"}`}>
-                    ঢাকার মধ্যে (৳{insideDhaka})
+                    className={`flex-1 py-3 rounded-xl text-center font-bold border-2 transition-all duration-200 ${deliveryArea === "inside" ? "border-green-500 bg-green-50 text-green-700 shadow-sm shadow-green-100" : "border-slate-200 bg-white text-gray-500 hover:border-slate-300"}`}>
+                    <span className="block text-base mb-0.5">🏙️</span>
+                    <span className="text-xs block">ঢাকার মধ্যে</span>
+                    <strong className="text-sm block mt-0.5">৳{insideDhaka}</strong>
                   </button>
                 </div>
               </div>

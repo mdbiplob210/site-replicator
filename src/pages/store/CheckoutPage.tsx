@@ -300,17 +300,23 @@ const CheckoutPage = () => {
         <Textarea placeholder="Enter full address" value={form.address} onChange={e => updateForm({ address: e.target.value })} required />
       </div>
       {/* Delivery Area Selector */}
-      <div className="space-y-1.5">
-        <Label className="text-sm font-semibold">ডেলিভারি এরিয়া</Label>
-        <div className="flex gap-2">
-          <button type="button" onClick={() => setDeliveryArea("outside")}
-            className={`flex-1 py-2.5 rounded-lg text-sm font-semibold border transition ${deliveryArea === "outside" ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"}`}>
-            ঢাকার বাইরে — ৳{outsideDhaka}
-          </button>
-          <button type="button" onClick={() => setDeliveryArea("inside")}
-            className={`flex-1 py-2.5 rounded-lg text-sm font-semibold border transition ${deliveryArea === "inside" ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"}`}>
-            ঢাকার মধ্যে — ৳{insideDhaka}
-          </button>
+      <div className="space-y-2">
+        <Label className="text-sm font-bold uppercase tracking-wide text-muted-foreground flex items-center gap-1.5">📍 ডেলিভারি এরিয়া</Label>
+        <div className="bg-gradient-to-br from-slate-50 to-gray-100 rounded-2xl p-3.5 border border-slate-200">
+          <div className="flex gap-3">
+            <button type="button" onClick={() => setDeliveryArea("outside")}
+              className={`flex-1 py-3.5 rounded-xl text-center font-bold border-2 transition-all duration-200 ${deliveryArea === "outside" ? "border-primary bg-primary/5 text-primary shadow-sm" : "border-border bg-background text-muted-foreground hover:border-primary/30"}`}>
+              <span className="block text-lg mb-0.5">🌍</span>
+              <span className="text-xs block">ঢাকার বাইরে</span>
+              <strong className="text-base block mt-0.5">৳{outsideDhaka}</strong>
+            </button>
+            <button type="button" onClick={() => setDeliveryArea("inside")}
+              className={`flex-1 py-3.5 rounded-xl text-center font-bold border-2 transition-all duration-200 ${deliveryArea === "inside" ? "border-primary bg-primary/5 text-primary shadow-sm" : "border-border bg-background text-muted-foreground hover:border-primary/30"}`}>
+              <span className="block text-lg mb-0.5">🏙️</span>
+              <span className="text-xs block">ঢাকার মধ্যে</span>
+              <strong className="text-base block mt-0.5">৳{insideDhaka}</strong>
+            </button>
+          </div>
         </div>
       </div>
       <div className="space-y-1.5">
