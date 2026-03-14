@@ -10,28 +10,41 @@ const steps = [
 
 const HowItWorks = () => {
   return (
-    <section id="how-it-works" className="py-20 sm:py-28">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-foreground sm:text-4xl">কিভাবে কাজ করে</h2>
-          <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
+    <section id="how-it-works" className="relative py-24 sm:py-32 overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-background via-primary/3 to-background" />
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-2xl text-center">
+          <span className="inline-block rounded-full bg-primary/10 px-4 py-1.5 text-sm font-semibold text-primary">
+            স্টেপ বাই স্টেপ
+          </span>
+          <h2 className="mt-4 text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl">
+            কিভাবে কাজ করে
+          </h2>
+          <p className="mt-4 text-lg text-muted-foreground">
             মাত্র ৫টি সহজ ধাপে আপনার ব্যবসা অটোমেট করুন
           </p>
         </div>
 
-        <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-5">
-          {steps.map((step, index) => (
-            <div key={step.title} className="relative text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-lg shadow-primary/20">
-                <step.icon className="h-7 w-7" />
+        <div className="mt-20 relative">
+          {/* Connection line - desktop only */}
+          <div className="absolute top-10 left-[10%] right-[10%] hidden h-0.5 bg-gradient-to-r from-primary/20 via-primary/40 to-primary/20 lg:block" />
+
+          <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-5 lg:gap-6">
+            {steps.map((step, index) => (
+              <div key={step.title} className="relative text-center group">
+                <div className="relative mx-auto mb-5">
+                  <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-xl shadow-primary/20 transition-transform duration-300 group-hover:scale-110 group-hover:shadow-2xl group-hover:shadow-primary/30">
+                    <step.icon className="h-8 w-8" />
+                  </div>
+                  <div className="absolute -top-2 -right-2 flex h-8 w-8 items-center justify-center rounded-full bg-card text-sm font-bold text-primary shadow-md border-2 border-primary/20">
+                    {index + 1}
+                  </div>
+                </div>
+                <h3 className="text-lg font-semibold text-foreground">{step.title}</h3>
+                <p className="mt-2 text-sm text-muted-foreground">{step.desc}</p>
               </div>
-              <div className="absolute -top-2 left-1/2 flex h-7 w-7 -translate-x-1/2 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-                {index + 1}
-              </div>
-              <h3 className="font-semibold text-foreground">{step.title}</h3>
-              <p className="mt-1 text-sm text-muted-foreground">{step.desc}</p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </section>
