@@ -59,6 +59,9 @@ export interface TemplateConfig {
   tieredLabel1: string;
   tieredLabel2: string;
   tieredLabel3: string;
+  // Delivery charge by area
+  deliveryChargeInside: string;
+  deliveryChargeOutside: string;
 }
 
 export const defaultTemplateConfig: TemplateConfig = {
