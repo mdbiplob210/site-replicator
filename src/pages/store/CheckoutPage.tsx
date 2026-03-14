@@ -301,15 +301,15 @@ const CheckoutPage = () => {
       </div>
       {/* Delivery Area Selector */}
       <div className="space-y-1.5">
-        <Label className="text-sm font-semibold">Delivery Area</Label>
+        <Label className="text-sm font-semibold">ডেলিভারি এরিয়া</Label>
         <div className="flex gap-2">
-          <button type="button" onClick={() => setDeliveryArea("inside")}
-            className={`flex-1 py-2.5 rounded-lg text-sm font-semibold border transition ${deliveryArea === "inside" ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"}`}>
-            Inside Dhaka — ৳{insideDhaka}
-          </button>
           <button type="button" onClick={() => setDeliveryArea("outside")}
             className={`flex-1 py-2.5 rounded-lg text-sm font-semibold border transition ${deliveryArea === "outside" ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"}`}>
-            Outside Dhaka — ৳{outsideDhaka}
+            ঢাকার বাইরে — ৳{outsideDhaka}
+          </button>
+          <button type="button" onClick={() => setDeliveryArea("inside")}
+            className={`flex-1 py-2.5 rounded-lg text-sm font-semibold border transition ${deliveryArea === "inside" ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"}`}>
+            ঢাকার মধ্যে — ৳{insideDhaka}
           </button>
         </div>
       </div>
@@ -334,10 +334,10 @@ const CheckoutPage = () => {
         <span className="font-bold">৳{subtotal}</span>
       </div>
       <div className="border-t pt-3 space-y-2 text-sm">
-        <div className="flex justify-between"><span>Subtotal</span><span>৳{subtotal}</span></div>
+        <div className="flex justify-between"><span>সাবটোটাল</span><span>৳{subtotal}</span></div>
         <div className="flex justify-between">
-          <span>Delivery ({deliveryArea === "inside" ? "Inside Dhaka" : "Outside Dhaka"})</span>
-          <span className={deliveryCharge === 0 ? "text-green-600 font-semibold" : ""}>{deliveryCharge === 0 ? "Free" : `৳${deliveryCharge}`}</span>
+          <span>ডেলিভারি চার্জ ({deliveryArea === "inside" ? "ঢাকার মধ্যে" : "ঢাকার বাইরে"})</span>
+          <span className={deliveryCharge === 0 ? "text-green-600 font-semibold" : ""}>{deliveryCharge === 0 ? "ফ্রি" : `৳${deliveryCharge}`}</span>
         </div>
         <div className="flex justify-between font-bold text-lg border-t pt-2"><span>Total</span><span>৳{total}</span></div>
       </div>

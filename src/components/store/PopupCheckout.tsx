@@ -403,31 +403,31 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
 
               {/* Delivery Area Selector */}
               <div className="bg-gray-50 rounded-xl p-3 space-y-2">
-                <label className="text-xs font-semibold text-gray-600">Delivery Area:</label>
+                <label className="text-xs font-semibold text-gray-600">ডেলিভারি এরিয়া:</label>
                 <div className="flex gap-2">
-                  <button type="button" onClick={() => setDeliveryArea("inside")}
-                    className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition ${deliveryArea === "inside" ? "border-green-500 bg-green-50 text-green-700" : "border-gray-200 text-gray-500"}`}>
-                    Inside Dhaka (৳{insideDhaka})
-                  </button>
                   <button type="button" onClick={() => setDeliveryArea("outside")}
                     className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition ${deliveryArea === "outside" ? "border-green-500 bg-green-50 text-green-700" : "border-gray-200 text-gray-500"}`}>
-                    Outside Dhaka (৳{outsideDhaka})
+                    ঢাকার বাইরে (৳{outsideDhaka})
+                  </button>
+                  <button type="button" onClick={() => setDeliveryArea("inside")}
+                    className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition ${deliveryArea === "inside" ? "border-green-500 bg-green-50 text-green-700" : "border-gray-200 text-gray-500"}`}>
+                    ঢাকার মধ্যে (৳{insideDhaka})
                   </button>
                 </div>
               </div>
 
               {/* Summary */}
               <div className="bg-gray-50 rounded-xl p-3 space-y-1.5 text-sm">
-                <div className="flex justify-between"><span className="text-gray-500">Subtotal</span><span>৳{subtotal}</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">সাবটোটাল</span><span>৳{subtotal}</span></div>
                 {discount > 0 && (
                   <div className="flex justify-between text-red-500 font-semibold">
-                    <span>🎁 Special Discount</span><span>-৳{discount}</span>
+                    <span>🎁 বিশেষ ছাড়</span><span>-৳{discount}</span>
                   </div>
                 )}
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Delivery Charge</span>
+                  <span className="text-gray-500">ডেলিভারি চার্জ</span>
                   <span className={deliveryCharge === 0 ? "text-green-600 font-semibold" : ""}>
-                    {deliveryCharge === 0 ? "Free" : `৳${deliveryCharge}`}
+                    {deliveryCharge === 0 ? "ফ্রি" : `৳${deliveryCharge}`}
                   </span>
                 </div>
                 <div className="flex justify-between font-bold text-base border-t pt-1.5"><span>Total</span><span className="text-green-600">৳{total}</span></div>
