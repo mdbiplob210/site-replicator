@@ -1,17 +1,18 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import {
   Wallet, ArrowDownCircle, ArrowUpCircle, Landmark, PiggyBank,
   TrendingUp, Clock, ShoppingCart, Calendar, CircleDollarSign,
-  Package, Trash2, Loader2, Plus, Tags, X
+  Package, Trash2, Loader2, Plus, Tags, X, Search
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useFinanceRecords, useFinanceSummary, useCreateFinanceRecord, useDeleteFinanceRecord, useFinanceSources, useCreateFinanceSource, useDeleteFinanceSource } from "@/hooks/useFinance";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import { toast } from "sonner";
 
 type FinanceTab = "income" | "expense" | "product_purchase" | "banks" | "loans" | "investments" | "history";
 type Period = "today" | "this_week" | "this_month" | "last_month" | "custom";
@@ -53,6 +54,19 @@ export default function AdminFinance() {
   const [purchaseAmount, setPurchaseAmount] = useState("");
   const [purchaseNote, setPurchaseNote] = useState("");
   const [purchaseBank, setPurchaseBank] = useState("");
+  const [purchaseProductSearch, setPurchaseProductSearch] = useState("");
+  const [purchaseSelectedProduct, setPurchaseSelectedProduct] = useState<any>(null);
+  const [purchaseQuantity, setPurchaseQuantity] = useState("");
+  const [purchaseUnitPrice, setPurchaseUnitPrice] = useState("");
+  const [showProductDropdown, setShowProductDropdown] = useState(false);
+  const [purchaseItems, setPurchaseItems] = useState<Array<{
+    product_id: string;
+    product_name: string;
+    product_code: string;
+    quantity: number;
+    purchase_price: number;
+    total: number;
+  }>>([]);
 
   // History filters
   const [histType, setHistType] = useState("all");
@@ -76,6 +90,43 @@ export default function AdminFinance() {
 
   // Bank accounts from finance_records
   const { data: bankAccounts = [] } = useFinanceRecords("bank");
+
+  // Products list for purchase selection
+  const queryClient = useQueryClient();
+  const { data: allProducts = [] } = useQuery({
+    queryKey: ["finance-products-list"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("id, name, product_code, purchase_price, stock_quantity")
+        .order("name");
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Purchase items history
+  const { data: purchaseItemsHistory = [] } = useQuery({
+    queryKey: ["product-purchase-items"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("product_purchase_items" as any)
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return data as any[];
+    },
+  });
+
+  // Filtered products for search
+  const filteredProducts = useMemo(() => {
+    if (!purchaseProductSearch) return [];
+    const q = purchaseProductSearch.toLowerCase();
+    return allProducts.filter(
+      (p) => p.name.toLowerCase().includes(q) || p.product_code.toLowerCase().includes(q)
+    ).slice(0, 10);
+  }, [purchaseProductSearch, allProducts]);
 
   // Cross-connect: Stock value from products table
   const { data: stockValue = 0 } = useQuery({
@@ -178,15 +229,104 @@ export default function AdminFinance() {
     }, { onSuccess: () => { setInvestAmount(""); setInvestSource(""); setInvestNote(""); } });
   };
 
-  const handleSubmitPurchase = () => {
-    if (!purchaseAmount || Number(purchaseAmount) <= 0 || !purchaseSupplier) return;
-    const bankInfo = purchaseBank ? ` [${purchaseBank}]` : "";
-    createRecord.mutate({
-      type: "product_purchase",
-      label: purchaseSupplier,
-      amount: Number(purchaseAmount),
-      notes: (purchaseNote ? purchaseNote : "") + bankInfo || null,
-    }, { onSuccess: () => { setPurchaseAmount(""); setPurchaseSupplier(""); setPurchaseNote(""); } });
+  // Add product to purchase items list
+  const handleAddPurchaseItem = () => {
+    if (!purchaseSelectedProduct || !purchaseQuantity || !purchaseUnitPrice) return;
+    const qty = Number(purchaseQuantity);
+    const price = Number(purchaseUnitPrice);
+    if (qty <= 0 || price <= 0) return;
+
+    setPurchaseItems(prev => [...prev, {
+      product_id: purchaseSelectedProduct.id,
+      product_name: purchaseSelectedProduct.name,
+      product_code: purchaseSelectedProduct.product_code,
+      quantity: qty,
+      purchase_price: price,
+      total: qty * price,
+    }]);
+
+    setPurchaseSelectedProduct(null);
+    setPurchaseProductSearch("");
+    setPurchaseQuantity("");
+    setPurchaseUnitPrice("");
+  };
+
+  const removePurchaseItem = (index: number) => {
+    setPurchaseItems(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const purchaseItemsTotal = purchaseItems.reduce((s, i) => s + i.total, 0);
+
+  const [purchaseSubmitting, setPurchaseSubmitting] = useState(false);
+
+  const handleSubmitPurchase = async () => {
+    if (purchaseItems.length === 0 || !purchaseSupplier) return;
+    setPurchaseSubmitting(true);
+
+    try {
+      const bankInfo = purchaseBank ? ` [${purchaseBank}]` : "";
+      const totalAmount = purchaseItemsTotal;
+      const itemsSummary = purchaseItems.map(i => `${i.product_name} x${i.quantity} @৳${i.purchase_price}`).join(", ");
+
+      // 1. Create finance record
+      const { data: financeRecord, error: financeError } = await supabase
+        .from("finance_records")
+        .insert({
+          type: "product_purchase",
+          label: purchaseSupplier,
+          amount: totalAmount,
+          notes: (purchaseNote ? purchaseNote + " | " : "") + itemsSummary + bankInfo || null,
+        })
+        .select()
+        .single();
+      if (financeError) throw financeError;
+
+      // 2. Insert purchase items
+      const itemRows = purchaseItems.map(item => ({
+        finance_record_id: financeRecord.id,
+        product_id: item.product_id,
+        product_name: item.product_name,
+        product_code: item.product_code,
+        quantity: item.quantity,
+        purchase_price: item.purchase_price,
+        total_amount: item.total,
+      }));
+
+      const { error: itemsError } = await supabase
+        .from("product_purchase_items" as any)
+        .insert(itemRows as any);
+      if (itemsError) throw itemsError;
+
+      // 3. Update each product's purchase_price and add stock
+      for (const item of purchaseItems) {
+        const { error: updateError } = await supabase
+          .from("products")
+          .update({
+            purchase_price: item.purchase_price,
+            stock_quantity: (allProducts.find(p => p.id === item.product_id)?.stock_quantity || 0) + item.quantity,
+          })
+          .eq("id", item.product_id);
+        if (updateError) console.error("Product update error:", updateError);
+      }
+
+      // Invalidate queries
+      queryClient.invalidateQueries({ queryKey: ["finance-records"] });
+      queryClient.invalidateQueries({ queryKey: ["finance-summary"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard-finance"] });
+      queryClient.invalidateQueries({ queryKey: ["finance-stock-value"] });
+      queryClient.invalidateQueries({ queryKey: ["finance-products-list"] });
+      queryClient.invalidateQueries({ queryKey: ["product-purchase-items"] });
+
+      toast.success("Product purchase recorded successfully!");
+      setPurchaseItems([]);
+      setPurchaseSupplier("");
+      setPurchaseNote("");
+      setPurchaseBank("");
+    } catch (error: any) {
+      toast.error("Failed to record purchase: " + error.message);
+    } finally {
+      setPurchaseSubmitting(false);
+    }
   };
 
   const getTypeLabel = (type: string) => {
@@ -459,25 +599,120 @@ export default function AdminFinance() {
             <div className="bg-card rounded-2xl border border-border p-6 space-y-5">
               <div className="flex items-center gap-3">
                 <div className="h-9 w-9 rounded-lg bg-secondary flex items-center justify-center"><Package className="h-4 w-4 text-foreground" /></div>
-                <div><p className="font-semibold text-foreground">Product Purchase</p><p className="text-xs text-muted-foreground">Track purchases from suppliers</p></div>
+                <div><p className="font-semibold text-foreground">Product Purchase</p><p className="text-xs text-muted-foreground">Select products, set purchase price & quantity</p></div>
               </div>
-              <div>
-                <label className="text-xs font-semibold text-muted-foreground uppercase">Supplier Name</label>
-                <Input className="mt-1" placeholder="e.g. ABC Traders, XYZ Supplier" value={purchaseSupplier} onChange={(e) => setPurchaseSupplier(e.target.value)} />
-              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground uppercase">Amount (৳)</label>
-                  <Input className="mt-1" type="number" value={purchaseAmount} onChange={(e) => setPurchaseAmount(e.target.value)} placeholder="0.00" />
+                  <label className="text-xs font-semibold text-muted-foreground uppercase">Supplier Name</label>
+                  <Input className="mt-1" placeholder="e.g. ABC Traders" value={purchaseSupplier} onChange={(e) => setPurchaseSupplier(e.target.value)} />
                 </div>
                 <SelectField label="Bank Account" value={purchaseBank} onChange={setPurchaseBank} options={bankAccounts.map((b) => b.label)} placeholder="Select (optional)" />
               </div>
+
+              {/* Product Search & Add */}
+              <div className="bg-secondary/20 rounded-xl border border-border/40 p-4 space-y-4">
+                <p className="text-xs font-semibold text-muted-foreground uppercase flex items-center gap-1.5">
+                  <Search className="h-3.5 w-3.5" /> Add Products
+                </p>
+                <div className="relative">
+                  <Input
+                    placeholder="Search product by name or code..."
+                    value={purchaseProductSearch}
+                    onChange={(e) => { setPurchaseProductSearch(e.target.value); setShowProductDropdown(true); }}
+                    onFocus={() => setShowProductDropdown(true)}
+                  />
+                  {showProductDropdown && filteredProducts.length > 0 && (
+                    <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-card border border-border rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                      {filteredProducts.map((p) => (
+                        <button
+                          key={p.id}
+                          className="w-full text-left px-4 py-2.5 hover:bg-secondary/50 transition-colors flex items-center justify-between"
+                          onClick={() => {
+                            setPurchaseSelectedProduct(p);
+                            setPurchaseProductSearch(p.name);
+                            setPurchaseUnitPrice(String(p.purchase_price || ""));
+                            setShowProductDropdown(false);
+                          }}
+                        >
+                          <div>
+                            <p className="text-sm font-medium text-foreground">{p.name}</p>
+                            <p className="text-xs text-muted-foreground">{p.product_code} · Stock: {p.stock_quantity}</p>
+                          </div>
+                          <span className="text-xs text-muted-foreground">৳{Number(p.purchase_price).toLocaleString()}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {purchaseSelectedProduct && (
+                  <div className="flex items-end gap-3">
+                    <div className="flex-1">
+                      <label className="text-xs font-semibold text-muted-foreground uppercase">Selected Product</label>
+                      <div className="mt-1 h-10 rounded-md border border-input bg-background px-3 py-2 text-sm flex items-center gap-2">
+                        <Package className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span className="font-medium">{purchaseSelectedProduct.name}</span>
+                        <span className="text-muted-foreground text-xs">({purchaseSelectedProduct.product_code})</span>
+                      </div>
+                    </div>
+                    <div className="w-28">
+                      <label className="text-xs font-semibold text-muted-foreground uppercase">Quantity</label>
+                      <Input className="mt-1" type="number" min="1" value={purchaseQuantity} onChange={(e) => setPurchaseQuantity(e.target.value)} placeholder="0" />
+                    </div>
+                    <div className="w-36">
+                      <label className="text-xs font-semibold text-muted-foreground uppercase">Purchase Price (৳)</label>
+                      <Input className="mt-1" type="number" value={purchaseUnitPrice} onChange={(e) => setPurchaseUnitPrice(e.target.value)} placeholder="0.00" />
+                    </div>
+                    <Button className="h-10 rounded-xl gap-1.5" onClick={handleAddPurchaseItem} disabled={!purchaseQuantity || !purchaseUnitPrice}>
+                      <Plus className="h-4 w-4" /> Add
+                    </Button>
+                  </div>
+                )}
+
+                {/* Items list */}
+                {purchaseItems.length > 0 && (
+                  <div className="space-y-2 pt-2">
+                    <div className="grid grid-cols-[1fr_80px_100px_100px_40px] gap-2 text-[10px] font-semibold text-muted-foreground uppercase px-2">
+                      <span>Product</span>
+                      <span className="text-center">Qty</span>
+                      <span className="text-right">Unit Price</span>
+                      <span className="text-right">Total</span>
+                      <span></span>
+                    </div>
+                    {purchaseItems.map((item, i) => (
+                      <div key={i} className="grid grid-cols-[1fr_80px_100px_100px_40px] gap-2 items-center bg-card rounded-lg border border-border/40 px-3 py-2">
+                        <div>
+                          <p className="text-sm font-medium text-foreground">{item.product_name}</p>
+                          <p className="text-xs text-muted-foreground">{item.product_code}</p>
+                        </div>
+                        <p className="text-sm text-center text-foreground">{item.quantity}</p>
+                        <p className="text-sm text-right text-foreground">৳{item.purchase_price.toLocaleString()}</p>
+                        <p className="text-sm text-right font-semibold text-foreground">৳{item.total.toLocaleString()}</p>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive/60 hover:text-destructive" onClick={() => removePurchaseItem(i)}>
+                          <X className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    ))}
+                    <div className="flex items-center justify-between px-3 pt-2 border-t border-border/40">
+                      <p className="text-sm font-semibold text-foreground">{purchaseItems.length} items</p>
+                      <p className="text-base font-bold text-destructive">Total: ৳{purchaseItemsTotal.toLocaleString()}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div>
                 <label className="text-xs font-semibold text-muted-foreground uppercase">Note (Optional)</label>
-                <Textarea className="mt-1" placeholder="What products, quantity, etc..." value={purchaseNote} onChange={(e) => setPurchaseNote(e.target.value)} />
+                <Textarea className="mt-1" placeholder="Additional details..." value={purchaseNote} onChange={(e) => setPurchaseNote(e.target.value)} />
               </div>
-              <Button className="w-full h-12 rounded-2xl text-base font-semibold bg-destructive hover:bg-destructive/90 text-destructive-foreground" onClick={handleSubmitPurchase} disabled={createRecord.isPending || !purchaseAmount || !purchaseSupplier}>
-                {createRecord.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Record Purchase"}
+
+              <Button
+                className="w-full h-12 rounded-2xl text-base font-semibold bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                onClick={handleSubmitPurchase}
+                disabled={purchaseSubmitting || purchaseItems.length === 0 || !purchaseSupplier}
+              >
+                {purchaseSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : `Record Purchase (৳${purchaseItemsTotal.toLocaleString()})`}
               </Button>
             </div>
 
