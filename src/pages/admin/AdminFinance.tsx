@@ -229,15 +229,104 @@ export default function AdminFinance() {
     }, { onSuccess: () => { setInvestAmount(""); setInvestSource(""); setInvestNote(""); } });
   };
 
-  const handleSubmitPurchase = () => {
-    if (!purchaseAmount || Number(purchaseAmount) <= 0 || !purchaseSupplier) return;
-    const bankInfo = purchaseBank ? ` [${purchaseBank}]` : "";
-    createRecord.mutate({
-      type: "product_purchase",
-      label: purchaseSupplier,
-      amount: Number(purchaseAmount),
-      notes: (purchaseNote ? purchaseNote : "") + bankInfo || null,
-    }, { onSuccess: () => { setPurchaseAmount(""); setPurchaseSupplier(""); setPurchaseNote(""); } });
+  // Add product to purchase items list
+  const handleAddPurchaseItem = () => {
+    if (!purchaseSelectedProduct || !purchaseQuantity || !purchaseUnitPrice) return;
+    const qty = Number(purchaseQuantity);
+    const price = Number(purchaseUnitPrice);
+    if (qty <= 0 || price <= 0) return;
+
+    setPurchaseItems(prev => [...prev, {
+      product_id: purchaseSelectedProduct.id,
+      product_name: purchaseSelectedProduct.name,
+      product_code: purchaseSelectedProduct.product_code,
+      quantity: qty,
+      purchase_price: price,
+      total: qty * price,
+    }]);
+
+    setPurchaseSelectedProduct(null);
+    setPurchaseProductSearch("");
+    setPurchaseQuantity("");
+    setPurchaseUnitPrice("");
+  };
+
+  const removePurchaseItem = (index: number) => {
+    setPurchaseItems(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const purchaseItemsTotal = purchaseItems.reduce((s, i) => s + i.total, 0);
+
+  const [purchaseSubmitting, setPurchaseSubmitting] = useState(false);
+
+  const handleSubmitPurchase = async () => {
+    if (purchaseItems.length === 0 || !purchaseSupplier) return;
+    setPurchaseSubmitting(true);
+
+    try {
+      const bankInfo = purchaseBank ? ` [${purchaseBank}]` : "";
+      const totalAmount = purchaseItemsTotal;
+      const itemsSummary = purchaseItems.map(i => `${i.product_name} x${i.quantity} @৳${i.purchase_price}`).join(", ");
+
+      // 1. Create finance record
+      const { data: financeRecord, error: financeError } = await supabase
+        .from("finance_records")
+        .insert({
+          type: "product_purchase",
+          label: purchaseSupplier,
+          amount: totalAmount,
+          notes: (purchaseNote ? purchaseNote + " | " : "") + itemsSummary + bankInfo || null,
+        })
+        .select()
+        .single();
+      if (financeError) throw financeError;
+
+      // 2. Insert purchase items
+      const itemRows = purchaseItems.map(item => ({
+        finance_record_id: financeRecord.id,
+        product_id: item.product_id,
+        product_name: item.product_name,
+        product_code: item.product_code,
+        quantity: item.quantity,
+        purchase_price: item.purchase_price,
+        total_amount: item.total,
+      }));
+
+      const { error: itemsError } = await supabase
+        .from("product_purchase_items" as any)
+        .insert(itemRows as any);
+      if (itemsError) throw itemsError;
+
+      // 3. Update each product's purchase_price and add stock
+      for (const item of purchaseItems) {
+        const { error: updateError } = await supabase
+          .from("products")
+          .update({
+            purchase_price: item.purchase_price,
+            stock_quantity: (allProducts.find(p => p.id === item.product_id)?.stock_quantity || 0) + item.quantity,
+          })
+          .eq("id", item.product_id);
+        if (updateError) console.error("Product update error:", updateError);
+      }
+
+      // Invalidate queries
+      queryClient.invalidateQueries({ queryKey: ["finance-records"] });
+      queryClient.invalidateQueries({ queryKey: ["finance-summary"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard-finance"] });
+      queryClient.invalidateQueries({ queryKey: ["finance-stock-value"] });
+      queryClient.invalidateQueries({ queryKey: ["finance-products-list"] });
+      queryClient.invalidateQueries({ queryKey: ["product-purchase-items"] });
+
+      toast.success("Product purchase recorded successfully!");
+      setPurchaseItems([]);
+      setPurchaseSupplier("");
+      setPurchaseNote("");
+      setPurchaseBank("");
+    } catch (error: any) {
+      toast.error("Failed to record purchase: " + error.message);
+    } finally {
+      setPurchaseSubmitting(false);
+    }
   };
 
   const getTypeLabel = (type: string) => {
