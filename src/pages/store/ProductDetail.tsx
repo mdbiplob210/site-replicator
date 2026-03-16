@@ -12,6 +12,8 @@ import { ExitDiscountBanner } from "@/components/store/ExitDiscountBanner";
 import { OptimizedImage } from "@/components/ui/optimized-image";
 import { supabase } from "@/integrations/supabase/client";
 import { getDisplayImage } from "@/lib/imageUtils";
+import { ProductReviewSection } from "@/components/store/ProductReviewSection";
+import { VariantSelector } from "@/components/store/VariantSelector";
 
 const ProductDetail = () => {
   const { slug } = useParams<{ slug: string }>();

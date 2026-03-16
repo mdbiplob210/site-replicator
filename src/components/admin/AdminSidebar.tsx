@@ -88,6 +88,8 @@ export function AdminSidebar() {
     if (item.title === "Finance") return canSee("view_finance");
     if (item.title === "Planning") return canSee("manage_settings");
     if (item.title === "Tasks") return canSee("view_dashboard");
+    if (item.title === "Coupons") return canSee("manage_settings");
+    if (item.title === "Reviews") return canSee("manage_settings");
     if (item.title === "Analytics") return canSee("view_analytics");
     if (item.title === "WhatsApp") return canSee("manage_whatsapp");
     return isAdmin;
