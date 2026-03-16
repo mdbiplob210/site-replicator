@@ -454,10 +454,11 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
               </Button>
 
               {/* Coupon Code */}
-              <CouponInput subtotal={subtotal} onApply={(couponDiscount) => {
-                // Coupon discount is additional to exit discount
-                setCouponDiscount(couponDiscount);
-              }} />
+              <CouponInput 
+                orderTotal={subtotal} 
+                onApply={(couponDiscountVal) => setCouponDiscount(couponDiscountVal)}
+                onRemove={() => setCouponDiscount(0)}
+              />
 
               <p className="text-center text-[11px] sm:text-xs text-gray-400 pb-2">💳 Cash on delivery | 🚚 Delivery in 2-5 days</p>
             </form>
