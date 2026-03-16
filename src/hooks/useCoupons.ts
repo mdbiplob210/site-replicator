@@ -113,7 +113,7 @@ export async function validateCoupon(code: string, orderTotal: number): Promise<
 
 /** Increment used_count after successful order */
 export async function markCouponUsed(couponId: string) {
-  await supabase.rpc("increment_coupon_usage" as any, { coupon_id: couponId }).catch(() => {});
+  try { await supabase.rpc("increment_coupon_usage" as any, { coupon_id: couponId }); } catch {}
   // Fallback: direct update
   const { data } = await supabase.from("coupons").select("used_count").eq("id", couponId).single();
   if (data) {
