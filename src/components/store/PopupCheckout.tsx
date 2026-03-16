@@ -13,6 +13,7 @@ import { getDisplayImage } from "@/lib/imageUtils";
 import { getClientIp, parseDeviceInfo } from "@/lib/deviceDetect";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { sanitizePhoneInput, isValidBDPhone } from "@/lib/phoneUtils";
+import { CouponInput } from "@/components/store/CouponInput";
 
 interface CheckoutItem {
   productId: string;
@@ -41,6 +42,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
   const [currentItem, setCurrentItem] = useState<CheckoutItem | null>(null);
   const [qty, setQty] = useState(1);
   const [deliveryArea, setDeliveryArea] = useState<"inside" | "outside">("inside");
+  const [couponDiscount, setCouponDiscount] = useState(0);
   const formInteracted = useRef(false);
   const abandonedSaved = useRef(false);
   const orderSubmitted = useRef(false);
@@ -197,7 +199,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
         notes: form.notes || null,
         total_amount: total,
         product_cost: subtotal,
-        discount: discount,
+        discount: totalDiscount,
         delivery_charge: deliveryCharge,
         status: "processing",
         source: "website",
@@ -323,7 +325,8 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
 
   const subtotal = currentItem.price * qty;
   const deliveryCharge = productHasFreeDelivery ? 0 : (freeDeliveryAbove > 0 && subtotal >= freeDeliveryAbove) ? 0 : (deliveryArea === "inside" ? insideDhaka : outsideDhaka);
-  const total = Math.max(0, subtotal + deliveryCharge - discount);
+  const totalDiscount = discount + couponDiscount;
+  const total = Math.max(0, subtotal + deliveryCharge - totalDiscount);
 
   return (
     <div className="fixed inset-0 z-[999] flex items-end sm:items-center justify-center">
@@ -423,9 +426,9 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
               {/* Summary */}
               <div className="bg-gray-50 rounded-xl p-3 space-y-1.5 text-sm">
                 <div className="flex justify-between"><span className="text-gray-500">সাবটোটাল</span><span>৳{subtotal}</span></div>
-                {discount > 0 && (
+                {totalDiscount > 0 && (
                   <div className="flex justify-between text-red-500 font-semibold">
-                    <span>🎁 বিশেষ ছাড়</span><span>-৳{discount}</span>
+                    <span>🎁 মোট ছাড়</span><span>-৳{totalDiscount}</span>
                   </div>
                 )}
                 <div className="flex justify-between">
@@ -449,6 +452,13 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
 
                 )}
               </Button>
+
+              {/* Coupon Code */}
+              <CouponInput 
+                orderTotal={subtotal} 
+                onApply={(couponDiscountVal) => setCouponDiscount(couponDiscountVal)}
+                onRemove={() => setCouponDiscount(0)}
+              />
 
               <p className="text-center text-[11px] sm:text-xs text-gray-400 pb-2">💳 Cash on delivery | 🚚 Delivery in 2-5 days</p>
             </form>

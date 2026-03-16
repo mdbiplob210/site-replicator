@@ -1,17 +1,24 @@
+import { useState } from "react";
 import { useProductVariants } from "@/hooks/useProductVariants";
 
 interface Props {
   productId: string;
-  selectedVariant: any | null;
-  onSelect: (variant: any | null) => void;
+  selectedVariant?: any | null;
+  onSelect?: (variant: any | null) => void;
 }
 
-export function VariantSelector({ productId, selectedVariant, onSelect }: Props) {
+export function VariantSelector({ productId, selectedVariant: controlledVariant, onSelect }: Props) {
   const { data: variants = [] } = useProductVariants(productId);
+  const [internalSelected, setInternalSelected] = useState<any | null>(null);
+
+  const selectedVariant = controlledVariant !== undefined ? controlledVariant : internalSelected;
+  const handleSelect = (v: any | null) => {
+    if (onSelect) onSelect(v);
+    else setInternalSelected(v);
+  };
 
   if (variants.length === 0) return null;
 
-  // Group by variant_name
   const groups = variants.reduce((acc: Record<string, any[]>, v: any) => {
     if (!acc[v.variant_name]) acc[v.variant_name] = [];
     acc[v.variant_name].push(v);
@@ -19,7 +26,8 @@ export function VariantSelector({ productId, selectedVariant, onSelect }: Props)
   }, {});
 
   return (
-    <div className="space-y-3">
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 space-y-3">
+      <h3 className="font-bold text-sm text-gray-800">ভ্যারিয়েন্ট নির্বাচন করুন</h3>
       {Object.entries(groups).map(([groupName, options]) => (
         <div key={groupName}>
           <p className="text-sm font-semibold text-gray-700 mb-2">{groupName}:</p>
@@ -30,7 +38,7 @@ export function VariantSelector({ productId, selectedVariant, onSelect }: Props)
               return (
                 <button
                   key={v.id}
-                  onClick={() => onSelect(isSelected ? null : v)}
+                  onClick={() => handleSelect(isSelected ? null : v)}
                   disabled={outOfStock}
                   className={`px-4 py-2 rounded-lg border-2 text-sm font-medium transition-all ${
                     isSelected

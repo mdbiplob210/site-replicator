@@ -12,6 +12,8 @@ import { ExitDiscountBanner } from "@/components/store/ExitDiscountBanner";
 import { OptimizedImage } from "@/components/ui/optimized-image";
 import { supabase } from "@/integrations/supabase/client";
 import { getDisplayImage } from "@/lib/imageUtils";
+import { ProductReviewSection } from "@/components/store/ProductReviewSection";
+import { VariantSelector } from "@/components/store/VariantSelector";
 
 const ProductDetail = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -482,6 +484,11 @@ const ProductDetail = () => {
           </div>
         </div>
 
+        {/* Product Variants */}
+        <div className="mt-6">
+          <VariantSelector productId={product.id} />
+        </div>
+
         {/* Detailed description */}
         {(product.short_description || product.detailed_description) && (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mt-6 p-4 sm:p-6">
@@ -503,6 +510,11 @@ const ProductDetail = () => {
             )}
           </div>
         )}
+
+        {/* Product Reviews */}
+        <div className="mt-6">
+          <ProductReviewSection productId={product.id} />
+        </div>
 
         {/* Suggested Products */}
         <SuggestedProducts categoryId={product.category_id} currentProductId={product.id} onOrder={(p: any) => {

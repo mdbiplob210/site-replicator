@@ -4,7 +4,7 @@ import {
   Lightbulb, ListChecks, BarChart3, Megaphone, Zap, Database,
   Users, HeadphonesIcon, Sparkles, CreditCard, LogOut, ChevronDown,
   Layout, ShoppingBag, Gift, Grid3X3, Heart, Layers, CreditCard as PaymentIcon,
-  File, Settings, PieChart, UserCog, MessageSquare, Printer, Boxes
+  File, Settings, PieChart, UserCog, MessageSquare, Printer, Boxes, Star
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -43,6 +43,8 @@ const mainMenuItems = [
   { title: "Orders", url: "/admin/orders", icon: ShoppingCart },
   { title: "Products", url: "/admin/products", icon: Package },
   { title: "Inventory", url: "/admin/inventory", icon: Boxes },
+  { title: "Coupons", url: "/admin/coupons", icon: Gift },
+  { title: "Reviews", url: "/admin/reviews", icon: Star },
   { title: "Website", url: "/admin/website", icon: Globe, hasSubmenu: true, subItems: websiteSubItems },
   { title: "Invoices", url: "/admin/invoices", icon: FileText },
   { title: "Reports", url: "/admin/reports", icon: FileText },
@@ -86,6 +88,8 @@ export function AdminSidebar() {
     if (item.title === "Finance") return canSee("view_finance");
     if (item.title === "Planning") return canSee("manage_settings");
     if (item.title === "Tasks") return canSee("view_dashboard");
+    if (item.title === "Coupons") return canSee("manage_settings");
+    if (item.title === "Reviews") return canSee("manage_settings");
     if (item.title === "Analytics") return canSee("view_analytics");
     if (item.title === "WhatsApp") return canSee("manage_whatsapp");
     return isAdmin;
