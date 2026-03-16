@@ -325,7 +325,8 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
 
   const subtotal = currentItem.price * qty;
   const deliveryCharge = productHasFreeDelivery ? 0 : (freeDeliveryAbove > 0 && subtotal >= freeDeliveryAbove) ? 0 : (deliveryArea === "inside" ? insideDhaka : outsideDhaka);
-  const total = Math.max(0, subtotal + deliveryCharge - discount);
+  const totalDiscount = discount + couponDiscount;
+  const total = Math.max(0, subtotal + deliveryCharge - totalDiscount);
 
   return (
     <div className="fixed inset-0 z-[999] flex items-end sm:items-center justify-center">
