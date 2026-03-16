@@ -9,6 +9,7 @@ import type { PermissionKey } from "@/contexts/AuthContext";
 import { TrackingInitializer } from "./components/TrackingInitializer";
 import { WebsiteEventTracker } from "./components/WebsiteEventTracker";
 import { useDynamicMeta } from "@/hooks/useDynamicMeta";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 const DynamicMetaProvider = () => { useDynamicMeta(); return null; };
 
