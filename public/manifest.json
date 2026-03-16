@@ -1,0 +1,17 @@
+{
+  "name": "Online Store",
+  "short_name": "Store",
+  "description": "আপনার পছন্দের প্রোডাক্ট অর্ডার করুন - দ্রুত ডেলিভারি",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#16a34a",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    }
+  ]
+}
