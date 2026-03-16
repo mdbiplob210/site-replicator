@@ -54,6 +54,19 @@ export default function AdminFinance() {
   const [purchaseAmount, setPurchaseAmount] = useState("");
   const [purchaseNote, setPurchaseNote] = useState("");
   const [purchaseBank, setPurchaseBank] = useState("");
+  const [purchaseProductSearch, setPurchaseProductSearch] = useState("");
+  const [purchaseSelectedProduct, setPurchaseSelectedProduct] = useState<any>(null);
+  const [purchaseQuantity, setPurchaseQuantity] = useState("");
+  const [purchaseUnitPrice, setPurchaseUnitPrice] = useState("");
+  const [showProductDropdown, setShowProductDropdown] = useState(false);
+  const [purchaseItems, setPurchaseItems] = useState<Array<{
+    product_id: string;
+    product_name: string;
+    product_code: string;
+    quantity: number;
+    purchase_price: number;
+    total: number;
+  }>>([]);
 
   // History filters
   const [histType, setHistType] = useState("all");
