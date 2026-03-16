@@ -9,9 +9,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useFinanceRecords, useFinanceSummary, useCreateFinanceRecord, useDeleteFinanceRecord, useFinanceSources, useCreateFinanceSource, useDeleteFinanceSource } from "@/hooks/useFinance";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import { toast } from "sonner";
 
 type FinanceTab = "income" | "expense" | "product_purchase" | "banks" | "loans" | "investments" | "history";
 type Period = "today" | "this_week" | "this_month" | "last_month" | "custom";
