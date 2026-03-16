@@ -199,7 +199,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
         notes: form.notes || null,
         total_amount: total,
         product_cost: subtotal,
-        discount: discount,
+        discount: totalDiscount,
         delivery_charge: deliveryCharge,
         status: "processing",
         source: "website",
