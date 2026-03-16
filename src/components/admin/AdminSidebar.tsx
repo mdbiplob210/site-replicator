@@ -4,7 +4,7 @@ import {
   Lightbulb, ListChecks, BarChart3, Megaphone, Zap, Database,
   Users, HeadphonesIcon, Sparkles, CreditCard, LogOut, ChevronDown,
   Layout, ShoppingBag, Gift, Grid3X3, Heart, Layers, CreditCard as PaymentIcon,
-  File, Settings, PieChart, UserCog, MessageSquare, Printer
+  File, Settings, PieChart, UserCog, MessageSquare, Printer, Boxes
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
