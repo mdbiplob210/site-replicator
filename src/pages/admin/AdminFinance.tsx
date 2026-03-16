@@ -599,25 +599,120 @@ export default function AdminFinance() {
             <div className="bg-card rounded-2xl border border-border p-6 space-y-5">
               <div className="flex items-center gap-3">
                 <div className="h-9 w-9 rounded-lg bg-secondary flex items-center justify-center"><Package className="h-4 w-4 text-foreground" /></div>
-                <div><p className="font-semibold text-foreground">Product Purchase</p><p className="text-xs text-muted-foreground">Track purchases from suppliers</p></div>
+                <div><p className="font-semibold text-foreground">Product Purchase</p><p className="text-xs text-muted-foreground">Select products, set purchase price & quantity</p></div>
               </div>
-              <div>
-                <label className="text-xs font-semibold text-muted-foreground uppercase">Supplier Name</label>
-                <Input className="mt-1" placeholder="e.g. ABC Traders, XYZ Supplier" value={purchaseSupplier} onChange={(e) => setPurchaseSupplier(e.target.value)} />
-              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground uppercase">Amount (৳)</label>
-                  <Input className="mt-1" type="number" value={purchaseAmount} onChange={(e) => setPurchaseAmount(e.target.value)} placeholder="0.00" />
+                  <label className="text-xs font-semibold text-muted-foreground uppercase">Supplier Name</label>
+                  <Input className="mt-1" placeholder="e.g. ABC Traders" value={purchaseSupplier} onChange={(e) => setPurchaseSupplier(e.target.value)} />
                 </div>
                 <SelectField label="Bank Account" value={purchaseBank} onChange={setPurchaseBank} options={bankAccounts.map((b) => b.label)} placeholder="Select (optional)" />
               </div>
+
+              {/* Product Search & Add */}
+              <div className="bg-secondary/20 rounded-xl border border-border/40 p-4 space-y-4">
+                <p className="text-xs font-semibold text-muted-foreground uppercase flex items-center gap-1.5">
+                  <Search className="h-3.5 w-3.5" /> Add Products
+                </p>
+                <div className="relative">
+                  <Input
+                    placeholder="Search product by name or code..."
+                    value={purchaseProductSearch}
+                    onChange={(e) => { setPurchaseProductSearch(e.target.value); setShowProductDropdown(true); }}
+                    onFocus={() => setShowProductDropdown(true)}
+                  />
+                  {showProductDropdown && filteredProducts.length > 0 && (
+                    <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-card border border-border rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                      {filteredProducts.map((p) => (
+                        <button
+                          key={p.id}
+                          className="w-full text-left px-4 py-2.5 hover:bg-secondary/50 transition-colors flex items-center justify-between"
+                          onClick={() => {
+                            setPurchaseSelectedProduct(p);
+                            setPurchaseProductSearch(p.name);
+                            setPurchaseUnitPrice(String(p.purchase_price || ""));
+                            setShowProductDropdown(false);
+                          }}
+                        >
+                          <div>
+                            <p className="text-sm font-medium text-foreground">{p.name}</p>
+                            <p className="text-xs text-muted-foreground">{p.product_code} · Stock: {p.stock_quantity}</p>
+                          </div>
+                          <span className="text-xs text-muted-foreground">৳{Number(p.purchase_price).toLocaleString()}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {purchaseSelectedProduct && (
+                  <div className="flex items-end gap-3">
+                    <div className="flex-1">
+                      <label className="text-xs font-semibold text-muted-foreground uppercase">Selected Product</label>
+                      <div className="mt-1 h-10 rounded-md border border-input bg-background px-3 py-2 text-sm flex items-center gap-2">
+                        <Package className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span className="font-medium">{purchaseSelectedProduct.name}</span>
+                        <span className="text-muted-foreground text-xs">({purchaseSelectedProduct.product_code})</span>
+                      </div>
+                    </div>
+                    <div className="w-28">
+                      <label className="text-xs font-semibold text-muted-foreground uppercase">Quantity</label>
+                      <Input className="mt-1" type="number" min="1" value={purchaseQuantity} onChange={(e) => setPurchaseQuantity(e.target.value)} placeholder="0" />
+                    </div>
+                    <div className="w-36">
+                      <label className="text-xs font-semibold text-muted-foreground uppercase">Purchase Price (৳)</label>
+                      <Input className="mt-1" type="number" value={purchaseUnitPrice} onChange={(e) => setPurchaseUnitPrice(e.target.value)} placeholder="0.00" />
+                    </div>
+                    <Button className="h-10 rounded-xl gap-1.5" onClick={handleAddPurchaseItem} disabled={!purchaseQuantity || !purchaseUnitPrice}>
+                      <Plus className="h-4 w-4" /> Add
+                    </Button>
+                  </div>
+                )}
+
+                {/* Items list */}
+                {purchaseItems.length > 0 && (
+                  <div className="space-y-2 pt-2">
+                    <div className="grid grid-cols-[1fr_80px_100px_100px_40px] gap-2 text-[10px] font-semibold text-muted-foreground uppercase px-2">
+                      <span>Product</span>
+                      <span className="text-center">Qty</span>
+                      <span className="text-right">Unit Price</span>
+                      <span className="text-right">Total</span>
+                      <span></span>
+                    </div>
+                    {purchaseItems.map((item, i) => (
+                      <div key={i} className="grid grid-cols-[1fr_80px_100px_100px_40px] gap-2 items-center bg-card rounded-lg border border-border/40 px-3 py-2">
+                        <div>
+                          <p className="text-sm font-medium text-foreground">{item.product_name}</p>
+                          <p className="text-xs text-muted-foreground">{item.product_code}</p>
+                        </div>
+                        <p className="text-sm text-center text-foreground">{item.quantity}</p>
+                        <p className="text-sm text-right text-foreground">৳{item.purchase_price.toLocaleString()}</p>
+                        <p className="text-sm text-right font-semibold text-foreground">৳{item.total.toLocaleString()}</p>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive/60 hover:text-destructive" onClick={() => removePurchaseItem(i)}>
+                          <X className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    ))}
+                    <div className="flex items-center justify-between px-3 pt-2 border-t border-border/40">
+                      <p className="text-sm font-semibold text-foreground">{purchaseItems.length} items</p>
+                      <p className="text-base font-bold text-destructive">Total: ৳{purchaseItemsTotal.toLocaleString()}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div>
                 <label className="text-xs font-semibold text-muted-foreground uppercase">Note (Optional)</label>
-                <Textarea className="mt-1" placeholder="What products, quantity, etc..." value={purchaseNote} onChange={(e) => setPurchaseNote(e.target.value)} />
+                <Textarea className="mt-1" placeholder="Additional details..." value={purchaseNote} onChange={(e) => setPurchaseNote(e.target.value)} />
               </div>
-              <Button className="w-full h-12 rounded-2xl text-base font-semibold bg-destructive hover:bg-destructive/90 text-destructive-foreground" onClick={handleSubmitPurchase} disabled={createRecord.isPending || !purchaseAmount || !purchaseSupplier}>
-                {createRecord.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Record Purchase"}
+
+              <Button
+                className="w-full h-12 rounded-2xl text-base font-semibold bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                onClick={handleSubmitPurchase}
+                disabled={purchaseSubmitting || purchaseItems.length === 0 || !purchaseSupplier}
+              >
+                {purchaseSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : `Record Purchase (৳${purchaseItemsTotal.toLocaleString()})`}
               </Button>
             </div>
 
