@@ -13,6 +13,7 @@ import { getDisplayImage } from "@/lib/imageUtils";
 import { getClientIp, parseDeviceInfo } from "@/lib/deviceDetect";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { sanitizePhoneInput, isValidBDPhone } from "@/lib/phoneUtils";
+import { CouponInput } from "@/components/store/CouponInput";
 
 interface CheckoutItem {
   productId: string;
