@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import {
   Wallet, ArrowDownCircle, ArrowUpCircle, Landmark, PiggyBank,
   TrendingUp, Clock, ShoppingCart, Calendar, CircleDollarSign,
-  Package, Trash2, Loader2, Plus, Tags, X
+  Package, Trash2, Loader2, Plus, Tags, X, Search
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
