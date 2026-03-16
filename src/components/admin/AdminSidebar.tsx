@@ -4,7 +4,7 @@ import {
   Lightbulb, ListChecks, BarChart3, Megaphone, Zap, Database,
   Users, HeadphonesIcon, Sparkles, CreditCard, LogOut, ChevronDown,
   Layout, ShoppingBag, Gift, Grid3X3, Heart, Layers, CreditCard as PaymentIcon,
-  File, Settings, PieChart, UserCog, MessageSquare, Printer
+  File, Settings, PieChart, UserCog, MessageSquare, Printer, Boxes
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -42,6 +42,7 @@ const mainMenuItems = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
   { title: "Orders", url: "/admin/orders", icon: ShoppingCart },
   { title: "Products", url: "/admin/products", icon: Package },
+  { title: "Inventory", url: "/admin/inventory", icon: Boxes },
   { title: "Website", url: "/admin/website", icon: Globe, hasSubmenu: true, subItems: websiteSubItems },
   { title: "Invoices", url: "/admin/invoices", icon: FileText },
   { title: "Reports", url: "/admin/reports", icon: FileText },

@@ -1361,11 +1361,13 @@ export type Database = {
           free_delivery: boolean
           id: string
           internal_note: string | null
+          low_stock_threshold: number
           main_image_url: string | null
           name: string
           original_price: number
           product_code: string
           purchase_price: number
+          reorder_point: number
           selling_price: number
           short_description: string | null
           slug: string | null
@@ -1384,11 +1386,13 @@ export type Database = {
           free_delivery?: boolean
           id?: string
           internal_note?: string | null
+          low_stock_threshold?: number
           main_image_url?: string | null
           name: string
           original_price?: number
           product_code: string
           purchase_price?: number
+          reorder_point?: number
           selling_price?: number
           short_description?: string | null
           slug?: string | null
@@ -1407,11 +1411,13 @@ export type Database = {
           free_delivery?: boolean
           id?: string
           internal_note?: string | null
+          low_stock_threshold?: number
           main_image_url?: string | null
           name?: string
           original_price?: number
           product_code?: string
           purchase_price?: number
+          reorder_point?: number
           selling_price?: number
           short_description?: string | null
           slug?: string | null
@@ -1478,6 +1484,202 @@ export type Database = {
           key?: string
           updated_at?: string
           value?: string
+        }
+        Relationships: []
+      }
+      stock_audit_items: {
+        Row: {
+          audit_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          physical_stock: number
+          product_code: string
+          product_id: string
+          product_name: string
+          system_stock: number
+          variance: number
+        }
+        Insert: {
+          audit_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          physical_stock?: number
+          product_code?: string
+          product_id: string
+          product_name: string
+          system_stock?: number
+          variance?: number
+        }
+        Update: {
+          audit_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          physical_stock?: number
+          product_code?: string
+          product_id?: string
+          product_name?: string
+          system_stock?: number
+          variance?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_audit_items_audit_id_fkey"
+            columns: ["audit_id"]
+            isOneToOne: false
+            referencedRelation: "stock_audits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_audit_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_audit_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_audits: {
+        Row: {
+          audit_date: string
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          matched_items: number
+          notes: string | null
+          status: string
+          total_items: number
+          variance_items: number
+        }
+        Insert: {
+          audit_date?: string
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          matched_items?: number
+          notes?: string | null
+          status?: string
+          total_items?: number
+          variance_items?: number
+        }
+        Update: {
+          audit_date?: string
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          matched_items?: number
+          notes?: string | null
+          status?: string
+          total_items?: number
+          variance_items?: number
+        }
+        Relationships: []
+      }
+      stock_movements: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          movement_type: string
+          new_stock: number
+          notes: string | null
+          previous_stock: number
+          product_id: string
+          product_name: string
+          quantity: number
+          reference_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          movement_type: string
+          new_stock?: number
+          notes?: string | null
+          previous_stock?: number
+          product_id: string
+          product_name: string
+          quantity: number
+          reference_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          movement_type?: string
+          new_stock?: number
+          notes?: string | null
+          previous_stock?: number
+          product_id?: string
+          product_name?: string
+          quantity?: number
+          reference_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      suppliers: {
+        Row: {
+          address: string | null
+          created_at: string
+          email: string | null
+          id: string
+          is_active: boolean
+          name: string
+          notes: string | null
+          phone: string | null
+          total_purchases: number
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          phone?: string | null
+          total_purchases?: number
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          total_purchases?: number
+          updated_at?: string
         }
         Relationships: []
       }

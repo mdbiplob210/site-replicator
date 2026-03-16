@@ -60,6 +60,7 @@ const AdminPages = lazy(() => import("./pages/admin/AdminPages"));
 const AdminProfile = lazy(() => import("./pages/admin/AdminProfile"));
 const AdminWhatsApp = lazy(() => import("./pages/admin/AdminWhatsApp"));
 const AdminMemoTemplate = lazy(() => import("./pages/admin/AdminMemoTemplate"));
+const AdminInventory = lazy(() => import("./pages/admin/AdminInventory"));
 
 // Minimal loading fallback
 const PageLoader = () => (
@@ -145,6 +146,7 @@ const App = () => {
             <Route path="/admin/reports" element={<Admin requiredPermissions={["view_reports"]}><AdminReports /></Admin>} />
             {/* Finance */}
             <Route path="/admin/finance" element={<Admin requiredPermissions={["view_finance"]}><AdminFinance /></Admin>} />
+            <Route path="/admin/inventory" element={<Admin requiredPermissions={["view_products"]}><AdminInventory /></Admin>} />
             <Route path="/admin/invoices" element={<Admin requiredPermissions={["view_finance"]}><AdminInvoices /></Admin>} />
             {/* Planning - manage_settings as proxy */}
             <Route path="/admin/planning" element={<Admin requiredPermissions={["manage_settings"]}><AdminPlanning /></Admin>} />
