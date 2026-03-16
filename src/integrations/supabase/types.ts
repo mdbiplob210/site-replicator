@@ -1292,6 +1292,64 @@ export type Database = {
         }
         Relationships: []
       }
+      product_purchase_items: {
+        Row: {
+          created_at: string
+          finance_record_id: string | null
+          id: string
+          product_code: string
+          product_id: string | null
+          product_name: string
+          purchase_price: number
+          quantity: number
+          total_amount: number
+        }
+        Insert: {
+          created_at?: string
+          finance_record_id?: string | null
+          id?: string
+          product_code?: string
+          product_id?: string | null
+          product_name: string
+          purchase_price?: number
+          quantity?: number
+          total_amount?: number
+        }
+        Update: {
+          created_at?: string
+          finance_record_id?: string | null
+          id?: string
+          product_code?: string
+          product_id?: string | null
+          product_name?: string
+          purchase_price?: number
+          quantity?: number
+          total_amount?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_purchase_items_finance_record_id_fkey"
+            columns: ["finance_record_id"]
+            isOneToOne: false
+            referencedRelation: "finance_records"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_purchase_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_purchase_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           additional_cost: number
