@@ -91,6 +91,43 @@ export default function AdminFinance() {
   // Bank accounts from finance_records
   const { data: bankAccounts = [] } = useFinanceRecords("bank");
 
+  // Products list for purchase selection
+  const queryClient = useQueryClient();
+  const { data: allProducts = [] } = useQuery({
+    queryKey: ["finance-products-list"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("id, name, product_code, purchase_price, stock_quantity")
+        .order("name");
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Purchase items history
+  const { data: purchaseItemsHistory = [] } = useQuery({
+    queryKey: ["product-purchase-items"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("product_purchase_items" as any)
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return data as any[];
+    },
+  });
+
+  // Filtered products for search
+  const filteredProducts = useMemo(() => {
+    if (!purchaseProductSearch) return [];
+    const q = purchaseProductSearch.toLowerCase();
+    return allProducts.filter(
+      (p) => p.name.toLowerCase().includes(q) || p.product_code.toLowerCase().includes(q)
+    ).slice(0, 10);
+  }, [purchaseProductSearch, allProducts]);
+
   // Cross-connect: Stock value from products table
   const { data: stockValue = 0 } = useQuery({
     queryKey: ["finance-stock-value"],
