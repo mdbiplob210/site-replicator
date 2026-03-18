@@ -309,14 +309,14 @@ const Template1Classic = () => {
                 <div key={p.id} className="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                   {/* Image */}
                   <Link to={`/product/${(p as any).slug || p.id}`} className="block relative">
-                    <div className="aspect-square overflow-hidden bg-gray-50">
+                    <div className="aspect-square overflow-hidden bg-gray-50" style={{ containIntrinsicSize: '400px 400px', contentVisibility: isAboveFold ? 'visible' : 'auto' }}>
                       <OptimizedImage 
                         src={imageSrc} 
                         alt={p.name || ''} 
                         width={400} 
                         quality={80} 
                         eager={isAboveFold}
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-cover"
                         fallback={
                           <div className="w-full h-full flex items-center justify-center">
                             <ShoppingBag className="h-10 w-10 text-gray-200" />
@@ -476,18 +476,6 @@ const Template1Classic = () => {
         onExitIntent={handleExitIntent}
       />
 
-      {/* Marquee animation */}
-      <style>{`
-        @keyframes marquee {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        .animate-marquee {
-          animation: marquee 20s linear infinite;
-        }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
     </div>
   );
 };

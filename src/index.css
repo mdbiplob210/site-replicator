@@ -4,6 +4,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Marquee animation - moved from inline <style> */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-marquee {
+  animation: marquee 20s linear infinite;
+}
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
 @layer base {
   :root {
     --background: 220 20% 97%;
