@@ -24,7 +24,7 @@ export function useActiveBanners() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("banners")
-        .select("*")
+        .select("id,image_url,link_url,sort_order")
         .eq("is_active", true)
         .order("sort_order", { ascending: true });
       if (error) throw error;
@@ -33,7 +33,7 @@ export function useActiveBanners() {
     initialData: () => {
       return getPrefetchedData<any[]>("banners-active") || undefined;
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 10 * 60 * 1000,
   });
 }
 
