@@ -309,7 +309,7 @@ const Template1Classic = () => {
                 <div key={p.id} className="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                   {/* Image */}
                   <Link to={`/product/${(p as any).slug || p.id}`} className="block relative">
-                    <div className="aspect-square overflow-hidden bg-gray-50">
+                    <div className="aspect-square overflow-hidden bg-gray-50" style={{ containIntrinsicSize: '400px 400px', contentVisibility: isAboveFold ? 'visible' : 'auto' }}>
                       <OptimizedImage 
                         src={imageSrc} 
                         alt={p.name || ''} 

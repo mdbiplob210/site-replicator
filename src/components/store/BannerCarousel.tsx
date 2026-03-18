@@ -22,7 +22,7 @@ const BannerCarousel = () => {
     return () => clearInterval(interval);
   }, [next, banners.length]);
 
-  if (banners.length === 0) return <div className="w-full" style={{ aspectRatio: "16/5" }} />;
+  if (banners.length === 0) return <div className="w-full bg-muted" style={{ aspectRatio: "16/5", minHeight: "120px" }} />;
 
   const banner = banners[current];
 

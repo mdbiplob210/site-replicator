@@ -347,7 +347,7 @@ const ProductDetail = () => {
                       onClick={() => setSelectedImage(i)}
                       className={`w-16 h-16 rounded-lg overflow-hidden border-2 transition flex-shrink-0 ${selectedImage === i ? 'border-green-500' : 'border-gray-200'}`}
                     >
-                      <img src={img} alt="" className="w-full h-full object-cover" />
+                      <OptimizedImage src={img} alt="" width={64} quality={60} className="w-full h-full object-cover" showPlaceholder={false} />
                     </button>
                   ))}
                 </div>
