@@ -66,8 +66,7 @@ export function OptimizedImage({
   }
 
   return (
-    <div className="relative w-full h-full">
-      {/* Shimmer placeholder - visible until image loads */}
+    <div className="relative w-full h-full" style={{ containIntrinsicSize: width && height ? `${width}px ${height}px` : undefined, contentVisibility: eager ? undefined : 'auto' }}>
       {showPlaceholder && !loaded && (
         <div className="absolute inset-0 bg-muted animate-pulse" />
       )}
@@ -90,11 +89,10 @@ export function OptimizedImage({
           setError(true);
         }}
         className={cn(
-          "transition-opacity duration-150",
           loaded ? "opacity-100" : "opacity-0",
           className
         )}
-        style={style}
+        style={{ ...style, transition: 'opacity 0.1s' }}
         {...props}
       />
     </div>

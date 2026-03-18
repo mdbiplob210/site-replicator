@@ -316,7 +316,7 @@ const Template1Classic = () => {
                         width={400} 
                         quality={80} 
                         eager={isAboveFold}
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-cover"
                         fallback={
                           <div className="w-full h-full flex items-center justify-center">
                             <ShoppingBag className="h-10 w-10 text-gray-200" />
