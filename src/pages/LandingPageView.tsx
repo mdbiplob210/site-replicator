@@ -559,6 +559,8 @@ ttq.page();
   var VID = localStorage.getItem('_lp_vid') || '';
 
   document.addEventListener('submit', function(e) {
+    // Skip if template's own handler already handled this submit
+    if (e._templateHandled) return;
     var form = e.target.closest('[data-checkout-form]');
     if (!form) return;
     e.preventDefault();
