@@ -272,6 +272,8 @@ export function useTracking() {
   // Initialize tracking scripts AFTER page is interactive (deferred)
   useEffect(() => {
     if (initialized.current || !settings) return;
+    // Don't load main website pixels on landing pages — they have their own
+    if (window.location.pathname.startsWith("/lp/")) return;
     initialized.current = true;
 
     // Defer tracking scripts to not block initial render

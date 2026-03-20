@@ -11,8 +11,8 @@ export function WebsiteEventTracker() {
   const lastPath = useRef<string | null>(null);
 
   useEffect(() => {
-    // Don't track admin pages
-    if (location.pathname.startsWith("/admin") || location.pathname.startsWith("/login")) return;
+    // Don't track admin pages or landing pages (they have their own tracking)
+    if (location.pathname.startsWith("/admin") || location.pathname.startsWith("/login") || location.pathname.startsWith("/lp/")) return;
 
     if (location.pathname !== lastPath.current) {
       lastPath.current = location.pathname;

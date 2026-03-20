@@ -24,6 +24,7 @@ const TrackOrder = lazy(() => import("./pages/store/TrackOrder"));
 const Login = lazy(() => import("./pages/Login"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const LandingPageView = lazy(() => import("./pages/LandingPageView"));
+const LandingPageCheckout = lazy(() => import("./pages/LandingPageCheckout"));
 const Landing = lazy(() => import("./pages/Landing"));
 
 // Lazy-loaded admin pages
@@ -162,6 +163,7 @@ const App = () => {
             <Route path="/admin/coming-soon" element={<Admin requiredPermissions={["manage_settings"]}><AdminComingSoon /></Admin>} />
             <Route path="/admin/plan" element={P("Plan", "Subscription management", ["manage_settings"])} />
             <Route path="/lp/:slug" element={<LandingPageView />} />
+            <Route path="/lp/:slug/checkout" element={<LandingPageCheckout />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

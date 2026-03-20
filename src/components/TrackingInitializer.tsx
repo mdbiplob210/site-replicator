@@ -13,6 +13,8 @@ export function TrackingInitializer() {
 
   useEffect(() => {
     if (!isReady) return;
+    // Don't fire main website pixel on landing pages — they have their own pixel
+    if (location.pathname.startsWith("/lp/")) return;
     // Fire if path changed OR if this is the first fire after isReady
     if (location.pathname !== lastTrackedPath.current) {
       lastTrackedPath.current = location.pathname;
