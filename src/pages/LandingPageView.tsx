@@ -68,9 +68,11 @@ window._lpTrack = {
     };
   },
   // Send server-side event via Conversions API (with per-page slug for token lookup)
-  sendServerEvent: function(eventName, customData) {
+  sendServerEvent: function(eventName, customData, userData) {
     var CAPI_URL = '${supabaseUrl}/functions/v1/fb-conversions-api';
     var ANON = '${anonKey}';
+    var extId = localStorage.getItem('_vid') || ('v_' + Date.now() + '_' + Math.random().toString(36).substr(2,12));
+    if (!localStorage.getItem('_vid')) localStorage.setItem('_vid', extId);
     var payload = {
       pixel_id: '${page.fb_pixel_id || ''}',
       event_name: eventName,
@@ -79,9 +81,20 @@ window._lpTrack = {
       user_agent: navigator.userAgent,
       fbp: this.getFbp(),
       fbc: this.getFbc(),
+      user_external_id: extId,
       custom_data: customData,
       landing_page_slug: '${page.slug || ''}'
     };
+    // Add user PII if provided (will be hashed server-side)
+    if (userData) {
+      if (userData.phone) payload.user_phone = userData.phone;
+      if (userData.email) payload.user_email = userData.email;
+      if (userData.name) {
+        var parts = userData.name.trim().split(/\\s+/);
+        payload.user_fn = parts[0] || '';
+        payload.user_ln = parts.slice(1).join(' ') || '';
+      }
+    }
     try {
       var blob = new Blob([JSON.stringify(payload)], {type: 'application/json'});
       navigator.sendBeacon(CAPI_URL + '?apikey=' + ANON, blob);
