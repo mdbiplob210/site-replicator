@@ -541,6 +541,7 @@ ttq.page();
       if (attrMatch) {
         var attrValue = node.getAttribute(attrMatch[0]);
         if (attrValue) return String(attrValue).trim();
+        return '';
       }
     }
 
@@ -628,7 +629,7 @@ ttq.page();
       customer_name: readValue(root, fields.customer_name),
       customer_phone: readValue(root, fields.customer_phone),
       customer_address: readValue(root, fields.customer_address),
-      product_name: readValue(root, fields.product_name) || document.title || '',
+      product_name: (readValue(root, fields.product_name) || document.title || '').substring(0, 150),
       product_code: readValue(root, fields.product_code) || root.getAttribute('data-product-code') || '',
       quantity: parseNumber(quantityValue || root.getAttribute('data-quantity') || '1', 1),
       unit_price: parseNumber(unitPriceValue || root.getAttribute('data-unit-price') || '0', 0),
