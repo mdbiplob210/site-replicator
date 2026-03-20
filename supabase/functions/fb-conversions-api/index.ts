@@ -52,6 +52,17 @@ Deno.serve(async (req) => {
       fbc,
       custom_data = {},
       landing_page_slug,
+      // User data for advanced matching
+      user_phone,
+      user_email,
+      user_external_id,
+      user_fb_login_id,
+      user_fn,
+      user_ln,
+      user_ct,
+      user_st,
+      user_zp,
+      user_country,
     } = body;
 
     if (!pixel_id || !event_name) {
