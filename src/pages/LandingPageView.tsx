@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useLandingPageBySlug } from "@/hooks/useLandingPages";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { sanitizeHtmlScripts } from "@/lib/htmlSanitizer";
 
 function escapeHtml(str: string): string {
@@ -12,31 +12,11 @@ export default function LandingPageView() {
   const { data: page, isLoading, error } = useLandingPageBySlug(slug || "");
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Tracking scripts are embedded inside the iframe srcDoc — no need to inject into parent document
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <p className="text-muted-foreground">লোড হচ্ছে...</p>
-      </div>
-    );
-  }
-
-  if (error || !page) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-foreground">404</h1>
-          <p className="text-muted-foreground mt-2">এই পেজটি পাওয়া যায়নি</p>
-        </div>
-      </div>
-    );
-  }
-
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
   const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '';
 
   const buildFullHtml = () => {
+    if (!page) return '<!DOCTYPE html><html><body></body></html>';
     let trackingScripts = "";
 
     // Helper script for rich tracking data (PixelYourSite style)
@@ -1042,12 +1022,45 @@ if (!window._LP_VID) { window._LP_VID = 'v_' + Math.random().toString(36).substr
     return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${allScripts}</head><body>${cleanHtml}</body></html>`;
   };
 
+  // Create a Blob URL so the iframe gets a real origin (not null from srcDoc)
+  // This allows FB pixel cookies (_fbp, _fbc) to work properly
+  const blobUrl = useMemo(() => {
+    const html = buildFullHtml();
+    const blob = new Blob([html], { type: "text/html" });
+    return URL.createObjectURL(blob);
+  }, [page]);
+
+  useEffect(() => {
+    return () => {
+      if (blobUrl) URL.revokeObjectURL(blobUrl);
+    };
+  }, [blobUrl]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <p className="text-muted-foreground">লোড হচ্ছে...</p>
+      </div>
+    );
+  }
+
+  if (error || !page) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-foreground">404</h1>
+          <p className="text-muted-foreground mt-2">এই পেজটি পাওয়া যায়নি</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <iframe
-      srcDoc={buildFullHtml()}
+      src={blobUrl}
       style={{ width: "100%", height: "100vh", border: "none" }}
       title={page.title}
-      sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+      sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
     />
   );
 }
