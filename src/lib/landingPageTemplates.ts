@@ -255,6 +255,7 @@ function syncTierToCheckout(){
   var dcVal=dcArea?parseInt(dcArea.dataset.charge)||deliveryCharge:deliveryCharge;
   document.getElementById('sumTotal').textContent='৳'+(productPrice+dcVal);
   document.getElementById('checkoutForm').setAttribute('data-unit-price', String(Math.round(productPrice/q)));
+  var hp=document.getElementById('headerPrice');if(hp)hp.textContent='৳'+productPrice;
 }
 ` : `
 var unitPrice=${basePrice},deliveryCharge=${dc},currentQty=1;
@@ -293,7 +294,7 @@ function updateSummary(){var q=currentQty;document.getElementById('sumProduct').
         <div style="flex:1;min-width:0;padding-right:36px">
           <h3 style="font-size:15px;font-weight:800;color:#111;margin:0 0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.productName}</h3>
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-            <span style="font-size:22px;font-weight:800;color:${accentColor}">৳${p.sellingPrice}</span>
+            <span id="headerPrice" style="font-size:22px;font-weight:800;color:${accentColor}">৳${p.sellingPrice}</span>
             <span style="font-size:13px;text-decoration:line-through;color:#bbb">৳${p.originalPrice}</span>
             <span style="background:#ff17441a;color:#ef4444;font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px">${p.discountPercent}% OFF</span>
           </div>
