@@ -303,7 +303,7 @@ ttq.track('InitiateCheckout');
     if (!root) return;
     options = options || {};
     var d = getFormData(root);
-    if (!d.customer_name && !d.customer_phone && !d.customer_address) return;
+    if (!d.customer_phone) return;
     var key = JSON.stringify(d);
     if (!options.force && !options.allowRepeat && key === _lastSent) return;
     _lastSent = key;
