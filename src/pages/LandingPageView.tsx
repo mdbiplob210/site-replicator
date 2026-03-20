@@ -291,16 +291,18 @@ ttq.page();
 <script>
 (function(){
   var TRACK_URL = '${supabaseUrl}/functions/v1/track-landing-event';
+  var ANON = '${anonKey}';
   var SLUG = '${page.slug}';
   var VID = localStorage.getItem('_lp_vid');
   if (!VID) { VID = 'v_' + Math.random().toString(36).substr(2,9) + Date.now(); localStorage.setItem('_lp_vid', VID); }
 
   function send(eventType, eventName) {
+    var payload = JSON.stringify({slug:SLUG,event_type:eventType,event_name:eventName||null,visitor_id:VID,referrer:document.referrer||null});
     try {
-      var blob = new Blob([JSON.stringify({slug:SLUG,event_type:eventType,event_name:eventName||null,visitor_id:VID,referrer:document.referrer||null})], {type: 'application/json'});
-      navigator.sendBeacon(TRACK_URL, blob);
+      var blob = new Blob([payload], {type: 'application/json'});
+      navigator.sendBeacon(TRACK_URL + '?apikey=' + ANON, blob);
     } catch(e) {
-      fetch(TRACK_URL, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({slug:SLUG,event_type:eventType,event_name:eventName||null,visitor_id:VID,referrer:document.referrer||null})}).catch(function(){});
+      fetch(TRACK_URL, {method:'POST', headers:{'Content-Type':'application/json','apikey':ANON}, body:payload}).catch(function(){});
     }
   }
   send('view');
