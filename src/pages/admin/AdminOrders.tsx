@@ -38,7 +38,7 @@ import {
 import {
   useIncompleteOrders, useIncompleteOrderCounts,
   useUpdateIncompleteOrderStatus, useDeleteIncompleteOrder,
-  useConvertIncompleteToOrder, type IncompleteDateFilter,
+  useConvertIncompleteToOrder, useIncompleteSlugOptions, type IncompleteDateFilter,
 } from "@/hooks/useIncompleteOrders";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
 import { CourierSettingsView } from "@/components/admin/courier/CourierSettingsView";
