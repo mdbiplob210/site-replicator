@@ -367,7 +367,7 @@ Deno.serve(async (req) => {
     if (landing_page_slug) {
       const { data: lp } = await supabase
         .from("landing_pages")
-        .select("id")
+        .select("id, fb_pixel_id, fb_access_token")
         .eq("slug", landing_page_slug)
         .single();
       if (lp) {
@@ -377,6 +377,47 @@ Deno.serve(async (req) => {
           event_name: "Order",
           visitor_id: body.visitor_id || null,
         });
+
+        // Fire server-side Purchase CAPI event if page has its own access token
+        if (lp.fb_pixel_id && lp.fb_access_token) {
+          try {
+            const eventTime = Math.floor(Date.now() / 1000);
+            const capiEvent = {
+              event_name: "Purchase",
+              event_time: eventTime,
+              action_source: "website",
+              event_id: body.event_id || `srv_${orderNumber}_${Date.now()}`,
+              event_source_url: body.event_url || `https://${req.headers.get("host") || "site"}/lp/${landing_page_slug}`,
+              user_data: {
+                client_ip_address: clientIp !== "unknown" ? clientIp : undefined,
+                client_user_agent: userAgent || undefined,
+                fbp: body.fbp || undefined,
+                fbc: body.fbc || undefined,
+              },
+              custom_data: {
+                value: totalAmount,
+                currency: "BDT",
+                content_name: product_name || "",
+                content_ids: product_code ? [product_code] : [],
+                content_type: "product",
+                num_items: quantity,
+                order_id: orderNumber,
+              },
+            };
+
+            await fetch(`https://graph.facebook.com/v21.0/${lp.fb_pixel_id}/events`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                data: [capiEvent],
+                access_token: lp.fb_access_token,
+              }),
+            });
+            console.log("[submit-landing-order] CAPI Purchase sent for pixel:", lp.fb_pixel_id, "order:", orderNumber);
+          } catch (capiErr) {
+            console.error("[submit-landing-order] CAPI error:", capiErr.message);
+          }
+        }
       }
     }
 
