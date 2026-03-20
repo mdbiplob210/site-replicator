@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useLandingPageBySlug } from "@/hooks/useLandingPages";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { sanitizeHtmlScripts } from "@/lib/htmlSanitizer";
 
 function escapeHtml(str: string): string {
