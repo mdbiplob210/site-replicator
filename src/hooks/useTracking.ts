@@ -228,9 +228,10 @@ async function sendCAPIEvent(params: {
   customData?: Record<string, any>;
   customerPhone?: string;
   customerName?: string;
+  customerEmail?: string;
 }) {
   try {
-    const { pixelId, eventName, eventId, customData = {}, customerPhone, customerName } = params;
+    const { pixelId, eventName, eventId, customData = {}, customerPhone, customerName, customerEmail } = params;
     if (!pixelId) return; // No pixel configured, skip silently
     
     const body: Record<string, any> = {
@@ -241,15 +242,21 @@ async function sendCAPIEvent(params: {
       user_agent: navigator.userAgent,
       fbp: getFbp(),
       fbc: getFbc(),
+      user_external_id: getVisitorId(),
       custom_data: {
         ...customData,
         visitor_id: getVisitorId(),
       },
     };
 
-    // Add hashed user data if available
-    if (customerPhone) body.custom_data.ph = customerPhone;
-    if (customerName) body.custom_data.fn = customerName;
+    // Add user data for advanced matching (sent to edge function for hashing)
+    if (customerPhone) body.user_phone = customerPhone;
+    if (customerEmail) body.user_email = customerEmail;
+    if (customerName) {
+      const nameParts = customerName.trim().split(/\s+/);
+      body.user_fn = nameParts[0] || "";
+      body.user_ln = nameParts.slice(1).join(" ") || "";
+    }
 
     await supabase.functions.invoke("fb-conversions-api", { body });
   } catch {
