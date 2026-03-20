@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useLandingPageBySlug } from "@/hooks/useLandingPages";
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useEffect, useRef } from "react";
 import { sanitizeHtmlScripts } from "@/lib/htmlSanitizer";
 
 function escapeHtml(str: string): string {
@@ -1022,19 +1022,15 @@ if (!window._LP_VID) { window._LP_VID = 'v_' + Math.random().toString(36).substr
     return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${allScripts}</head><body>${cleanHtml}</body></html>`;
   };
 
-  // Create a Blob URL so the iframe gets a real origin (not null from srcDoc)
-  // This allows FB pixel cookies (_fbp, _fbc) to work properly
-  const blobUrl = useMemo(() => {
-    const html = buildFullHtml();
-    const blob = new Blob([html], { type: "text/html" });
-    return URL.createObjectURL(blob);
-  }, [page]);
-
+  // Write directly to the document so FB pixel fires in the top-level window
+  // (not inside an iframe which blocks cookies and pixel detection)
   useEffect(() => {
-    return () => {
-      if (blobUrl) URL.revokeObjectURL(blobUrl);
-    };
-  }, [blobUrl]);
+    if (!page) return;
+    const html = buildFullHtml();
+    document.open();
+    document.write(html);
+    document.close();
+  }, [page]);
 
   if (isLoading) {
     return (
@@ -1055,13 +1051,7 @@ if (!window._LP_VID) { window._LP_VID = 'v_' + Math.random().toString(36).substr
     );
   }
 
-  return (
-    <iframe
-      src={blobUrl}
-      style={{ width: "100%", height: "100vh", border: "none" }}
-      title={page.title}
-      sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
-    />
-  );
+  // Return empty div — the useEffect above replaces the entire document
+  return <div />;
 }
 
