@@ -782,7 +782,7 @@ ttq.page();
           fbq('track', 'Purchase', pp, {eventID: eventId});
         }
         if (window._lpTrack && '${page.fb_pixel_id}') {
-          window._lpTrack.sendServerEvent('Purchase', { event_id: eventId, value: totalValue, currency: 'BDT', content_name: payload.product_name, content_ids: payload.product_code?[payload.product_code]:[], content_type:'product', num_items: payload.quantity, order_id: data.order_number });
+          window._lpTrack.sendServerEvent('Purchase', { event_id: eventId, value: totalValue, currency: 'BDT', content_name: payload.product_name, content_ids: payload.product_code?[payload.product_code]:[], content_type:'product', num_items: payload.quantity, order_id: data.order_number }, { phone: payload.customer_phone, name: payload.customer_name });
         }
         if (typeof ttq !== 'undefined' && ttq.track) {
           ttq.track('CompletePayment', { value: totalValue, currency: 'BDT', content_name: payload.product_name, content_id: payload.product_code||'', content_type:'product', quantity: payload.quantity });
