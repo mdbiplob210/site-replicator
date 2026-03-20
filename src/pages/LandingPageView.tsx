@@ -90,6 +90,7 @@ window._lpTrack = {
   // Send server-side event via Conversions API
   sendServerEvent: function(eventName, customData) {
     var CAPI_URL = '${supabaseUrl}/functions/v1/fb-conversions-api';
+    var ANON = '${anonKey}';
     var payload = {
       pixel_id: '${page.fb_pixel_id || ''}',
       event_name: eventName,
@@ -102,9 +103,9 @@ window._lpTrack = {
     };
     try {
       var blob = new Blob([JSON.stringify(payload)], {type: 'application/json'});
-      navigator.sendBeacon(CAPI_URL, blob);
+      navigator.sendBeacon(CAPI_URL + '?apikey=' + ANON, blob);
     } catch(e) {
-      fetch(CAPI_URL, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)}).catch(function(){});
+      fetch(CAPI_URL, {method:'POST', headers:{'Content-Type':'application/json','apikey':ANON}, body:JSON.stringify(payload)}).catch(function(){});
     }
   }
 };
@@ -290,16 +291,18 @@ ttq.page();
 <script>
 (function(){
   var TRACK_URL = '${supabaseUrl}/functions/v1/track-landing-event';
+  var ANON = '${anonKey}';
   var SLUG = '${page.slug}';
   var VID = localStorage.getItem('_lp_vid');
   if (!VID) { VID = 'v_' + Math.random().toString(36).substr(2,9) + Date.now(); localStorage.setItem('_lp_vid', VID); }
 
   function send(eventType, eventName) {
+    var payload = JSON.stringify({slug:SLUG,event_type:eventType,event_name:eventName||null,visitor_id:VID,referrer:document.referrer||null});
     try {
-      var blob = new Blob([JSON.stringify({slug:SLUG,event_type:eventType,event_name:eventName||null,visitor_id:VID,referrer:document.referrer||null})], {type: 'application/json'});
-      navigator.sendBeacon(TRACK_URL, blob);
+      var blob = new Blob([payload], {type: 'application/json'});
+      navigator.sendBeacon(TRACK_URL + '?apikey=' + ANON, blob);
     } catch(e) {
-      fetch(TRACK_URL, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({slug:SLUG,event_type:eventType,event_name:eventName||null,visitor_id:VID,referrer:document.referrer||null})}).catch(function(){});
+      fetch(TRACK_URL, {method:'POST', headers:{'Content-Type':'application/json','apikey':ANON}, body:payload}).catch(function(){});
     }
   }
   send('view');
@@ -463,6 +466,7 @@ ttq.page();
 <script>
 (function(){
   var PARTIAL_URL = '${supabaseUrl}/functions/v1/track-partial-order';
+  var ANON = '${anonKey}';
   var SLUG = '${page.slug}';
   var VID = localStorage.getItem('_lp_vid') || window._LP_VID || '';
   if (!VID) {
@@ -485,13 +489,13 @@ ttq.page();
     var sent = false;
     try {
       if (navigator.sendBeacon) {
-        sent = navigator.sendBeacon(PARTIAL_URL, new Blob([body], { type: 'application/json' }));
+        sent = navigator.sendBeacon(PARTIAL_URL + '?apikey=' + ANON, new Blob([body], { type: 'application/json' }));
       }
     } catch(e) {}
     if (!sent) {
       fetch(PARTIAL_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'apikey': ANON },
         body: body,
         keepalive: true,
       }).catch(function(){});
