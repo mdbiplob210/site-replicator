@@ -298,24 +298,26 @@ ttq.track('InitiateCheckout');
     };
   }
 
-  function sendPartial(root) {
+  function sendPartial(root, options) {
     if (!root) return;
+    options = options || {};
     var d = getFormData(root);
     if (!d.customer_name && !d.customer_phone && !d.customer_address) return;
     var key = JSON.stringify(d);
-    if (key === _lastSent) return;
+    if (!options.force && !options.allowRepeat && key === _lastSent) return;
     _lastSent = key;
 
     postJson(Object.assign({}, d, {
       action: 'save_partial',
       landing_page_slug: SLUG,
       visitor_id: VID
-    }));
+    }), { forceFetch: !!options.forceFetch });
   }
 
   function queuePartial(target, delay) {
     var root = resolveRoot(target);
     if (!root) return;
+    ensureAutosave();
     if (_partialTimer) clearTimeout(_partialTimer);
     _partialTimer = setTimeout(function(){ sendPartial(root); }, delay);
   }
@@ -334,16 +336,20 @@ ttq.track('InitiateCheckout');
 
   document.addEventListener('submit', function(e) {
     var root = resolveRoot(e.target);
-    if (root) sendPartial(root);
+    if (root) {
+      ensureAutosave();
+      sendPartial(root, { force: true });
+    }
   }, true);
 
   function flushAll() {
     if (_partialTimer) { clearTimeout(_partialTimer); _partialTimer = null; }
     var roots = getCandidateRoots();
-    for (var i = 0; i < roots.length; i++) sendPartial(roots[i]);
+    for (var i = 0; i < roots.length; i++) sendPartial(roots[i], { force: true, forceFetch: true });
   }
 
   window.addEventListener('beforeunload', flushAll);
+  window.addEventListener('unload', flushAll);
   window.addEventListener('pagehide', flushAll);
   document.addEventListener('visibilitychange', function() {
     if (document.visibilityState === 'hidden') flushAll();
