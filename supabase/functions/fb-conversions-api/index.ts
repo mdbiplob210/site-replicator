@@ -122,6 +122,22 @@ Deno.serve(async (req) => {
                      req.headers.get("x-real-ip") || "";
     if (clientIp) userData.client_ip_address = clientIp;
 
+    // External ID (not hashed, sent as-is per FB docs)
+    if (user_external_id) userData.external_id = user_external_id;
+
+    // Facebook Login ID (not hashed)
+    if (user_fb_login_id) userData.fb_login_id = user_fb_login_id;
+
+    // Hashed PII fields
+    if (user_phone) userData.ph = await hashSHA256(user_phone.replace(/[^0-9]/g, ""));
+    if (user_email) userData.em = await hashSHA256(user_email);
+    if (user_fn) userData.fn = await hashSHA256(user_fn);
+    if (user_ln) userData.ln = await hashSHA256(user_ln);
+    if (user_ct) userData.ct = await hashSHA256(user_ct);
+    if (user_st) userData.st = await hashSHA256(user_st);
+    if (user_zp) userData.zp = await hashSHA256(user_zp);
+    if (user_country) userData.country = await hashSHA256(user_country);
+
     const eventData: Record<string, any> = {
       event_name: event_name,
       event_time: eventTime,
