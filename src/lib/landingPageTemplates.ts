@@ -255,6 +255,7 @@ function syncTierToCheckout(){
   var dcVal=dcArea?parseInt(dcArea.dataset.charge)||deliveryCharge:deliveryCharge;
   document.getElementById('sumTotal').textContent='৳'+(productPrice+dcVal);
   document.getElementById('checkoutForm').setAttribute('data-unit-price', String(Math.round(productPrice/q)));
+  var hp=document.getElementById('headerPrice');if(hp)hp.textContent='৳'+productPrice;
 }
 ` : `
 var unitPrice=${basePrice},deliveryCharge=${dc},currentQty=1;
