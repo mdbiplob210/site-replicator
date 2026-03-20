@@ -48,7 +48,8 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
   const orderSubmitted = useRef(false);
   const initiateTracked = useRef(false);
 
-  const { trackInitiateCheckout, trackAddPaymentInfo, trackPurchase, trackAddToCart, trackCustomEvent } = useTracking();
+  const { trackInitiateCheckout, trackAddPaymentInfo, trackPurchase, trackAddToCart, trackCustomEvent, trackLead } = useTracking();
+  const leadTracked = useRef(false);
   const { data: settings } = useSiteSettings();
   const { data: currentProduct } = useProduct(currentItem?.productId || "");
   const { data: suggestedProductsData = [] } = useSuggestedProducts(currentItem?.categoryId, currentItem?.productId);
