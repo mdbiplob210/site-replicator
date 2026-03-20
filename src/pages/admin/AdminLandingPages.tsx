@@ -176,6 +176,7 @@ export default function AdminLandingPages() {
       checkout_html: page.checkout_html || "",
       is_active: page.is_active,
       fb_pixel_id: page.fb_pixel_id || "",
+      fb_access_token: page.fb_access_token || "",
       tiktok_pixel_id: page.tiktok_pixel_id || "",
       gtm_id: page.gtm_id || "",
       custom_head_scripts: page.custom_head_scripts || "",
