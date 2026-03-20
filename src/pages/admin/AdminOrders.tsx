@@ -1463,7 +1463,7 @@ const AdminOrders = () => {
             <Button variant="outline" size="sm" className="relative gap-1.5 sm:gap-2 rounded-xl border-border/60 shadow-sm hover:shadow text-xs sm:text-sm" onClick={() => setCurrentView("incomplete")}>
               <AlertCircle className="h-3.5 sm:h-4 w-3.5 sm:w-4 text-amber-500" /> <span className="hidden xs:inline">Incomplete</span><span className="xs:hidden">Inc.</span>
               {(() => {
-                const totalIncomplete = Object.values(incompleteCounts as Record<string, number>).reduce((a, b) => a + b, 0);
+                const totalIncomplete = (incompleteCounts as Record<string, number>).total || 0;
                 return totalIncomplete > 0 ? (
                   <span className="absolute -top-2.5 -right-2.5 flex items-center justify-center min-w-[22px] h-[22px] px-1 rounded-full bg-red-600 text-white text-[11px] font-bold shadow-lg shadow-red-500/30 animate-pulse">
                     {totalIncomplete}
