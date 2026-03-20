@@ -39,6 +39,7 @@ const emptyPage: Partial<LandingPage> = {
   checkout_html: "",
   is_active: true,
   fb_pixel_id: "",
+  fb_access_token: "",
   tiktok_pixel_id: "",
   gtm_id: "",
   custom_head_scripts: "",
