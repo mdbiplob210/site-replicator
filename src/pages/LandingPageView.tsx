@@ -1042,12 +1042,26 @@ if (!window._LP_VID) { window._LP_VID = 'v_' + Math.random().toString(36).substr
     return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${allScripts}</head><body>${cleanHtml}</body></html>`;
   };
 
+  // Create a Blob URL so the iframe gets a real origin (not null from srcDoc)
+  // This allows FB pixel cookies (_fbp, _fbc) to work properly
+  const blobUrl = useMemo(() => {
+    const html = buildFullHtml();
+    const blob = new Blob([html], { type: "text/html" });
+    return URL.createObjectURL(blob);
+  }, [page]);
+
+  useEffect(() => {
+    return () => {
+      if (blobUrl) URL.revokeObjectURL(blobUrl);
+    };
+  }, [blobUrl]);
+
   return (
     <iframe
-      srcDoc={buildFullHtml()}
+      src={blobUrl}
       style={{ width: "100%", height: "100vh", border: "none" }}
       title={page.title}
-      sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+      sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
     />
   );
 }
