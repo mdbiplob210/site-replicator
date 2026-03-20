@@ -446,7 +446,7 @@ const ProductDetail = () => {
 
               {/* Messenger */}
               {messengerLink && (
-                <a href={messengerLink} target="_blank" rel="noopener noreferrer"
+                <a href={messengerLink} target="_blank" rel="noopener noreferrer" onClick={handleMessengerClick}
                   className="w-full py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition">
                   <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.36 2 2 6.13 2 11.7c0 2.91 1.2 5.42 3.15 7.2.16.15.26.36.27.58l.05 1.82c.02.56.6.93 1.1.7l2.04-.9c.17-.08.36-.1.55-.06.88.24 1.82.36 2.84.36 5.64 0 10-4.13 10-9.7S17.64 2 12 2zm5.95 7.57l-2.9 4.6c-.46.73-1.44.92-2.13.41l-2.31-1.73a.6.6 0 00-.72 0l-3.12 2.37c-.42.32-.96-.18-.69-.63l2.9-4.6c.46-.73 1.44-.92 2.13-.41l2.31 1.73a.6.6 0 00.72 0l3.12-2.37c.42-.32.96.18.69.63z"/></svg>
                   Click to message
