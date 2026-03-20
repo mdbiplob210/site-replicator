@@ -46,9 +46,9 @@ export interface IncompleteOrder {
   updated_at: string;
 }
 
-export function useIncompleteOrders(status?: string, sourceFilter?: "all" | "ip_blocked" | "abandoned_form", dateFilter?: IncompleteDateFilter) {
+export function useIncompleteOrders(status?: string, sourceFilter?: "all" | "ip_blocked" | "abandoned_form", dateFilter?: IncompleteDateFilter, slugFilter?: string) {
   return useQuery({
-    queryKey: ["incomplete-orders", status, sourceFilter, dateFilter],
+    queryKey: ["incomplete-orders", status, sourceFilter, dateFilter, slugFilter],
     queryFn: async () => {
       let query = supabase
         .from("incomplete_orders" as any)
@@ -65,6 +65,10 @@ export function useIncompleteOrders(status?: string, sourceFilter?: "all" | "ip_
         query = query.neq("block_reason", "abandoned_form");
       }
 
+      if (slugFilter && slugFilter !== "all") {
+        query = query.eq("landing_page_slug", slugFilter);
+      }
+
       const range = getDateRange(dateFilter || "all");
       if (range.from) query = query.gte("created_at", range.from);
       if (range.to) query = query.lt("created_at", range.to);
@@ -72,6 +76,26 @@ export function useIncompleteOrders(status?: string, sourceFilter?: "all" | "ip_
       const { data, error } = await query;
       if (error) throw error;
       return data as unknown as IncompleteOrder[];
+    },
+  });
+}
+
+export function useIncompleteSlugOptions() {
+  return useQuery({
+    queryKey: ["incomplete-slug-options"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("incomplete_orders" as any)
+        .select("landing_page_slug");
+      if (error) throw error;
+      const slugs = new Map<string, number>();
+      (data as any[]).forEach((r) => {
+        const s = r.landing_page_slug || "(unknown)";
+        slugs.set(s, (slugs.get(s) || 0) + 1);
+      });
+      return Array.from(slugs.entries())
+        .map(([slug, count]) => ({ slug, count }))
+        .sort((a, b) => b.count - a.count);
     },
   });
 }

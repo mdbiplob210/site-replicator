@@ -38,7 +38,7 @@ import {
 import {
   useIncompleteOrders, useIncompleteOrderCounts,
   useUpdateIncompleteOrderStatus, useDeleteIncompleteOrder,
-  useConvertIncompleteToOrder, type IncompleteDateFilter,
+  useConvertIncompleteToOrder, useIncompleteSlugOptions, type IncompleteDateFilter,
 } from "@/hooks/useIncompleteOrders";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
 import { CourierSettingsView } from "@/components/admin/courier/CourierSettingsView";
@@ -143,6 +143,7 @@ const AdminOrders = () => {
   const [activeIncompleteTab, setActiveIncompleteTab] = useState("Processing");
   const [incompleteSourceFilter, setIncompleteSourceFilter] = useState<"all" | "ip_blocked" | "abandoned_form">("all");
   const [incompleteDateFilter, setIncompleteDateFilter] = useState<IncompleteDateFilter>("all");
+  const [incompleteSlugFilter, setIncompleteSlugFilter] = useState<string>("all");
   
   const [searchQuery, setSearchQuery] = useState("");
   const [orderDateFilter, setOrderDateFilter] = useState<OrderDateFilter>("all");
@@ -472,8 +473,9 @@ const AdminOrders = () => {
     "Hold": "on_hold", "Cancelled": "cancelled", "Deleted": "deleted"
   };
   const incompleteStatusFilter = incompleteStatusMap[activeIncompleteTab] || "processing";
-  const { data: incompleteOrders = [], isLoading: incompleteLoading } = useIncompleteOrders(incompleteStatusFilter, incompleteSourceFilter, incompleteDateFilter);
+  const { data: incompleteOrders = [], isLoading: incompleteLoading } = useIncompleteOrders(incompleteStatusFilter, incompleteSourceFilter, incompleteDateFilter, incompleteSlugFilter);
   const { data: incompleteCounts = {} } = useIncompleteOrderCounts(incompleteSourceFilter, incompleteDateFilter);
+  const { data: slugOptions = [] } = useIncompleteSlugOptions();
   const updateIncompleteStatus = useUpdateIncompleteOrderStatus();
   const deleteIncomplete = useDeleteIncompleteOrder();
   const convertIncomplete = useConvertIncompleteToOrder();
@@ -1283,6 +1285,38 @@ const AdminOrders = () => {
               </button>
             ))}
           </div>
+
+          {/* Landing Page slug filter */}
+          {slugOptions.length > 0 && (
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-medium text-muted-foreground">🔗 LP:</span>
+              <div className="flex items-center gap-1 bg-card rounded-xl border border-border/60 p-1 flex-wrap">
+                <button
+                  onClick={() => setIncompleteSlugFilter("all")}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                    incompleteSlugFilter === "all"
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+                  }`}
+                >
+                  সব LP
+                </button>
+                {slugOptions.map((opt) => (
+                  <button
+                    key={opt.slug}
+                    onClick={() => setIncompleteSlugFilter(opt.slug)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                      incompleteSlugFilter === opt.slug
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+                    }`}
+                  >
+                    {opt.slug} ({opt.count})
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Status tabs */}
           <div className="flex items-center gap-6 border-b border-border/40 pb-0">
