@@ -68,9 +68,11 @@ window._lpTrack = {
     };
   },
   // Send server-side event via Conversions API (with per-page slug for token lookup)
-  sendServerEvent: function(eventName, customData) {
+  sendServerEvent: function(eventName, customData, userData) {
     var CAPI_URL = '${supabaseUrl}/functions/v1/fb-conversions-api';
     var ANON = '${anonKey}';
+    var extId = localStorage.getItem('_vid') || ('v_' + Date.now() + '_' + Math.random().toString(36).substr(2,12));
+    if (!localStorage.getItem('_vid')) localStorage.setItem('_vid', extId);
     var payload = {
       pixel_id: '${page.fb_pixel_id || ''}',
       event_name: eventName,
@@ -79,9 +81,20 @@ window._lpTrack = {
       user_agent: navigator.userAgent,
       fbp: this.getFbp(),
       fbc: this.getFbc(),
+      user_external_id: extId,
       custom_data: customData,
       landing_page_slug: '${page.slug || ''}'
     };
+    // Add user PII if provided (will be hashed server-side)
+    if (userData) {
+      if (userData.phone) payload.user_phone = userData.phone;
+      if (userData.email) payload.user_email = userData.email;
+      if (userData.name) {
+        var parts = userData.name.trim().split(/\\s+/);
+        payload.user_fn = parts[0] || '';
+        payload.user_ln = parts.slice(1).join(' ') || '';
+      }
+    }
     try {
       var blob = new Blob([JSON.stringify(payload)], {type: 'application/json'});
       navigator.sendBeacon(CAPI_URL + '?apikey=' + ANON, blob);
@@ -98,7 +111,9 @@ window._lpTrack = {
 <!-- Facebook Pixel with Advanced Matching -->
 <script>
 !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
-fbq('init','${page.fb_pixel_id}');
+var _extId = localStorage.getItem('_vid') || ('v_' + Date.now() + '_' + Math.random().toString(36).substr(2,12));
+if (!localStorage.getItem('_vid')) localStorage.setItem('_vid', _extId);
+fbq('init','${page.fb_pixel_id}', { external_id: _extId });
 
 // Rich PageView with custom parameters
 var _eid = window._lpTrack ? window._lpTrack.generateEventId() : '';
@@ -767,7 +782,7 @@ ttq.page();
           fbq('track', 'Purchase', pp, {eventID: eventId});
         }
         if (window._lpTrack && '${page.fb_pixel_id}') {
-          window._lpTrack.sendServerEvent('Purchase', { event_id: eventId, value: totalValue, currency: 'BDT', content_name: payload.product_name, content_ids: payload.product_code?[payload.product_code]:[], content_type:'product', num_items: payload.quantity, order_id: data.order_number });
+          window._lpTrack.sendServerEvent('Purchase', { event_id: eventId, value: totalValue, currency: 'BDT', content_name: payload.product_name, content_ids: payload.product_code?[payload.product_code]:[], content_type:'product', num_items: payload.quantity, order_id: data.order_number }, { phone: payload.customer_phone, name: payload.customer_name });
         }
         if (typeof ttq !== 'undefined' && ttq.track) {
           ttq.track('CompletePayment', { value: totalValue, currency: 'BDT', content_name: payload.product_name, content_id: payload.product_code||'', content_type:'product', quantity: payload.quantity });
