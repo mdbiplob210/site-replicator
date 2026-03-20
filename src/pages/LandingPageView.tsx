@@ -1036,6 +1036,25 @@ if (!window._LP_VID) { window._LP_VID = 'v_' + Math.random().toString(36).substr
     };
   }, [blobUrl]);
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <p className="text-muted-foreground">লোড হচ্ছে...</p>
+      </div>
+    );
+  }
+
+  if (error || !page) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-foreground">404</h1>
+          <p className="text-muted-foreground mt-2">এই পেজটি পাওয়া যায়নি</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <iframe
       src={blobUrl}
