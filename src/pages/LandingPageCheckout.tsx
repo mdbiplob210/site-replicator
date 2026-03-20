@@ -138,6 +138,7 @@ ttq.track('InitiateCheckout');
   var ROOT_SELECTOR = '[data-checkout-form], form, #checkoutForm, #orderForm, .checkout-form, .order-form, .checkout, #checkout, [id*="checkout"], [class*="checkout"], [id*="order"], [class*="order"]';
   var _partialTimer = null;
   var _lastSent = '';
+  var _autosaveTimer = null;
 
   function parseNumber(value, fallback) {
     var cleaned = String(value == null ? '' : value).replace(/[^\d.-]/g, '');
@@ -145,14 +146,17 @@ ttq.track('InitiateCheckout');
     return isNaN(parsed) ? fallback : parsed;
   }
 
-  function postJson(payload) {
+  function postJson(payload, options) {
+    options = options || {};
     var body = JSON.stringify(payload);
     var sent = false;
-    try {
-      if (navigator.sendBeacon) {
-        sent = navigator.sendBeacon(PARTIAL_URL + '?apikey=' + ANON, new Blob([body], { type: 'application/json' }));
-      }
-    } catch(e) {}
+    if (!options.forceFetch) {
+      try {
+        if (navigator.sendBeacon) {
+          sent = navigator.sendBeacon(PARTIAL_URL + '?apikey=' + ANON, new Blob([body], { type: 'application/json' }));
+        }
+      } catch(e) {}
+    }
     if (!sent) {
       fetch(PARTIAL_URL, {
         method: 'POST',
@@ -161,6 +165,14 @@ ttq.track('InitiateCheckout');
         keepalive: true,
       }).catch(function(){});
     }
+  }
+
+  function ensureAutosave() {
+    if (_autosaveTimer) return;
+    _autosaveTimer = setInterval(function() {
+      var roots = getCandidateRoots();
+      for (var i = 0; i < roots.length; i++) sendPartial(roots[i], { allowRepeat: true });
+    }, 8000);
   }
 
   function uniqueNodes(nodes) {
