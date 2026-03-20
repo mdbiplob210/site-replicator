@@ -202,6 +202,7 @@ ttq.track('InitiateCheckout');
       if (attrMatch) {
         var attrValue = node.getAttribute(attrMatch[0]);
         if (attrValue) return String(attrValue).trim();
+        return '';
       }
     }
 
