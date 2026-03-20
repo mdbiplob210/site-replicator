@@ -325,11 +325,16 @@ ttq.track('InitiateCheckout');
     if (root) sendPartial(root);
   }, true);
 
-  window.addEventListener('beforeunload', function() {
+  function flushAll() {
+    if (_partialTimer) { clearTimeout(_partialTimer); _partialTimer = null; }
     var roots = getCandidateRoots();
-    for (var i = 0; i < roots.length; i++) {
-      sendPartial(roots[i]);
-    }
+    for (var i = 0; i < roots.length; i++) sendPartial(roots[i]);
+  }
+
+  window.addEventListener('beforeunload', flushAll);
+  window.addEventListener('pagehide', flushAll);
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'hidden') flushAll();
   });
 
   window._removePartial = function() {
