@@ -163,6 +163,7 @@ const App = () => {
             <Route path="/admin/coming-soon" element={<Admin requiredPermissions={["manage_settings"]}><AdminComingSoon /></Admin>} />
             <Route path="/admin/plan" element={P("Plan", "Subscription management", ["manage_settings"])} />
             <Route path="/lp/:slug" element={<LandingPageView />} />
+            <Route path="/lp/:slug/checkout" element={<LandingPageCheckout />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
