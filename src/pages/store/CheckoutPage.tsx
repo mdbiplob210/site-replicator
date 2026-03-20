@@ -33,8 +33,9 @@ const CheckoutPage = () => {
   const formInteracted = useRef(false);
   const abandonedSaved = useRef(false);
   const orderSubmitted = useRef(false);
-  const { trackInitiateCheckout, trackAddPaymentInfo, trackPurchase } = useTracking();
+  const { trackInitiateCheckout, trackAddPaymentInfo, trackPurchase, trackLead } = useTracking();
   const initiateTracked = useRef(false);
+  const leadTracked = useRef(false);
 
   useEffect(() => {
     const raw = sessionStorage.getItem("checkout_item");
@@ -168,12 +169,20 @@ const CheckoutPage = () => {
     };
   }, [saveAbandonedOrder, item, form]);
 
-  // Mark form as interacted when user types
   const updateForm = (updates: Partial<typeof form>) => {
     formInteracted.current = true;
     abandonedSaved.current = false;
     if (updates.phone !== undefined) {
       updates.phone = sanitizePhoneInput(updates.phone);
+      if (!leadTracked.current && isValidBDPhone(updates.phone) && item) {
+        leadTracked.current = true;
+        trackLead({
+          value: item.price * item.qty,
+          contentName: item.name,
+          customerPhone: updates.phone,
+          customerName: form.name,
+        });
+      }
     }
     setForm(prev => ({ ...prev, ...updates }));
   };

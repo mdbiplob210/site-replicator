@@ -152,11 +152,19 @@ ttq.page();
       trackingScripts += `\n${page.custom_head_scripts}\n`;
     }
 
-    // Enhanced conversion tracking with rich params
+    // Enhanced conversion tracking with rich params + auto-fire checkout funnel events
     const conversionScript = `
-<!-- Enhanced Conversion Tracking (PixelYourSite-style) -->
+<!-- Enhanced Conversion Tracking (All FB Standard Events) -->
 <script>
 (function(){
+  var _firedEvents = {};
+
+  function fireOnce(key, fn) {
+    if (_firedEvents[key]) return;
+    _firedEvents[key] = true;
+    fn();
+  }
+
   function fireEvent(el) {
     var event = el.getAttribute('data-track-event');
     if (!event) return;
@@ -184,7 +192,6 @@ ttq.page();
       if (contentName) fbParams.content_name = contentName;
       if (contentId) fbParams.content_ids = [contentId];
       if (categoryName) fbParams.content_category = categoryName;
-      // Custom parameters merged
       fbParams.event_day = baseParams.event_day;
       fbParams.event_hour = baseParams.event_hour;
       fbParams.event_month = baseParams.event_month;
@@ -217,7 +224,7 @@ ttq.page();
 
     // TikTok Pixel
     if (typeof ttq !== 'undefined' && ttq.track) {
-      var ttMap = {Purchase:'CompletePayment',AddToCart:'AddToCart',Lead:'SubmitForm',InitiateCheckout:'InitiateCheckout',ViewContent:'ViewContent',CompleteRegistration:'CompleteRegistration'};
+      var ttMap = {Purchase:'CompletePayment',AddToCart:'AddToCart',Lead:'SubmitForm',InitiateCheckout:'InitiateCheckout',ViewContent:'ViewContent',CompleteRegistration:'CompleteRegistration',Contact:'Contact',Search:'Search',AddPaymentInfo:'AddPaymentInfo'};
       var ttEvent = ttMap[event] || event;
       var ttParams = {value: value, currency: currency, content_type: contentType};
       if (contentName) ttParams.content_name = contentName;
@@ -228,7 +235,7 @@ ttq.page();
       console.log('[TikTok]', ttEvent, ttParams);
     }
 
-    // GTM dataLayer — push all params
+    // GTM dataLayer
     if (typeof dataLayer !== 'undefined') {
       dataLayer.push({
         event: 'conversion_' + event,
@@ -246,7 +253,43 @@ ttq.page();
     }
   }
 
-  // Auto-fire ViewContent with rich params from data attributes on body or main container
+  // Helper: fire a standard event programmatically
+  function fireStandardEvent(eventName, params) {
+    params = params || {};
+    var eventId = window._lpTrack ? window._lpTrack.generateEventId() : '';
+    var baseParams = window._lpTrack ? window._lpTrack.getBaseParams() : {};
+    var value = params.value || 0;
+    var currency = params.currency || 'BDT';
+    var contentName = params.content_name || document.title || '';
+    var contentId = params.content_id || '';
+
+    if (typeof fbq === 'function') {
+      var fbP = Object.assign({}, params, {
+        value: value, currency: currency,
+        event_day: baseParams.event_day, event_hour: baseParams.event_hour,
+        event_month: baseParams.event_month, traffic_source: baseParams.traffic_source,
+        landing_page: baseParams.landing_page, page_title: baseParams.page_title,
+        user_role: 'guest', plugin: 'LovableLP'
+      });
+      fbq('track', eventName, fbP, {eventID: eventId});
+      console.log('[FB Pixel Auto]', eventName, fbP);
+    }
+    if (window._lpTrack && '${page.fb_pixel_id}') {
+      window._lpTrack.sendServerEvent(eventName, Object.assign({event_id: eventId}, params));
+    }
+    if (typeof ttq !== 'undefined' && ttq.track) {
+      var ttMap = {Purchase:'CompletePayment',AddToCart:'AddToCart',Lead:'SubmitForm',InitiateCheckout:'InitiateCheckout',ViewContent:'ViewContent',Contact:'Contact',Search:'Search',AddPaymentInfo:'AddPaymentInfo',CompleteRegistration:'CompleteRegistration'};
+      ttq.track(ttMap[eventName] || eventName, {value:value,currency:currency,content_name:contentName});
+    }
+    if (typeof dataLayer !== 'undefined') {
+      dataLayer.push(Object.assign({event:'conversion_'+eventName}, params));
+    }
+  }
+
+  // Expose for template scripts
+  window._fireStandardEvent = fireStandardEvent;
+
+  // Auto-fire ViewContent with rich params
   document.addEventListener('DOMContentLoaded', function() {
     var vc = document.querySelector('[data-track-view-content]');
     if (vc && typeof fbq === 'function') {
@@ -259,20 +302,103 @@ ttq.page();
         content_category: vc.getAttribute('data-content-category') || '',
         value: parseFloat(vc.getAttribute('data-content-value') || '0'),
         currency: vc.getAttribute('data-content-currency') || 'BDT',
-        event_day: baseParams.event_day,
-        event_hour: baseParams.event_hour,
-        event_month: baseParams.event_month,
-        traffic_source: baseParams.traffic_source,
-        landing_page: baseParams.landing_page,
-        page_title: baseParams.page_title,
-        user_role: 'guest',
-        plugin: 'LovableLP'
+        event_day: baseParams.event_day, event_hour: baseParams.event_hour,
+        event_month: baseParams.event_month, traffic_source: baseParams.traffic_source,
+        landing_page: baseParams.landing_page, page_title: baseParams.page_title,
+        user_role: 'guest', plugin: 'LovableLP'
       };
       fbq('track', 'ViewContent', vcParams, {eventID: eventId});
       if (window._lpTrack) window._lpTrack.sendServerEvent('ViewContent', {event_id: eventId, ...vcParams});
     }
+
+    // ── Auto-fire AddToCart when user scrolls to checkout form ──
+    var checkoutRoot = document.querySelector('[data-checkout-form], form, #checkoutForm, #orderForm, .checkout-form, .order-form');
+    if (checkoutRoot) {
+      var obs = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            fireOnce('auto_addtocart', function() {
+              var pName = checkoutRoot.getAttribute('data-product-name') || document.title || '';
+              var pCode = checkoutRoot.getAttribute('data-product-code') || '';
+              var pPrice = parseFloat(checkoutRoot.getAttribute('data-unit-price') || '0');
+              fireStandardEvent('AddToCart', {
+                value: pPrice, currency: 'BDT',
+                content_name: pName, content_ids: pCode ? [pCode] : [],
+                content_type: 'product', num_items: 1
+              });
+            });
+            obs.disconnect();
+          }
+        });
+      }, {threshold: 0.3});
+      obs.observe(checkoutRoot);
+    }
+
+    // ── Auto-fire InitiateCheckout when user starts filling form ──
+    document.addEventListener('input', function(e) {
+      if (!e.target || !e.target.closest) return;
+      var form = e.target.closest('[data-checkout-form], form, #checkoutForm, #orderForm, .checkout-form, .order-form');
+      if (!form) return;
+      fireOnce('auto_initiatecheckout', function() {
+        var pName = form.getAttribute('data-product-name') || document.title || '';
+        var pCode = form.getAttribute('data-product-code') || '';
+        var pPrice = parseFloat(form.getAttribute('data-unit-price') || '0');
+        fireStandardEvent('InitiateCheckout', {
+          value: pPrice, currency: 'BDT',
+          content_name: pName, content_ids: pCode ? [pCode] : [],
+          content_type: 'product', num_items: 1
+        });
+      });
+    }, true);
+
+    // ── Auto-fire Lead when phone number is entered ──
+    document.addEventListener('change', function(e) {
+      if (!e.target) return;
+      var isPhone = (e.target.name === 'customer_phone' || e.target.name === 'phone' || e.target.type === 'tel');
+      if (!isPhone) return;
+      var val = (e.target.value || '').replace(/[^0-9]/g, '');
+      if (val.length >= 10) {
+        fireOnce('auto_lead', function() {
+          var form = e.target.closest('[data-checkout-form], form, #checkoutForm, #orderForm, .checkout-form, .order-form');
+          var pName = form ? (form.getAttribute('data-product-name') || document.title) : document.title;
+          var pPrice = form ? parseFloat(form.getAttribute('data-unit-price') || '0') : 0;
+          fireStandardEvent('Lead', {
+            value: pPrice, currency: 'BDT', content_name: pName
+          });
+        });
+      }
+    }, true);
+
+    // ── Auto-fire AddPaymentInfo when address is entered ──
+    document.addEventListener('change', function(e) {
+      if (!e.target) return;
+      var isAddress = (e.target.name === 'customer_address' || e.target.name === 'address' || e.target.name === 'shipping_address');
+      if (!isAddress || !(e.target.value || '').trim()) return;
+      fireOnce('auto_addpaymentinfo', function() {
+        var form = e.target.closest('[data-checkout-form], form, #checkoutForm, #orderForm, .checkout-form, .order-form');
+        var pPrice = form ? parseFloat(form.getAttribute('data-unit-price') || '0') : 0;
+        fireStandardEvent('AddPaymentInfo', {
+          value: pPrice, currency: 'BDT'
+        });
+      });
+    }, true);
+
+    // ── Auto-fire Contact on phone/WhatsApp/Messenger link clicks ──
+    document.addEventListener('click', function(e) {
+      var link = e.target.closest('a[href^="tel:"], a[href*="wa.me"], a[href*="m.me"], a[href*="messenger"]');
+      if (link) {
+        fireOnce('auto_contact_' + link.href.substring(0,30), function() {
+          var method = 'unknown';
+          if (link.href.indexOf('tel:') === 0) method = 'phone_call';
+          else if (link.href.indexOf('wa.me') !== -1) method = 'whatsapp';
+          else if (link.href.indexOf('m.me') !== -1 || link.href.indexOf('messenger') !== -1) method = 'messenger';
+          fireStandardEvent('Contact', { method: method, page: window.location.href });
+        });
+      }
+    }, true);
   });
 
+  // Click handler for data-track-event
   document.addEventListener('click', function(e) {
     var el = e.target.closest('[data-track-event]');
     if (el) fireEvent(el);

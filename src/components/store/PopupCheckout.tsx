@@ -48,7 +48,8 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
   const orderSubmitted = useRef(false);
   const initiateTracked = useRef(false);
 
-  const { trackInitiateCheckout, trackAddPaymentInfo, trackPurchase, trackAddToCart, trackCustomEvent } = useTracking();
+  const { trackInitiateCheckout, trackAddPaymentInfo, trackPurchase, trackAddToCart, trackCustomEvent, trackLead } = useTracking();
+  const leadTracked = useRef(false);
   const { data: settings } = useSiteSettings();
   const { data: currentProduct } = useProduct(currentItem?.productId || "");
   const { data: suggestedProductsData = [] } = useSuggestedProducts(currentItem?.categoryId, currentItem?.productId);
@@ -162,6 +163,16 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
     // Auto-sanitize phone: convert Bengali digits, strip non-digits
     if (updates.phone !== undefined) {
       updates.phone = sanitizePhoneInput(updates.phone);
+      // Fire Lead event when valid phone entered
+      if (!leadTracked.current && isValidBDPhone(updates.phone) && currentItem) {
+        leadTracked.current = true;
+        trackLead({
+          value: currentItem.price * qty,
+          contentName: currentItem.name,
+          customerPhone: updates.phone,
+          customerName: form.name,
+        });
+      }
     }
     setForm(prev => ({ ...prev, ...updates }));
   };
