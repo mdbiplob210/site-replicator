@@ -87,7 +87,7 @@ window._lpTrack = {
       plugin: 'LovableLP'
     };
   },
-  // Send server-side event via Conversions API
+  // Send server-side event via Conversions API (with per-page slug for token lookup)
   sendServerEvent: function(eventName, customData) {
     var CAPI_URL = '${supabaseUrl}/functions/v1/fb-conversions-api';
     var ANON = '${anonKey}';
@@ -99,7 +99,8 @@ window._lpTrack = {
       user_agent: navigator.userAgent,
       fbp: this.getFbp(),
       fbc: this.getFbc(),
-      custom_data: customData
+      custom_data: customData,
+      landing_page_slug: '${page.slug || ''}'
     };
     try {
       var blob = new Blob([JSON.stringify(payload)], {type: 'application/json'});

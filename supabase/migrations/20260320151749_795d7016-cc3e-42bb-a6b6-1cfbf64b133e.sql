@@ -1,0 +1,1 @@
+ALTER TABLE public.landing_pages ADD COLUMN IF NOT EXISTS fb_access_token text DEFAULT NULL;

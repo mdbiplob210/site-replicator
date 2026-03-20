@@ -39,6 +39,7 @@ const emptyPage: Partial<LandingPage> = {
   checkout_html: "",
   is_active: true,
   fb_pixel_id: "",
+  fb_access_token: "",
   tiktok_pixel_id: "",
   gtm_id: "",
   custom_head_scripts: "",
@@ -175,6 +176,7 @@ export default function AdminLandingPages() {
       checkout_html: page.checkout_html || "",
       is_active: page.is_active,
       fb_pixel_id: page.fb_pixel_id || "",
+      fb_access_token: page.fb_access_token || "",
       tiktok_pixel_id: page.tiktok_pixel_id || "",
       gtm_id: page.gtm_id || "",
       custom_head_scripts: page.custom_head_scripts || "",
@@ -508,9 +510,30 @@ export default function AdminLandingPages() {
             <TabsContent value="tracking" className="space-y-4 mt-4">
               <Card>
                 <CardHeader><CardTitle className="text-base">Facebook Pixel</CardTitle></CardHeader>
-                <CardContent>
-                  <Input value={form.fb_pixel_id || ""} onChange={(e) => setForm({ ...form, fb_pixel_id: e.target.value })} placeholder="Facebook Pixel ID (যেমন: 123456789012345)" />
-                  <p className="text-xs text-muted-foreground mt-1">Facebook Events Manager থেকে Pixel ID কপি করুন</p>
+                <CardContent className="space-y-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs">Pixel ID</Label>
+                    <Input value={form.fb_pixel_id || ""} onChange={(e) => setForm({ ...form, fb_pixel_id: e.target.value })} placeholder="Facebook Pixel ID (যেমন: 123456789012345)" />
+                    <p className="text-xs text-muted-foreground">Facebook Events Manager থেকে Pixel ID কপি করুন</p>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Conversions API Access Token</Label>
+                    <Input
+                      type="password"
+                      value={form.fb_access_token || ""}
+                      onChange={(e) => setForm({ ...form, fb_access_token: e.target.value })}
+                      placeholder="EAAxxxxxxxx... (CAPI Access Token)"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Events Manager → Settings → Conversions API → Generate Access Token।
+                      এটি সেট করলে এই পেজের জন্য server-side tracking সক্রিয় হবে — Facebook Event Match Quality বাড়বে।
+                    </p>
+                  </div>
+                  {form.fb_pixel_id && form.fb_access_token && (
+                    <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-lg p-3">
+                      <p className="text-xs text-green-700 dark:text-green-400 font-medium">✅ Server-side CAPI tracking সক্রিয় — PageView, ViewContent, Purchase সব ইভেন্ট browser + server দুই দিক থেকে যাবে।</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
               <Card>
