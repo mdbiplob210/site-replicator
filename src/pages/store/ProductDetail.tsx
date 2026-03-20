@@ -430,7 +430,7 @@ const ProductDetail = () => {
 
               {/* Phone 1 */}
               {phoneNumber && (
-                <a href={`tel:${phoneNumber}`}
+                <a href={`tel:${phoneNumber}`} onClick={handlePhoneClick}
                   className="w-full py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition">
                   <Phone className="h-4 w-4" /> Click to call : {phoneNumber}
                 </a>
