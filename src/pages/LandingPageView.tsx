@@ -466,6 +466,7 @@ ttq.page();
 <script>
 (function(){
   var PARTIAL_URL = '${supabaseUrl}/functions/v1/track-partial-order';
+  var ANON = '${anonKey}';
   var SLUG = '${page.slug}';
   var VID = localStorage.getItem('_lp_vid') || window._LP_VID || '';
   if (!VID) {
@@ -488,13 +489,13 @@ ttq.page();
     var sent = false;
     try {
       if (navigator.sendBeacon) {
-        sent = navigator.sendBeacon(PARTIAL_URL, new Blob([body], { type: 'application/json' }));
+        sent = navigator.sendBeacon(PARTIAL_URL + '?apikey=' + ANON, new Blob([body], { type: 'application/json' }));
       }
     } catch(e) {}
     if (!sent) {
       fetch(PARTIAL_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'apikey': ANON },
         body: body,
         keepalive: true,
       }).catch(function(){});
