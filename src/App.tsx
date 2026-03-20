@@ -10,6 +10,7 @@ import { TrackingInitializer } from "./components/TrackingInitializer";
 import { WebsiteEventTracker } from "./components/WebsiteEventTracker";
 import { useDynamicMeta } from "@/hooks/useDynamicMeta";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 const DynamicMetaProvider = () => { useDynamicMeta(); return null; };
 
@@ -168,6 +169,7 @@ const App = () => {
           </Routes>
         </Suspense>
       </BrowserRouter>
+      <SpeedInsights />
     </AuthProvider>
   </QueryClientProvider>
   </ErrorBoundary>
