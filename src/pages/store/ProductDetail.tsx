@@ -34,7 +34,7 @@ const ProductDetail = () => {
   } : null);
   const navigate = useNavigate();
   const [qty, setQty] = useState(1);
-  const { trackViewContent, trackAddToCart, trackCustomEvent } = useTracking();
+  const { trackViewContent, trackAddToCart, trackCustomEvent, trackContact, trackLead } = useTracking();
   useEngagementTracking();
   const viewTrackedRef = useRef(false);
 
