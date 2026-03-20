@@ -6,6 +6,71 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+function sanitizeText(value: unknown): string {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function pickText(value: unknown, previous: string | null | undefined, fallback: string | null = null): string | null {
+  const cleaned = sanitizeText(value);
+  if (cleaned) return cleaned;
+  return previous ?? fallback;
+}
+
+function pickNumber(value: unknown, previous: number | null | undefined, fallback: number): number {
+  return typeof value === "number" && Number.isFinite(value) ? value : previous ?? fallback;
+}
+
+async function findExistingPartial(
+  supabase: ReturnType<typeof createClient>,
+  clientIp: string,
+  landingPageSlug: string | null,
+  visitorId: string | null,
+) {
+  const applySlugFilter = (query: any) => {
+    if (landingPageSlug) return query.eq("landing_page_slug", landingPageSlug);
+    return query.is("landing_page_slug", null);
+  };
+
+  if (visitorId) {
+    const visitorTag = `visitor:${visitorId}`;
+    const { data, error } = await applySlugFilter(
+      supabase
+        .from("incomplete_orders")
+        .select("*")
+        .eq("block_reason", "abandoned_form")
+        .ilike("notes", `%${visitorTag}%`)
+        .order("updated_at", { ascending: false })
+        .limit(1),
+    ).maybeSingle();
+
+    if (error) {
+      console.error("[track-partial-order] Failed visitor lookup:", error.message);
+    } else if (data) {
+      return data;
+    }
+  }
+
+  if (clientIp && clientIp !== "unknown") {
+    const { data, error } = await applySlugFilter(
+      supabase
+        .from("incomplete_orders")
+        .select("*")
+        .eq("block_reason", "abandoned_form")
+        .eq("client_ip", clientIp)
+        .order("updated_at", { ascending: false })
+        .limit(1),
+    ).maybeSingle();
+
+    if (error) {
+      console.error("[track-partial-order] Failed IP lookup:", error.message);
+    } else if (data) {
+      return data;
+    }
+  }
+
+  return null;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -45,49 +110,65 @@ Deno.serve(async (req) => {
     // ── Save partial form data ──
     if (action === "save_partial") {
       const { customer_name, customer_phone, customer_address, product_name, product_code, quantity, unit_price, delivery_charge, discount } = body;
+      const cleanedName = sanitizeText(customer_name);
+      const cleanedPhone = sanitizeText(customer_phone);
+      const cleanedAddress = sanitizeText(customer_address);
+      const cleanedProductName = sanitizeText(product_name);
+      const cleanedProductCode = sanitizeText(product_code);
+      const safeQuantity = typeof quantity === "number" && Number.isFinite(quantity) && quantity > 0 ? quantity : 1;
+      const safeUnitPrice = typeof unit_price === "number" && Number.isFinite(unit_price) ? unit_price : 0;
+      const safeDeliveryCharge = typeof delivery_charge === "number" && Number.isFinite(delivery_charge) ? delivery_charge : 0;
+      const safeDiscount = typeof discount === "number" && Number.isFinite(discount) ? discount : 0;
 
       // Need at least one field filled
-      if (!customer_name && !customer_phone && !customer_address) {
+      if (!cleanedName && !cleanedPhone && !cleanedAddress) {
         return new Response(
           JSON.stringify({ success: false, error: "No data to save" }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
-      const totalProductCost = (unit_price || 0) * (quantity || 1);
-      const totalAmount = totalProductCost + (delivery_charge || 0) - (discount || 0);
+      const totalProductCost = safeUnitPrice * safeQuantity;
+      const totalAmount = totalProductCost + safeDeliveryCharge - safeDiscount;
+      const visitorNote = visitor_id ? `visitor:${visitor_id}` : null;
 
-      // Check if there's already a partial entry for this visitor/IP + slug
-      const { data: existing } = await supabase
-        .from("incomplete_orders")
-        .select("id")
-        .eq("block_reason", "abandoned_form")
-        .eq("landing_page_slug", landing_page_slug || "")
-        .or(`client_ip.eq.${clientIp}${visitor_id ? `,notes.ilike.%${visitor_id}%` : ""}`)
-        .order("created_at", { ascending: false })
-        .limit(1);
+      const existing = await findExistingPartial(
+        supabase,
+        clientIp,
+        landing_page_slug || null,
+        visitor_id || null,
+      );
 
-      if (existing && existing.length > 0) {
+      if (existing) {
         // Update existing partial
-        await supabase
+        const updatePayload = {
+          customer_name: pickText(cleanedName, existing.customer_name, "(অসম্পূর্ণ)"),
+          customer_phone: pickText(cleanedPhone, existing.customer_phone, null),
+          customer_address: pickText(cleanedAddress, existing.customer_address, null),
+          product_name: pickText(cleanedProductName, existing.product_name, null),
+          product_code: pickText(cleanedProductCode, existing.product_code, null),
+          quantity: pickNumber(safeQuantity, existing.quantity, 1),
+          unit_price: pickNumber(safeUnitPrice, existing.unit_price, 0),
+          total_amount: totalAmount || existing.total_amount || 0,
+          delivery_charge: pickNumber(safeDeliveryCharge, existing.delivery_charge, 0),
+          discount: pickNumber(safeDiscount, existing.discount, 0),
+          landing_page_slug: landing_page_slug || existing.landing_page_slug || null,
+          client_ip: clientIp === "unknown" ? existing.client_ip : clientIp,
+          user_agent: userAgent || existing.user_agent,
+          device_info: deviceInfo || existing.device_info,
+          notes: visitorNote || existing.notes || null,
+          updated_at: new Date().toISOString(),
+        };
+
+        const { error: updateError } = await supabase
           .from("incomplete_orders")
-          .update({
-            customer_name: customer_name || "",
-            customer_phone: customer_phone || null,
-            customer_address: customer_address || null,
-            product_name: product_name || null,
-            product_code: product_code || null,
-            quantity: quantity || 1,
-            unit_price: unit_price || 0,
-            total_amount: totalAmount,
-            delivery_charge: delivery_charge || 0,
-            discount: discount || 0,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", existing[0].id);
+          .update(updatePayload)
+          .eq("id", existing.id);
+
+        if (updateError) throw updateError;
 
         return new Response(
-          JSON.stringify({ success: true, updated: true, id: existing[0].id }),
+          JSON.stringify({ success: true, updated: true, id: existing.id }),
           { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       } else {
@@ -95,23 +176,23 @@ Deno.serve(async (req) => {
         const { data: inserted, error: insertError } = await supabase
           .from("incomplete_orders")
           .insert({
-            customer_name: customer_name || "(অসম্পূর্ণ)",
-            customer_phone: customer_phone || null,
-            customer_address: customer_address || null,
-            product_name: product_name || null,
-            product_code: product_code || null,
-            quantity: quantity || 1,
-            unit_price: unit_price || 0,
+            customer_name: cleanedName || "(অসম্পূর্ণ)",
+            customer_phone: cleanedPhone || null,
+            customer_address: cleanedAddress || null,
+            product_name: cleanedProductName || null,
+            product_code: cleanedProductCode || null,
+            quantity: safeQuantity,
+            unit_price: safeUnitPrice,
             total_amount: totalAmount,
-            delivery_charge: delivery_charge || 0,
-            discount: discount || 0,
+            delivery_charge: safeDeliveryCharge,
+            discount: safeDiscount,
             landing_page_slug: landing_page_slug || null,
-            client_ip: clientIp,
+            client_ip: clientIp === "unknown" ? null : clientIp,
             user_agent: userAgent,
             device_info: deviceInfo,
             block_reason: "abandoned_form",
             status: "processing",
-            notes: visitor_id ? `visitor:${visitor_id}` : null,
+            notes: visitorNote,
           })
           .select("id")
           .single();
@@ -127,13 +208,38 @@ Deno.serve(async (req) => {
 
     // ── Remove partial on successful order ──
     if (action === "remove_partial") {
-      // Delete abandoned_form entries matching this IP + slug
-      await supabase
-        .from("incomplete_orders")
-        .delete()
-        .eq("block_reason", "abandoned_form")
-        .eq("landing_page_slug", landing_page_slug || "")
-        .eq("client_ip", clientIp);
+      const applySlugFilter = (query: any) => {
+        if (landing_page_slug) return query.eq("landing_page_slug", landing_page_slug);
+        return query.is("landing_page_slug", null);
+      };
+
+      if (visitor_id) {
+        const { error: visitorDeleteError } = await applySlugFilter(
+          supabase
+            .from("incomplete_orders")
+            .delete()
+            .eq("block_reason", "abandoned_form")
+            .ilike("notes", `%visitor:${visitor_id}%`),
+        );
+
+        if (visitorDeleteError) {
+          console.error("[track-partial-order] Failed visitor delete:", visitorDeleteError.message);
+        }
+      }
+
+      if (clientIp && clientIp !== "unknown") {
+        const { error: ipDeleteError } = await applySlugFilter(
+          supabase
+            .from("incomplete_orders")
+            .delete()
+            .eq("block_reason", "abandoned_form")
+            .eq("client_ip", clientIp),
+        );
+
+        if (ipDeleteError) {
+          console.error("[track-partial-order] Failed IP delete:", ipDeleteError.message);
+        }
+      }
 
       return new Response(
         JSON.stringify({ success: true }),
@@ -146,7 +252,7 @@ Deno.serve(async (req) => {
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
-    console.error("[track-partial-order] Error:", error.message);
+    console.error("[track-partial-order] Error:", error instanceof Error ? error.message : String(error));
     return new Response(
       JSON.stringify({ error: "Internal server error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }

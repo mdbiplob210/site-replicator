@@ -138,6 +138,7 @@ ttq.track('InitiateCheckout');
   var ROOT_SELECTOR = '[data-checkout-form], form, #checkoutForm, #orderForm, .checkout-form, .order-form, .checkout, #checkout, [id*="checkout"], [class*="checkout"], [id*="order"], [class*="order"]';
   var _partialTimer = null;
   var _lastSent = '';
+  var _autosaveTimer = null;
 
   function parseNumber(value, fallback) {
     var cleaned = String(value == null ? '' : value).replace(/[^\d.-]/g, '');
@@ -145,14 +146,17 @@ ttq.track('InitiateCheckout');
     return isNaN(parsed) ? fallback : parsed;
   }
 
-  function postJson(payload) {
+  function postJson(payload, options) {
+    options = options || {};
     var body = JSON.stringify(payload);
     var sent = false;
-    try {
-      if (navigator.sendBeacon) {
-        sent = navigator.sendBeacon(PARTIAL_URL + '?apikey=' + ANON, new Blob([body], { type: 'application/json' }));
-      }
-    } catch(e) {}
+    if (!options.forceFetch) {
+      try {
+        if (navigator.sendBeacon) {
+          sent = navigator.sendBeacon(PARTIAL_URL + '?apikey=' + ANON, new Blob([body], { type: 'application/json' }));
+        }
+      } catch(e) {}
+    }
     if (!sent) {
       fetch(PARTIAL_URL, {
         method: 'POST',
@@ -161,6 +165,14 @@ ttq.track('InitiateCheckout');
         keepalive: true,
       }).catch(function(){});
     }
+  }
+
+  function ensureAutosave() {
+    if (_autosaveTimer) return;
+    _autosaveTimer = setInterval(function() {
+      var roots = getCandidateRoots();
+      for (var i = 0; i < roots.length; i++) sendPartial(roots[i], { allowRepeat: true });
+    }, 8000);
   }
 
   function uniqueNodes(nodes) {
@@ -286,24 +298,26 @@ ttq.track('InitiateCheckout');
     };
   }
 
-  function sendPartial(root) {
+  function sendPartial(root, options) {
     if (!root) return;
+    options = options || {};
     var d = getFormData(root);
     if (!d.customer_name && !d.customer_phone && !d.customer_address) return;
     var key = JSON.stringify(d);
-    if (key === _lastSent) return;
+    if (!options.force && !options.allowRepeat && key === _lastSent) return;
     _lastSent = key;
 
     postJson(Object.assign({}, d, {
       action: 'save_partial',
       landing_page_slug: SLUG,
       visitor_id: VID
-    }));
+    }), { forceFetch: !!options.forceFetch });
   }
 
   function queuePartial(target, delay) {
     var root = resolveRoot(target);
     if (!root) return;
+    ensureAutosave();
     if (_partialTimer) clearTimeout(_partialTimer);
     _partialTimer = setTimeout(function(){ sendPartial(root); }, delay);
   }
@@ -322,16 +336,20 @@ ttq.track('InitiateCheckout');
 
   document.addEventListener('submit', function(e) {
     var root = resolveRoot(e.target);
-    if (root) sendPartial(root);
+    if (root) {
+      ensureAutosave();
+      sendPartial(root, { force: true });
+    }
   }, true);
 
   function flushAll() {
     if (_partialTimer) { clearTimeout(_partialTimer); _partialTimer = null; }
     var roots = getCandidateRoots();
-    for (var i = 0; i < roots.length; i++) sendPartial(roots[i]);
+    for (var i = 0; i < roots.length; i++) sendPartial(roots[i], { force: true, forceFetch: true });
   }
 
   window.addEventListener('beforeunload', flushAll);
+  window.addEventListener('unload', flushAll);
   window.addEventListener('pagehide', flushAll);
   document.addEventListener('visibilitychange', function() {
     if (document.visibilityState === 'hidden') flushAll();
