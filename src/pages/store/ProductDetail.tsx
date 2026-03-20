@@ -558,7 +558,7 @@ const ProductDetail = () => {
 
           {/* Call */}
           {phoneNumber && (
-            <a href={`tel:${phoneNumber}`}
+            <a href={`tel:${phoneNumber}`} onClick={handlePhoneClick}
               className="w-12 h-12 rounded-xl bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center flex-shrink-0 transition shadow">
               <Phone className="h-5 w-5" />
             </a>
