@@ -12,31 +12,11 @@ export default function LandingPageView() {
   const { data: page, isLoading, error } = useLandingPageBySlug(slug || "");
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Tracking scripts are embedded inside the iframe srcDoc — no need to inject into parent document
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <p className="text-muted-foreground">লোড হচ্ছে...</p>
-      </div>
-    );
-  }
-
-  if (error || !page) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-foreground">404</h1>
-          <p className="text-muted-foreground mt-2">এই পেজটি পাওয়া যায়নি</p>
-        </div>
-      </div>
-    );
-  }
-
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
   const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '';
 
   const buildFullHtml = () => {
+    if (!page) return '<!DOCTYPE html><html><body></body></html>';
     let trackingScripts = "";
 
     // Helper script for rich tracking data (PixelYourSite style)
