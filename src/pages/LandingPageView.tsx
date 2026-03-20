@@ -638,7 +638,18 @@ ttq.page();
 })();
 </script>`;
 
-    const allScripts = richTrackingHelper + trackingScripts + conversionScript + analyticsScript + partialTrackingScript + phoneValidationScript + orderScript + autocompleteScript + exitIntentScript;
+    // Inject globals FIRST so template's embedded handler can use them
+    const globalsScript = `
+<script>
+window.SUPABASE_URL = '${supabaseUrl}';
+window.SUPABASE_ANON_KEY = '${anonKey}';
+window._LP_SLUG = '${page.slug}';
+window._LP_VID = localStorage.getItem('_lp_vid') || '';
+if (!window._LP_VID) { window._LP_VID = 'v_' + Math.random().toString(36).substr(2,9) + Date.now(); localStorage.setItem('_lp_vid', window._LP_VID); }
+</script>
+`;
+
+    const allScripts = globalsScript + richTrackingHelper + trackingScripts + conversionScript + analyticsScript + partialTrackingScript + phoneValidationScript + orderScript + autocompleteScript + exitIntentScript;
 
     const cleanHtml = sanitizeHtmlScripts(page.html_content);
 
