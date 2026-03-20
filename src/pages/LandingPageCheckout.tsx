@@ -467,11 +467,13 @@ ttq.track('InitiateCheckout');
         }
       } else {
         alert(data.error || 'অর্ডার সাবমিট করতে সমস্যা হয়েছে');
+        _submitting = false;
         if (btn) { btn.disabled = false; btn.textContent = btnOrigText || 'অর্ডার করুন'; }
       }
     })
     .catch(function(err) {
       alert('ত্রুটি: ' + err.message);
+      _submitting = false;
       if (btn) { btn.disabled = false; btn.textContent = btnOrigText || 'অর্ডার করুন'; }
     });
   });
