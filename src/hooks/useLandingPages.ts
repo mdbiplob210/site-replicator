@@ -10,6 +10,7 @@ export interface LandingPage {
   checkout_html: string | null;
   is_active: boolean;
   fb_pixel_id: string | null;
+  fb_access_token: string | null;
   tiktok_pixel_id: string | null;
   gtm_id: string | null;
   custom_head_scripts: string | null;
