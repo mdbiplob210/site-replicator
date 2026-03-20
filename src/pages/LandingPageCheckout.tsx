@@ -349,11 +349,14 @@ ttq.track('InitiateCheckout');
   var ORDER_URL = '${supabaseUrl}/functions/v1/submit-landing-order';
   var SLUG = '${page.slug}';
   var VID = localStorage.getItem('_lp_vid') || '';
+  var _submitting = false;
 
   document.addEventListener('submit', function(e) {
     var form = e.target.closest('[data-checkout-form]');
     if (!form) return;
     e.preventDefault();
+    if (_submitting) return;
+    _submitting = true;
 
     var btn = form.querySelector('[type="submit"], button:not([type])');
     var btnOrigText = btn ? btn.textContent : '';
@@ -464,11 +467,13 @@ ttq.track('InitiateCheckout');
         }
       } else {
         alert(data.error || 'অর্ডার সাবমিট করতে সমস্যা হয়েছে');
+        _submitting = false;
         if (btn) { btn.disabled = false; btn.textContent = btnOrigText || 'অর্ডার করুন'; }
       }
     })
     .catch(function(err) {
       alert('ত্রুটি: ' + err.message);
+      _submitting = false;
       if (btn) { btn.disabled = false; btn.textContent = btnOrigText || 'অর্ডার করুন'; }
     });
   });
