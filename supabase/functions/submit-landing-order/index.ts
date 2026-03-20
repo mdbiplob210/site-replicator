@@ -313,7 +313,8 @@ Deno.serve(async (req) => {
     }
 
     // ═══ All checks passed - create order ═══
-    const { data: seqNum } = await supabase.rpc("generate_order_number");
+    const { data: seqNum, error: seqError } = await supabase.rpc("generate_order_number");
+    if (seqError) console.error("[submit-landing-order] generate_order_number error:", seqError.message);
     const orderNumber = String(seqNum || Date.now());
 
     const { data: order, error: orderError } = await supabase

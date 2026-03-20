@@ -349,11 +349,14 @@ ttq.track('InitiateCheckout');
   var ORDER_URL = '${supabaseUrl}/functions/v1/submit-landing-order';
   var SLUG = '${page.slug}';
   var VID = localStorage.getItem('_lp_vid') || '';
+  var _submitting = false;
 
   document.addEventListener('submit', function(e) {
     var form = e.target.closest('[data-checkout-form]');
     if (!form) return;
     e.preventDefault();
+    if (_submitting) return;
+    _submitting = true;
 
     var btn = form.querySelector('[type="submit"], button:not([type])');
     var btnOrigText = btn ? btn.textContent : '';
