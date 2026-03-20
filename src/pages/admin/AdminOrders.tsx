@@ -1286,6 +1286,38 @@ const AdminOrders = () => {
             ))}
           </div>
 
+          {/* Landing Page slug filter */}
+          {slugOptions.length > 0 && (
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-medium text-muted-foreground">🔗 LP:</span>
+              <div className="flex items-center gap-1 bg-card rounded-xl border border-border/60 p-1 flex-wrap">
+                <button
+                  onClick={() => setIncompleteSlugFilter("all")}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                    incompleteSlugFilter === "all"
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+                  }`}
+                >
+                  সব LP
+                </button>
+                {slugOptions.map((opt) => (
+                  <button
+                    key={opt.slug}
+                    onClick={() => setIncompleteSlugFilter(opt.slug)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                      incompleteSlugFilter === opt.slug
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+                    }`}
+                  >
+                    {opt.slug} ({opt.count})
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Status tabs */}
           <div className="flex items-center gap-6 border-b border-border/40 pb-0">
             {incompleteTabs.map((tab) => (
