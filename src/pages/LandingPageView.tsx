@@ -90,6 +90,7 @@ window._lpTrack = {
   // Send server-side event via Conversions API
   sendServerEvent: function(eventName, customData) {
     var CAPI_URL = '${supabaseUrl}/functions/v1/fb-conversions-api';
+    var ANON = '${anonKey}';
     var payload = {
       pixel_id: '${page.fb_pixel_id || ''}',
       event_name: eventName,
@@ -102,9 +103,9 @@ window._lpTrack = {
     };
     try {
       var blob = new Blob([JSON.stringify(payload)], {type: 'application/json'});
-      navigator.sendBeacon(CAPI_URL, blob);
+      navigator.sendBeacon(CAPI_URL + '?apikey=' + ANON, blob);
     } catch(e) {
-      fetch(CAPI_URL, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)}).catch(function(){});
+      fetch(CAPI_URL, {method:'POST', headers:{'Content-Type':'application/json','apikey':ANON}, body:JSON.stringify(payload)}).catch(function(){});
     }
   }
 };
