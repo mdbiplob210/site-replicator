@@ -1003,7 +1003,34 @@ if (!window._LP_VID) { window._LP_VID = 'v_' + Math.random().toString(36).substr
 </script>
 `;
 
-    const allScripts = globalsScript + richTrackingHelper + trackingScripts + conversionScript + analyticsScript + partialTrackingScript + phoneValidationScript + orderScript + autocompleteScript + exitIntentScript + debugPanelScript;
+    // Runtime patch: sync header price when tier changes (works on existing pages too)
+    const tierPricePatchScript = `
+<script>
+(function(){
+  function patchSync(){
+    if(typeof syncTierToCheckout==='function'){
+      var orig=syncTierToCheckout;
+      syncTierToCheckout=function(){
+        orig.apply(this,arguments);
+        var hp=document.getElementById('headerPrice');
+        var sum=document.getElementById('sumProduct');
+        if(!hp&&sum){
+          var priceSpans=document.querySelectorAll('[style*="font-size:22px"][style*="font-weight:800"]');
+          for(var i=0;i<priceSpans.length;i++){
+            if(priceSpans[i].textContent.indexOf('৳')===0){hp=priceSpans[i];break;}
+          }
+        }
+        if(hp&&sum) hp.textContent=sum.textContent;
+      };
+    }
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){setTimeout(patchSync,500);});
+  else setTimeout(patchSync,500);
+})();
+</script>
+`;
+
+    const allScripts = globalsScript + richTrackingHelper + trackingScripts + conversionScript + analyticsScript + partialTrackingScript + phoneValidationScript + orderScript + autocompleteScript + exitIntentScript + debugPanelScript + tierPricePatchScript;
 
     const cleanHtml = sanitizeHtmlScripts(page.html_content);
 
