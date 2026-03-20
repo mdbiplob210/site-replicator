@@ -120,10 +120,10 @@ Deno.serve(async (req) => {
       const safeDeliveryCharge = typeof delivery_charge === "number" && Number.isFinite(delivery_charge) ? delivery_charge : 0;
       const safeDiscount = typeof discount === "number" && Number.isFinite(discount) ? discount : 0;
 
-      // Need at least one field filled
-      if (!cleanedName && !cleanedPhone && !cleanedAddress) {
+      // Only need phone number to save
+      if (!cleanedPhone) {
         return new Response(
-          JSON.stringify({ success: false, error: "No data to save" }),
+          JSON.stringify({ success: false, error: "No phone number" }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
