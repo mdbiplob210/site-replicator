@@ -787,6 +787,8 @@ export function useTracking() {
     trackAddPaymentInfo,
     trackPurchase,
     trackContact,
+    trackLead,
+    trackCompleteRegistration,
     trackSearch,
     trackCustomEvent,
     isReady: !!settings,
