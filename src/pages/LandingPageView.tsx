@@ -806,7 +806,170 @@ if (!window._LP_VID) { window._LP_VID = 'v_' + Math.random().toString(36).substr
 </script>
 `;
 
-    const allScripts = globalsScript + richTrackingHelper + trackingScripts + conversionScript + analyticsScript + partialTrackingScript + phoneValidationScript + orderScript + autocompleteScript + exitIntentScript;
+    // ═══ Admin Debug Panel (only shows with ?debug=1) ═══
+    const debugPanelScript = `
+<script>
+(function(){
+  if (!/[?&]debug=1/.test(window.location.search)) return;
+
+  var logs = [];
+  var panel, logBox, badge;
+
+  function addLog(category, msg, status) {
+    var ts = new Date().toLocaleTimeString('en',{hour12:false});
+    var colors = {ok:'#22c55e',fail:'#ef4444',info:'#3b82f6',warn:'#f59e0b'};
+    logs.push({ts:ts,category:category,msg:msg,status:status||'info'});
+    if (logBox) {
+      var row = document.createElement('div');
+      row.style.cssText = 'padding:4px 0;border-bottom:1px solid rgba(255,255,255,.08);font-size:11px;line-height:1.4;word-break:break-all;';
+      row.innerHTML = '<span style="color:#888">' + ts + '</span> '
+        + '<span style="background:' + (colors[status]||colors.info) + ';color:#fff;padding:1px 5px;border-radius:3px;font-size:9px;font-weight:700;margin:0 4px;">' + category.toUpperCase() + '</span> '
+        + '<span style="color:' + (colors[status]||'#ccc') + '">' + msg + '</span>';
+      logBox.appendChild(row);
+      logBox.scrollTop = logBox.scrollHeight;
+    }
+    if (badge) { badge.textContent = String(logs.length); badge.style.display = 'flex'; }
+  }
+
+  // Intercept sendBeacon
+  var origBeacon = navigator.sendBeacon.bind(navigator);
+  navigator.sendBeacon = function(url, body) {
+    var u = String(url);
+    if (u.indexOf('track-partial-order') !== -1) {
+      try { var d = JSON.parse(typeof body === 'string' ? body : body.text ? '' : new TextDecoder().decode(body.slice ? body.slice(0) : new Uint8Array()));
+        addLog('partial', (d.action||'save') + ': ' + (d.customer_name||'-') + ' / ' + (d.customer_phone||'-'), 'ok');
+      } catch(e) { addLog('partial', 'Data sent', 'ok'); }
+    } else if (u.indexOf('track-landing-event') !== -1) {
+      addLog('analytics', 'Event beacon sent', 'ok');
+    } else if (u.indexOf('fb-conversions-api') !== -1) {
+      addLog('capi', 'Server event sent', 'ok');
+    }
+    return origBeacon(url, body);
+  };
+
+  // Intercept fetch for order submission
+  var origFetch = window.fetch;
+  window.fetch = function(url) {
+    var u = String(typeof url === 'string' ? url : (url && url.url) || '');
+    var result = origFetch.apply(this, arguments);
+    if (u.indexOf('submit-landing-order') !== -1) {
+      addLog('order', 'Submitting order...', 'info');
+      result.then(function(r) {
+        return r.clone().json().then(function(d) {
+          if (d.success) addLog('order', 'Order #' + (d.order_number||'') + ' created', 'ok');
+          else addLog('order', 'Failed: ' + (d.error||'unknown'), 'fail');
+        });
+      }).catch(function(e) { addLog('order', 'Error: ' + e.message, 'fail'); });
+    } else if (u.indexOf('track-partial-order') !== -1) {
+      addLog('partial', 'Fallback fetch sent', 'ok');
+    }
+    return result;
+  };
+
+  // Intercept fbq
+  var origFbq = window.fbq;
+  if (typeof origFbq === 'function') {
+    window.fbq = function() {
+      var args = Array.prototype.slice.call(arguments);
+      if (args[0] === 'track' || args[0] === 'trackCustom') {
+        addLog('fb pixel', args[1] + (args[2] && args[2].value ? ' (৳' + args[2].value + ')' : ''), 'ok');
+      }
+      return origFbq.apply(this, arguments);
+    };
+    // Copy properties
+    for (var k in origFbq) { if (origFbq.hasOwnProperty(k)) window.fbq[k] = origFbq[k]; }
+    window.fbq.callMethod = origFbq.callMethod;
+    window.fbq.queue = origFbq.queue;
+    window.fbq.push = origFbq.push;
+    window.fbq.loaded = origFbq.loaded;
+    window.fbq.version = origFbq.version;
+  } else {
+    // fbq not loaded yet, watch for it
+    addLog('fb pixel', 'Not configured', 'warn');
+  }
+
+  // Intercept ttq
+  setTimeout(function() {
+    if (typeof window.ttq !== 'undefined' && window.ttq.track) {
+      var origTT = window.ttq.track;
+      window.ttq.track = function() {
+        addLog('tiktok', arguments[0] + (arguments[1] && arguments[1].value ? ' (৳' + arguments[1].value + ')' : ''), 'ok');
+        return origTT.apply(this, arguments);
+      };
+    } else {
+      addLog('tiktok', 'Not configured', 'warn');
+    }
+  }, 2000);
+
+  // Build UI
+  document.addEventListener('DOMContentLoaded', function() {
+    var collapsed = true;
+
+    var fab = document.createElement('div');
+    fab.style.cssText = 'position:fixed;bottom:16px;right:16px;z-index:999999;';
+
+    var btn = document.createElement('button');
+    btn.style.cssText = 'width:44px;height:44px;border-radius:50%;background:#1e293b;border:2px solid #334155;color:#fff;font-size:18px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;position:relative;';
+    btn.innerHTML = '🛠';
+    btn.title = 'Debug Panel';
+
+    badge = document.createElement('span');
+    badge.style.cssText = 'position:absolute;top:-4px;right:-4px;background:#22c55e;color:#fff;font-size:9px;font-weight:700;min-width:18px;height:18px;border-radius:9px;display:none;align-items:center;justify-content:center;padding:0 4px;';
+    badge.textContent = '0';
+    btn.appendChild(badge);
+
+    panel = document.createElement('div');
+    panel.style.cssText = 'display:none;position:fixed;bottom:70px;right:16px;width:360px;max-width:calc(100vw - 32px);max-height:50vh;background:#0f172a;border:1px solid #334155;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.5);z-index:999999;font-family:ui-monospace,monospace;overflow:hidden;';
+
+    var header = document.createElement('div');
+    header.style.cssText = 'padding:10px 14px;background:#1e293b;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #334155;';
+    header.innerHTML = '<span style="color:#94a3b8;font-size:11px;font-weight:700;letter-spacing:1px;">🛠 LP DEBUG</span>';
+
+    var checks = document.createElement('div');
+    checks.style.cssText = 'padding:8px 14px;display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid #1e293b;';
+    var items = [
+      ['FB Pixel', ${page.fb_pixel_id ? 'true' : 'false'}],
+      ['TikTok', ${page.tiktok_pixel_id ? 'true' : 'false'}],
+      ['GTM', ${page.gtm_id ? 'true' : 'false'}],
+      ['Partial Track', true],
+      ['Order API', true]
+    ];
+    for (var i = 0; i < items.length; i++) {
+      var chip = document.createElement('span');
+      chip.style.cssText = 'font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600;' + (items[i][1] ? 'background:#052e16;color:#4ade80;' : 'background:#1c1917;color:#78716c;');
+      chip.textContent = (items[i][1] ? '✓ ' : '✗ ') + items[i][0];
+      checks.appendChild(chip);
+    }
+
+    logBox = document.createElement('div');
+    logBox.style.cssText = 'padding:8px 14px;overflow-y:auto;max-height:calc(50vh - 100px);';
+
+    panel.appendChild(header);
+    panel.appendChild(checks);
+    panel.appendChild(logBox);
+    fab.appendChild(panel);
+    fab.appendChild(btn);
+    document.body.appendChild(fab);
+
+    btn.addEventListener('click', function() {
+      collapsed = !collapsed;
+      panel.style.display = collapsed ? 'none' : 'block';
+    });
+
+    addLog('system', 'Debug panel initialized for "' + SLUG + '"', 'info');
+    addLog('system', 'Slug: ${page.slug} | VID: ' + VID, 'info');
+
+    // Detect form presence
+    setTimeout(function() {
+      var forms = document.querySelectorAll('[data-checkout-form], form, #checkoutForm, #orderForm, .checkout-form, .order-form');
+      addLog('form', forms.length + ' checkout root(s) found', forms.length > 0 ? 'ok' : 'warn');
+    }, 1000);
+  });
+})();
+</script>
+`;
+
+    const allScripts = globalsScript + richTrackingHelper + trackingScripts + conversionScript + analyticsScript + partialTrackingScript + phoneValidationScript + orderScript + autocompleteScript + exitIntentScript + debugPanelScript;
 
     const cleanHtml = sanitizeHtmlScripts(page.html_content);
 
