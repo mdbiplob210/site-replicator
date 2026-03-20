@@ -115,10 +115,6 @@ Deno.serve(async (req) => {
       const cleanedAddress = sanitizeText(customer_address);
       const cleanedProductName = sanitizeText(product_name).substring(0, 150);
       const cleanedProductCode = sanitizeText(product_code).substring(0, 50);
-      const cleanedPhone = sanitizeText(customer_phone);
-      const cleanedAddress = sanitizeText(customer_address);
-      const cleanedProductName = sanitizeText(product_name);
-      const cleanedProductCode = sanitizeText(product_code);
       const safeQuantity = typeof quantity === "number" && Number.isFinite(quantity) && quantity > 0 ? quantity : 1;
       const safeUnitPrice = typeof unit_price === "number" && Number.isFinite(unit_price) ? unit_price : 0;
       const safeDeliveryCharge = typeof delivery_charge === "number" && Number.isFinite(delivery_charge) ? delivery_charge : 0;
