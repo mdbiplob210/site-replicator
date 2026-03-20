@@ -167,6 +167,7 @@ const ProductDetail = () => {
 
   // Track WhatsApp lead in inbox
   const handleWhatsAppClick = async () => {
+    trackContact({ method: 'whatsapp', page: `/product/${slug}` });
     try {
       const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
       fetch(`https://${projectId}.supabase.co/functions/v1/whatsapp-lead`, {
@@ -181,6 +182,14 @@ const ProductDetail = () => {
     } catch {
       // Silent fail
     }
+  };
+
+  const handlePhoneClick = () => {
+    trackContact({ method: 'phone_call', page: `/product/${slug}` });
+  };
+
+  const handleMessengerClick = () => {
+    trackContact({ method: 'messenger', page: `/product/${slug}` });
   };
   const handleOrder = () => {
     trackAddToCart({
