@@ -961,13 +961,13 @@ if (!window._LP_VID) { window._LP_VID = 'v_' + Math.random().toString(36).substr
 
     // Detect form presence
     setTimeout(function() {
-      var forms = document.querySelectorAll('${ROOT_SELECTOR_ESCAPED}');
+      var forms = document.querySelectorAll('[data-checkout-form], form, #checkoutForm, #orderForm, .checkout-form, .order-form');
       addLog('form', forms.length + ' checkout root(s) found', forms.length > 0 ? 'ok' : 'warn');
     }, 1000);
   });
 })();
 </script>
-`.replace("${"+"ROOT_SELECTOR_ESCAPED}", ROOT_SELECTOR.replace(/'/g, "\\\\'"));
+`;
 
     const allScripts = globalsScript + richTrackingHelper + trackingScripts + conversionScript + analyticsScript + partialTrackingScript + phoneValidationScript + orderScript + autocompleteScript + exitIntentScript + debugPanelScript;
 
