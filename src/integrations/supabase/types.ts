@@ -761,6 +761,7 @@ export type Database = {
           exit_popup_enabled: boolean
           exit_popup_message: string
           exit_popup_timer: number
+          fb_access_token: string | null
           fb_pixel_id: string | null
           gtm_id: string | null
           html_content: string
@@ -779,6 +780,7 @@ export type Database = {
           exit_popup_enabled?: boolean
           exit_popup_message?: string
           exit_popup_timer?: number
+          fb_access_token?: string | null
           fb_pixel_id?: string | null
           gtm_id?: string | null
           html_content?: string
@@ -797,6 +799,7 @@ export type Database = {
           exit_popup_enabled?: boolean
           exit_popup_message?: string
           exit_popup_timer?: number
+          fb_access_token?: string | null
           fb_pixel_id?: string | null
           gtm_id?: string | null
           html_content?: string
