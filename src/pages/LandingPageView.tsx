@@ -34,6 +34,7 @@ export default function LandingPageView() {
   }
 
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+  const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '';
 
   const buildFullHtml = () => {
     let trackingScripts = "";
