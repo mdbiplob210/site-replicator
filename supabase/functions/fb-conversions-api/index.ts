@@ -6,6 +6,18 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+// SHA-256 hash for PII data (Facebook requires hashed user data)
+async function hashSHA256(value: string): Promise<string> {
+  if (!value) return "";
+  const normalized = value.trim().toLowerCase();
+  if (!normalized) return "";
+  const encoder = new TextEncoder();
+  const data = encoder.encode(normalized);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
 async function getSettingValue(supabaseAdmin: any, key: string, envFallback?: string): Promise<string> {
   try {
     const { data } = await supabaseAdmin
