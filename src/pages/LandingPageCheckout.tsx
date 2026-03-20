@@ -127,79 +127,214 @@ ttq.track('InitiateCheckout');
   var PARTIAL_URL = '${supabaseUrl}/functions/v1/track-partial-order';
   var SLUG = '${page.slug}';
   var VID = localStorage.getItem('_lp_vid') || '';
+  if (!VID) {
+    VID = 'v_' + Math.random().toString(36).substr(2,9) + Date.now();
+    try { localStorage.setItem('_lp_vid', VID); } catch(e) {}
+  }
+
+  var ROOT_SELECTOR = '[data-checkout-form], form, #checkoutForm, #orderForm, .checkout-form, .order-form, .checkout, #checkout, [id*="checkout"], [class*="checkout"], [id*="order"], [class*="order"]';
   var _partialTimer = null;
   var _lastSent = '';
 
-  function getFormData(form) {
-    var fd = new FormData(form);
+  function parseNumber(value, fallback) {
+    var cleaned = String(value == null ? '' : value).replace(/[^\d.-]/g, '');
+    var parsed = parseFloat(cleaned);
+    return isNaN(parsed) ? fallback : parsed;
+  }
+
+  function postJson(payload) {
+    var body = JSON.stringify(payload);
+    var sent = false;
+    try {
+      if (navigator.sendBeacon) {
+        sent = navigator.sendBeacon(PARTIAL_URL, new Blob([body], { type: 'application/json' }));
+      }
+    } catch(e) {}
+    if (!sent) {
+      fetch(PARTIAL_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: body,
+        keepalive: true,
+      }).catch(function(){});
+    }
+  }
+
+  function uniqueNodes(nodes) {
+    var out = [];
+    for (var i = 0; i < nodes.length; i++) {
+      if (nodes[i] && out.indexOf(nodes[i]) === -1) out.push(nodes[i]);
+    }
+    return out;
+  }
+
+  function queryNodes(root, selectors) {
+    var nodes = [];
+    for (var i = 0; i < selectors.length; i++) {
+      var selector = selectors[i];
+      if (root.matches && root.matches(selector)) nodes.push(root);
+      var found = root.querySelectorAll(selector);
+      for (var j = 0; j < found.length; j++) nodes.push(found[j]);
+    }
+    return uniqueNodes(nodes);
+  }
+
+  function readNodeValue(node, selector) {
+    if (!node) return '';
+
+    if (selector.indexOf('data-') !== -1 && node.getAttribute) {
+      var attrMatch = selector.match(/data-[a-z-]+/);
+      if (attrMatch) {
+        var attrValue = node.getAttribute(attrMatch[0]);
+        if (attrValue) return String(attrValue).trim();
+      }
+    }
+
+    var tag = (node.tagName || '').toLowerCase();
+    if (tag === 'input' || tag === 'textarea' || tag === 'select') {
+      var type = (node.getAttribute('type') || '').toLowerCase();
+      if ((type === 'radio' || type === 'checkbox') && !node.checked) return '';
+      return String(node.value || '').trim();
+    }
+
+    return String(node.textContent || '').trim();
+  }
+
+  function readValue(root, selectors) {
+    var nodes = queryNodes(root, selectors);
+    for (var i = 0; i < nodes.length; i++) {
+      for (var j = 0; j < selectors.length; j++) {
+        var value = readNodeValue(nodes[i], selectors[j]);
+        if (value) return value;
+      }
+    }
+    return '';
+  }
+
+  function getFieldSelectors() {
     return {
-      customer_name: fd.get('customer_name') || '',
-      customer_phone: fd.get('customer_phone') || '',
-      customer_address: fd.get('customer_address') || '',
-      product_name: fd.get('product_name') || form.getAttribute('data-product-name') || '',
-      product_code: fd.get('product_code') || form.getAttribute('data-product-code') || '',
-      quantity: parseInt(fd.get('quantity') || form.getAttribute('data-quantity') || '1'),
-      unit_price: parseFloat(fd.get('unit_price') || form.getAttribute('data-unit-price') || '0'),
-      delivery_charge: parseFloat(fd.get('delivery_charge') || form.getAttribute('data-delivery-charge') || '0'),
-      discount: parseFloat(fd.get('discount') || form.getAttribute('data-discount') || '0')
+      customer_name: ['[name="customer_name"]', '[name="name"]', '[name="full_name"]', 'input[autocomplete="name"]', 'input[placeholder*="নাম"]'],
+      customer_phone: ['[name="customer_phone"]', '[name="phone"]', '[name="mobile"]', '[name="customer_mobile"]', '[name="contact_number"]', 'input[type="tel"]', 'input[inputmode="tel"]', 'input[placeholder*="মোবাইল"]', 'input[placeholder*="ফোন"]'],
+      customer_address: ['[name="customer_address"]', '[name="address"]', '[name="full_address"]', '[name="shipping_address"]', 'textarea[placeholder*="ঠিকানা"]', 'input[autocomplete="street-address"]'],
+      product_name: ['[name="product_name"]', '[data-product-name]'],
+      product_code: ['[name="product_code"]', '[data-product-code]'],
+      quantity: ['[name="quantity"]', '[data-quantity]', 'select[name*="qty"]', 'select[name*="quantity"]', 'input[type="number"]'],
+      unit_price: ['[name="unit_price"]', '[data-unit-price]'],
+      delivery_charge: ['[name="delivery_charge"]', '[data-delivery-charge]'],
+      discount: ['[name="discount"]', '[data-discount]']
     };
   }
 
-  function sendPartial(form) {
-    var d = getFormData(form);
+  function looksLikeCheckoutRoot(root) {
+    if (!root || typeof root.querySelector !== 'function') return false;
+    var fields = getFieldSelectors();
+    return !!(
+      queryNodes(root, fields.customer_name).length ||
+      queryNodes(root, fields.customer_phone).length ||
+      queryNodes(root, fields.customer_address).length ||
+      root.querySelector('input, textarea, select')
+    );
+  }
+
+  function getCandidateRoots() {
+    var nodes = uniqueNodes(Array.prototype.slice.call(document.querySelectorAll(ROOT_SELECTOR)));
+    var roots = [];
+    for (var i = 0; i < nodes.length; i++) {
+      if (looksLikeCheckoutRoot(nodes[i])) roots.push(nodes[i]);
+    }
+    return roots;
+  }
+
+  function resolveRoot(target) {
+    if (target && typeof target.closest === 'function') {
+      var direct = target.closest(ROOT_SELECTOR);
+      if (looksLikeCheckoutRoot(direct)) return direct;
+    }
+
+    var roots = getCandidateRoots();
+    if (target) {
+      for (var i = 0; i < roots.length; i++) {
+        if (roots[i] === target || (typeof roots[i].contains === 'function' && roots[i].contains(target))) {
+          return roots[i];
+        }
+      }
+    }
+
+    return roots[0] || null;
+  }
+
+  function getFormData(root) {
+    var fields = getFieldSelectors();
+    var quantityValue = readValue(root, fields.quantity);
+    var unitPriceValue = readValue(root, fields.unit_price);
+    var deliveryChargeValue = readValue(root, fields.delivery_charge);
+    var discountValue = readValue(root, fields.discount) || sessionStorage.getItem('_exit_discount') || '0';
+
+    return {
+      customer_name: readValue(root, fields.customer_name),
+      customer_phone: readValue(root, fields.customer_phone),
+      customer_address: readValue(root, fields.customer_address),
+      product_name: readValue(root, fields.product_name) || document.title || '',
+      product_code: readValue(root, fields.product_code) || root.getAttribute('data-product-code') || '',
+      quantity: parseNumber(quantityValue || root.getAttribute('data-quantity') || '1', 1),
+      unit_price: parseNumber(unitPriceValue || root.getAttribute('data-unit-price') || '0', 0),
+      delivery_charge: parseNumber(deliveryChargeValue || root.getAttribute('data-delivery-charge') || '0', 0),
+      discount: parseNumber(discountValue || root.getAttribute('data-discount') || '0', 0)
+    };
+  }
+
+  function sendPartial(root) {
+    if (!root) return;
+    var d = getFormData(root);
     if (!d.customer_name && !d.customer_phone && !d.customer_address) return;
     var key = JSON.stringify(d);
     if (key === _lastSent) return;
     _lastSent = key;
 
-    var payload = Object.assign({}, d, {
+    postJson(Object.assign({}, d, {
       action: 'save_partial',
       landing_page_slug: SLUG,
       visitor_id: VID
-    });
-
-    try {
-      var blob = new Blob([JSON.stringify(payload)], {type: 'application/json'});
-      navigator.sendBeacon(PARTIAL_URL, blob);
-    } catch(e) {
-      fetch(PARTIAL_URL, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)}).catch(function(){});
-    }
+    }));
   }
 
-  // Listen for input changes on checkout forms
+  function queuePartial(target, delay) {
+    var root = resolveRoot(target);
+    if (!root) return;
+    if (_partialTimer) clearTimeout(_partialTimer);
+    _partialTimer = setTimeout(function(){ sendPartial(root); }, delay);
+  }
+
   document.addEventListener('input', function(e) {
-    var form = e.target.closest('[data-checkout-form]');
-    if (!form) return;
-    if (_partialTimer) clearTimeout(_partialTimer);
-    _partialTimer = setTimeout(function(){ sendPartial(form); }, 2000);
-  });
+    queuePartial(e.target, 1200);
+  }, true);
 
-  // Also send on blur (when user leaves a field)
+  document.addEventListener('change', function(e) {
+    queuePartial(e.target, 300);
+  }, true);
+
   document.addEventListener('focusout', function(e) {
-    var form = e.target.closest('[data-checkout-form]');
-    if (!form) return;
-    if (_partialTimer) clearTimeout(_partialTimer);
-    _partialTimer = setTimeout(function(){ sendPartial(form); }, 500);
-  });
+    queuePartial(e.target, 200);
+  }, true);
 
-  // Send on page unload if there's partial data
+  document.addEventListener('submit', function(e) {
+    var root = resolveRoot(e.target);
+    if (root) sendPartial(root);
+  }, true);
+
   window.addEventListener('beforeunload', function() {
-    var forms = document.querySelectorAll('[data-checkout-form]');
-    for (var i = 0; i < forms.length; i++) {
-      sendPartial(forms[i]);
+    var roots = getCandidateRoots();
+    for (var i = 0; i < roots.length; i++) {
+      sendPartial(roots[i]);
     }
   });
 
-  // Expose remove function for after successful order
   window._removePartial = function() {
-    try {
-      var blob = new Blob([JSON.stringify({
-        action: 'remove_partial',
-        landing_page_slug: SLUG,
-        visitor_id: VID
-      })], {type: 'application/json'});
-      navigator.sendBeacon(PARTIAL_URL, blob);
-    } catch(e) {}
+    postJson({
+      action: 'remove_partial',
+      landing_page_slug: SLUG,
+      visitor_id: VID
+    });
   };
 })();
 </script>`;
