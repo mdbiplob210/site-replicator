@@ -53,7 +53,7 @@ export const CourierSuccessRate = memo(function CourierSuccessRate({ phone }: Pr
   if (!ok) return null;
 
   const allCouriers = data?.status === "success" && data.data
-    ? Object.entries(data.data).filter(([k]) => k !== "summary").map(([k, v]: [string, any]) => ({ k, ...v }))
+    ? Object.entries(data.data).filter(([k]) => k !== "summary" && ALLOWED_COURIERS.has(k)).map(([k, v]: [string, any]) => ({ k, ...v }))
     : [];
   const summary = data?.data?.summary;
 
