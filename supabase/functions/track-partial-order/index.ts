@@ -71,6 +71,65 @@ async function findExistingPartial(
   return null;
 }
 
+async function cleanupDuplicatePartials(
+  supabase: ReturnType<typeof createClient>,
+  currentId: string,
+  clientIp: string,
+  landingPageSlug: string | null,
+  visitorId: string | null,
+  customerPhone: string | null,
+) {
+  const applySlugFilter = (query: any) => {
+    if (landingPageSlug) return query.eq("landing_page_slug", landingPageSlug);
+    return query.is("landing_page_slug", null);
+  };
+
+  let query = applySlugFilter(
+    supabase
+      .from("incomplete_orders")
+      .select("id, updated_at, created_at")
+      .eq("block_reason", "abandoned_form"),
+  );
+
+  if (visitorId) {
+    query = query.ilike("notes", `%visitor:${visitorId}%`);
+  } else if (clientIp && clientIp !== "unknown") {
+    query = query.eq("client_ip", clientIp);
+  } else if (customerPhone) {
+    query = query.eq("customer_phone", customerPhone);
+  } else {
+    return currentId;
+  }
+
+  const { data, error } = await query
+    .order("updated_at", { ascending: false })
+    .order("created_at", { ascending: false })
+    .limit(10);
+
+  if (error) {
+    console.error("[track-partial-order] Failed duplicate cleanup lookup:", error.message);
+    return currentId;
+  }
+
+  if (!data || data.length <= 1) return currentId;
+
+  const keepId = data[0].id;
+  const duplicateIds = data.slice(1).map((row) => row.id);
+
+  if (duplicateIds.length > 0) {
+    const { error: deleteError } = await supabase
+      .from("incomplete_orders")
+      .delete()
+      .in("id", duplicateIds);
+
+    if (deleteError) {
+      console.error("[track-partial-order] Failed duplicate cleanup delete:", deleteError.message);
+    }
+  }
+
+  return keepId;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -199,8 +258,17 @@ Deno.serve(async (req) => {
 
         if (insertError) throw insertError;
 
+        const resolvedId = await cleanupDuplicatePartials(
+          supabase,
+          inserted?.id,
+          clientIp,
+          landing_page_slug || null,
+          visitor_id || null,
+          cleanedPhone || null,
+        );
+
         return new Response(
-          JSON.stringify({ success: true, created: true, id: inserted?.id }),
+          JSON.stringify({ success: true, created: true, id: resolvedId }),
           { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }

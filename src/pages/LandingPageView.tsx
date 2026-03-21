@@ -692,6 +692,9 @@ ttq.page();
   var _lastSent = '';
   var _autosaveTimer = null;
   var _orderDone = false;
+  var _lastPostedBody = '';
+  var _lastPostedAt = 0;
+  var _lastFlushAt = 0;
 
   function parseNumber(value, fallback) {
     var cleaned = String(value == null ? '' : value).replace(/[^\\d.-]/g, '');
@@ -702,6 +705,10 @@ ttq.page();
   function postJson(payload, options) {
     options = options || {};
     var body = JSON.stringify(payload);
+    var now = Date.now();
+    if (body === _lastPostedBody && (now - _lastPostedAt) < 1500) return;
+    _lastPostedBody = body;
+    _lastPostedAt = now;
     var sent = false;
     if (!options.forceFetch) {
       try {
@@ -896,6 +903,9 @@ ttq.page();
 
   function flushAll() {
     if (_orderDone) return;
+    var now = Date.now();
+    if ((now - _lastFlushAt) < 1500) return;
+    _lastFlushAt = now;
     if (_partialTimer) { clearTimeout(_partialTimer); _partialTimer = null; }
     var roots = getCandidateRoots();
     for (var i = 0; i < roots.length; i++) sendPartial(roots[i], { force: true, forceFetch: true });
@@ -962,12 +972,18 @@ ttq.page();
   var _submitting = false;
 
   document.addEventListener('submit', function(e) {
-    if (e._templateHandled) return;
+    if (e.defaultPrevented || e._templateHandled) return;
     var form = e.target.closest('[data-checkout-form]');
     if (!form) return;
+    if (form.dataset.lpSubmitLocked === '1' || _submitting) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      return;
+    }
     e.preventDefault();
-    if (_submitting) return;
+    e.stopImmediatePropagation();
     _submitting = true;
+    form.dataset.lpSubmitLocked = '1';
 
     var btn = form.querySelector('[type="submit"], button:not([type])');
     var btnOrigText = btn ? btn.textContent : '';
@@ -1021,15 +1037,17 @@ ttq.page();
       } else {
         alert(data.error || 'অর্ডার সাবমিট করতে সমস্যা হয়েছে');
         _submitting = false;
+        delete form.dataset.lpSubmitLocked;
         if (btn) { btn.disabled = false; btn.textContent = btnOrigText || 'অর্ডার করুন'; }
       }
     })
     .catch(function(err) {
       alert('ত্রুটি: ' + err.message);
       _submitting = false;
+      delete form.dataset.lpSubmitLocked;
       if (btn) { btn.disabled = false; btn.textContent = btnOrigText || 'অর্ডার করুন'; }
     });
-  });
+  }, true);
 })();
 </script>`;
 
