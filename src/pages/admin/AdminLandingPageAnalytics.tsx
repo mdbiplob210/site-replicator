@@ -533,24 +533,26 @@ export default function AdminLandingPageAnalytics() {
                       {Array.from({ length: 24 }).map((_, h) => (
                         <div key={h} className="text-center text-xs text-muted-foreground py-1">{h}</div>
                       ))}
-                      {["রবি", "সোম", "মঙ্গল", "বুধ", "বৃহ", "শুক্র", "শনি"].map((day, di) => (
-                        <>
-                          <div key={`label-${di}`} className="text-xs text-muted-foreground flex items-center">{day}</div>
-                          {Array.from({ length: 24 }).map((_, h) => {
-                            const item = hourlyData.find((d) => d.day === day && d.hour === h);
-                            const count = item?.count || 0;
-                            const maxCount = Math.max(...hourlyData.map((d) => d.count), 1);
-                            const intensity = count / maxCount;
-                            return (
-                              <div key={`${di}-${h}`}
-                                className="aspect-square rounded-sm cursor-default transition-colors"
-                                style={{ backgroundColor: count > 0 ? `rgba(16,185,129,${0.15 + intensity * 0.85})` : "hsl(var(--muted))" }}
-                                title={`${day} ${h}:00 — ${count} ভিজিটর`}
-                              />
-                            );
-                          })}
-                        </>
-                      ))}
+                      {(() => {
+                        const maxCount = Math.max(...hourlyData.map((d) => d.count), 1);
+                        return ["রবি", "সোম", "মঙ্গল", "বুধ", "বৃহ", "শুক্র", "শনি"].map((day, di) => (
+                          <React.Fragment key={`row-${di}`}>
+                            <div className="text-xs text-muted-foreground flex items-center">{day}</div>
+                            {Array.from({ length: 24 }).map((_, h) => {
+                              const item = hourlyData.find((d) => d.day === day && d.hour === h);
+                              const count = item?.count || 0;
+                              const intensity = count / maxCount;
+                              return (
+                                <div key={`${di}-${h}`}
+                                  className="aspect-square rounded-sm cursor-default transition-colors"
+                                  style={{ backgroundColor: count > 0 ? `rgba(16,185,129,${0.15 + intensity * 0.85})` : "hsl(var(--muted))" }}
+                                  title={`${day} ${h}:00 — ${count} ভিজিটর`}
+                                />
+                              );
+                            })}
+                          </React.Fragment>
+                        ));
+                      })()}
                     </div>
                     <div className="flex items-center gap-2 mt-4 text-xs text-muted-foreground">
                       <span>কম</span>
