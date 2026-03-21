@@ -4021,12 +4021,12 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                 {[
                   { value: "processing", label: "New Order", color: "bg-blue-500", icon: Clock },
                   { value: "confirmed", label: "Confirmed", color: "bg-emerald-600", icon: CheckCircle2 },
-                  { value: "inquiry", label: "Inquiry", color: "bg-amber-600", icon: Clock },
+                  { value: "in_courier", label: "In Courier", color: "bg-violet-500", icon: Truck },
                   { value: "on_hold", label: "Hold", color: "bg-yellow-500", icon: PauseCircle },
                   { value: "hand_delivery", label: "Hand Delivery", color: "bg-cyan-500", icon: Hand },
                   { value: "cancelled", label: "Cancelled", color: "bg-red-500", icon: XCircle },
                   ...(order.status === "pending_return" ? [{ value: "returned", label: "Return", color: "bg-red-400", icon: RotateCcw }] : []),
-                  ...(order.status === "inquiry" ? [{ value: "pending_return", label: "Pending Return", color: "bg-orange-500", icon: RotateCcw }] : []),
+                  ...(order.status === "in_courier" ? [{ value: "pending_return", label: "Pending Return", color: "bg-orange-500", icon: RotateCcw }] : []),
                 ].map((s) => (
                   <button
                     key={s.value}
