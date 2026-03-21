@@ -4502,6 +4502,9 @@ function IncompleteOrderCard({ io, activeIncompleteTab, onConvert, deleteIncompl
           </p>
           <p className="text-xs text-muted-foreground">{format(new Date(io.created_at), "dd MMM yyyy, hh:mm a")}</p>
 
+          {/* Courier Success Rate */}
+          {io.customer_phone && <CourierSuccessRate phone={io.customer_phone} compact />}
+
           {/* Notes display */}
           {io.notes && (
             <div className="p-2 rounded-lg bg-amber-50/50 dark:bg-amber-900/10 border border-amber-200/50 dark:border-amber-800/30">
