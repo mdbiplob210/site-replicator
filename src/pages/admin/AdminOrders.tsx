@@ -3655,6 +3655,9 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
               </div>
             </div>
 
+            {/* Courier Success Rate - auto loads */}
+            <CourierSuccessRate phone={editPhone} />
+
             {/* Old orders by phone */}
             {detailOldOrders.length > 0 && (
               <div className="p-3 rounded-xl border border-border/60 bg-secondary/20">
