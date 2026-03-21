@@ -992,7 +992,7 @@ ttq.page();
     fetch(ORDER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
     .then(function(r) { return r.json(); })
     .then(function(data) {
-      if (data.success) {
+      if (data.success || data.duplicate) {
         if (window._removePartial) window._removePartial();
         var totalValue = payload.unit_price * payload.quantity;
         var eventId = window._lpTrack ? window._lpTrack.generateEventId() : '';

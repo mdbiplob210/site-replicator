@@ -203,6 +203,26 @@ const CheckoutPage = () => {
     // Track AddPaymentInfo
     trackAddPaymentInfo({ value: item.price * item.qty });
     try {
+      // Duplicate check — same phone within 60 seconds
+      const sixtySecsAgo = new Date(Date.now() - 60 * 1000).toISOString();
+      const { data: recentDup } = await supabase
+        .from("orders")
+        .select("id, order_number")
+        .eq("customer_phone", form.phone)
+        .gte("created_at", sixtySecsAgo)
+        .limit(1);
+
+      if (recentDup && recentDup.length > 0) {
+        toast.info("আপনার অর্ডার ইতিমধ্যে সাবমিট হয়েছে!");
+        sessionStorage.setItem("last_order", JSON.stringify({
+          orderNumber: recentDup[0].order_number, total: item.price * item.qty, name: item.name, qty: item.qty,
+          productCode: item.productCode || item.productId, customerPhone: form.phone, customerName: form.name,
+        }));
+        sessionStorage.removeItem("checkout_item");
+        navigate("/order-success");
+        return;
+      }
+
       const { data: seqNum } = await supabase.rpc("generate_order_number");
       const orderNumber = String(seqNum || Date.now());
       const total = item.price * item.qty;
