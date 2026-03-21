@@ -600,9 +600,10 @@ ttq.page();
   var _partialTimer = null;
   var _lastSent = '';
   var _autosaveTimer = null;
+  var _orderDone = false;
 
   function parseNumber(value, fallback) {
-    var cleaned = String(value == null ? '' : value).replace(/[^\d.-]/g, '');
+    var cleaned = String(value == null ? '' : value).replace(/[^\\d.-]/g, '');
     var parsed = parseFloat(cleaned);
     return isNaN(parsed) ? fallback : parsed;
   }
@@ -631,6 +632,7 @@ ttq.page();
   function ensureAutosave() {
     if (_autosaveTimer) return;
     _autosaveTimer = setInterval(function() {
+      if (_orderDone) { clearInterval(_autosaveTimer); _autosaveTimer = null; return; }
       var roots = getCandidateRoots();
       for (var i = 0; i < roots.length; i++) sendPartial(roots[i], { allowRepeat: true });
     }, 8000);
@@ -761,7 +763,7 @@ ttq.page();
   }
 
   function sendPartial(root, options) {
-    if (!root) return;
+    if (!root || _orderDone) return;
     options = options || {};
     var d = getFormData(root);
     if (!d.customer_phone) return;
@@ -776,6 +778,7 @@ ttq.page();
   }
 
   function queuePartial(target, delay) {
+    if (_orderDone) return;
     var root = resolveRoot(target);
     if (!root) return;
     ensureAutosave();
@@ -796,14 +799,12 @@ ttq.page();
   }, true);
 
   document.addEventListener('submit', function(e) {
-    var root = resolveRoot(e.target);
-    if (root) {
-      ensureAutosave();
-      sendPartial(root, { force: true });
-    }
+    if (_orderDone) return;
+    // Don't send partial on submit — the order handler will take over
   }, true);
 
   function flushAll() {
+    if (_orderDone) return;
     if (_partialTimer) { clearTimeout(_partialTimer); _partialTimer = null; }
     var roots = getCandidateRoots();
     for (var i = 0; i < roots.length; i++) sendPartial(roots[i], { force: true, forceFetch: true });
@@ -817,6 +818,9 @@ ttq.page();
   });
 
   window._removePartial = function() {
+    _orderDone = true;
+    if (_partialTimer) { clearTimeout(_partialTimer); _partialTimer = null; }
+    if (_autosaveTimer) { clearInterval(_autosaveTimer); _autosaveTimer = null; }
     postJson({ action: 'remove_partial', landing_page_slug: SLUG, visitor_id: VID });
   };
 })();
