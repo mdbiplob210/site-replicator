@@ -357,6 +357,41 @@ Deno.serve(async (req) => {
 
     if (orderError) throw orderError;
 
+    const { data: recentOrders, error: recentOrdersError } = await supabase
+      .from("orders")
+      .select("id, order_number, created_at")
+      .eq("customer_phone", customer_phone)
+      .gte("created_at", sixtySecsAgo)
+      .order("created_at", { ascending: true })
+      .order("id", { ascending: true })
+      .limit(5);
+
+    if (recentOrdersError) {
+      console.error("[submit-landing-order] recent orders check error:", recentOrdersError.message);
+    }
+
+    const canonicalOrder = recentOrders?.[0];
+    if (canonicalOrder && canonicalOrder.id !== order.id) {
+      await supabase
+        .from("orders")
+        .delete()
+        .eq("id", order.id);
+
+      console.log(
+        `[submit-landing-order] Race duplicate cleaned: phone=${customer_phone}, kept=${canonicalOrder.order_number}, removed=${orderNumber}`,
+      );
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          order_number: canonicalOrder.order_number,
+          order_id: canonicalOrder.id,
+          duplicate: true,
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     if (product_name && order) {
       // Look up product_id by product_code for stock deduction
       let productId = null;

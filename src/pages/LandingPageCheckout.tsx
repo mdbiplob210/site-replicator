@@ -139,6 +139,10 @@ ttq.track('InitiateCheckout');
   var _partialTimer = null;
   var _lastSent = '';
   var _autosaveTimer = null;
+  var _orderDone = false;
+  var _lastPostedBody = '';
+  var _lastPostedAt = 0;
+  var _lastFlushAt = 0;
 
   function parseNumber(value, fallback) {
     var cleaned = String(value == null ? '' : value).replace(/[^\d.-]/g, '');
@@ -149,6 +153,10 @@ ttq.track('InitiateCheckout');
   function postJson(payload, options) {
     options = options || {};
     var body = JSON.stringify(payload);
+    var now = Date.now();
+    if (body === _lastPostedBody && (now - _lastPostedAt) < 1500) return;
+    _lastPostedBody = body;
+    _lastPostedAt = now;
     var sent = false;
     if (!options.forceFetch) {
       try {
@@ -170,6 +178,7 @@ ttq.track('InitiateCheckout');
   function ensureAutosave() {
     if (_autosaveTimer) return;
     _autosaveTimer = setInterval(function() {
+      if (_orderDone) { clearInterval(_autosaveTimer); _autosaveTimer = null; return; }
       var roots = getCandidateRoots();
       for (var i = 0; i < roots.length; i++) sendPartial(roots[i], { allowRepeat: true });
     }, 8000);
@@ -300,7 +309,7 @@ ttq.track('InitiateCheckout');
   }
 
   function sendPartial(root, options) {
-    if (!root) return;
+    if (!root || _orderDone) return;
     options = options || {};
     var d = getFormData(root);
     if (!d.customer_phone) return;
@@ -316,6 +325,7 @@ ttq.track('InitiateCheckout');
   }
 
   function queuePartial(target, delay) {
+    if (_orderDone) return;
     var root = resolveRoot(target);
     if (!root) return;
     ensureAutosave();
@@ -336,14 +346,15 @@ ttq.track('InitiateCheckout');
   }, true);
 
   document.addEventListener('submit', function(e) {
-    var root = resolveRoot(e.target);
-    if (root) {
-      ensureAutosave();
-      sendPartial(root, { force: true });
-    }
+    if (_orderDone) return;
+    // Don't send partial on submit — the order handler will take over
   }, true);
 
   function flushAll() {
+    if (_orderDone) return;
+    var now = Date.now();
+    if ((now - _lastFlushAt) < 1500) return;
+    _lastFlushAt = now;
     if (_partialTimer) { clearTimeout(_partialTimer); _partialTimer = null; }
     var roots = getCandidateRoots();
     for (var i = 0; i < roots.length; i++) sendPartial(roots[i], { force: true, forceFetch: true });
@@ -357,6 +368,9 @@ ttq.track('InitiateCheckout');
   });
 
   window._removePartial = function() {
+    _orderDone = true;
+    if (_partialTimer) { clearTimeout(_partialTimer); _partialTimer = null; }
+    if (_autosaveTimer) { clearInterval(_autosaveTimer); _autosaveTimer = null; }
     postJson({
       action: 'remove_partial',
       landing_page_slug: SLUG,
@@ -376,11 +390,18 @@ ttq.track('InitiateCheckout');
   var _submitting = false;
 
   document.addEventListener('submit', function(e) {
+    if (e.defaultPrevented) return;
     var form = e.target.closest('[data-checkout-form]');
     if (!form) return;
+    if (form.dataset.lpSubmitLocked === '1' || _submitting) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      return;
+    }
     e.preventDefault();
-    if (_submitting) return;
+    e.stopImmediatePropagation();
     _submitting = true;
+    form.dataset.lpSubmitLocked = '1';
 
     var btn = form.querySelector('[type="submit"], button:not([type])');
     var btnOrigText = btn ? btn.textContent : '';
@@ -409,7 +430,7 @@ ttq.track('InitiateCheckout');
     })
     .then(function(r) { return r.json(); })
     .then(function(data) {
-      if (data.success) {
+      if (data.success || data.duplicate) {
         // Remove partial incomplete order on success
         if (window._removePartial) window._removePartial();
 
@@ -492,15 +513,17 @@ ttq.track('InitiateCheckout');
       } else {
         alert(data.error || 'অর্ডার সাবমিট করতে সমস্যা হয়েছে');
         _submitting = false;
+        delete form.dataset.lpSubmitLocked;
         if (btn) { btn.disabled = false; btn.textContent = btnOrigText || 'অর্ডার করুন'; }
       }
     })
     .catch(function(err) {
       alert('ত্রুটি: ' + err.message);
       _submitting = false;
+      delete form.dataset.lpSubmitLocked;
       if (btn) { btn.disabled = false; btn.textContent = btnOrigText || 'অর্ডার করুন'; }
     });
-  });
+  }, true);
 })();
 </script>`;
 
