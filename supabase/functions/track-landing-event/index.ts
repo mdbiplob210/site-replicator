@@ -33,7 +33,8 @@ Deno.serve(async (req) => {
       slug, event_type, event_name, visitor_id, referrer,
       utm_source, utm_medium, utm_campaign, utm_content, utm_term,
       scroll_depth, device_type, screen_width, screen_height,
-      session_id, time_on_page
+      session_id, time_on_page,
+      click_x, click_y, click_element, page_height
     } = body;
 
     if (!slug || !event_type) {
