@@ -263,10 +263,16 @@ function syncTierToCheckout(){
   var productPrice=tieredPrices[q]||tieredPrices[1];
   document.getElementById('sumProduct').textContent='৳'+productPrice;
   var dcArea=document.getElementById('deliveryChargeAmount');
-  var dcVal=dcArea?parseInt(dcArea.dataset.charge)||deliveryCharge:deliveryCharge;
+  var baseDc=dcArea?parseInt(dcArea.dataset.charge)||deliveryCharge:deliveryCharge;
+  var dcVal=q>=2?0:baseDc;
+  dcArea.textContent=dcVal===0?'ফ্রি':'৳'+dcVal;
+  dcArea.dataset.effectiveCharge=dcVal;
+  document.getElementById('checkoutForm').setAttribute('data-delivery-charge',dcVal);
   document.getElementById('sumTotal').textContent='৳'+(productPrice+dcVal);
   document.getElementById('checkoutForm').setAttribute('data-unit-price', String(Math.round(productPrice/q)));
   var hp=document.getElementById('headerPrice');if(hp)hp.textContent='৳'+productPrice;
+  var areaSection=document.getElementById('deliveryAreaSection');
+  if(areaSection){areaSection.style.display=q>=2?'none':''}
 }
 ` : `
 var unitPrice=${basePrice},deliveryCharge=${dc},currentQty=1;
