@@ -486,11 +486,18 @@ ttq.page();
   window._lpSend = send;
 
   document.addEventListener('click', function(e) {
+    var clickX = (e.pageX / document.documentElement.scrollWidth * 100).toFixed(2);
+    var clickY = (e.pageY / Math.max(document.body.scrollHeight, 1) * 100).toFixed(2);
+    var elTag = e.target.tagName || '';
+    var elText = (e.target.textContent || '').trim().substring(0,30);
+    var clickEl = elTag + (elText ? ':' + elText : '');
+    var pageH = document.body.scrollHeight;
+
     var el = e.target.closest('[data-track-event]');
     if (el) {
-      send('conversion', el.getAttribute('data-track-event'));
+      send('conversion', el.getAttribute('data-track-event'), { click_x: parseFloat(clickX), click_y: parseFloat(clickY), click_element: clickEl, page_height: pageH });
     } else if (e.target.closest('a, button, [role="button"], input[type="submit"]')) {
-      send('click', (e.target.closest('a, button, [role="button"], input[type="submit"]').textContent || '').trim().substring(0, 50));
+      send('click', (e.target.closest('a, button, [role="button"], input[type="submit"]').textContent || '').trim().substring(0, 50), { click_x: parseFloat(clickX), click_y: parseFloat(clickY), click_element: clickEl, page_height: pageH });
     }
   });
 
