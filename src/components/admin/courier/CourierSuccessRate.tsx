@@ -5,13 +5,9 @@ import { RefreshCw, Loader2, Truck } from "lucide-react";
 const COURIER_LOGOS: Record<string, string> = {
   pathao: "https://api.bdcourier.com/c-logo/pathao-logo.png",
   steadfast: "https://api.bdcourier.com/c-logo/steadfast-logo.png",
-  redx: "https://api.bdcourier.com/c-logo/redx-logo.png",
-  paperfly: "https://api.bdcourier.com/c-logo/paperfly-logo.png",
-  ecourier: "https://api.bdcourier.com/c-logo/ecourier-logo.png",
-  sundarban: "https://api.bdcourier.com/c-logo/sundarban-logo.png",
-  parceldex: "https://api.bdcourier.com/c-logo/parceldex-logo.png",
-  carrybee: "https://api.bdcourier.com/c-logo/carrybee-logo.png",
 };
+
+const ALLOWED_COURIERS = new Set(["pathao", "steadfast"]);
 
 const cache: Record<string, { d: any; t: number }> = {};
 const TTL = 10 * 60 * 1000;
