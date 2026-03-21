@@ -3885,13 +3885,13 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                     disabled={bdCourierLoading}
                     onClick={async () => {
                       setBdCourierLoading(true);
-                      setBdCourierData(null);
+                      setBdCourierData(prev => ({ ...prev, [order.id]: null }));
                       try {
                         const { data: result, error } = await supabase.functions.invoke("bd-courier-check", {
                           body: { phone: order.customer_phone },
                         });
                         if (error) throw error;
-                        setBdCourierData(result);
+                        setBdCourierData(prev => ({ ...prev, [order.id]: result }));
                       } catch (err: any) {
                         toast.error("Courier check failed: " + err.message);
                       } finally {
@@ -3903,12 +3903,13 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                     {bdCourierLoading ? "Checking..." : "Check"}
                   </Button>
                 </div>
-                {bdCourierData?.status === "success" && bdCourierData.data && (() => {
-                  const couriers = Object.entries(bdCourierData.data)
+                {bdCourierData[order.id]?.status === "success" && bdCourierData[order.id].data && (() => {
+                  const courierResult = bdCourierData[order.id];
+                  const couriers = Object.entries(courierResult.data)
                     .filter(([key]) => key !== "summary")
                     .map(([, val]: [string, any]) => val)
                     .filter((c: any) => c.total_parcel > 0);
-                  const summary = bdCourierData.data.summary;
+                  const summary = courierResult.data.summary;
                   if (couriers.length === 0) return (
                     <p className="text-xs text-muted-foreground italic">এই নম্বরে কোনো কুরিয়ার রেকর্ড পাওয়া যায়নি।</p>
                   );
@@ -3952,8 +3953,8 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                     </div>
                   );
                 })()}
-                {bdCourierData?.status === "error" && (
-                  <p className="text-xs text-destructive">{bdCourierData.message || "API error"}</p>
+                {bdCourierData[order.id]?.status === "error" && (
+                  <p className="text-xs text-destructive">{bdCourierData[order.id].message || "API error"}</p>
                 )}
               </div>
             )}
