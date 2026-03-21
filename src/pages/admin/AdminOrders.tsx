@@ -748,6 +748,88 @@ const AdminOrders = () => {
     setTimeout(() => { printWindow.print(); }, 300);
   }, [filteredOrders]);
 
+  const banglaDigitMap: Record<string, string> = {
+    "০": "0",
+    "১": "1",
+    "২": "2",
+    "৩": "3",
+    "৪": "4",
+    "৫": "5",
+    "৬": "6",
+    "৭": "7",
+    "৮": "8",
+    "৯": "9",
+  };
+
+  const normalizeNumberValue = (value: unknown) => {
+    if (typeof value === "number") {
+      return Number.isFinite(value) ? value : 0;
+    }
+
+    if (typeof value !== "string") {
+      return 0;
+    }
+
+    const numericValue = Number(
+      value
+        .replace(/[০-৯]/g, (digit) => banglaDigitMap[digit] ?? digit)
+        .replace(/,/g, "")
+        .trim()
+    );
+
+    return Number.isFinite(numericValue) ? numericValue : 0;
+  };
+
+  const cleanIncompleteText = (value: string | null | undefined) =>
+    (value || "")
+      .replace(/\s+/g, " ")
+      .replace(/পেজ থেকেসিলেক্টেড/g, "পেজ থেকে সিলেক্টেড")
+      .trim();
+
+  const extractIncompletePriceFromText = (io: any) => {
+    const sourceText = cleanIncompleteText([io.product_name, io.product_code].filter(Boolean).join(" "));
+    if (!sourceText) return 0;
+
+    const normalizedText = sourceText.replace(/[০-৯]/g, (digit) => banglaDigitMap[digit] ?? digit);
+    const packPriceMatch = normalizedText.match(/\b\d+\s*পিস\s*-\s*৳\s*(\d+(?:\.\d+)?)/i);
+    if (packPriceMatch) {
+      return normalizeNumberValue(packPriceMatch[1]);
+    }
+
+    const currencyMatches = Array.from(normalizedText.matchAll(/৳\s*(\d+(?:\.\d+)?)/g))
+      .map((match) => normalizeNumberValue(match[1]))
+      .filter((value) => value > 0);
+
+    return currencyMatches[0] || 0;
+  };
+
+  const buildIncompleteOrderItem = (io: any) => {
+    if (!io?.product_name && !io?.product_code) return null;
+
+    const matchedProduct = allProducts.find((p: any) =>
+      p.product_code === io.product_code || p.name === io.product_name
+    );
+    const qty = Math.max(1, normalizeNumberValue(io.quantity) || 1);
+    const savedUnitPrice = normalizeNumberValue(io.unit_price);
+    const derivedProductTotal = Math.max(
+      0,
+      normalizeNumberValue(io.total_amount) - normalizeNumberValue(io.delivery_charge) + normalizeNumberValue(io.discount)
+    );
+    const derivedUnitPrice = derivedProductTotal > 0 ? derivedProductTotal / qty : 0;
+    const textUnitPrice = extractIncompletePriceFromText(io);
+    const matchedUnitPrice = normalizeNumberValue(matchedProduct?.selling_price);
+    const unitPrice = savedUnitPrice || derivedUnitPrice || textUnitPrice || matchedUnitPrice || 0;
+
+    return {
+      product_id: matchedProduct?.id || null,
+      product_name: cleanIncompleteText(io.product_name) || matchedProduct?.name || "সিলেক্টেড প্রোডাক্ট",
+      product_code: cleanIncompleteText(io.product_code) || matchedProduct?.product_code || "",
+      quantity: qty,
+      unit_price: unitPrice,
+      total_price: unitPrice * qty,
+    };
+  };
+
   const addProductToOrder = (product: any) => {
     const existing = orderItems.find((i) => i.product_id === product.id);
     if (existing) {
@@ -783,7 +865,7 @@ const AdminOrders = () => {
     setOrderItems(orderItems.filter((_, i) => i !== index));
   };
 
-  const itemsTotal = orderItems.reduce((sum, i) => sum + i.total_price, 0);
+  const itemsTotal = orderItems.reduce((sum, i) => sum + Number(i.total_price || 0), 0);
 
   const logActivity = async (orderId: string, action: string, fieldName?: string, oldValue?: string, newValue?: string, details?: string) => {
     try {
@@ -1033,34 +1115,33 @@ const AdminOrders = () => {
   };
 
   const openConvertAsNewOrder = (io: any) => {
+    const safeDeliveryCharge = normalizeNumberValue(io.delivery_charge);
+    const safeDiscount = normalizeNumberValue(io.discount);
+    const resolvedItem = buildIncompleteOrderItem(io);
+    const resolvedProductCost = resolvedItem?.total_price || Math.max(
+      0,
+      normalizeNumberValue(io.total_amount) - safeDeliveryCharge + safeDiscount
+    );
+    const resolvedTotalAmount = normalizeNumberValue(io.total_amount) || (resolvedProductCost + safeDeliveryCharge - safeDiscount);
+
     setCustomerName(io.customer_name || "");
     setCustomerPhone(io.customer_phone || "");
     setCustomerAddress(io.customer_address || "");
-    setDeliveryCharge(io.delivery_charge || 0);
-    setDiscount(io.discount || 0);
+    setDeliveryCharge(safeDeliveryCharge);
+    setDiscount(safeDiscount);
     setNotes(io.notes || `[Converted from incomplete] [LP: ${io.landing_page_slug || "unknown"}]`);
     setCourierNote("");
     setSelectedOrderSource("Failed Order");
     setNewOrderStatus("processing");
-    setProductCost(0);
-    setTotalAmount(0);
-    if (io.product_name) {
-      const matchedProduct = allProducts.find((p: any) => 
-        p.product_code === io.product_code || p.name === io.product_name
-      );
-      const unitPrice = io.unit_price || matchedProduct?.selling_price || 0;
-      const qty = io.quantity || 1;
-      setOrderItems([{
-        product_id: matchedProduct?.id || null,
-        product_name: io.product_name,
-        product_code: io.product_code || matchedProduct?.product_code || "",
-        quantity: qty,
-        unit_price: unitPrice,
-        total_price: unitPrice * qty,
-      }]);
+    setProductCost(resolvedProductCost);
+    setTotalAmount(resolvedTotalAmount);
+
+    if (resolvedItem) {
+      setOrderItems([resolvedItem]);
     } else {
       setOrderItems([]);
     }
+
     setConvertingIncompleteId(io.id);
     setNewOrderOpen(true);
   };
@@ -1454,35 +1535,16 @@ const AdminOrders = () => {
                       ))}
                       <div className="flex justify-between items-center pt-2 border-t border-border/40">
                         <span className="text-xs font-semibold text-muted-foreground">{orderItems.length}টি আইটেম</span>
-                        <span className="text-sm font-bold text-primary">সাবটোটাল: ৳{orderItems.reduce((s, i) => s + i.total_price, 0).toLocaleString()}</span>
+                        <span className="text-sm font-bold text-primary">সাবটোটাল: ৳{itemsTotal.toLocaleString()}</span>
                       </div>
                     </div>
                   )}
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-muted-foreground">ডেলিভারি চার্জ</Label>
-                    <Input type="number" value={deliveryCharge} onChange={(e) => setDeliveryCharge(parseFloat(e.target.value) || 0)} className="rounded-xl" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-muted-foreground">ডিসকাউন্ট</Label>
-                    <Input type="number" value={discount} onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)} className="rounded-xl" />
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground">নোট</Label>
-                  <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} className="rounded-xl min-h-[50px]" />
-                </div>
-                <div className="flex items-center gap-2 text-sm bg-secondary/50 rounded-xl px-4 py-2.5 border border-border/40">
-                  <Package className="h-4 w-4 text-amber-600" />
-                  <span className="font-medium">Failed Order</span>
-                  <span className="text-muted-foreground text-xs">(সোর্স পরিবর্তন করা যাবে না)</span>
-                </div>
                 <div className="bg-primary/5 border border-primary/20 rounded-xl p-4">
-                  <div className="flex justify-between text-sm"><span>প্রোডাক্ট মূল্য</span><span>৳{orderItems.reduce((s, i) => s + i.total_price, 0)}</span></div>
+                  <div className="flex justify-between text-sm"><span>প্রোডাক্ট মূল্য</span><span>৳{itemsTotal.toLocaleString()}</span></div>
                   <div className="flex justify-between text-sm"><span>ডেলিভারি</span><span>৳{deliveryCharge}</span></div>
                   <div className="flex justify-between text-sm"><span>ডিসকাউন্ট</span><span>-৳{discount}</span></div>
-                  <div className="border-t mt-2 pt-2 flex justify-between font-bold"><span>মোট</span><span>৳{orderItems.reduce((s, i) => s + i.total_price, 0) + deliveryCharge - discount}</span></div>
+                  <div className="border-t mt-2 pt-2 flex justify-between font-bold"><span>মোট</span><span>৳{(itemsTotal + deliveryCharge - discount).toLocaleString()}</span></div>
                 </div>
                 <Button className="w-full rounded-xl shadow-sm" onClick={handleCreateOrder} disabled={createOrder.isPending || !customerName.trim()}>
                   {createOrder.isPending 
