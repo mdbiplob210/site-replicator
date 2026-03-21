@@ -3241,6 +3241,8 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
   const [detailProductSearch, setDetailProductSearch] = useState("");
   const [detailProductFocused, setDetailProductFocused] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [bdCourierData, setBdCourierData] = useState<any>(null);
+  const [bdCourierLoading, setBdCourierLoading] = useState(false);
 
   // Courier selection for edit
   const [editCourierId, setEditCourierId] = useState<string | null>(null);
@@ -3868,6 +3870,61 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
               </div>
             )}
 
+            {/* BD Courier Check - Track by Phone */}
+            {order.customer_phone && (
+              <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                    <div className="h-6 w-6 rounded-lg bg-amber-500/10 flex items-center justify-center"><Truck className="h-3.5 w-3.5 text-amber-500" /></div>
+                    Courier Detection
+                  </h3>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="rounded-lg h-7 text-xs gap-1"
+                    disabled={bdCourierLoading}
+                    onClick={async () => {
+                      setBdCourierLoading(true);
+                      setBdCourierData(null);
+                      try {
+                        const { data: result, error } = await supabase.functions.invoke("bd-courier-check", {
+                          body: { phone: order.customer_phone },
+                        });
+                        if (error) throw error;
+                        setBdCourierData(result);
+                      } catch (err: any) {
+                        toast.error("Courier check failed: " + err.message);
+                      } finally {
+                        setBdCourierLoading(false);
+                      }
+                    }}
+                  >
+                    {bdCourierLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Search className="h-3 w-3" />}
+                    {bdCourierLoading ? "Checking..." : "Check"}
+                  </Button>
+                </div>
+                {bdCourierData?.status === "success" && bdCourierData.data?.couriers?.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted-foreground">এই নম্বরে যেসব কুরিয়ারে পার্সেল পাওয়া গেছে:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {bdCourierData.data.couriers.map((c: any, i: number) => (
+                        <div key={i} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-background border border-border/40">
+                          {c.logo && <img src={c.logo} alt={c.name} className="h-5 w-5 rounded object-contain" />}
+                          <span className="text-xs font-semibold">{c.name}</span>
+                          <Badge variant={c.status === "active" ? "default" : "secondary"} className="text-[10px] h-4">{c.status}</Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {bdCourierData?.status === "success" && (!bdCourierData.data?.couriers || bdCourierData.data.couriers.length === 0) && (
+                  <p className="text-xs text-muted-foreground italic">এই নম্বরে কোনো কুরিয়ার রেকর্ড পাওয়া যায়নি।</p>
+                )}
+                {bdCourierData?.status === "error" && (
+                  <p className="text-xs text-destructive">{bdCourierData.message || "API error"}</p>
+                )}
+              </div>
+            )}
             <div className="space-y-3">
               <Label className="text-xs font-semibold">প্রোডাক্ট যোগ করুন</Label>
               <div className="relative">
