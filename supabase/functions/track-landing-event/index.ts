@@ -92,6 +92,10 @@ Deno.serve(async (req) => {
       city: city,
       session_id: session_id || null,
       time_on_page: time_on_page || null,
+      click_x: click_x != null ? click_x : null,
+      click_y: click_y != null ? click_y : null,
+      click_element: click_element || null,
+      page_height: page_height || null,
     });
 
     if (error) throw error;
