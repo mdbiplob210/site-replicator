@@ -390,6 +390,9 @@ Deno.serve(async (req) => {
         .eq("block_reason", "abandoned_form")
         .eq("landing_page_slug", landing_page_slug);
     }
+
+    // ═══ Track landing page conversion & CAPI ═══
+    if (landing_page_slug) {
       const { data: lp } = await supabase
         .from("landing_pages")
         .select("id, fb_pixel_id, fb_access_token")
