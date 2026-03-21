@@ -193,10 +193,9 @@ export function useConvertIncompleteToOrder() {
       const total = productTotal + delCharge - disc;
       const noteText = overrides?.notes !== undefined ? overrides.notes : order.notes;
 
-      const { data: seqNum } = await supabase.rpc("generate_order_number");
-      const orderNumber = String(seqNum || Date.now());
+      // order_number is auto-assigned by DB trigger
       const { error: orderError } = await supabase.from("orders").insert({
-        order_number: orderNumber,
+        order_number: "0",
         customer_name: name,
         customer_phone: phone,
         customer_address: address,

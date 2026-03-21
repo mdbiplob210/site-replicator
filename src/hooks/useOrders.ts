@@ -340,14 +340,20 @@ export function useDeleteOrder() {
   });
 }
 
-// Generate next order number using DB sequence
+// Get the next order number (preview only - actual number assigned by trigger)
 export function useNextOrderNumber() {
   return useQuery({
     queryKey: ["next-order-number"],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("generate_order_number");
+      const { data, error } = await supabase
+        .from("orders")
+        .select("order_number")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
       if (error) throw error;
-      return String(data);
+      const lastNum = parseInt(data?.order_number || "0", 10);
+      return String(lastNum + 1);
     },
   });
 }
