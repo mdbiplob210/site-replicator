@@ -282,6 +282,25 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
         customerName: form.name,
       });
 
+      // Delete incomplete order after successful order
+      const sessionId = sessionStorage.getItem("popup_checkout_session_id");
+      if (sessionId) {
+        supabase.from("incomplete_orders" as any)
+          .delete()
+          .eq("block_reason", "abandoned_form")
+          .eq("landing_page_slug", "website-store")
+          .ilike("notes", `%session:${sessionId}%`)
+          .then(() => {});
+      }
+      if (form.phone) {
+        supabase.from("incomplete_orders" as any)
+          .delete()
+          .eq("customer_phone", form.phone)
+          .eq("block_reason", "abandoned_form")
+          .eq("landing_page_slug", "website-store")
+          .then(() => {});
+      }
+
       setOrderComplete(true);
       toast.success("Order placed successfully! 🎉");
     } catch (err: any) {
