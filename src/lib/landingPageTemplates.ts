@@ -148,69 +148,75 @@ function tieredPricingSectionHtml(p: TemplateConfig, accentColor: string, isDark
   const t2 = parseInt(p.tieredPrice2?.replace(/[^\d]/g,'') || '') || (t1 * 2);
   const t3 = parseInt(p.tieredPrice3?.replace(/[^\d]/g,'') || '') || (t1 * 3);
 
-  const bgCard = isDark ? '#1a1a1a' : '#fff';
-  const bgSelected = isDark ? '#2a2a2a' : `${accentColor}08`;
-  const borderDefault = isDark ? '#333' : '#e8e8e8';
+  const bgCard = isDark ? '#1e1e2a' : '#fff';
+  const bgSelected = isDark ? '#2a2a3a' : `${accentColor}06`;
+  const borderDefault = isDark ? '#333' : '#e0e0e0';
   const textPrimary = isDark ? '#e0e0e0' : '#111';
   const textSecondary = isDark ? '#999' : '#666';
   const saveBg = isDark ? 'rgba(76,175,80,0.15)' : '#e8f5e9';
   const saveColor = isDark ? '#66bb6a' : '#2e7d32';
   const checkBg = accentColor;
-  const popularBg = `linear-gradient(135deg, ${accentColor}, ${accentColor}dd)`;
-  const freeDeliveryBg = isDark ? 'rgba(16,185,129,0.15)' : 'linear-gradient(135deg,#ecfdf5,#d1fae5)';
-  const freeDeliveryColor = isDark ? '#34d399' : '#059669';
-  const freeDeliveryBorder = isDark ? '#065f4633' : '#a7f3d0';
 
   return `
-<div id="tieredPricingSection" style="padding:0 16px;margin:20px 0">
+<div id="tieredPricingSection" style="padding:0 16px;margin:24px 0">
   <style>
     .tier-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-    @media(max-width:480px){.tier-grid{gap:6px}.tier-card{padding:10px 6px}.tier-label{font-size:12px}.tier-price{font-size:17px}.tier-per{font-size:9px}.tier-free-delivery{font-size:9px!important;padding:3px 6px!important}.tier-free-delivery svg{width:10px!important;height:10px!important}}
-    .tier-card{position:relative;border:2px solid ${borderDefault};border-radius:16px;padding:14px 10px;cursor:pointer;transition:all .3s cubic-bezier(.22,1,.36,1);background:${bgCard};display:flex;flex-direction:column;align-items:center;text-align:center;gap:5px;overflow:visible}
-    .tier-card:hover{border-color:${accentColor}88;transform:translateY(-3px);box-shadow:0 8px 25px rgba(0,0,0,0.12)}
-    .tier-card.selected{border-color:${accentColor};background:${bgSelected};box-shadow:0 4px 20px ${accentColor}22}
-    .tier-card.has-free-delivery{border-color:${freeDeliveryBorder}}
-    .tier-card.has-free-delivery.selected{border-color:${accentColor}}
-    .tier-radio{width:22px;height:22px;border-radius:50%;border:2px solid ${borderDefault};display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
-    .tier-card.selected .tier-radio{border-color:${checkBg};background:${checkBg}}
-    .tier-radio-dot{width:9px;height:9px;border-radius:50%;background:#fff;display:none}
-    .tier-card.selected .tier-radio-dot{display:block}
-    .tier-label{font-size:14px;font-weight:700;color:${textPrimary}}
-    .tier-price{font-size:22px;font-weight:800;color:${accentColor};line-height:1.1}
-    .tier-per-piece{font-size:11px;color:${textSecondary}}
-    .tier-save{display:inline-block;background:${saveBg};color:${saveColor};font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-top:2px}
-    .tier-popular{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:${popularBg};color:#fff;font-size:9px;font-weight:700;padding:2px 10px;border-radius:20px;white-space:nowrap;letter-spacing:.3px}
-    .tier-free-delivery{display:inline-flex;align-items:center;gap:3px;background:${freeDeliveryBg};color:${freeDeliveryColor};font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;margin-top:3px;border:1px solid ${freeDeliveryBorder};animation:freeDeliveryPulse 2s ease-in-out infinite}
-    .tier-best-value{position:absolute;top:-10px;right:-6px;background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;font-size:8px;font-weight:800;padding:2px 8px;border-radius:10px;white-space:nowrap;letter-spacing:.3px;box-shadow:0 2px 8px rgba(239,68,68,0.3)}
-    @keyframes freeDeliveryPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.85;transform:scale(1.02)}}
+    @media(max-width:480px){.tier-grid{gap:7px}.tp-card{padding:10px 6px!important}.tp-label{font-size:12px!important}.tp-price{font-size:18px!important}.tp-per{font-size:9px!important}.tp-free-badge{font-size:8px!important;padding:4px 6px!important}.tp-free-badge svg{width:10px!important;height:10px!important}.tp-ribbon{font-size:8px!important;padding:3px 10px!important}}
+    .tp-card{position:relative;border:2px solid ${borderDefault};border-radius:16px;padding:16px 10px 14px;cursor:pointer;transition:all .3s cubic-bezier(.22,1,.36,1);background:${bgCard};display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;overflow:visible}
+    .tp-card:hover{transform:translateY(-3px);box-shadow:0 8px 25px rgba(0,0,0,0.1)}
+    .tp-card.selected{border-color:${accentColor};background:${bgSelected};box-shadow:0 4px 20px ${accentColor}22}
+    .tp-card-glow{border-color:#10b981!important;box-shadow:0 0 0 3px rgba(16,185,129,0.15),0 8px 30px rgba(16,185,129,0.12)!important}
+    .tp-card-glow:hover{box-shadow:0 0 0 4px rgba(16,185,129,0.2),0 12px 35px rgba(16,185,129,0.18)!important;transform:translateY(-4px)}
+    .tp-card-glow.selected{border-color:${accentColor}!important;box-shadow:0 0 0 3px ${accentColor}25,0 8px 30px ${accentColor}18!important}
+    .tp-radio{width:20px;height:20px;border-radius:50%;border:2px solid ${borderDefault};display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+    .tp-card.selected .tp-radio{border-color:${checkBg};background:${checkBg}}
+    .tp-radio-dot{width:8px;height:8px;border-radius:50%;background:#fff;display:none}
+    .tp-card.selected .tp-radio-dot{display:block}
+    .tp-label{font-size:14px;font-weight:700;color:${textPrimary}}
+    .tp-price{font-size:22px;font-weight:800;color:${accentColor};line-height:1.1}
+    .tp-per{font-size:11px;color:${textSecondary}}
+    .tp-save{display:inline-block;background:${saveBg};color:${saveColor};font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-top:2px}
+    .tp-ribbon{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,${accentColor},${accentColor}dd);color:#fff;font-size:9px;font-weight:700;padding:3px 12px;border-radius:20px;white-space:nowrap;letter-spacing:.3px;box-shadow:0 2px 8px ${accentColor}33}
+    .tp-best{position:absolute;top:-11px;right:-4px;background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;font-size:8px;font-weight:800;padding:3px 8px;border-radius:10px;white-space:nowrap;box-shadow:0 2px 8px rgba(239,68,68,0.3)}
+    .tp-free-badge{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,#059669,#10b981);color:#fff;font-size:10px;font-weight:700;padding:5px 10px;border-radius:20px;margin-top:4px;box-shadow:0 3px 12px rgba(16,185,129,0.35);animation:tpBadgePulse 2s ease-in-out infinite;letter-spacing:.3px}
+    .tp-free-wrap{position:relative;margin-top:6px;padding-top:6px}
+    .tp-free-wrap::before{content:'';position:absolute;top:0;left:20%;right:20%;height:1px;background:linear-gradient(90deg,transparent,#10b98155,transparent)}
+    @keyframes tpBadgePulse{0%,100%{transform:scale(1);box-shadow:0 3px 12px rgba(16,185,129,0.35)}50%{transform:scale(1.04);box-shadow:0 4px 18px rgba(16,185,129,0.5)}}
+    @keyframes tpGlow{0%,100%{box-shadow:0 0 0 3px rgba(16,185,129,0.12),0 8px 30px rgba(16,185,129,0.1)}50%{box-shadow:0 0 0 5px rgba(16,185,129,0.2),0 8px 30px rgba(16,185,129,0.18)}}
+    .tp-card-glow{animation:tpGlow 2.5s ease-in-out infinite}
+    .tp-card-glow.selected{animation:none}
   </style>
 
   <div class="tier-grid">
-    <div class="tier-card selected" onclick="selectTier(1)" id="tierCard1">
-      <div class="tier-radio"><div class="tier-radio-dot"></div></div>
-      <div class="tier-label">${p.tieredLabel1 || '১ পিস'}</div>
-      <div class="tier-price">৳${t1}</div>
-      <div class="tier-per-piece">প্রতি পিস ৳${t1}</div>
+    <div class="tp-card selected" onclick="selectTier(1)" id="tierCard1">
+      <div class="tp-radio"><div class="tp-radio-dot"></div></div>
+      <div class="tp-label">${p.tieredLabel1 || '১ পিস'}</div>
+      <div class="tp-price">৳${t1}</div>
+      <div class="tp-per">প্রতি পিস ৳${t1}</div>
     </div>
 
-    <div class="tier-card has-free-delivery" onclick="selectTier(2)" id="tierCard2">
-      <div class="tier-popular">🔥 জনপ্রিয়</div>
-      <div class="tier-radio"><div class="tier-radio-dot"></div></div>
-      <div class="tier-label">${p.tieredLabel2 || '২ পিস'}</div>
-      <div class="tier-price">৳${t2}</div>
-      <div class="tier-per-piece">প্রতি পিস ৳${Math.round(t2/2)}</div>
-      ${t2 < t1*2 ? `<div class="tier-save">সেভ ৳${t1*2-t2}</div>` : ''}
-      <div class="tier-free-delivery"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>ফ্রি ডেলিভারি</div>
+    <div class="tp-card tp-card-glow" onclick="selectTier(2)" id="tierCard2">
+      <div class="tp-ribbon">🔥 জনপ্রিয়</div>
+      <div class="tp-radio"><div class="tp-radio-dot"></div></div>
+      <div class="tp-label">${p.tieredLabel2 || '২ পিস'}</div>
+      <div class="tp-price">৳${t2}</div>
+      <div class="tp-per">প্রতি পিস ৳${Math.round(t2/2)}</div>
+      ${t2 < t1*2 ? `<div class="tp-save">সেভ ৳${t1*2-t2}</div>` : ''}
+      <div class="tp-free-wrap">
+        <div class="tp-free-badge"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>🎉 ফ্রি ডেলিভারি!</div>
+      </div>
     </div>
 
-    <div class="tier-card has-free-delivery" onclick="selectTier(3)" id="tierCard3">
-      <div class="tier-best-value">💎 বেস্ট ভ্যালু</div>
-      <div class="tier-radio"><div class="tier-radio-dot"></div></div>
-      <div class="tier-label">${p.tieredLabel3 || '৩ পিস'}</div>
-      <div class="tier-price">৳${t3}</div>
-      <div class="tier-per-piece">প্রতি পিস ৳${Math.round(t3/3)}</div>
-      ${t3 < t1*3 ? `<div class="tier-save">সেভ ৳${t1*3-t3}</div>` : ''}
-      <div class="tier-free-delivery"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>ফ্রি ডেলিভারি</div>
+    <div class="tp-card tp-card-glow" onclick="selectTier(3)" id="tierCard3">
+      <div class="tp-best">💎 বেস্ট ভ্যালু</div>
+      <div class="tp-radio"><div class="tp-radio-dot"></div></div>
+      <div class="tp-label">${p.tieredLabel3 || '৩ পিস'}</div>
+      <div class="tp-price">৳${t3}</div>
+      <div class="tp-per">প্রতি পিস ৳${Math.round(t3/3)}</div>
+      ${t3 < t1*3 ? `<div class="tp-save">সেভ ৳${t1*3-t3}</div>` : ''}
+      <div class="tp-free-wrap">
+        <div class="tp-free-badge"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>🎉 ফ্রি ডেলিভারি!</div>
+      </div>
     </div>
   </div>
 </div>
@@ -219,7 +225,7 @@ var selectedTier=1;
 var tieredPricesPage={1:${t1},2:${t2},3:${t3}};
 function selectTier(n){
   selectedTier=n;
-  document.querySelectorAll('.tier-card').forEach(function(c){c.classList.remove('selected')});
+  document.querySelectorAll('.tp-card').forEach(function(c){c.classList.remove('selected')});
   document.getElementById('tierCard'+n).classList.add('selected');
 }
 </script>`;
