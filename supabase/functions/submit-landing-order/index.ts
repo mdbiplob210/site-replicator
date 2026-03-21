@@ -364,7 +364,32 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (landing_page_slug) {
+    // ═══ Delete incomplete/partial orders for this customer ═══
+    // By visitor_id
+    if (body.visitor_id) {
+      await supabase
+        .from("incomplete_orders")
+        .delete()
+        .eq("block_reason", "abandoned_form")
+        .ilike("notes", `%visitor:${body.visitor_id}%`);
+    }
+    // By phone
+    if (customer_phone) {
+      await supabase
+        .from("incomplete_orders")
+        .delete()
+        .eq("customer_phone", customer_phone)
+        .eq("block_reason", "abandoned_form");
+    }
+    // By IP + slug
+    if (clientIp !== "unknown" && landing_page_slug) {
+      await supabase
+        .from("incomplete_orders")
+        .delete()
+        .eq("client_ip", clientIp)
+        .eq("block_reason", "abandoned_form")
+        .eq("landing_page_slug", landing_page_slug);
+    }
       const { data: lp } = await supabase
         .from("landing_pages")
         .select("id, fb_pixel_id, fb_access_token")
