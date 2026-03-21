@@ -409,7 +409,7 @@ ttq.page();
 
     // Analytics tracking
     const analyticsScript = `
-<!-- Landing Page Analytics -->
+<!-- Landing Page Analytics (Advanced) -->
 <script>
 (function(){
   var TRACK_URL = '${supabaseUrl}/functions/v1/track-landing-event';
@@ -417,17 +417,74 @@ ttq.page();
   var SLUG = '${page.slug}';
   var VID = localStorage.getItem('_lp_vid');
   if (!VID) { VID = 'v_' + Math.random().toString(36).substr(2,9) + Date.now(); localStorage.setItem('_lp_vid', VID); }
+  var SID = sessionStorage.getItem('_lp_sid');
+  if (!SID) { SID = 's_' + Math.random().toString(36).substr(2,9) + Date.now(); sessionStorage.setItem('_lp_sid', SID); }
+  var _pageStart = Date.now();
 
-  function send(eventType, eventName) {
-    var payload = JSON.stringify({slug:SLUG,event_type:eventType,event_name:eventName||null,visitor_id:VID,referrer:document.referrer||null});
+  // UTM params
+  var urlParams = new URLSearchParams(window.location.search);
+  var _utm = {
+    utm_source: urlParams.get('utm_source') || '',
+    utm_medium: urlParams.get('utm_medium') || '',
+    utm_campaign: urlParams.get('utm_campaign') || '',
+    utm_content: urlParams.get('utm_content') || '',
+    utm_term: urlParams.get('utm_term') || ''
+  };
+
+  // Device info
+  var w = window.innerWidth;
+  var _devType = w < 768 ? 'mobile' : w < 1024 ? 'tablet' : 'desktop';
+
+  function send(eventType, eventName, extra) {
+    var payload = Object.assign({
+      slug: SLUG,
+      event_type: eventType,
+      event_name: eventName || null,
+      visitor_id: VID,
+      session_id: SID,
+      referrer: document.referrer || null,
+      device_type: _devType,
+      screen_width: screen.width,
+      screen_height: screen.height
+    }, _utm, extra || {});
     try {
-      var blob = new Blob([payload], {type: 'application/json'});
+      var blob = new Blob([JSON.stringify(payload)], {type: 'application/json'});
       navigator.sendBeacon(TRACK_URL + '?apikey=' + ANON, blob);
     } catch(e) {
-      fetch(TRACK_URL, {method:'POST', headers:{'Content-Type':'application/json','apikey':ANON}, body:payload}).catch(function(){});
+      fetch(TRACK_URL, {method:'POST', headers:{'Content-Type':'application/json','apikey':ANON}, body:JSON.stringify(payload)}).catch(function(){});
     }
   }
   send('view');
+
+  // Track scroll depth
+  var _maxScroll = 0;
+  var _scrollSent = {};
+  window.addEventListener('scroll', function() {
+    var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    var docHeight = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight) - window.innerHeight;
+    if (docHeight <= 0) return;
+    var pct = Math.round((scrollTop / docHeight) * 100);
+    if (pct > _maxScroll) _maxScroll = pct;
+    [25, 50, 75, 100].forEach(function(milestone) {
+      if (pct >= milestone && !_scrollSent[milestone]) {
+        _scrollSent[milestone] = true;
+        send('scroll', 'scroll_' + milestone, { scroll_depth: milestone });
+      }
+    });
+  }, { passive: true });
+
+  // Track time on page when leaving
+  function sendExit() {
+    var timeOnPage = Math.round((Date.now() - _pageStart) / 1000);
+    send('exit', null, { scroll_depth: _maxScroll, time_on_page: timeOnPage });
+  }
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'hidden') sendExit();
+  });
+
+  // Track funnel events
+  window._lpSend = send;
+
   document.addEventListener('click', function(e) {
     var el = e.target.closest('[data-track-event]');
     if (el) {
@@ -435,6 +492,33 @@ ttq.page();
     } else if (e.target.closest('a, button, [role="button"], input[type="submit"]')) {
       send('click', (e.target.closest('a, button, [role="button"], input[type="submit"]').textContent || '').trim().substring(0, 50));
     }
+  });
+
+  // Track funnel steps
+  var _funnelFired = {};
+  function funnelOnce(step) { if (!_funnelFired[step]) { _funnelFired[step] = true; send('funnel', step); } }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    // form_view when checkout form is visible
+    var form = document.querySelector('[data-checkout-form], form, #checkoutForm, #orderForm, .checkout-form, .order-form');
+    if (form) {
+      var obs = new IntersectionObserver(function(entries) {
+        if (entries[0].isIntersecting) { funnelOnce('form_view'); obs.disconnect(); }
+      }, { threshold: 0.3 });
+      obs.observe(form);
+    }
+    // form_start on first input
+    document.addEventListener('input', function(e) {
+      if (e.target && e.target.closest && e.target.closest('form, [data-checkout-form], #checkoutForm, #orderForm')) {
+        funnelOnce('form_start');
+      }
+    }, true);
+    // phone_entered
+    document.addEventListener('change', function(e) {
+      if (!e.target) return;
+      var isPhone = (e.target.name === 'customer_phone' || e.target.name === 'phone' || e.target.type === 'tel');
+      if (isPhone && (e.target.value || '').replace(/[^0-9]/g,'').length >= 10) funnelOnce('phone_entered');
+    }, true);
   });
 })();
 </script>
