@@ -1595,6 +1595,11 @@ const AdminOrders = () => {
                     </div>
                   </div>
 
+                  {/* Courier Success Rate - auto loads on phone */}
+                  {customerPhone && customerPhone.length >= 11 && (
+                    <CourierSuccessRate phone={customerPhone} compact />
+                  )}
+
                   {/* Fraud Check & Old Orders by Phone */}
                   {customerPhone && customerPhone.length >= 6 && (
                     <div className="space-y-2">
