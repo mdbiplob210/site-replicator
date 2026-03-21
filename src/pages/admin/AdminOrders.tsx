@@ -1539,7 +1539,7 @@ const AdminOrders = () => {
                       </div>
                     </div>
                   )}
-...
+                </div>
                 <div className="bg-primary/5 border border-primary/20 rounded-xl p-4">
                   <div className="flex justify-between text-sm"><span>প্রোডাক্ট মূল্য</span><span>৳{itemsTotal.toLocaleString()}</span></div>
                   <div className="flex justify-between text-sm"><span>ডেলিভারি</span><span>৳{deliveryCharge}</span></div>
