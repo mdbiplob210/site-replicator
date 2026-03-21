@@ -680,6 +680,9 @@ export type Database = {
         Row: {
           browser: string | null
           city: string | null
+          click_element: string | null
+          click_x: number | null
+          click_y: number | null
           country: string | null
           created_at: string
           device_type: string | null
@@ -688,6 +691,7 @@ export type Database = {
           id: string
           landing_page_id: string
           os: string | null
+          page_height: number | null
           referrer: string | null
           screen_height: number | null
           screen_width: number | null
@@ -705,6 +709,9 @@ export type Database = {
         Insert: {
           browser?: string | null
           city?: string | null
+          click_element?: string | null
+          click_x?: number | null
+          click_y?: number | null
           country?: string | null
           created_at?: string
           device_type?: string | null
@@ -713,6 +720,7 @@ export type Database = {
           id?: string
           landing_page_id: string
           os?: string | null
+          page_height?: number | null
           referrer?: string | null
           screen_height?: number | null
           screen_width?: number | null
@@ -730,6 +738,9 @@ export type Database = {
         Update: {
           browser?: string | null
           city?: string | null
+          click_element?: string | null
+          click_x?: number | null
+          click_y?: number | null
           country?: string | null
           created_at?: string
           device_type?: string | null
@@ -738,6 +749,7 @@ export type Database = {
           id?: string
           landing_page_id?: string
           os?: string | null
+          page_height?: number | null
           referrer?: string | null
           screen_height?: number | null
           screen_width?: number | null
