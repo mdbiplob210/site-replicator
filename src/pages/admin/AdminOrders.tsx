@@ -1535,35 +1535,16 @@ const AdminOrders = () => {
                       ))}
                       <div className="flex justify-between items-center pt-2 border-t border-border/40">
                         <span className="text-xs font-semibold text-muted-foreground">{orderItems.length}টি আইটেম</span>
-                        <span className="text-sm font-bold text-primary">সাবটোটাল: ৳{orderItems.reduce((s, i) => s + i.total_price, 0).toLocaleString()}</span>
+                        <span className="text-sm font-bold text-primary">সাবটোটাল: ৳{itemsTotal.toLocaleString()}</span>
                       </div>
                     </div>
                   )}
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-muted-foreground">ডেলিভারি চার্জ</Label>
-                    <Input type="number" value={deliveryCharge} onChange={(e) => setDeliveryCharge(parseFloat(e.target.value) || 0)} className="rounded-xl" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-muted-foreground">ডিসকাউন্ট</Label>
-                    <Input type="number" value={discount} onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)} className="rounded-xl" />
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground">নোট</Label>
-                  <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} className="rounded-xl min-h-[50px]" />
-                </div>
-                <div className="flex items-center gap-2 text-sm bg-secondary/50 rounded-xl px-4 py-2.5 border border-border/40">
-                  <Package className="h-4 w-4 text-amber-600" />
-                  <span className="font-medium">Failed Order</span>
-                  <span className="text-muted-foreground text-xs">(সোর্স পরিবর্তন করা যাবে না)</span>
-                </div>
+...
                 <div className="bg-primary/5 border border-primary/20 rounded-xl p-4">
-                  <div className="flex justify-between text-sm"><span>প্রোডাক্ট মূল্য</span><span>৳{orderItems.reduce((s, i) => s + i.total_price, 0)}</span></div>
+                  <div className="flex justify-between text-sm"><span>প্রোডাক্ট মূল্য</span><span>৳{itemsTotal.toLocaleString()}</span></div>
                   <div className="flex justify-between text-sm"><span>ডেলিভারি</span><span>৳{deliveryCharge}</span></div>
                   <div className="flex justify-between text-sm"><span>ডিসকাউন্ট</span><span>-৳{discount}</span></div>
-                  <div className="border-t mt-2 pt-2 flex justify-between font-bold"><span>মোট</span><span>৳{orderItems.reduce((s, i) => s + i.total_price, 0) + deliveryCharge - discount}</span></div>
+                  <div className="border-t mt-2 pt-2 flex justify-between font-bold"><span>মোট</span><span>৳{(itemsTotal + deliveryCharge - discount).toLocaleString()}</span></div>
                 </div>
                 <Button className="w-full rounded-xl shadow-sm" onClick={handleCreateOrder} disabled={createOrder.isPending || !customerName.trim()}>
                   {createOrder.isPending 
