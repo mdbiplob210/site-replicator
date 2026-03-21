@@ -232,17 +232,16 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
     trackAddPaymentInfo({ value: currentItem.price * qty });
 
     try {
-      const { data: seqNum } = await supabase.rpc("generate_order_number");
-      const orderNumber = String(seqNum || Date.now());
       const orderId = crypto.randomUUID();
       const total = currentItem.price * qty;
 
       const clientIp = await getClientIp();
       const { deviceInfo } = parseDeviceInfo();
 
-      const { error } = await supabase.from("orders").insert({
+      // order_number is auto-assigned by DB trigger
+      const { data: insertedOrder, error } = await supabase.from("orders").insert({
         id: orderId,
-        order_number: orderNumber,
+        order_number: "0",
         customer_name: form.name,
         customer_phone: form.phone,
         customer_address: form.address,
@@ -256,8 +255,9 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
         client_ip: clientIp,
         device_info: deviceInfo,
         user_agent: navigator.userAgent,
-      } as any);
+      } as any).select("order_number").single();
       if (error) throw error;
+      const orderNumber = insertedOrder?.order_number || orderId;
 
       await supabase.from("order_items").insert({
         order_id: orderId,

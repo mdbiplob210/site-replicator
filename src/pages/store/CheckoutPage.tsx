@@ -223,8 +223,6 @@ const CheckoutPage = () => {
         return;
       }
 
-      const { data: seqNum } = await supabase.rpc("generate_order_number");
-      const orderNumber = String(seqNum || Date.now());
       const total = item.price * item.qty;
       
       // Create the order
@@ -232,8 +230,9 @@ const CheckoutPage = () => {
       const clientIp = await getClientIp();
       const { deviceInfo } = parseDeviceInfo();
 
+      // order_number is auto-assigned by DB trigger
       const { data: orderData, error } = await supabase.from("orders").insert({
-        order_number: orderNumber,
+        order_number: "0",
         customer_name: form.name,
         customer_phone: form.phone,
         customer_address: form.address,
@@ -247,6 +246,7 @@ const CheckoutPage = () => {
         device_info: deviceInfo,
         user_agent: navigator.userAgent,
       } as any).select().single();
+      const orderNumber = orderData?.order_number || "0";
       if (error) throw error;
 
       // Insert order item

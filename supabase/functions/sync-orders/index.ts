@@ -198,12 +198,9 @@ Deno.serve(async (req) => {
             continue
           }
 
-          // Generate order number
-          const { data: seqNum } = await supabase.rpc('generate_order_number')
-          const nextNum = String(seqNum || Date.now())
-
+          // order_number is auto-assigned by DB trigger
           const { data: orderData, error: orderError } = await supabase.from('orders').insert({
-            order_number: orderNumber || nextNum,
+            order_number: orderNumber || '0',
             customer_name: customerName,
             customer_phone: phone,
             customer_address: address,

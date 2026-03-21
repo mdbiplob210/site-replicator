@@ -330,14 +330,11 @@ Deno.serve(async (req) => {
     }
 
     // ═══ All checks passed - create order ═══
-    const { data: seqNum, error: seqError } = await supabase.rpc("generate_order_number");
-    if (seqError) console.error("[submit-landing-order] generate_order_number error:", seqError.message);
-    const orderNumber = String(seqNum || Date.now());
-
+    // order_number is auto-assigned by DB trigger (assign_order_number_on_insert)
     const { data: order, error: orderError } = await supabase
       .from("orders")
       .insert({
-        order_number: orderNumber,
+        order_number: "0",
         customer_name,
         customer_phone,
         customer_address: customer_address || null,
@@ -352,8 +349,10 @@ Deno.serve(async (req) => {
         user_agent: userAgent,
         device_info: deviceInfo,
       })
-      .select("id")
+      .select("id, order_number")
       .single();
+
+    const orderNumber = order?.order_number || "0";
 
     if (orderError) throw orderError;
 
