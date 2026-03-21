@@ -312,6 +312,23 @@ Deno.serve(async (req) => {
       }
     }
 
+    // ═══ Duplicate order check — same phone within 60 seconds ═══
+    const sixtySecsAgo = new Date(Date.now() - 60 * 1000).toISOString();
+    const { data: recentDup } = await supabase
+      .from("orders")
+      .select("id, order_number")
+      .eq("customer_phone", customer_phone)
+      .gte("created_at", sixtySecsAgo)
+      .limit(1);
+
+    if (recentDup && recentDup.length > 0) {
+      console.log(`[submit-landing-order] Duplicate blocked: phone=${customer_phone}, existing order=${recentDup[0].order_number}`);
+      return new Response(
+        JSON.stringify({ success: true, order_number: recentDup[0].order_number, duplicate: true }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // ═══ All checks passed - create order ═══
     const { data: seqNum, error: seqError } = await supabase.rpc("generate_order_number");
     if (seqError) console.error("[submit-landing-order] generate_order_number error:", seqError.message);
