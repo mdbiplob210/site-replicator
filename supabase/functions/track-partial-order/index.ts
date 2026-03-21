@@ -104,6 +104,7 @@ async function cleanupDuplicatePartials(
   const { data, error } = await query
     .order("updated_at", { ascending: false })
     .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
     .limit(10);
 
   if (error) {
