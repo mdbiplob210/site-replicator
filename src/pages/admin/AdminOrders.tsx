@@ -3745,36 +3745,7 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
               <Textarea className="rounded-xl text-sm" rows={2} value={editAddress} onChange={(e) => setEditAddress(e.target.value)} />
             </div>
 
-            {/* City/Zone/Area Manual Select */}
-            <div className="grid grid-cols-3 gap-2">
-              <div className="space-y-1">
-                <Label className="text-[10px] font-semibold text-muted-foreground">City</Label>
-                <Select value={editCity || detectedLoc.city || ""} onValueChange={setEditCity}>
-                  <SelectTrigger className="rounded-lg h-8 text-xs"><SelectValue placeholder="City সিলেক্ট করুন" /></SelectTrigger>
-                  <SelectContent className="max-h-60">
-                    {bdDistrictList.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1">
-                <Label className="text-[10px] font-semibold text-muted-foreground">Zone</Label>
-                <Select value={editZone || detectedLoc.zone || ""} onValueChange={setEditZone}>
-                  <SelectTrigger className="rounded-lg h-8 text-xs"><SelectValue placeholder="Zone সিলেক্ট করুন" /></SelectTrigger>
-                  <SelectContent>
-                    {bdZoneList.map((z) => <SelectItem key={z} value={z}>{z}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1">
-                <Label className="text-[10px] font-semibold text-muted-foreground">Area/Thana</Label>
-                <Select value={editArea || detectedLoc.area || ""} onValueChange={setEditArea}>
-                  <SelectTrigger className="rounded-lg h-8 text-xs"><SelectValue placeholder="Area সিলেক্ট করুন" /></SelectTrigger>
-                  <SelectContent className="max-h-60">
-                    {bdThanaList.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+
 
             {/* Courier Selection for Edit */}
             <div className="p-4 rounded-2xl bg-secondary/20 border border-border/40 space-y-3">
