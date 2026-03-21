@@ -157,15 +157,20 @@ function tieredPricingSectionHtml(p: TemplateConfig, accentColor: string, isDark
   const saveColor = isDark ? '#66bb6a' : '#2e7d32';
   const checkBg = accentColor;
   const popularBg = `linear-gradient(135deg, ${accentColor}, ${accentColor}dd)`;
+  const freeDeliveryBg = isDark ? 'rgba(16,185,129,0.15)' : 'linear-gradient(135deg,#ecfdf5,#d1fae5)';
+  const freeDeliveryColor = isDark ? '#34d399' : '#059669';
+  const freeDeliveryBorder = isDark ? '#065f4633' : '#a7f3d0';
 
   return `
 <div id="tieredPricingSection" style="padding:0 16px;margin:20px 0">
   <style>
-    .tier-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-    @media(max-width:480px){.tier-grid{gap:6px}.tier-card{padding:10px 6px}.tier-label{font-size:12px}.tier-price{font-size:17px}.tier-per{font-size:9px}}
-    .tier-card{position:relative;border:2px solid ${borderDefault};border-radius:14px;padding:14px 10px;cursor:pointer;transition:all .3s ease;background:${bgCard};display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px}
-    .tier-card:hover{border-color:${accentColor}88;transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,0.1)}
+    .tier-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    @media(max-width:480px){.tier-grid{gap:6px}.tier-card{padding:10px 6px}.tier-label{font-size:12px}.tier-price{font-size:17px}.tier-per{font-size:9px}.tier-free-delivery{font-size:9px!important;padding:3px 6px!important}.tier-free-delivery svg{width:10px!important;height:10px!important}}
+    .tier-card{position:relative;border:2px solid ${borderDefault};border-radius:16px;padding:14px 10px;cursor:pointer;transition:all .3s cubic-bezier(.22,1,.36,1);background:${bgCard};display:flex;flex-direction:column;align-items:center;text-align:center;gap:5px;overflow:visible}
+    .tier-card:hover{border-color:${accentColor}88;transform:translateY(-3px);box-shadow:0 8px 25px rgba(0,0,0,0.12)}
     .tier-card.selected{border-color:${accentColor};background:${bgSelected};box-shadow:0 4px 20px ${accentColor}22}
+    .tier-card.has-free-delivery{border-color:${freeDeliveryBorder}}
+    .tier-card.has-free-delivery.selected{border-color:${accentColor}}
     .tier-radio{width:22px;height:22px;border-radius:50%;border:2px solid ${borderDefault};display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
     .tier-card.selected .tier-radio{border-color:${checkBg};background:${checkBg}}
     .tier-radio-dot{width:9px;height:9px;border-radius:50%;background:#fff;display:none}
@@ -175,6 +180,9 @@ function tieredPricingSectionHtml(p: TemplateConfig, accentColor: string, isDark
     .tier-per-piece{font-size:11px;color:${textSecondary}}
     .tier-save{display:inline-block;background:${saveBg};color:${saveColor};font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-top:2px}
     .tier-popular{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:${popularBg};color:#fff;font-size:9px;font-weight:700;padding:2px 10px;border-radius:20px;white-space:nowrap;letter-spacing:.3px}
+    .tier-free-delivery{display:inline-flex;align-items:center;gap:3px;background:${freeDeliveryBg};color:${freeDeliveryColor};font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;margin-top:3px;border:1px solid ${freeDeliveryBorder};animation:freeDeliveryPulse 2s ease-in-out infinite}
+    .tier-best-value{position:absolute;top:-10px;right:-6px;background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;font-size:8px;font-weight:800;padding:2px 8px;border-radius:10px;white-space:nowrap;letter-spacing:.3px;box-shadow:0 2px 8px rgba(239,68,68,0.3)}
+    @keyframes freeDeliveryPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.85;transform:scale(1.02)}}
   </style>
 
   <div class="tier-grid">
@@ -185,21 +193,24 @@ function tieredPricingSectionHtml(p: TemplateConfig, accentColor: string, isDark
       <div class="tier-per-piece">প্রতি পিস ৳${t1}</div>
     </div>
 
-    <div class="tier-card" onclick="selectTier(2)" id="tierCard2">
+    <div class="tier-card has-free-delivery" onclick="selectTier(2)" id="tierCard2">
       <div class="tier-popular">🔥 জনপ্রিয়</div>
       <div class="tier-radio"><div class="tier-radio-dot"></div></div>
       <div class="tier-label">${p.tieredLabel2 || '২ পিস'}</div>
       <div class="tier-price">৳${t2}</div>
       <div class="tier-per-piece">প্রতি পিস ৳${Math.round(t2/2)}</div>
       ${t2 < t1*2 ? `<div class="tier-save">সেভ ৳${t1*2-t2}</div>` : ''}
+      <div class="tier-free-delivery"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>ফ্রি ডেলিভারি</div>
     </div>
 
-    <div class="tier-card" onclick="selectTier(3)" id="tierCard3">
+    <div class="tier-card has-free-delivery" onclick="selectTier(3)" id="tierCard3">
+      <div class="tier-best-value">💎 বেস্ট ভ্যালু</div>
       <div class="tier-radio"><div class="tier-radio-dot"></div></div>
       <div class="tier-label">${p.tieredLabel3 || '৩ পিস'}</div>
       <div class="tier-price">৳${t3}</div>
       <div class="tier-per-piece">প্রতি পিস ৳${Math.round(t3/3)}</div>
       ${t3 < t1*3 ? `<div class="tier-save">সেভ ৳${t1*3-t3}</div>` : ''}
+      <div class="tier-free-delivery"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>ফ্রি ডেলিভারি</div>
     </div>
   </div>
 </div>
@@ -252,10 +263,16 @@ function syncTierToCheckout(){
   var productPrice=tieredPrices[q]||tieredPrices[1];
   document.getElementById('sumProduct').textContent='৳'+productPrice;
   var dcArea=document.getElementById('deliveryChargeAmount');
-  var dcVal=dcArea?parseInt(dcArea.dataset.charge)||deliveryCharge:deliveryCharge;
+  var baseDc=dcArea?parseInt(dcArea.dataset.charge)||deliveryCharge:deliveryCharge;
+  var dcVal=q>=2?0:baseDc;
+  dcArea.textContent=dcVal===0?'ফ্রি':'৳'+dcVal;
+  dcArea.dataset.effectiveCharge=dcVal;
+  document.getElementById('checkoutForm').setAttribute('data-delivery-charge',dcVal);
   document.getElementById('sumTotal').textContent='৳'+(productPrice+dcVal);
   document.getElementById('checkoutForm').setAttribute('data-unit-price', String(Math.round(productPrice/q)));
   var hp=document.getElementById('headerPrice');if(hp)hp.textContent='৳'+productPrice;
+  var areaSection=document.getElementById('deliveryAreaSection');
+  if(areaSection){areaSection.style.display=q>=2?'none':''}
 }
 ` : `
 var unitPrice=${basePrice},deliveryCharge=${dc},currentQty=1;
@@ -344,7 +361,7 @@ function updateSummary(){var q=currentQty;document.getElementById('sumProduct').
         ${quantityHtml}
 
         <!-- Delivery Area -->
-        <div style="background:linear-gradient(135deg,#f8fafc,#f1f5f9);border-radius:16px;padding:14px;margin-bottom:16px;border:1px solid #e2e8f0">
+        <div id="deliveryAreaSection" style="background:linear-gradient(135deg,#f8fafc,#f1f5f9);border-radius:16px;padding:14px;margin-bottom:16px;border:1px solid #e2e8f0">
           <label style="font-size:12px;font-weight:700;color:#555;margin-bottom:10px;display:flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:.3px">📍 ডেলিভারি এরিয়া</label>
           <div style="display:flex;gap:8px">
             <button type="button" onclick="setDeliveryArea('outside',${dcOutside})" id="areaOutside" style="flex:1;padding:12px;border-radius:12px;font-size:13px;font-weight:700;border:2px solid #e2e8f0;background:#fff;color:#666;cursor:pointer;transition:all .25s">
@@ -409,7 +426,7 @@ function openCheckout(){document.getElementById('checkoutOverlay').style.display
 function closeCheckout(){document.getElementById('checkoutOverlay').style.display='none';document.body.style.overflow='';document.getElementById('formFields').style.display='';document.getElementById('successMsg').style.display='none'}
 document.getElementById('checkoutOverlay').addEventListener('click',function(e){if(e.target===this)closeCheckout()});
 ${summaryScript}
-document.getElementById('checkoutForm').addEventListener('submit',function(e){e.preventDefault();e._templateHandled=true;var btn=document.getElementById('submitBtn');btn.disabled=true;btn.innerHTML='<span style="display:inline-block;width:18px;height:18px;border:2.5px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite;margin-right:8px"></span> সাবমিট হচ্ছে...';var fd=new FormData(this);var q=parseInt(fd.get('quantity'))||1;var dcVal=parseInt(this.dataset.deliveryCharge)||${dc};var data={customer_name:fd.get('customer_name'),customer_phone:fd.get('customer_phone'),customer_address:fd.get('customer_address'),quantity:q,product_name:this.dataset.productName,product_code:this.dataset.productCode,unit_price:parseInt(this.dataset.unitPrice)||0,delivery_charge:dcVal,landing_page_slug:window._LP_SLUG||'',visitor_id:window._LP_VID||''};data.total_amount=(data.unit_price*q)+dcVal;${useTiered ? 'var tp={1:'+t1+',2:'+t2+',3:'+t3+'};data.unit_price=Math.round((tp[q]||tp[1])/q);data.total_amount=(tp[q]||tp[1])+dcVal;' : ''}var baseUrl=window.SUPABASE_URL||'';fetch(baseUrl+'/functions/v1/submit-landing-order',{method:'POST',headers:{'Content-Type':'application/json','apikey':window.SUPABASE_ANON_KEY||''},body:JSON.stringify(data)}).then(function(r){return r.json()}).then(function(res){if(res&&res.success){if(window._removePartial)window._removePartial();document.getElementById('formFields').style.display='none';document.getElementById('successMsg').style.display='block'}else{alert(res.error||'অর্ডার সাবমিট করতে সমস্যা হয়েছে');btn.disabled=false;btn.innerHTML='🛒 ${p.confirmButtonText}'}}).catch(function(err){alert('ত্রুটি: '+err.message);btn.disabled=false;btn.innerHTML='🛒 ${p.confirmButtonText}'})});
+document.getElementById('checkoutForm').addEventListener('submit',function(e){e.preventDefault();e._templateHandled=true;var btn=document.getElementById('submitBtn');btn.disabled=true;btn.innerHTML='<span style="display:inline-block;width:18px;height:18px;border:2.5px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite;margin-right:8px"></span> সাবমিট হচ্ছে...';var fd=new FormData(this);var q=parseInt(fd.get('quantity'))||1;var dcVal=q>=2?0:(parseInt(this.dataset.deliveryCharge)||${dc});var data={customer_name:fd.get('customer_name'),customer_phone:fd.get('customer_phone'),customer_address:fd.get('customer_address'),quantity:q,product_name:this.dataset.productName,product_code:this.dataset.productCode,unit_price:parseInt(this.dataset.unitPrice)||0,delivery_charge:dcVal,landing_page_slug:window._LP_SLUG||'',visitor_id:window._LP_VID||''};data.total_amount=(data.unit_price*q)+dcVal;${useTiered ? 'var tp={1:'+t1+',2:'+t2+',3:'+t3+'};data.unit_price=Math.round((tp[q]||tp[1])/q);data.total_amount=(tp[q]||tp[1])+dcVal;' : ''}var baseUrl=window.SUPABASE_URL||'';fetch(baseUrl+'/functions/v1/submit-landing-order',{method:'POST',headers:{'Content-Type':'application/json','apikey':window.SUPABASE_ANON_KEY||''},body:JSON.stringify(data)}).then(function(r){return r.json()}).then(function(res){if(res&&res.success){if(window._removePartial)window._removePartial();document.getElementById('formFields').style.display='none';document.getElementById('successMsg').style.display='block'}else{alert(res.error||'অর্ডার সাবমিট করতে সমস্যা হয়েছে');btn.disabled=false;btn.innerHTML='🛒 ${p.confirmButtonText}'}}).catch(function(err){alert('ত্রুটি: '+err.message);btn.disabled=false;btn.innerHTML='🛒 ${p.confirmButtonText}'})});
 </script>
 <style>@keyframes spin{to{transform:rotate(360deg)}}</style>`;
 }
