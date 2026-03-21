@@ -748,6 +748,88 @@ const AdminOrders = () => {
     setTimeout(() => { printWindow.print(); }, 300);
   }, [filteredOrders]);
 
+  const banglaDigitMap: Record<string, string> = {
+    "০": "0",
+    "১": "1",
+    "২": "2",
+    "৩": "3",
+    "৪": "4",
+    "৫": "5",
+    "৬": "6",
+    "৭": "7",
+    "৮": "8",
+    "৯": "9",
+  };
+
+  const normalizeNumberValue = (value: unknown) => {
+    if (typeof value === "number") {
+      return Number.isFinite(value) ? value : 0;
+    }
+
+    if (typeof value !== "string") {
+      return 0;
+    }
+
+    const numericValue = Number(
+      value
+        .replace(/[০-৯]/g, (digit) => banglaDigitMap[digit] ?? digit)
+        .replace(/,/g, "")
+        .trim()
+    );
+
+    return Number.isFinite(numericValue) ? numericValue : 0;
+  };
+
+  const cleanIncompleteText = (value: string | null | undefined) =>
+    (value || "")
+      .replace(/\s+/g, " ")
+      .replace(/পেজ থেকেসিলেক্টেড/g, "পেজ থেকে সিলেক্টেড")
+      .trim();
+
+  const extractIncompletePriceFromText = (io: any) => {
+    const sourceText = cleanIncompleteText([io.product_name, io.product_code].filter(Boolean).join(" "));
+    if (!sourceText) return 0;
+
+    const normalizedText = sourceText.replace(/[০-৯]/g, (digit) => banglaDigitMap[digit] ?? digit);
+    const packPriceMatch = normalizedText.match(/\b\d+\s*পিস\s*-\s*৳\s*(\d+(?:\.\d+)?)/i);
+    if (packPriceMatch) {
+      return normalizeNumberValue(packPriceMatch[1]);
+    }
+
+    const currencyMatches = Array.from(normalizedText.matchAll(/৳\s*(\d+(?:\.\d+)?)/g))
+      .map((match) => normalizeNumberValue(match[1]))
+      .filter((value) => value > 0);
+
+    return currencyMatches[0] || 0;
+  };
+
+  const buildIncompleteOrderItem = (io: any) => {
+    if (!io?.product_name && !io?.product_code) return null;
+
+    const matchedProduct = allProducts.find((p: any) =>
+      p.product_code === io.product_code || p.name === io.product_name
+    );
+    const qty = Math.max(1, normalizeNumberValue(io.quantity) || 1);
+    const savedUnitPrice = normalizeNumberValue(io.unit_price);
+    const derivedProductTotal = Math.max(
+      0,
+      normalizeNumberValue(io.total_amount) - normalizeNumberValue(io.delivery_charge) + normalizeNumberValue(io.discount)
+    );
+    const derivedUnitPrice = derivedProductTotal > 0 ? derivedProductTotal / qty : 0;
+    const textUnitPrice = extractIncompletePriceFromText(io);
+    const matchedUnitPrice = normalizeNumberValue(matchedProduct?.selling_price);
+    const unitPrice = savedUnitPrice || derivedUnitPrice || textUnitPrice || matchedUnitPrice || 0;
+
+    return {
+      product_id: matchedProduct?.id || null,
+      product_name: cleanIncompleteText(io.product_name) || matchedProduct?.name || "সিলেক্টেড প্রোডাক্ট",
+      product_code: cleanIncompleteText(io.product_code) || matchedProduct?.product_code || "",
+      quantity: qty,
+      unit_price: unitPrice,
+      total_price: unitPrice * qty,
+    };
+  };
+
   const addProductToOrder = (product: any) => {
     const existing = orderItems.find((i) => i.product_id === product.id);
     if (existing) {
@@ -783,7 +865,7 @@ const AdminOrders = () => {
     setOrderItems(orderItems.filter((_, i) => i !== index));
   };
 
-  const itemsTotal = orderItems.reduce((sum, i) => sum + i.total_price, 0);
+  const itemsTotal = orderItems.reduce((sum, i) => sum + Number(i.total_price || 0), 0);
 
   const logActivity = async (orderId: string, action: string, fieldName?: string, oldValue?: string, newValue?: string, details?: string) => {
     try {
