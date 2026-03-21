@@ -3241,7 +3241,7 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
   const [detailProductSearch, setDetailProductSearch] = useState("");
   const [detailProductFocused, setDetailProductFocused] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [bdCourierData, setBdCourierData] = useState<any>(null);
+  const [bdCourierData, setBdCourierData] = useState<Record<string, any>>({});
   const [bdCourierLoading, setBdCourierLoading] = useState(false);
 
   // Courier selection for edit
