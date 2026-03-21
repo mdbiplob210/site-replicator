@@ -1384,20 +1384,78 @@ const AdminOrders = () => {
                   <Label className="text-xs font-semibold text-muted-foreground">ঠিকানা</Label>
                   <Textarea value={customerAddress} onChange={(e) => setCustomerAddress(e.target.value)} placeholder="সম্পূর্ণ ঠিকানা" className="rounded-xl min-h-[60px]" />
                 </div>
-                <div className="space-y-3">
-                  <Label className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><Package className="h-3 w-3" /> প্রোডাক্ট</Label>
-                  {orderItems.map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-2 bg-secondary/30 rounded-xl p-3 border border-border/30">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{item.product_name || "Unknown"}</p>
-                        <p className="text-xs text-muted-foreground">{item.product_code}</p>
-                      </div>
-                      <Input type="number" value={item.quantity} onChange={(e) => { const q = parseInt(e.target.value) || 1; const updated = [...orderItems]; updated[idx] = {...item, quantity: q, total_price: q * item.unit_price}; setOrderItems(updated); }} className="w-16 rounded-lg text-center" min={1} />
-                      <span className="text-xs text-muted-foreground">×</span>
-                      <Input type="number" value={item.unit_price} onChange={(e) => { const p = parseFloat(e.target.value) || 0; const updated = [...orderItems]; updated[idx] = {...item, unit_price: p, total_price: item.quantity * p}; setOrderItems(updated); }} className="w-24 rounded-lg" />
-                      <Button size="sm" variant="ghost" onClick={() => setOrderItems(orderItems.filter((_, i) => i !== idx))}><X className="h-3 w-3" /></Button>
+                <div className="p-4 rounded-2xl bg-secondary/20 border border-border/40 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                      <div className="h-6 w-6 rounded-lg bg-primary/10 flex items-center justify-center"><Package className="h-3.5 w-3.5 text-primary" /></div>
+                      প্রোডাক্ট যোগ করুন
+                    </h3>
+                    {orderItems.length > 0 && (
+                      <Badge variant="outline" className="text-[10px] gap-1 text-amber-600 border-amber-300 bg-amber-50">
+                        <Plus className="h-3 w-3" /> আরও প্রোডাক্ট যোগ করতে সার্চ করুন
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="প্রোডাক্ট সার্চ করুন (নাম বা কোড)..."
+                      className="pl-10 rounded-xl"
+                      value={productSearch}
+                      onChange={(e) => setProductSearch(e.target.value)}
+                      onFocus={() => setProductSearchFocused(true)}
+                      onBlur={() => setTimeout(() => setProductSearchFocused(false), 200)}
+                    />
+                  </div>
+                  {productSearchFocused && filteredProducts.length > 0 && (
+                    <div className="border border-border rounded-xl max-h-48 overflow-y-auto bg-card shadow-md">
+                      {!productSearch.trim() && (
+                        <div className="px-3 py-1.5 text-[10px] font-semibold text-muted-foreground bg-secondary/30 border-b border-border/30">🔥 Top Selling Products</div>
+                      )}
+                      {filteredProducts.map((p: any) => (
+                        <button
+                          key={p.id}
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => { addProductToOrder(p); setProductSearchFocused(false); }}
+                          className="w-full text-left px-3 py-2 hover:bg-secondary/60 transition-colors flex items-center justify-between text-sm border-b border-border/30 last:border-0"
+                        >
+                          <div>
+                            <span className="font-medium text-foreground">{p.name}</span>
+                            <span className="text-xs text-muted-foreground ml-2">({p.product_code})</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-semibold text-primary">৳{Number(p.selling_price).toLocaleString()}</span>
+                            {Number(p.stock_quantity) > 0 && <span className="text-[10px] text-muted-foreground">({p.stock_quantity})</span>}
+                          </div>
+                        </button>
+                      ))}
                     </div>
-                  ))}
+                  )}
+                  {orderItems.length > 0 && (
+                    <div className="space-y-2">
+                      {orderItems.map((item, idx) => (
+                        <div key={idx} className="flex items-center gap-3 p-2.5 rounded-xl bg-secondary/30 border border-border/40">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-foreground truncate">{item.product_name}</p>
+                            <p className="text-xs text-muted-foreground">{item.product_code} · ৳{item.unit_price}</p>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <button onClick={() => updateItemQuantity(idx, item.quantity - 1)} className="h-7 w-7 rounded-lg border border-border flex items-center justify-center hover:bg-secondary text-foreground">−</button>
+                            <span className="w-8 text-center text-sm font-semibold text-foreground">{item.quantity}</span>
+                            <button onClick={() => updateItemQuantity(idx, item.quantity + 1)} className="h-7 w-7 rounded-lg border border-border flex items-center justify-center hover:bg-secondary text-foreground">+</button>
+                          </div>
+                          <span className="text-sm font-semibold text-foreground w-20 text-right">৳{item.total_price.toLocaleString()}</span>
+                          <button onClick={() => removeItem(idx)} className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-destructive/10 text-muted-foreground hover:text-destructive">
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                      <div className="flex justify-between items-center pt-2 border-t border-border/40">
+                        <span className="text-xs font-semibold text-muted-foreground">{orderItems.length}টি আইটেম</span>
+                        <span className="text-sm font-bold text-primary">সাবটোটাল: ৳{orderItems.reduce((s, i) => s + i.total_price, 0).toLocaleString()}</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
