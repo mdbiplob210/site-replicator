@@ -261,6 +261,25 @@ const CheckoutPage = () => {
         product_code: item.productCode,
       });
 
+      // Delete incomplete order after successful order
+      const sessionId = sessionStorage.getItem("checkout_session_id");
+      if (sessionId) {
+        supabase.from("incomplete_orders" as any)
+          .delete()
+          .eq("block_reason", "abandoned_form")
+          .eq("landing_page_slug", "website-store")
+          .ilike("user_agent", `%${sessionId}%`)
+          .then(() => {});
+      }
+      if (form.phone) {
+        supabase.from("incomplete_orders" as any)
+          .delete()
+          .eq("customer_phone", form.phone)
+          .eq("block_reason", "abandoned_form")
+          .eq("landing_page_slug", "website-store")
+          .then(() => {});
+      }
+
       // Store order info for success page
       sessionStorage.setItem("last_order", JSON.stringify({
         orderNumber, total, name: item.name, qty: item.qty,
