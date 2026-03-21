@@ -1115,34 +1115,33 @@ const AdminOrders = () => {
   };
 
   const openConvertAsNewOrder = (io: any) => {
+    const safeDeliveryCharge = normalizeNumberValue(io.delivery_charge);
+    const safeDiscount = normalizeNumberValue(io.discount);
+    const resolvedItem = buildIncompleteOrderItem(io);
+    const resolvedProductCost = resolvedItem?.total_price || Math.max(
+      0,
+      normalizeNumberValue(io.total_amount) - safeDeliveryCharge + safeDiscount
+    );
+    const resolvedTotalAmount = normalizeNumberValue(io.total_amount) || (resolvedProductCost + safeDeliveryCharge - safeDiscount);
+
     setCustomerName(io.customer_name || "");
     setCustomerPhone(io.customer_phone || "");
     setCustomerAddress(io.customer_address || "");
-    setDeliveryCharge(io.delivery_charge || 0);
-    setDiscount(io.discount || 0);
+    setDeliveryCharge(safeDeliveryCharge);
+    setDiscount(safeDiscount);
     setNotes(io.notes || `[Converted from incomplete] [LP: ${io.landing_page_slug || "unknown"}]`);
     setCourierNote("");
     setSelectedOrderSource("Failed Order");
     setNewOrderStatus("processing");
-    setProductCost(0);
-    setTotalAmount(0);
-    if (io.product_name) {
-      const matchedProduct = allProducts.find((p: any) => 
-        p.product_code === io.product_code || p.name === io.product_name
-      );
-      const unitPrice = io.unit_price || matchedProduct?.selling_price || 0;
-      const qty = io.quantity || 1;
-      setOrderItems([{
-        product_id: matchedProduct?.id || null,
-        product_name: io.product_name,
-        product_code: io.product_code || matchedProduct?.product_code || "",
-        quantity: qty,
-        unit_price: unitPrice,
-        total_price: unitPrice * qty,
-      }]);
+    setProductCost(resolvedProductCost);
+    setTotalAmount(resolvedTotalAmount);
+
+    if (resolvedItem) {
+      setOrderItems([resolvedItem]);
     } else {
       setOrderItems([]);
     }
+
     setConvertingIncompleteId(io.id);
     setNewOrderOpen(true);
   };
