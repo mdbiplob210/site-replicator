@@ -157,15 +157,20 @@ function tieredPricingSectionHtml(p: TemplateConfig, accentColor: string, isDark
   const saveColor = isDark ? '#66bb6a' : '#2e7d32';
   const checkBg = accentColor;
   const popularBg = `linear-gradient(135deg, ${accentColor}, ${accentColor}dd)`;
+  const freeDeliveryBg = isDark ? 'rgba(16,185,129,0.15)' : 'linear-gradient(135deg,#ecfdf5,#d1fae5)';
+  const freeDeliveryColor = isDark ? '#34d399' : '#059669';
+  const freeDeliveryBorder = isDark ? '#065f4633' : '#a7f3d0';
 
   return `
 <div id="tieredPricingSection" style="padding:0 16px;margin:20px 0">
   <style>
-    .tier-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-    @media(max-width:480px){.tier-grid{gap:6px}.tier-card{padding:10px 6px}.tier-label{font-size:12px}.tier-price{font-size:17px}.tier-per{font-size:9px}}
-    .tier-card{position:relative;border:2px solid ${borderDefault};border-radius:14px;padding:14px 10px;cursor:pointer;transition:all .3s ease;background:${bgCard};display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px}
-    .tier-card:hover{border-color:${accentColor}88;transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,0.1)}
+    .tier-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    @media(max-width:480px){.tier-grid{gap:6px}.tier-card{padding:10px 6px}.tier-label{font-size:12px}.tier-price{font-size:17px}.tier-per{font-size:9px}.tier-free-delivery{font-size:9px!important;padding:3px 6px!important}.tier-free-delivery svg{width:10px!important;height:10px!important}}
+    .tier-card{position:relative;border:2px solid ${borderDefault};border-radius:16px;padding:14px 10px;cursor:pointer;transition:all .3s cubic-bezier(.22,1,.36,1);background:${bgCard};display:flex;flex-direction:column;align-items:center;text-align:center;gap:5px;overflow:visible}
+    .tier-card:hover{border-color:${accentColor}88;transform:translateY(-3px);box-shadow:0 8px 25px rgba(0,0,0,0.12)}
     .tier-card.selected{border-color:${accentColor};background:${bgSelected};box-shadow:0 4px 20px ${accentColor}22}
+    .tier-card.has-free-delivery{border-color:${freeDeliveryBorder}}
+    .tier-card.has-free-delivery.selected{border-color:${accentColor}}
     .tier-radio{width:22px;height:22px;border-radius:50%;border:2px solid ${borderDefault};display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
     .tier-card.selected .tier-radio{border-color:${checkBg};background:${checkBg}}
     .tier-radio-dot{width:9px;height:9px;border-radius:50%;background:#fff;display:none}
@@ -175,6 +180,9 @@ function tieredPricingSectionHtml(p: TemplateConfig, accentColor: string, isDark
     .tier-per-piece{font-size:11px;color:${textSecondary}}
     .tier-save{display:inline-block;background:${saveBg};color:${saveColor};font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-top:2px}
     .tier-popular{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:${popularBg};color:#fff;font-size:9px;font-weight:700;padding:2px 10px;border-radius:20px;white-space:nowrap;letter-spacing:.3px}
+    .tier-free-delivery{display:inline-flex;align-items:center;gap:3px;background:${freeDeliveryBg};color:${freeDeliveryColor};font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;margin-top:3px;border:1px solid ${freeDeliveryBorder};animation:freeDeliveryPulse 2s ease-in-out infinite}
+    .tier-best-value{position:absolute;top:-10px;right:-6px;background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;font-size:8px;font-weight:800;padding:2px 8px;border-radius:10px;white-space:nowrap;letter-spacing:.3px;box-shadow:0 2px 8px rgba(239,68,68,0.3)}
+    @keyframes freeDeliveryPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.85;transform:scale(1.02)}}
   </style>
 
   <div class="tier-grid">
@@ -185,21 +193,24 @@ function tieredPricingSectionHtml(p: TemplateConfig, accentColor: string, isDark
       <div class="tier-per-piece">প্রতি পিস ৳${t1}</div>
     </div>
 
-    <div class="tier-card" onclick="selectTier(2)" id="tierCard2">
+    <div class="tier-card has-free-delivery" onclick="selectTier(2)" id="tierCard2">
       <div class="tier-popular">🔥 জনপ্রিয়</div>
       <div class="tier-radio"><div class="tier-radio-dot"></div></div>
       <div class="tier-label">${p.tieredLabel2 || '২ পিস'}</div>
       <div class="tier-price">৳${t2}</div>
       <div class="tier-per-piece">প্রতি পিস ৳${Math.round(t2/2)}</div>
       ${t2 < t1*2 ? `<div class="tier-save">সেভ ৳${t1*2-t2}</div>` : ''}
+      <div class="tier-free-delivery"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>ফ্রি ডেলিভারি</div>
     </div>
 
-    <div class="tier-card" onclick="selectTier(3)" id="tierCard3">
+    <div class="tier-card has-free-delivery" onclick="selectTier(3)" id="tierCard3">
+      <div class="tier-best-value">💎 বেস্ট ভ্যালু</div>
       <div class="tier-radio"><div class="tier-radio-dot"></div></div>
       <div class="tier-label">${p.tieredLabel3 || '৩ পিস'}</div>
       <div class="tier-price">৳${t3}</div>
       <div class="tier-per-piece">প্রতি পিস ৳${Math.round(t3/3)}</div>
       ${t3 < t1*3 ? `<div class="tier-save">সেভ ৳${t1*3-t3}</div>` : ''}
+      <div class="tier-free-delivery"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>ফ্রি ডেলিভারি</div>
     </div>
   </div>
 </div>
