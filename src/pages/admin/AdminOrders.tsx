@@ -3903,23 +3903,55 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                     {bdCourierLoading ? "Checking..." : "Check"}
                   </Button>
                 </div>
-                {bdCourierData?.status === "success" && bdCourierData.data?.couriers?.length > 0 && (
-                  <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground">এই নম্বরে যেসব কুরিয়ারে পার্সেল পাওয়া গেছে:</p>
-                    <div className="flex flex-wrap gap-2">
-                      {bdCourierData.data.couriers.map((c: any, i: number) => (
-                        <div key={i} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-background border border-border/40">
-                          {c.logo && <img src={c.logo} alt={c.name} className="h-5 w-5 rounded object-contain" />}
-                          <span className="text-xs font-semibold">{c.name}</span>
-                          <Badge variant={c.status === "active" ? "default" : "secondary"} className="text-[10px] h-4">{c.status}</Badge>
+                {bdCourierData?.status === "success" && bdCourierData.data && (() => {
+                  const couriers = Object.entries(bdCourierData.data)
+                    .filter(([key]) => key !== "summary")
+                    .map(([, val]: [string, any]) => val)
+                    .filter((c: any) => c.total_parcel > 0);
+                  const summary = bdCourierData.data.summary;
+                  if (couriers.length === 0) return (
+                    <p className="text-xs text-muted-foreground italic">এই নম্বরে কোনো কুরিয়ার রেকর্ড পাওয়া যায়নি।</p>
+                  );
+                  return (
+                    <div className="space-y-3">
+                      {summary && (
+                        <div className="grid grid-cols-3 gap-2">
+                          <div className="text-center p-2 rounded-lg bg-background border border-border/40">
+                            <p className="text-lg font-bold text-foreground">{summary.total_parcel}</p>
+                            <p className="text-[10px] text-muted-foreground">Total</p>
+                          </div>
+                          <div className="text-center p-2 rounded-lg bg-green-500/10 border border-green-500/20">
+                            <p className="text-lg font-bold text-green-600">{summary.success_parcel}</p>
+                            <p className="text-[10px] text-muted-foreground">Success</p>
+                          </div>
+                          <div className="text-center p-2 rounded-lg bg-red-500/10 border border-red-500/20">
+                            <p className="text-lg font-bold text-red-600">{summary.cancelled_parcel}</p>
+                            <p className="text-[10px] text-muted-foreground">Cancel</p>
+                          </div>
                         </div>
-                      ))}
+                      )}
+                      {summary && (
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+                            <div className="h-full rounded-full bg-green-500" style={{ width: `${summary.success_ratio}%` }} />
+                          </div>
+                          <span className="text-xs font-bold text-green-600">{summary.success_ratio}%</span>
+                        </div>
+                      )}
+                      <div className="space-y-1.5">
+                        {couriers.map((c: any, i: number) => (
+                          <div key={i} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-background border border-border/40">
+                            {c.logo && <img src={c.logo} alt={c.name} className="h-5 w-5 rounded object-contain" />}
+                            <span className="text-xs font-semibold flex-1">{c.name}</span>
+                            <span className="text-[10px] text-green-600">{c.success_parcel}✓</span>
+                            <span className="text-[10px] text-red-500">{c.cancelled_parcel}✗</span>
+                            <Badge variant={c.success_ratio >= 80 ? "default" : "destructive"} className="text-[10px] h-4">{c.success_ratio}%</Badge>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
-                {bdCourierData?.status === "success" && (!bdCourierData.data?.couriers || bdCourierData.data.couriers.length === 0) && (
-                  <p className="text-xs text-muted-foreground italic">এই নম্বরে কোনো কুরিয়ার রেকর্ড পাওয়া যায়নি।</p>
-                )}
+                  );
+                })()}
                 {bdCourierData?.status === "error" && (
                   <p className="text-xs text-destructive">{bdCourierData.message || "API error"}</p>
                 )}
