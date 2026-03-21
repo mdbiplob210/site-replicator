@@ -678,33 +678,78 @@ export type Database = {
       }
       landing_page_events: {
         Row: {
+          browser: string | null
+          city: string | null
+          country: string | null
           created_at: string
+          device_type: string | null
           event_name: string | null
           event_type: string
           id: string
           landing_page_id: string
+          os: string | null
           referrer: string | null
+          screen_height: number | null
+          screen_width: number | null
+          scroll_depth: number | null
+          session_id: string | null
+          time_on_page: number | null
           user_agent: string | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
           visitor_id: string | null
         }
         Insert: {
+          browser?: string | null
+          city?: string | null
+          country?: string | null
           created_at?: string
+          device_type?: string | null
           event_name?: string | null
           event_type?: string
           id?: string
           landing_page_id: string
+          os?: string | null
           referrer?: string | null
+          screen_height?: number | null
+          screen_width?: number | null
+          scroll_depth?: number | null
+          session_id?: string | null
+          time_on_page?: number | null
           user_agent?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
           visitor_id?: string | null
         }
         Update: {
+          browser?: string | null
+          city?: string | null
+          country?: string | null
           created_at?: string
+          device_type?: string | null
           event_name?: string | null
           event_type?: string
           id?: string
           landing_page_id?: string
+          os?: string | null
           referrer?: string | null
+          screen_height?: number | null
+          screen_width?: number | null
+          scroll_depth?: number | null
+          session_id?: string | null
+          time_on_page?: number | null
           user_agent?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
           visitor_id?: string | null
         }
         Relationships: [
