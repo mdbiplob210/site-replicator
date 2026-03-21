@@ -42,6 +42,7 @@ import {
 } from "@/hooks/useIncompleteOrders";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
 import { CourierSettingsView } from "@/components/admin/courier/CourierSettingsView";
+import { CourierSuccessRate } from "@/components/admin/courier/CourierSuccessRate";
 import { FakeOrderDetection } from "@/components/admin/fraud/FakeOrderDetection";
 import { useBulkMemoPrint } from "@/components/admin/courier/BulkMemoPrint";
 import { useCourierCities, useCourierZones, useCourierAreas } from "@/hooks/useCourierLocations";
@@ -1593,6 +1594,11 @@ const AdminOrders = () => {
                       </div>
                     </div>
                   </div>
+
+                  {/* Courier Success Rate - auto loads on phone */}
+                  {customerPhone && customerPhone.length >= 11 && (
+                    <CourierSuccessRate phone={customerPhone} compact />
+                  )}
 
                   {/* Fraud Check & Old Orders by Phone */}
                   {customerPhone && customerPhone.length >= 6 && (
@@ -3241,8 +3247,6 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
   const [detailProductSearch, setDetailProductSearch] = useState("");
   const [detailProductFocused, setDetailProductFocused] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [bdCourierData, setBdCourierData] = useState<Record<string, any>>({});
-  const [bdCourierLoading, setBdCourierLoading] = useState(false);
 
   // Courier selection for edit
   const [editCourierId, setEditCourierId] = useState<string | null>(null);
@@ -3649,6 +3653,9 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
               </div>
             </div>
 
+            {/* Courier Success Rate - auto loads */}
+            <CourierSuccessRate phone={editPhone} />
+
             {/* Old orders by phone */}
             {detailOldOrders.length > 0 && (
               <div className="p-3 rounded-xl border border-border/60 bg-secondary/20">
@@ -3870,94 +3877,7 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
               </div>
             )}
 
-            {/* BD Courier Check - Track by Phone */}
-            {order.customer_phone && (
-              <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20 space-y-3">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                    <div className="h-6 w-6 rounded-lg bg-amber-500/10 flex items-center justify-center"><Truck className="h-3.5 w-3.5 text-amber-500" /></div>
-                    Courier Detection
-                  </h3>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="rounded-lg h-7 text-xs gap-1"
-                    disabled={bdCourierLoading}
-                    onClick={async () => {
-                      setBdCourierLoading(true);
-                      setBdCourierData(prev => ({ ...prev, [order.id]: null }));
-                      try {
-                        const { data: result, error } = await supabase.functions.invoke("bd-courier-check", {
-                          body: { phone: order.customer_phone },
-                        });
-                        if (error) throw error;
-                        setBdCourierData(prev => ({ ...prev, [order.id]: result }));
-                      } catch (err: any) {
-                        toast.error("Courier check failed: " + err.message);
-                      } finally {
-                        setBdCourierLoading(false);
-                      }
-                    }}
-                  >
-                    {bdCourierLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Search className="h-3 w-3" />}
-                    {bdCourierLoading ? "Checking..." : "Check"}
-                  </Button>
-                </div>
-                {bdCourierData[order.id]?.status === "success" && bdCourierData[order.id].data && (() => {
-                  const courierResult = bdCourierData[order.id];
-                  const couriers = Object.entries(courierResult.data)
-                    .filter(([key]) => key !== "summary")
-                    .map(([, val]: [string, any]) => val)
-                    .filter((c: any) => c.total_parcel > 0);
-                  const summary = courierResult.data.summary;
-                  if (couriers.length === 0) return (
-                    <p className="text-xs text-muted-foreground italic">এই নম্বরে কোনো কুরিয়ার রেকর্ড পাওয়া যায়নি।</p>
-                  );
-                  return (
-                    <div className="space-y-3">
-                      {summary && (
-                        <div className="grid grid-cols-3 gap-2">
-                          <div className="text-center p-2 rounded-lg bg-background border border-border/40">
-                            <p className="text-lg font-bold text-foreground">{summary.total_parcel}</p>
-                            <p className="text-[10px] text-muted-foreground">Total</p>
-                          </div>
-                          <div className="text-center p-2 rounded-lg bg-green-500/10 border border-green-500/20">
-                            <p className="text-lg font-bold text-green-600">{summary.success_parcel}</p>
-                            <p className="text-[10px] text-muted-foreground">Success</p>
-                          </div>
-                          <div className="text-center p-2 rounded-lg bg-red-500/10 border border-red-500/20">
-                            <p className="text-lg font-bold text-red-600">{summary.cancelled_parcel}</p>
-                            <p className="text-[10px] text-muted-foreground">Cancel</p>
-                          </div>
-                        </div>
-                      )}
-                      {summary && (
-                        <div className="flex items-center gap-2">
-                          <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
-                            <div className="h-full rounded-full bg-green-500" style={{ width: `${summary.success_ratio}%` }} />
-                          </div>
-                          <span className="text-xs font-bold text-green-600">{summary.success_ratio}%</span>
-                        </div>
-                      )}
-                      <div className="space-y-1.5">
-                        {couriers.map((c: any, i: number) => (
-                          <div key={i} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-background border border-border/40">
-                            {c.logo && <img src={c.logo} alt={c.name} className="h-5 w-5 rounded object-contain" />}
-                            <span className="text-xs font-semibold flex-1">{c.name}</span>
-                            <span className="text-[10px] text-green-600">{c.success_parcel}✓</span>
-                            <span className="text-[10px] text-red-500">{c.cancelled_parcel}✗</span>
-                            <Badge variant={c.success_ratio >= 80 ? "default" : "destructive"} className="text-[10px] h-4">{c.success_ratio}%</Badge>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })()}
-                {bdCourierData[order.id]?.status === "error" && (
-                  <p className="text-xs text-destructive">{bdCourierData[order.id].message || "API error"}</p>
-                )}
-              </div>
-            )}
+            {/* BD Courier Check removed - now using CourierSuccessRate component above */}
             <div className="space-y-3">
               <Label className="text-xs font-semibold">প্রোডাক্ট যোগ করুন</Label>
               <div className="relative">
@@ -4579,6 +4499,9 @@ function IncompleteOrderCard({ io, activeIncompleteTab, onConvert, deleteIncompl
             🚫 {io.block_reason}
           </p>
           <p className="text-xs text-muted-foreground">{format(new Date(io.created_at), "dd MMM yyyy, hh:mm a")}</p>
+
+          {/* Courier Success Rate */}
+          {io.customer_phone && <CourierSuccessRate phone={io.customer_phone} compact />}
 
           {/* Notes display */}
           {io.notes && (
