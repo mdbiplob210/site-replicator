@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import {
   BarChart3, Eye, MousePointerClick, Target, TrendingUp, Download, Activity,
