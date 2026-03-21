@@ -1048,13 +1048,15 @@ const AdminOrders = () => {
       const matchedProduct = allProducts.find((p: any) => 
         p.product_code === io.product_code || p.name === io.product_name
       );
+      const unitPrice = io.unit_price || matchedProduct?.selling_price || 0;
+      const qty = io.quantity || 1;
       setOrderItems([{
         product_id: matchedProduct?.id || null,
         product_name: io.product_name,
-        product_code: io.product_code || "",
-        quantity: io.quantity || 1,
-        unit_price: io.unit_price || 0,
-        total_price: (io.unit_price || 0) * (io.quantity || 1),
+        product_code: io.product_code || matchedProduct?.product_code || "",
+        quantity: qty,
+        unit_price: unitPrice,
+        total_price: unitPrice * qty,
       }]);
     } else {
       setOrderItems([]);
