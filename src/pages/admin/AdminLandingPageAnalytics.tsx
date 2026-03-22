@@ -51,11 +51,17 @@ export default function AdminLandingPageAnalytics() {
   const { data: cohortData } = useLandingPageCohort(pageFilter, 4);
   const { data: feedData } = useLandingPageRealtimeFeed(pageFilter);
 
-  const totalViews = summaries?.reduce((s, p) => s + p.views, 0) || 0;
-  const totalClicks = summaries?.reduce((s, p) => s + p.clicks, 0) || 0;
-  const totalConversions = summaries?.reduce((s, p) => s + p.conversions, 0) || 0;
+  const filteredSummaries = useMemo(() => {
+    if (!summaries) return [];
+    if (!pageFilter) return summaries;
+    return summaries.filter((s) => s.landing_page_id === pageFilter);
+  }, [summaries, pageFilter]);
+
+  const totalViews = filteredSummaries.reduce((s, p) => s + p.views, 0);
+  const totalClicks = filteredSummaries.reduce((s, p) => s + p.clicks, 0);
+  const totalConversions = filteredSummaries.reduce((s, p) => s + p.conversions, 0);
   const avgCtr = totalViews > 0 ? (totalClicks / totalViews) * 100 : 0;
-  const avgBounce = summaries && summaries.length > 0 ? summaries.reduce((s, p) => s + p.bounceRate, 0) / summaries.length : 0;
+  const avgBounce = filteredSummaries.length > 0 ? filteredSummaries.reduce((s, p) => s + p.bounceRate, 0) / filteredSummaries.length : 0;
 
   const handleExportCSV = () => {
     if (!allEvents || allEvents.length === 0) { toast.error("কোনো ডেটা নেই"); return; }
@@ -193,7 +199,7 @@ export default function AdminLandingPageAnalytics() {
             <Card>
               <CardHeader><CardTitle className="text-base">পেজ পারফরম্যান্স</CardTitle></CardHeader>
               <CardContent className="overflow-x-auto">
-                {summaries && summaries.length > 0 ? (
+                {filteredSummaries.length > 0 ? (
                   <table className="w-full text-sm">
                     <thead><tr className="border-b text-muted-foreground text-xs">
                       <th className="text-left py-2 px-2">পেজ</th>
@@ -202,7 +208,7 @@ export default function AdminLandingPageAnalytics() {
                       <th className="text-right py-2 px-2">কনভ.%</th><th className="text-right py-2 px-2">বাউন্স</th>
                       <th className="text-right py-2 px-2">সময়</th>
                     </tr></thead>
-                    <tbody>{summaries.map((s) => (
+                    <tbody>{filteredSummaries.map((s) => (
                       <tr key={s.landing_page_id} className="border-b last:border-0 hover:bg-muted/50">
                         <td className="py-2 px-2"><p className="font-medium text-foreground truncate max-w-[120px]">{s.title}</p><p className="text-xs text-muted-foreground font-mono">/lp/{s.slug}</p></td>
                         <td className="text-right py-2 px-2 font-medium">{s.views}</td>
@@ -606,7 +612,7 @@ export default function AdminLandingPageAnalytics() {
 
           {/* ══════ AI Insights ══════ */}
           <TabsContent value="ai" className="space-y-4">
-            <AnalyticsAIInsights summaries={summaries} funnelData={funnelData} cohortData={cohortData} utmData={utmData} />
+            <AnalyticsAIInsights summaries={filteredSummaries} funnelData={funnelData} cohortData={cohortData} utmData={utmData} />
           </TabsContent>
         </Tabs>
       </div>
