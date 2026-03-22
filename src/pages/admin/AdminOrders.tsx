@@ -408,21 +408,29 @@ const AdminOrders = () => {
     return map;
   }, [orderAssignments, profileNameMap]);
 
-  // Customer delivery stats by phone for courier column
-  const customerStatsByPhone = useMemo(() => {
-    const phoneMap: Record<string, { total: number; success: number; failed: number; confirmed: number; isNew: boolean }> = {};
-    orders.forEach((o) => {
-      const phone = o.customer_phone;
-      if (!phone) return;
-      if (!phoneMap[phone]) phoneMap[phone] = { total: 0, success: 0, failed: 0, confirmed: 0, isNew: true };
-      phoneMap[phone].total++;
-      if (o.status === "delivered") phoneMap[phone].success++;
-      if (o.status === "returned" || o.status === "cancelled") phoneMap[phone].failed++;
-      if (o.status === "confirmed") phoneMap[phone].confirmed++;
-      phoneMap[phone].isNew = phoneMap[phone].total <= 1;
-    });
-    return phoneMap;
-  }, [orders]);
+  // Customer delivery stats by phone — fetch ALL orders (not just current filter)
+  const { data: customerStatsByPhone = {} } = useQuery({
+    queryKey: ["customer-stats-by-phone"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("orders")
+        .select("customer_phone, status");
+      if (error) throw error;
+      const phoneMap: Record<string, { total: number; success: number; failed: number; confirmed: number; isNew: boolean }> = {};
+      (data || []).forEach((o: any) => {
+        const phone = o.customer_phone;
+        if (!phone) return;
+        if (!phoneMap[phone]) phoneMap[phone] = { total: 0, success: 0, failed: 0, confirmed: 0, isNew: true };
+        phoneMap[phone].total++;
+        if (o.status === "delivered") phoneMap[phone].success++;
+        if (o.status === "returned" || o.status === "cancelled") phoneMap[phone].failed++;
+        if (o.status === "confirmed") phoneMap[phone].confirmed++;
+        phoneMap[phone].isNew = phoneMap[phone].total <= 1;
+      });
+      return phoneMap;
+    },
+    staleTime: 60000,
+  });
 
   // Build product image lookup from allProducts
   const productImageMap = useMemo(() => {
