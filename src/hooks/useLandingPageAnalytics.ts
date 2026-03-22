@@ -34,6 +34,7 @@ export interface PageAnalyticsSummary {
   slug: string;
   views: number;
   clicks: number;
+  orderClicks: number;
   conversions: number;
   ctr: number;
   conversionRate: number;
