@@ -1079,27 +1079,85 @@ const AdminOrders = () => {
     let successCount = 0;
     let failCount = 0;
     
-    for (const orderId of selectedOrderIds) {
+    // Try API-based bulk submit first
+    const provider = courierProviders?.find((p: any) => p.id === courierId);
+    const hasApiConfig = provider?.api_configs?.length > 0 && provider?.api_configs[0]?.api_key;
+    
+    if (hasApiConfig) {
       try {
-        // Upsert courier_orders record
-        const { error: courierError } = await supabase.from("courier_orders").upsert({
-          order_id: orderId,
-          courier_provider_id: courierId,
-          courier_status: "submitted",
-        } as any, { onConflict: "order_id" });
-        if (courierError) throw courierError;
+        const { data: session } = await supabase.auth.getSession();
+        const token = session?.session?.access_token;
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const apikey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+        const resp = await fetch(`${supabaseUrl}/functions/v1/courier-submit`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": apikey,
+            "Authorization": `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            action: "bulk-submit",
+            provider_id: courierId,
+            order_ids: Array.from(selectedOrderIds),
+          }),
+        });
+        const result = await resp.json();
         
-        // Update order status to in_courier
-        const { error: statusError } = await supabase.from("orders").update({ status: "in_courier" as any }).eq("id", orderId);
-        if (statusError) throw statusError;
-        
-        // Log activity
-        logActivity(orderId, "status_changed", "status", "", "In Courier", "বাল্ক কুরিয়ার সাবমিট");
-        successCount++;
+        if (result.results) {
+          for (const r of result.results) {
+            if (r.success) {
+              successCount++;
+              logActivity(r.order_id, "status_changed", "status", "", "In Courier", `API কুরিয়ার সাবমিট (${provider?.slug})`);
+            } else {
+              failCount++;
+            }
+            setBulkCourierProgress(prev => ({ ...prev, done: prev.done + 1 }));
+          }
+        }
       } catch {
-        failCount++;
+        // Fallback to manual if API fails
+        failCount = 0;
+        successCount = 0;
+        setBulkCourierProgress({ done: 0, total });
+        for (const orderId of selectedOrderIds) {
+          try {
+            const { error: courierError } = await supabase.from("courier_orders").upsert({
+              order_id: orderId,
+              courier_provider_id: courierId,
+              courier_status: "submitted",
+            } as any, { onConflict: "order_id" });
+            if (courierError) throw courierError;
+            const { error: statusError } = await supabase.from("orders").update({ status: "in_courier" as any }).eq("id", orderId);
+            if (statusError) throw statusError;
+            logActivity(orderId, "status_changed", "status", "", "In Courier", "বাল্ক কুরিয়ার সাবমিট");
+            successCount++;
+          } catch {
+            failCount++;
+          }
+          setBulkCourierProgress(prev => ({ ...prev, done: prev.done + 1 }));
+        }
       }
-      setBulkCourierProgress(prev => ({ ...prev, done: prev.done + 1 }));
+    } else {
+      // No API config - manual DB-only submission
+      for (const orderId of selectedOrderIds) {
+        try {
+          const { error: courierError } = await supabase.from("courier_orders").upsert({
+            order_id: orderId,
+            courier_provider_id: courierId,
+            courier_status: "submitted",
+          } as any, { onConflict: "order_id" });
+          if (courierError) throw courierError;
+          const { error: statusError } = await supabase.from("orders").update({ status: "in_courier" as any }).eq("id", orderId);
+          if (statusError) throw statusError;
+          logActivity(orderId, "status_changed", "status", "", "In Courier", "বাল্ক কুরিয়ার সাবমিট");
+          successCount++;
+        } catch {
+          failCount++;
+        }
+        setBulkCourierProgress(prev => ({ ...prev, done: prev.done + 1 }));
+      }
     }
     
     queryClient.invalidateQueries({ queryKey: ["orders"] });
