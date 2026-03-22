@@ -3727,6 +3727,13 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
   const { data: editCourierCities = [], isLoading: editCitiesLoading } = useCourierCities(editCourierId);
   const { data: editCourierZones = [], isLoading: editZonesLoading } = useCourierZones(editCourierId, editCourierCityId);
   const { data: editCourierAreas = [], isLoading: editAreasLoading } = useCourierAreas(editCourierId, editCourierZoneId);
+  const editSelectedCourier = useMemo(
+    () => editCourierProviders.find((provider: any) => provider.id === editCourierId) || null,
+    [editCourierProviders, editCourierId],
+  );
+  const lastEditAutoCityIdRef = useRef<string | null>(null);
+  const lastEditAutoZoneIdRef = useRef<string | null>(null);
+  const isEditPathaoCourier = editSelectedCourier?.slug === "pathao";
   const [editStatus, setEditStatus] = useState<string>("");
   const [detailCancelDialogOpen, setDetailCancelDialogOpen] = useState(false);
   const [detailCancelReason, setDetailCancelReason] = useState("");
@@ -3838,6 +3845,62 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
     const area = bdThanaList.find(t => addr.includes(t.toLowerCase())) || "";
     return { city, zone, area };
   }, [editAddress]);
+
+  useEffect(() => {
+    if (!isEditPathaoCourier || !editAddress.trim() || editCitiesLoading || editCourierCities.length === 0) {
+      return;
+    }
+
+    const canAutoUpdateCity = !editCourierCityId || editCourierCityId === lastEditAutoCityIdRef.current;
+    if (!canAutoUpdateCity) return;
+
+    const matchedCity = findBestLocationMatch(editAddress, editCourierCities as Array<{ id: string | number; name: string }>);
+
+    if (matchedCity) {
+      const nextCityId = String(matchedCity.id);
+      if (editCourierCityId !== nextCityId) {
+        setEditCourierCityId(nextCityId);
+        setEditCourierZoneId(null);
+        setEditCourierAreaId(null);
+      }
+      lastEditAutoCityIdRef.current = nextCityId;
+      return;
+    }
+
+    if (editCourierCityId && editCourierCityId === lastEditAutoCityIdRef.current) {
+      setEditCourierCityId(null);
+      setEditCourierZoneId(null);
+      setEditCourierAreaId(null);
+    }
+    lastEditAutoCityIdRef.current = null;
+  }, [editAddress, editCitiesLoading, editCourierCities, editCourierCityId, isEditPathaoCourier]);
+
+  useEffect(() => {
+    if (!isEditPathaoCourier || !editCourierCityId || !editAddress.trim() || editZonesLoading || editCourierZones.length === 0) {
+      return;
+    }
+
+    const canAutoUpdateZone = !editCourierZoneId || editCourierZoneId === lastEditAutoZoneIdRef.current;
+    if (!canAutoUpdateZone) return;
+
+    const matchedZone = findBestLocationMatch(editAddress, editCourierZones as Array<{ id: string | number; name: string }>);
+
+    if (matchedZone) {
+      const nextZoneId = String(matchedZone.id);
+      if (editCourierZoneId !== nextZoneId) {
+        setEditCourierZoneId(nextZoneId);
+        setEditCourierAreaId(null);
+      }
+      lastEditAutoZoneIdRef.current = nextZoneId;
+      return;
+    }
+
+    if (editCourierZoneId && editCourierZoneId === lastEditAutoZoneIdRef.current) {
+      setEditCourierZoneId(null);
+      setEditCourierAreaId(null);
+    }
+    lastEditAutoZoneIdRef.current = null;
+  }, [editAddress, editCourierCityId, editCourierZoneId, editCourierZones, editZonesLoading, isEditPathaoCourier]);
 
   // Product search for detail dialog
   const { data: allOrderItemsForSales = [] } = useQuery({
