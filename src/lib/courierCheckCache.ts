@@ -1,8 +1,7 @@
 // Shared courier check fetcher — single cache, direct fetch for speed
 import { supabase } from "@/integrations/supabase/client";
 
-const cache: Record<string, { d: any; t: number }> = {};
-const TTL = 30 * 60 * 1000;
+const cache: Record<string, { d: any }> = {};
 const inflight: Record<string, Promise<any>> = {};
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;

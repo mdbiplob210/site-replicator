@@ -31,12 +31,10 @@ async function fetchFromApi(phone: string, signal?: AbortSignal): Promise<{ data
 }
 
 async function fetchFromCache(phone: string): Promise<any | null> {
-  const ttlCutoff = new Date(Date.now() - CACHE_TTL_DAYS * 86400000).toISOString();
   const { data: cached } = await supabase
     .from("courier_check_cache")
     .select("response_data")
     .eq("phone", phone)
-    .gte("created_at", ttlCutoff)
     .limit(1)
     .maybeSingle();
   return cached?.response_data ?? null;
