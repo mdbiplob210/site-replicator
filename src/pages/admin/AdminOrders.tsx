@@ -1206,6 +1206,7 @@ const AdminOrders = () => {
   const resetForm = () => {
     setCustomerName("");
     setCustomerPhone("");
+    setSearchedPhone("");
     setCustomerAddress("");
     setTotalAmount(0);
     setDeliveryCharge(0);
