@@ -528,13 +528,12 @@ ttq.page();
     }, _utm, extra || {});
     var body = JSON.stringify(payload);
     // Use fetch for view events (most reliable), sendBeacon for exit/scroll
-    if (eventType === 'view' || eventType === 'conversion') {
+    if (eventType === 'view' || eventType === 'conversion' || eventType === 'click') {
       fetch(TRACK_URL, {method:'POST', headers:{'Content-Type':'application/json','apikey':ANON,'Authorization':'Bearer '+ANON}, body:body}).catch(function(){});
     } else {
       var sent = false;
       try {
         if (navigator.sendBeacon) {
-          // Use text/plain to avoid CORS preflight issues with sendBeacon
           sent = navigator.sendBeacon(TRACK_URL + '?apikey=' + ANON, new Blob([body], {type: 'text/plain'}));
         }
       } catch(e) {}
