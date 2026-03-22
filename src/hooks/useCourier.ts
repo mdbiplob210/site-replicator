@@ -21,6 +21,11 @@ export type ApiConfig = {
   secret_key?: string;
   client_id?: string;
   store_id?: string;
+  email?: string;
+  password?: string;
+  default_store_name?: string;
+  default_parcel_type?: string;
+  invoice_prefix?: string;
   extra?: Record<string, string>;
 };
 
