@@ -455,6 +455,8 @@ Deno.serve(async (req) => {
           event_type: "conversion",
           event_name: "Order",
           visitor_id: body.visitor_id || null,
+          session_id: body.session_id || null,
+          device_type: body.device_type || null,
         });
 
         // Fire server-side Purchase CAPI event if page has its own access token
