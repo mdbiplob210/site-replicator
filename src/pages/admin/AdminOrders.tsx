@@ -1421,7 +1421,7 @@ const AdminOrders = () => {
                 <p className="text-sm text-muted-foreground">২৪ ঘণ্টার মধ্যে ব্লক হওয়া ও abandoned অর্ডারসমূহ</p>
               </div>
             </div>
-            <Badge variant="secondary" className="ml-auto">{incompleteCounts.total || 0} মোট</Badge>
+            <Badge variant="secondary" className="ml-auto">{(incompleteCounts as Record<string, number>).processing || 0} Processing</Badge>
           </div>
 
           {/* Source filter: All / IP Blocked / Abandoned Form */}
@@ -1644,10 +1644,64 @@ const AdminOrders = () => {
                   <div className="flex justify-between text-sm"><span>ডিসকাউন্ট</span><span>-৳{discount}</span></div>
                   <div className="border-t mt-2 pt-2 flex justify-between font-bold"><span>মোট</span><span>৳{(itemsTotal + deliveryCharge - discount).toLocaleString()}</span></div>
                 </div>
+                {/* Order Status */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold flex items-center gap-1.5"><Activity className="h-4 w-4 text-primary" /> অর্ডার স্ট্যাটাস</Label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { value: "processing", label: "New Order", color: "bg-blue-500", icon: Clock },
+                      { value: "confirmed", label: "Confirmed", color: "bg-emerald-600", icon: CheckCircle2 },
+                      { value: "on_hold", label: "Hold", color: "bg-yellow-500", icon: PauseCircle },
+                      { value: "hand_delivery", label: "Hand Delivery", color: "bg-cyan-500", icon: Hand },
+                      { value: "cancelled", label: "Cancelled", color: "bg-red-500", icon: XCircle },
+                    ].map((s) => (
+                      <button
+                        key={s.value}
+                        type="button"
+                        onClick={() => setNewOrderStatus(s.value)}
+                        className={cn(
+                          "flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold border-2 transition-all duration-200",
+                          newOrderStatus === s.value
+                            ? `${s.color} text-white border-transparent shadow-lg scale-[1.02]`
+                            : "bg-secondary/30 text-foreground border-border/40 hover:border-primary/30 hover:bg-secondary/50"
+                        )}
+                      >
+                        <s.icon className="h-3.5 w-3.5" />
+                        {s.label}
+                      </button>
+                    ))}
+                  </div>
+                  {newOrderStatus === "cancelled" && (
+                    <div className="space-y-2 p-3 rounded-xl border border-destructive/30 bg-destructive/5">
+                      <Label className="text-xs font-semibold text-destructive flex items-center gap-1"><XCircle className="h-3.5 w-3.5" /> ক্যান্সেল কারণ</Label>
+                      {CANCEL_REASONS.map((reason) => (
+                        <label key={reason} className={cn(
+                          "flex items-center gap-2 p-2 rounded-lg border cursor-pointer text-xs transition-all",
+                          newOrderCancelReason === reason ? "border-destructive bg-destructive/10" : "border-border/40 hover:bg-secondary/30"
+                        )}>
+                          <input type="radio" name="convert_cancel_reason" className="accent-destructive" checked={newOrderCancelReason === reason} onChange={() => setNewOrderCancelReason(reason)} />
+                          {reason}
+                        </label>
+                      ))}
+                      <label className={cn(
+                        "flex items-center gap-2 p-2 rounded-lg border cursor-pointer text-xs transition-all",
+                        newOrderCancelReason === "others" ? "border-destructive bg-destructive/10" : "border-border/40 hover:bg-secondary/30"
+                      )}>
+                        <input type="radio" name="convert_cancel_reason" className="accent-destructive" checked={newOrderCancelReason === "others"} onChange={() => setNewOrderCancelReason("others")} />
+                        Others (নিজে লিখুন)
+                      </label>
+                      {newOrderCancelReason === "others" && (
+                        <Textarea placeholder="ক্যান্সেলের কারণ লিখুন..." className="rounded-lg text-xs" rows={2} value={newOrderCancelCustom} onChange={(e) => setNewOrderCancelCustom(e.target.value)} />
+                      )}
+                    </div>
+                  )}
+                </div>
                 <Button className="w-full rounded-xl shadow-sm" onClick={handleCreateOrder} disabled={createOrder.isPending || !customerName.trim()}>
                   {createOrder.isPending 
                     ? <><Loader2 className="h-4 w-4 animate-spin" /> কনভার্ট হচ্ছে...</>
-                    : <><GitMerge className="h-4 w-4" /> অর্ডারে কনভার্ট করুন</>
+                    : newOrderStatus !== "processing"
+                      ? <><GitMerge className="h-4 w-4" /> কনভার্ট করুন ও স্ট্যাটাস আপডেট করুন</>
+                      : <><GitMerge className="h-4 w-4" /> অর্ডারে কনভার্ট করুন</>
                   }
                 </Button>
               </div>
@@ -1684,10 +1738,10 @@ const AdminOrders = () => {
             <Button variant="outline" size="sm" className="relative gap-1.5 sm:gap-2 rounded-xl border-border/60 shadow-sm hover:shadow text-xs sm:text-sm" onClick={() => setCurrentView("incomplete")}>
               <AlertCircle className="h-3.5 sm:h-4 w-3.5 sm:w-4 text-amber-500" /> <span className="hidden xs:inline">Incomplete</span><span className="xs:hidden">Inc.</span>
               {(() => {
-                const totalIncomplete = (incompleteCounts as Record<string, number>).total || 0;
-                return totalIncomplete > 0 ? (
+                const processingCount = (incompleteCounts as Record<string, number>).processing || 0;
+                return processingCount > 0 ? (
                   <span className="absolute -top-2.5 -right-2.5 flex items-center justify-center min-w-[22px] h-[22px] px-1 rounded-full bg-red-600 text-white text-[11px] font-bold shadow-lg shadow-red-500/30 animate-pulse">
-                    {totalIncomplete}
+                    {processingCount}
                   </span>
                 ) : null;
               })()}
