@@ -162,11 +162,11 @@ export function useOrderCounts(dateFilter: OrderDateFilter = "all", customFrom?:
     queryKey: ["order-counts", dateFilter, customFrom?.toISOString(), customTo?.toISOString()],
     queryFn: async () => {
       const range = getOrderDateRange(dateFilter, customFrom, customTo);
-      let allData: { status: OrderStatus }[] = [];
+      let allData: { status: OrderStatus; deleted_at: string | null }[] = [];
       let from = 0;
       const pageSize = 1000;
       while (true) {
-        let query = supabase.from("orders").select("status").range(from, from + pageSize - 1);
+        let query = supabase.from("orders").select("status, deleted_at").range(from, from + pageSize - 1);
         if (range.from) query = query.gte("created_at", range.from);
         if (range.to) query = query.lt("created_at", range.to);
 
@@ -178,8 +178,12 @@ export function useOrderCounts(dateFilter: OrderDateFilter = "all", customFrom?:
         from += pageSize;
       }
 
-      const counts: Record<string, number> = { "All Orders": allData.length };
-      for (const order of allData) {
+      // Count deleted separately
+      const deletedCount = allData.filter(o => o.deleted_at !== null).length;
+      const activeOrders = allData.filter(o => o.deleted_at === null);
+
+      const counts: Record<string, number> = { "All Orders": activeOrders.length, "Deleted": deletedCount };
+      for (const order of activeOrders) {
         const label = getStatusLabel(order.status);
         counts[label] = (counts[label] || 0) + 1;
       }
