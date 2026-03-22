@@ -48,6 +48,7 @@ import { FakeOrderDetection } from "@/components/admin/fraud/FakeOrderDetection"
 import { useBulkMemoPrint } from "@/components/admin/courier/BulkMemoPrint";
 import { useCourierCities, useCourierZones, useCourierAreas } from "@/hooks/useCourierLocations";
 import { ApiKeysView } from "@/components/admin/api/ApiKeysView";
+import { fetchCourierCheck } from "@/lib/courierCheckCache";
 import { Constants } from "@/integrations/supabase/types";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import * as XLSX from "@datalens-tech/xlsx";
@@ -1499,7 +1500,7 @@ const AdminOrders = () => {
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-xs font-semibold text-muted-foreground">ফোন নম্বর</Label>
-                    <Input value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); setSearchedPhone(customerPhone); } }} placeholder="01XXXXXXXXX — Enter চাপুন সার্চ করতে" className="rounded-xl" />
+                    <Input value={customerPhone} onChange={(e) => { setCustomerPhone(e.target.value); const clean = e.target.value.replace(/\D/g, ""); if (clean.length >= 11) { fetchCourierCheck(clean); setSearchedPhone(e.target.value); } }} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); setSearchedPhone(customerPhone); } }} placeholder="01XXXXXXXXX — Enter চাপুন সার্চ করতে" className="rounded-xl" />
                   </div>
                 </div>
                 <div className="space-y-1.5">
@@ -1751,7 +1752,7 @@ const AdminOrders = () => {
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs font-semibold text-muted-foreground">ফোন নম্বর</Label>
-                        <Input placeholder="01XXXXXXXXX — Enter চাপুন সার্চ করতে" className="rounded-xl h-10 text-sm" value={customerPhone} onChange={(e) => { setCustomerPhone(e.target.value); const clean = e.target.value.replace(/\D/g, ""); if (clean.length >= 11) setSearchedPhone(e.target.value); }} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); setSearchedPhone(customerPhone); } }} />
+                        <Input placeholder="01XXXXXXXXX — Enter চাপুন সার্চ করতে" className="rounded-xl h-10 text-sm" value={customerPhone} onChange={(e) => { setCustomerPhone(e.target.value); const clean = e.target.value.replace(/\D/g, ""); if (clean.length >= 11) { fetchCourierCheck(clean); setSearchedPhone(e.target.value); } }} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); setSearchedPhone(customerPhone); } }} />
                       </div>
                     </div>
                   </div>

@@ -2,7 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 
 const cache: Record<string, { d: any; t: number }> = {};
-const TTL = 10 * 60 * 1000;
+const TTL = 30 * 60 * 1000;
 const inflight: Record<string, Promise<any>> = {};
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
