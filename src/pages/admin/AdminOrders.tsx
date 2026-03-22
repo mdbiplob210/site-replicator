@@ -823,6 +823,9 @@ const AdminOrders = () => {
     return currencyMatches[0] || 0;
   };
 
+  // Sanity check: reject prices that are absurdly high (likely garbage/phone numbers)
+  const isSanePrice = (v: number) => v > 0 && v < 1_000_000;
+
   const buildIncompleteOrderItem = (io: any) => {
     if (!io?.product_name && !io?.product_code) return null;
 
@@ -838,7 +841,10 @@ const AdminOrders = () => {
     const derivedUnitPrice = derivedProductTotal > 0 ? derivedProductTotal / qty : 0;
     const textUnitPrice = extractIncompletePriceFromText(io);
     const matchedUnitPrice = normalizeNumberValue(matchedProduct?.selling_price);
-    const unitPrice = savedUnitPrice || derivedUnitPrice || textUnitPrice || matchedUnitPrice || 0;
+
+    // Prioritize sane values; reject garbage (phone numbers parsed as prices)
+    const candidates = [savedUnitPrice, derivedUnitPrice, textUnitPrice, matchedUnitPrice];
+    const unitPrice = candidates.find(isSanePrice) || 0;
 
     return {
       product_id: matchedProduct?.id || null,
@@ -1135,14 +1141,14 @@ const AdminOrders = () => {
   };
 
   const openConvertAsNewOrder = (io: any) => {
-    const safeDeliveryCharge = normalizeNumberValue(io.delivery_charge);
-    const safeDiscount = normalizeNumberValue(io.discount);
+    const rawDelivery = normalizeNumberValue(io.delivery_charge);
+    const rawDiscount = normalizeNumberValue(io.discount);
+    const safeDeliveryCharge = isSanePrice(rawDelivery) ? rawDelivery : 0;
+    const safeDiscount = isSanePrice(rawDiscount) || rawDiscount === 0 ? rawDiscount : 0;
     const resolvedItem = buildIncompleteOrderItem(io);
-    const resolvedProductCost = resolvedItem?.total_price || Math.max(
-      0,
-      normalizeNumberValue(io.total_amount) - safeDeliveryCharge + safeDiscount
-    );
-    const resolvedTotalAmount = normalizeNumberValue(io.total_amount) || (resolvedProductCost + safeDeliveryCharge - safeDiscount);
+    // Always use item-based cost; ignore garbage total_amount
+    const resolvedProductCost = resolvedItem?.total_price || 0;
+    const resolvedTotalAmount = resolvedProductCost + safeDeliveryCharge - safeDiscount;
 
     setCustomerName(io.customer_name || "");
     setCustomerPhone(io.customer_phone || "");
@@ -1174,7 +1180,7 @@ const AdminOrders = () => {
       return;
     }
     const computedProductCost = orderItems.length > 0 ? itemsTotal : productCost;
-    const computedTotal = totalAmount || (computedProductCost + deliveryCharge - discount);
+    const computedTotal = computedProductCost + deliveryCharge - discount;
     const finalCancelReason = newOrderStatus === "cancelled" 
       ? (newOrderCancelReason === "others" ? newOrderCancelCustom : newOrderCancelReason) 
       : null;
