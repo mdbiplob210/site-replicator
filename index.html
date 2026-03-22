@@ -21,15 +21,27 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-    <!-- Non-blocking font loading - combined into single request -->
+    <!-- Non-blocking font loading - combined into single request with font-display swap -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'" />
 
     <!-- Preload critical module -->
     <link rel="modulepreload" href="/src/main.tsx" />
+
+    <!-- Inline critical CSS to avoid FOUC -->
+    <style>
+      body{margin:0;font-family:Inter,'Hind Siliguri',system-ui,sans-serif}
+      #root{min-height:100vh}
+      .page-loader{display:flex;align-items:center;justify-content:center;min-height:100vh}
+      .page-loader .spinner{width:32px;height:32px;border:4px solid #e5e7eb;border-top-color:#3b82f6;border-radius:50%;animation:spin .6s linear infinite}
+      @keyframes spin{to{transform:rotate(360deg)}}
+    </style>
   </head>
 
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Immediate loading indicator before JS loads -->
+      <div class="page-loader"><div class="spinner"></div></div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

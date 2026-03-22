@@ -5,6 +5,7 @@ import { useTracking } from "@/hooks/useTracking";
 /**
  * TrackingInitializer - Placed inside BrowserRouter in App.tsx
  * Auto-initializes all tracking scripts and fires PageView on every route change.
+ * Uses requestIdleCallback to avoid blocking the main thread.
  */
 export function TrackingInitializer() {
   const { trackPageView, isReady } = useTracking();
@@ -15,11 +16,12 @@ export function TrackingInitializer() {
     if (!isReady) return;
     // Don't fire main website pixel on landing pages — they have their own pixel
     if (location.pathname.startsWith("/lp/")) return;
-    // Fire if path changed OR if this is the first fire after isReady
+    // Fire if path changed
     if (location.pathname !== lastTrackedPath.current) {
       lastTrackedPath.current = location.pathname;
-      // Small delay to let page title update
-      setTimeout(() => trackPageView(document.title), 100);
+      // Use requestIdleCallback to defer non-critical tracking
+      const schedule = window.requestIdleCallback || ((cb: () => void) => setTimeout(cb, 100));
+      schedule(() => trackPageView(document.title));
     }
   }, [isReady, location.pathname, trackPageView]);
 
