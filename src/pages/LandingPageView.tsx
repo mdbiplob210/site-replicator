@@ -134,8 +134,9 @@ window._lpTrack = {
 <!-- Facebook Pixel with Advanced Matching -->
 <script>
 !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
-var _extId = localStorage.getItem('_vid') || ('v_' + Date.now() + '_' + Math.random().toString(36).substr(2,12));
-if (!localStorage.getItem('_vid')) localStorage.setItem('_vid', _extId);
+var _extId;
+try { _extId = localStorage.getItem('_vid'); } catch(e) {}
+if (!_extId) { _extId = 'v_' + Date.now() + '_' + Math.random().toString(36).substr(2,12); try { localStorage.setItem('_vid', _extId); } catch(e) {} }
 
 // Init with advanced matching - country always BD, external_id for matching
 fbq('init','${page.fb_pixel_id}', { external_id: _extId, country: 'bd' });
