@@ -3406,7 +3406,7 @@ const AdminOrders = () => {
                     </TableCell>
                     {/* COURIER HISTORY: BDCourier external data */}
                     <TableCell className="px-3 py-3 text-center">
-                      <CourierHistoryBadge phone={order.customer_phone} />
+                      {courierCacheReady ? <CourierHistoryBadge phone={order.customer_phone} /> : <Loader2 className="h-3 w-3 animate-spin text-muted-foreground mx-auto" />}
                     </TableCell>
                     {/* STATUS */}
                     <TableCell className="px-3 py-3 text-center" onClick={(e) => e.stopPropagation()}>
