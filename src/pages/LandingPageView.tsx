@@ -935,7 +935,7 @@ ttq.page();
     var quantityValue = readValue(root, fields.quantity);
     var unitPriceValue = readValue(root, fields.unit_price);
     var deliveryChargeValue = readValue(root, fields.delivery_charge);
-    var discountValue = readValue(root, fields.discount) || sessionStorage.getItem('_exit_discount') || '0';
+    var discountValue = readValue(root, fields.discount) || (function(){ try { return sessionStorage.getItem('_exit_discount'); } catch(e) { return '0'; } })() || '0';
 
     return {
       customer_name: readValue(root, fields.customer_name),
