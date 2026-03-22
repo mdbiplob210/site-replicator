@@ -1224,21 +1224,21 @@ const AdminOrders = () => {
     setNewOrderCancelCustom("");
   };
 
-  // Old orders lookup by phone
+  // Old orders lookup by phone - only triggers on Enter
   const { data: oldOrdersByPhone = [] } = useQuery({
-    queryKey: ["old-orders-phone", customerPhone],
+    queryKey: ["old-orders-phone", searchedPhone],
     queryFn: async () => {
-      if (!customerPhone || customerPhone.length < 6) return [];
+      if (!searchedPhone || searchedPhone.length < 6) return [];
       const { data, error } = await supabase
         .from("orders")
         .select("*")
-        .eq("customer_phone", customerPhone)
+        .eq("customer_phone", searchedPhone)
         .order("created_at", { ascending: false })
         .limit(20);
       if (error) throw error;
       return data as Order[];
     },
-    enabled: !!customerPhone && customerPhone.length >= 6,
+    enabled: !!searchedPhone && searchedPhone.length >= 6,
   });
 
   // Fraud check - courier delivery history by phone
