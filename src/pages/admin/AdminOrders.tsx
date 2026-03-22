@@ -1378,14 +1378,22 @@ const AdminOrders = () => {
     setBulkStatusValue("");
   };
 
-  // Bulk delete
+  // Bulk delete / restore
   const handleBulkDelete = () => {
     if (selectedOrderIds.size === 0) return;
-    if (!confirm(`${selectedOrderIds.size}টি অর্ডার ডিলিট করবেন? এটি undo করা যাবে না!`)) return;
-    selectedOrderIds.forEach(id => {
-      deleteOrder.mutate(id);
-    });
-    toast.success(`${selectedOrderIds.size}টি অর্ডার ডিলিট হয়েছে!`);
+    if (isDeletedTab) {
+      if (!confirm(`${selectedOrderIds.size}টি অর্ডার পুনরুদ্ধার করবেন?`)) return;
+      selectedOrderIds.forEach(id => {
+        restoreOrder.mutate(id);
+      });
+      toast.success(`${selectedOrderIds.size}টি অর্ডার পুনরুদ্ধার হয়েছে!`);
+    } else {
+      if (!confirm(`${selectedOrderIds.size}টি অর্ডার ডিলিট করবেন?`)) return;
+      selectedOrderIds.forEach(id => {
+        deleteOrder.mutate(id);
+      });
+      toast.success(`${selectedOrderIds.size}টি অর্ডার ডিলিট হয়েছে!`);
+    }
     setSelectedOrderIds(new Set());
   };
 
