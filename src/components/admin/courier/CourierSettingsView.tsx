@@ -20,10 +20,8 @@ export function CourierSettingsView({ onBack }: CourierSettingsViewProps) {
   const updateProvider = useUpdateCourierProvider();
   const { data: siteSettings } = useSiteSettings();
 
-  const customDomain = siteSettings?.custom_domain || siteSettings?.site_domain;
-  const webhookBaseUrl = customDomain
-    ? `https://${customDomain}/api/courier-webhook`
-    : `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/courier-webhook`;
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const webhookBaseUrl = `${supabaseUrl}/functions/v1/courier-webhook`;
 
   return (
     <div className="space-y-6">
