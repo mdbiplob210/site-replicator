@@ -57,7 +57,12 @@ const COURIER_LOGOS: Record<string, string> = {
   redx: "https://api.bdcourier.com/c-logo/redx-logo.png",
   ecourier: "https://api.bdcourier.com/c-logo/ecourier-logo.png",
   paperfly: "https://api.bdcourier.com/c-logo/paperfly-logo.png",
+  parceldex: "https://api.bdcourier.com/c-logo/parceldex-logo.png",
+  carrybee: "https://api.bdcourier.com/c-logo/carrybee-logo.webp",
 };
+
+// Priority couriers shown as featured cards
+const FEATURED_COURIERS = ["steadfast", "pathao"];
 
 export default function TrackOrder() {
   const [query, setQuery] = useState("");
