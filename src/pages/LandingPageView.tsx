@@ -499,6 +499,7 @@ ttq.page();
   try { SID = sessionStorage.getItem('_lp_sid'); } catch(e) {}
   if (!SID) { SID = 's_' + Math.random().toString(36).substr(2,9) + Date.now(); try { sessionStorage.setItem('_lp_sid', SID); } catch(e) {} }
   var _pageStart = Date.now();
+  window._lpLastTrackedClickAt = window._lpLastTrackedClickAt || 0;
 
   // UTM params
   var urlParams = new URLSearchParams(window.location.search);
@@ -514,6 +515,24 @@ ttq.page();
   var w = window.innerWidth;
   var _devType = w < 768 ? 'mobile' : w < 1024 ? 'tablet' : 'desktop';
 
+  function postEvent(body) {
+    return fetch(TRACK_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':ANON,'Authorization':'Bearer '+ANON},
+      body:body,
+      keepalive:true
+    }).catch(function(){});
+  }
+
+  function sendWithBeacon(body) {
+    try {
+      if (navigator.sendBeacon) {
+        return navigator.sendBeacon(TRACK_URL + '?apikey=' + encodeURIComponent(ANON), new Blob([body], {type:'text/plain'}));
+      }
+    } catch(e) {}
+    return false;
+  }
+
   function send(eventType, eventName, extra) {
     var payload = Object.assign({
       slug: SLUG,
@@ -527,20 +546,12 @@ ttq.page();
       screen_height: screen.height
     }, _utm, extra || {});
     var body = JSON.stringify(payload);
-    // Use fetch for view events (most reliable), sendBeacon for exit/scroll
-    if (eventType === 'view' || eventType === 'conversion' || eventType === 'click') {
-      fetch(TRACK_URL, {method:'POST', headers:{'Content-Type':'application/json','apikey':ANON,'Authorization':'Bearer '+ANON}, body:body}).catch(function(){});
-    } else {
-      var sent = false;
-      try {
-        if (navigator.sendBeacon) {
-          sent = navigator.sendBeacon(TRACK_URL + '?apikey=' + ANON, new Blob([body], {type: 'text/plain'}));
-        }
-      } catch(e) {}
-      if (!sent) {
-        fetch(TRACK_URL, {method:'POST', headers:{'Content-Type':'application/json','apikey':ANON,'Authorization':'Bearer '+ANON}, body:body}).catch(function(){});
-      }
+    if (eventType === 'view') {
+      postEvent(body);
+      return;
     }
+    if (sendWithBeacon(body)) return;
+    postEvent(body);
   }
   send('view');
 
