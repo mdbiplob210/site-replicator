@@ -3629,6 +3629,15 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
 
   const handleSaveChanges = async () => {
     if (!order || !orderId) return;
+
+    // If status changed to cancelled, open cancel dialog instead
+    if (editStatus && editStatus !== order.status && editStatus === "cancelled") {
+      setDetailCancelReason("");
+      setDetailCancelCustom("");
+      setDetailCancelDialogOpen(true);
+      return;
+    }
+
     setIsSaving(true);
     try {
       const changes: Record<string, any> = {};
@@ -3639,6 +3648,12 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
       if (editCourierNote !== (order.courier_note || "")) { changes.courier_note = editCourierNote || null; await logActivity("field_edited", "courier_note", order.courier_note, editCourierNote); }
       if (editDelivery !== Number(order.delivery_charge)) { changes.delivery_charge = editDelivery; await logActivity("field_edited", "delivery_charge", String(order.delivery_charge), String(editDelivery)); }
       if (editDiscount !== Number(order.discount)) { changes.discount = editDiscount; await logActivity("field_edited", "discount", String(order.discount), String(editDiscount)); }
+
+      // Include status change in save
+      if (editStatus && editStatus !== order.status) {
+        changes.status = editStatus;
+        await logActivity("status_changed", "status", order.status, editStatus, `স্ট্যাটাস পরিবর্তন: ${getStatusLabel(order.status as any)} → ${getStatusLabel(editStatus as any)}`);
+      }
 
       // Save courier selection
       const courierChanged = editCourierId !== (existingCourierOrder?.courier_provider_id || null);
