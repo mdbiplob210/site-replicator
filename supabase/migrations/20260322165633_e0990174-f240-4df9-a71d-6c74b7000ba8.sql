@@ -1,0 +1,1 @@
+ALTER TABLE public.courier_orders ADD CONSTRAINT courier_orders_order_id_unique UNIQUE (order_id);
