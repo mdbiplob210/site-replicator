@@ -466,6 +466,71 @@ const AdminOrders = () => {
       });
     },
   });
+
+  const selectedCourier = useMemo(
+    () => courierProviders.find((provider: any) => provider.id === selectedCourierId) || null,
+    [courierProviders, selectedCourierId],
+  );
+  const lastAutoCityIdRef = useRef<string | null>(null);
+  const lastAutoZoneIdRef = useRef<string | null>(null);
+  const isPathaoCourier = selectedCourier?.slug === "pathao";
+
+  useEffect(() => {
+    if (!isPathaoCourier || !customerAddress.trim() || citiesLoading || courierCities.length === 0) {
+      return;
+    }
+
+    const canAutoUpdateCity = !selectedCityId || selectedCityId === lastAutoCityIdRef.current;
+    if (!canAutoUpdateCity) return;
+
+    const matchedCity = findBestLocationMatch(customerAddress, courierCities as Array<{ id: string | number; name: string }>);
+
+    if (matchedCity) {
+      const nextCityId = String(matchedCity.id);
+      if (selectedCityId !== nextCityId) {
+        setSelectedCityId(nextCityId);
+        setSelectedZoneId(null);
+        setSelectedAreaId(null);
+      }
+      lastAutoCityIdRef.current = nextCityId;
+      return;
+    }
+
+    if (selectedCityId && selectedCityId === lastAutoCityIdRef.current) {
+      setSelectedCityId(null);
+      setSelectedZoneId(null);
+      setSelectedAreaId(null);
+    }
+    lastAutoCityIdRef.current = null;
+  }, [citiesLoading, courierCities, customerAddress, isPathaoCourier, selectedCityId]);
+
+  useEffect(() => {
+    if (!isPathaoCourier || !selectedCityId || !customerAddress.trim() || zonesLoading || courierZones.length === 0) {
+      return;
+    }
+
+    const canAutoUpdateZone = !selectedZoneId || selectedZoneId === lastAutoZoneIdRef.current;
+    if (!canAutoUpdateZone) return;
+
+    const matchedZone = findBestLocationMatch(customerAddress, courierZones as Array<{ id: string | number; name: string }>);
+
+    if (matchedZone) {
+      const nextZoneId = String(matchedZone.id);
+      if (selectedZoneId !== nextZoneId) {
+        setSelectedZoneId(nextZoneId);
+        setSelectedAreaId(null);
+      }
+      lastAutoZoneIdRef.current = nextZoneId;
+      return;
+    }
+
+    if (selectedZoneId && selectedZoneId === lastAutoZoneIdRef.current) {
+      setSelectedZoneId(null);
+      setSelectedAreaId(null);
+    }
+    lastAutoZoneIdRef.current = null;
+  }, [courierZones, customerAddress, isPathaoCourier, selectedCityId, selectedZoneId, zonesLoading]);
+
   const { data: categories = [] } = useQuery({
     queryKey: ["categories-filter"],
     queryFn: async () => {
