@@ -1071,6 +1071,16 @@ ttq.page();
     var btnOrigText = btn ? btn.textContent : '';
     if (btn) { btn.disabled = true; btn.textContent = 'অপেক্ষা করুন...'; }
 
+    if (window._lpSend && (Date.now() - (window._lpLastTrackedClickAt || 0) > 1500)) {
+      window._lpLastTrackedClickAt = Date.now();
+      window._lpSend('click', btnOrigText || 'order_submit', {
+        click_x: 50,
+        click_y: 50,
+        click_element: 'FORM_SUBMIT:' + (btnOrigText || 'submit'),
+        page_height: document.body.scrollHeight || 0
+      });
+    }
+
     var formData = new FormData(form);
     var payload = {
       customer_name: formData.get('customer_name') || '',

@@ -205,7 +205,7 @@ export function useLandingPageAnalyticsSummary(days = 30, startDate?: string, en
         eventsByPage.set(event.landing_page_id, existing);
       });
 
-      const typedPages = (pages ?? []) as { id: string; title: string; slug: string }[];
+      const typedPages = (pages ?? []) as unknown as { id: string; title: string; slug: string }[];
 
       return typedPages.map((page) => {
         const pageEvents = eventsByPage.get(page.id) ?? [];
