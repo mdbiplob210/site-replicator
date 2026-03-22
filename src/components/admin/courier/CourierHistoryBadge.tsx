@@ -73,26 +73,35 @@ export const CourierHistoryBadge = memo(function CourierHistoryBadge({ phone }: 
   }
 
   return (
-    <div className="space-y-0.5" onClick={(e) => e.stopPropagation()}>
-      {couriers.filter((c: any) => c.total_parcel > 0).map((c: any) => (
-        <div key={c.k} className="flex items-center justify-center gap-1">
-          {COURIER_LOGOS[c.k] ? (
-            <img src={COURIER_LOGOS[c.k]} alt={c.k} className="h-3.5 w-auto max-w-[40px] object-contain" loading="lazy" />
-          ) : (
-            <span className="text-[9px] font-semibold text-foreground">{c.name || c.k}</span>
-          )}
-          <span className="text-[10px] font-bold text-foreground">{c.total_parcel}</span>
-          <span className="text-[10px] font-semibold text-emerald-600">{c.success_parcel}✓</span>
-          <span className="text-[10px] font-semibold text-destructive">{c.cancelled_parcel}✗</span>
+    <div className="rounded border border-border/40 overflow-hidden text-[10px]" onClick={(e) => e.stopPropagation()}>
+      {/* Header */}
+      <div className="grid grid-cols-[1fr_28px_28px_28px] items-center bg-muted/50 px-1.5 py-0.5">
+        <span className="font-bold text-muted-foreground text-[8px] uppercase">Courier</span>
+        <span className="font-bold text-muted-foreground text-[8px] text-center">T</span>
+        <span className="font-bold text-emerald-600 text-[8px] text-center">S</span>
+        <span className="font-bold text-destructive text-[8px] text-center">C</span>
+      </div>
+      {couriers.filter((c: any) => c.total_parcel > 0).map((c: any, i: number) => (
+        <div key={c.k} className={`grid grid-cols-[1fr_28px_28px_28px] items-center px-1.5 py-[3px] ${i % 2 === 0 ? "bg-background" : "bg-muted/20"}`}>
+          <div className="flex items-center">
+            {COURIER_LOGOS[c.k] ? (
+              <img src={COURIER_LOGOS[c.k]} alt={c.k} className="h-3 w-auto max-w-[36px] object-contain" loading="lazy" />
+            ) : (
+              <span className="font-bold text-foreground text-[9px]">{c.name || c.k}</span>
+            )}
+          </div>
+          <span className="font-extrabold text-foreground text-center">{c.total_parcel}</span>
+          <span className="font-extrabold text-emerald-600 text-center">{c.success_parcel}</span>
+          <span className="font-extrabold text-destructive text-center">{c.cancelled_parcel}</span>
         </div>
       ))}
       {/* Total row */}
       {summary && (
-        <div className="flex items-center justify-center gap-1 border-t border-border/30 pt-0.5">
-          <span className="text-[9px] font-bold text-muted-foreground">Total</span>
-          <span className="text-[10px] font-bold text-foreground">{summary.total_parcel}</span>
-          <span className="text-[10px] font-semibold text-emerald-600">{summary.success_parcel}✓</span>
-          <span className="text-[10px] font-semibold text-destructive">{summary.cancelled_parcel}✗</span>
+        <div className="grid grid-cols-[1fr_28px_28px_28px] items-center px-1.5 py-[3px] bg-muted/40 border-t border-border/40">
+          <span className="font-extrabold text-foreground text-[9px]">Total</span>
+          <span className="font-extrabold text-foreground text-center">{summary.total_parcel}</span>
+          <span className="font-extrabold text-emerald-600 text-center">{summary.success_parcel}</span>
+          <span className="font-extrabold text-destructive text-center">{summary.cancelled_parcel}</span>
         </div>
       )}
     </div>
