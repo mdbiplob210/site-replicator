@@ -90,8 +90,8 @@ window._lpTrack = {
   sendServerEvent: function(eventName, customData, userData) {
     var CAPI_URL = '${supabaseUrl}/functions/v1/fb-conversions-api';
     var ANON = '${anonKey}';
-    var extId = localStorage.getItem('_vid') || ('v_' + Date.now() + '_' + Math.random().toString(36).substr(2,12));
-    if (!localStorage.getItem('_vid')) localStorage.setItem('_vid', extId);
+    var extId; try { extId = localStorage.getItem('_vid'); } catch(e) {}
+    if (!extId) { extId = 'v_' + Date.now() + '_' + Math.random().toString(36).substr(2,12); try { localStorage.setItem('_vid', extId); } catch(e) {} }
     
     // Merge stored + provided user data
     var ud = Object.assign({}, this.getUserData(), userData || {});
@@ -134,8 +134,9 @@ window._lpTrack = {
 <!-- Facebook Pixel with Advanced Matching -->
 <script>
 !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
-var _extId = localStorage.getItem('_vid') || ('v_' + Date.now() + '_' + Math.random().toString(36).substr(2,12));
-if (!localStorage.getItem('_vid')) localStorage.setItem('_vid', _extId);
+var _extId;
+try { _extId = localStorage.getItem('_vid'); } catch(e) {}
+if (!_extId) { _extId = 'v_' + Date.now() + '_' + Math.random().toString(36).substr(2,12); try { localStorage.setItem('_vid', _extId); } catch(e) {} }
 
 // Init with advanced matching - country always BD, external_id for matching
 fbq('init','${page.fb_pixel_id}', { external_id: _extId, country: 'bd' });
@@ -492,10 +493,11 @@ ttq.page();
   var TRACK_URL = '${supabaseUrl}/functions/v1/track-landing-event';
   var ANON = '${anonKey}';
   var SLUG = '${page.slug}';
-  var VID = localStorage.getItem('_lp_vid');
-  if (!VID) { VID = 'v_' + Math.random().toString(36).substr(2,9) + Date.now(); localStorage.setItem('_lp_vid', VID); }
-  var SID = sessionStorage.getItem('_lp_sid');
-  if (!SID) { SID = 's_' + Math.random().toString(36).substr(2,9) + Date.now(); sessionStorage.setItem('_lp_sid', SID); }
+  var VID, SID;
+  try { VID = localStorage.getItem('_lp_vid'); } catch(e) {}
+  if (!VID) { VID = 'v_' + Math.random().toString(36).substr(2,9) + Date.now(); try { localStorage.setItem('_lp_vid', VID); } catch(e) {} }
+  try { SID = sessionStorage.getItem('_lp_sid'); } catch(e) {}
+  if (!SID) { SID = 's_' + Math.random().toString(36).substr(2,9) + Date.now(); try { sessionStorage.setItem('_lp_sid', SID); } catch(e) {} }
   var _pageStart = Date.now();
 
   // UTM params
@@ -686,7 +688,7 @@ ttq.page();
 <script>
 (function(){
   var shown = false;
-  var dismissed = sessionStorage.getItem('_exit_dismissed');
+  var dismissed; try { dismissed = sessionStorage.getItem('_exit_dismissed'); } catch(e) {}
   var timeLeft = ${exitTimer};
   var DISCOUNT = ${exitDiscount};
   var timerInterval = null;
@@ -769,7 +771,7 @@ ttq.page();
   var PARTIAL_URL = '${supabaseUrl}/functions/v1/track-partial-order';
   var ANON = '${anonKey}';
   var SLUG = '${page.slug}';
-  var VID = localStorage.getItem('_lp_vid') || window._LP_VID || '';
+  var VID; try { VID = localStorage.getItem('_lp_vid'); } catch(e) {} VID = VID || window._LP_VID || '';
   if (!VID) {
     VID = 'v_' + Math.random().toString(36).substr(2,9) + Date.now();
     try { localStorage.setItem('_lp_vid', VID); } catch(e) {}
@@ -933,7 +935,7 @@ ttq.page();
     var quantityValue = readValue(root, fields.quantity);
     var unitPriceValue = readValue(root, fields.unit_price);
     var deliveryChargeValue = readValue(root, fields.delivery_charge);
-    var discountValue = readValue(root, fields.discount) || sessionStorage.getItem('_exit_discount') || '0';
+    var discountValue = readValue(root, fields.discount) || (function(){ try { return sessionStorage.getItem('_exit_discount'); } catch(e) { return '0'; } })() || '0';
 
     return {
       customer_name: readValue(root, fields.customer_name),
@@ -1022,7 +1024,7 @@ ttq.page();
 (function(){
   var ORDER_URL = '${supabaseUrl}/functions/v1/submit-landing-order';
   var SLUG = '${page.slug}';
-  var VID = localStorage.getItem('_lp_vid') || '';
+  var VID; try { VID = localStorage.getItem('_lp_vid'); } catch(e) {} VID = VID || '';
   var _submitting = false;
 
   document.addEventListener('submit', function(e) {
@@ -1057,7 +1059,7 @@ ttq.page();
       notes: formData.get('notes') || '',
       landing_page_slug: SLUG,
       visitor_id: VID,
-      session_id: sessionStorage.getItem('_lp_sid') || '',
+      session_id: (function(){ try { return sessionStorage.getItem('_lp_sid'); } catch(e) { return ''; } })() || '',
       device_type: window.innerWidth < 768 ? 'mobile' : window.innerWidth < 1024 ? 'tablet' : 'desktop'
     };
 
@@ -1126,8 +1128,8 @@ ttq.page();
 window.SUPABASE_URL = '${supabaseUrl}';
 window.SUPABASE_ANON_KEY = '${anonKey}';
 window._LP_SLUG = '${page.slug}';
-window._LP_VID = localStorage.getItem('_lp_vid') || '';
-if (!window._LP_VID) { window._LP_VID = 'v_' + Math.random().toString(36).substr(2,9) + Date.now(); localStorage.setItem('_lp_vid', window._LP_VID); }
+try { window._LP_VID = localStorage.getItem('_lp_vid') || ''; } catch(e) { window._LP_VID = ''; }
+if (!window._LP_VID) { window._LP_VID = 'v_' + Math.random().toString(36).substr(2,9) + Date.now(); try { localStorage.setItem('_lp_vid', window._LP_VID); } catch(e) {} }
 </script>
 `;
 
