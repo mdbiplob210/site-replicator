@@ -801,7 +801,7 @@ ttq.page();
     if (!options.forceFetch) {
       try {
         if (navigator.sendBeacon) {
-          sent = navigator.sendBeacon(PARTIAL_URL + '?apikey=' + ANON, new Blob([body], { type: 'application/json' }));
+          sent = navigator.sendBeacon(PARTIAL_URL + '?apikey=' + ANON, new Blob([body], { type: 'text/plain' }));
         }
       } catch(e) {}
     }
