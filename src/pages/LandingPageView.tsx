@@ -594,6 +594,7 @@ ttq.page();
 
     var el = e.target.closest('[data-track-event]');
     if (el) {
+      window._lpLastTrackedClickAt = Date.now();
       send('click', el.getAttribute('data-track-event'), { click_x: parseFloat(clickX), click_y: parseFloat(clickY), click_element: clickEl, page_height: pageH });
     } else {
       // Match buttons, links, and any element with onclick or cursor:pointer styling
@@ -610,6 +611,7 @@ ttq.page();
         }
       }
       if (clickable) {
+        window._lpLastTrackedClickAt = Date.now();
         send('click', (clickable.textContent || '').trim().substring(0, 50), { click_x: parseFloat(clickX), click_y: parseFloat(clickY), click_element: clickEl, page_height: pageH });
       }
     }
