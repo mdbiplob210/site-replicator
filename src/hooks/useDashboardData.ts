@@ -252,7 +252,7 @@ export function useDashboardData(filter: TimeFilter) {
     },
     profitStats: { revenue, productCost, adsCostBdt, adsCostUsd, deliveryCost, returnAmount, estProfit, finalProfit },
     financeStats: {
-      bankBalance, stockValue, courierBalance, courierCount, loanCount: loans.length, loanTotal,
+      bankBalance, stockValue, courierBalance, courierCount, loanCount, loanTotal,
       investmentTotal, totalIncome, totalExpense, totalProductPurchase, moneyIn, moneyOut, netValue,
     },
     salesDetails: { paymentStats, topProducts, hourlyOrders, sourceBreakdown },
