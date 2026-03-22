@@ -3170,8 +3170,10 @@ const AdminOrders = () => {
                         )}
                       </div>
                       <div className="flex items-center gap-1.5">
-                        {((order as any).payment_status || "unpaid") === "paid" && (
-                          <Badge variant="outline" className="text-[9px] h-4 border-emerald-300 text-emerald-600 bg-emerald-50 px-1">✅ Paid</Badge>
+                        {custStats && custStats.total > 0 && (
+                          <span className="text-[10px] font-semibold">
+                            {custStats.total}📦 {custStats.success}✓ {custStats.failed}✗
+                          </span>
                         )}
                         {order.source && <span className="bg-secondary/60 px-1.5 py-0.5 rounded text-[10px]">{order.source}</span>}
                       </div>
