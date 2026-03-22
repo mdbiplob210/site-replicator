@@ -97,13 +97,53 @@ export function useSubmitToCourier() {
       trackingId,
       consignmentId,
       courierResponse,
+      cityId,
+      zoneId,
+      areaId,
+      useApi = false,
     }: {
       orderId: string;
       providerId: string;
       trackingId?: string;
       consignmentId?: string;
       courierResponse?: any;
+      cityId?: number;
+      zoneId?: number;
+      areaId?: number;
+      useApi?: boolean;
     }) => {
+      // If useApi = true, call the courier-submit edge function to actually submit via courier API
+      if (useApi) {
+        const { data: session } = await supabase.auth.getSession();
+        const token = session?.session?.access_token;
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const apikey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+        const resp = await fetch(`${supabaseUrl}/functions/v1/courier-submit`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": apikey,
+            "Authorization": `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            action: "submit-order",
+            provider_id: providerId,
+            order_id: orderId,
+            city_id: cityId,
+            zone_id: zoneId,
+            area_id: areaId,
+          }),
+        });
+
+        const result = await resp.json();
+        if (!resp.ok || !result.success) {
+          throw new Error(result.error || "Courier API submission failed");
+        }
+        return result;
+      }
+
+      // Manual/fallback: just record in DB
       const { data, error } = await supabase
         .from("courier_orders" as any)
         .insert({
@@ -129,8 +169,42 @@ export function useSubmitToCourier() {
       qc.invalidateQueries({ queryKey: ["courier-orders"] });
       qc.invalidateQueries({ queryKey: ["orders"] });
       qc.invalidateQueries({ queryKey: ["order-counts"] });
-      toast.success("Submitted to courier!");
+      toast.success("কুরিয়ারে সাবমিট হয়েছে!");
     },
-    onError: (e: Error) => toast.error("Submit failed: " + e.message),
+    onError: (e: Error) => toast.error("সাবমিট ব্যর্থ: " + e.message),
+  });
+}
+
+export function useTrackCourierOrder() {
+  return useMutation({
+    mutationFn: async ({
+      providerId,
+      consignmentId,
+    }: {
+      providerId: string;
+      consignmentId: string;
+    }) => {
+      const { data: session } = await supabase.auth.getSession();
+      const token = session?.session?.access_token;
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const apikey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+      const resp = await fetch(`${supabaseUrl}/functions/v1/courier-submit`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": apikey,
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          action: "track-order",
+          provider_id: providerId,
+          consignment_id: consignmentId,
+        }),
+      });
+
+      const result = await resp.json();
+      return result;
+    },
   });
 }
