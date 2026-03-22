@@ -141,6 +141,40 @@ const LOCATION_GENERIC_WORDS = new Set([
   "city", "district", "zila", "division", "upazila", "thana", "metro", "area",
 ]);
 
+const LOCATION_CONTEXT_KEYWORDS = ["district", "zila", "jela", "jila", "city", "thana", "upazila", "area", "zone"];
+
+const BANGLA_DIGIT_MAP: Record<string, string> = {
+  "০": "0",
+  "১": "1",
+  "২": "2",
+  "৩": "3",
+  "৪": "4",
+  "৫": "5",
+  "৬": "6",
+  "৭": "7",
+  "৮": "8",
+  "৯": "9",
+};
+
+const LOCATION_ALIAS_PATTERNS: Array<[RegExp, string]> = [
+  [/\bchattogram\b/g, "chittagong"],
+  [/\bchattograma\b/g, "chittagong"],
+  [/\bchattagrama\b/g, "chittagong"],
+  [/\bchattagram\b/g, "chittagong"],
+  [/\bchatgram\b/g, "chittagong"],
+  [/\bctg\b/g, "chittagong"],
+  [/\bcumilla\b/g, "comilla"],
+  [/\bjashore\b/g, "jessore"],
+  [/\bborishal\b/g, "barisal"],
+  [/\bcoxs\s*bazar\b/g, "cox bazar"],
+  [/\bb\s*baria\b/g, "brahmanbaria"],
+  [/\bchandgao\b/g, "chandgaon"],
+  [/\bchandagao\b/g, "chandgaon"],
+  [/\bbayejid\b/g, "bayazid"],
+  [/\bhathajari\b/g, "hathazari"],
+  [/\bfatikchari\b/g, "fatikchhari"],
+];
+
 const BANGLA_VOWEL_SIGNS = new Set(["া", "ি", "ী", "ু", "ূ", "ৃ", "ে", "ৈ", "ো", "ৌ"]);
 const BANGLA_CONSONANTS = new Set([
   "ক", "খ", "গ", "ঘ", "ঙ", "চ", "ছ", "জ", "ঝ", "ঞ", "ট", "ঠ", "ড", "ঢ", "ণ",
@@ -179,20 +213,23 @@ const transliterateBanglaText = (value: string) => {
   return output.replace(/a$/g, "");
 };
 
-const normalizeLocationName = (value: string) => {
-  const romanized = /[\u0980-\u09FF]/.test(value) ? transliterateBanglaText(value) : value;
+const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-  return romanized
+const normalizeLocationName = (value: string) => {
+  const digitNormalized = value.replace(/[০-৯]/g, (char) => BANGLA_DIGIT_MAP[char] ?? char);
+  const romanized = /[\u0980-\u09FF]/.test(digitNormalized) ? transliterateBanglaText(digitNormalized) : digitNormalized;
+
+  let normalized = romanized
     .toLowerCase()
-    .replace(/['`.(),/-]/g, " ")
-    .replace(/\bchattogram\b/g, "chittagong")
-    .replace(/\bchattagram\b/g, "chittagong")
-    .replace(/\bcumilla\b/g, "comilla")
-    .replace(/\bjashore\b/g, "jessore")
-    .replace(/\bborishal\b/g, "barisal")
-    .replace(/\bcoxs\s*bazar\b/g, "cox bazar")
-    .replace(/\s+/g, " ")
-    .trim();
+    .replace(/[’']/g, "'")
+    .replace(/[।,:;()[\]{}]/g, " ")
+    .replace(/['`./\\-]/g, " ");
+
+  for (const [pattern, replacement] of LOCATION_ALIAS_PATTERNS) {
+    normalized = normalized.replace(pattern, replacement);
+  }
+
+  return normalized.replace(/\s+/g, " ").trim();
 };
 
 const toPhoneticKey = (value: string) =>
@@ -235,6 +272,14 @@ const getLocationMatchScore = (address: string, candidate: string) => {
 
   if (tokenHits > 0) {
     score = Math.max(score, 72 + tokenHits * 12 + normalizedCandidate.length);
+  }
+
+  const contextPattern = candidateTokens
+    .map((candidateToken) => `(?:${LOCATION_CONTEXT_KEYWORDS.join("|")})\\s+${escapeRegExp(candidateToken)}`)
+    .join("|");
+
+  if (contextPattern && new RegExp(`\\b(?:${contextPattern})\\b`).test(normalizedAddress)) {
+    score = Math.max(score, 144 + normalizedCandidate.length);
   }
 
   const addressKey = toPhoneticKey(address);
