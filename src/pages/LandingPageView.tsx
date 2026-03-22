@@ -582,7 +582,8 @@ ttq.page();
 
     var el = e.target.closest('[data-track-event]');
     if (el) {
-      send('conversion', el.getAttribute('data-track-event'), { click_x: parseFloat(clickX), click_y: parseFloat(clickY), click_element: clickEl, page_height: pageH });
+      // Don't fire client-side conversion — server-side submit-landing-order already creates conversion events
+      send('click', el.getAttribute('data-track-event'), { click_x: parseFloat(clickX), click_y: parseFloat(clickY), click_element: clickEl, page_height: pageH });
     } else if (e.target.closest('a, button, [role="button"], input[type="submit"]')) {
       send('click', (e.target.closest('a, button, [role="button"], input[type="submit"]').textContent || '').trim().substring(0, 50), { click_x: parseFloat(clickX), click_y: parseFloat(clickY), click_element: clickEl, page_height: pageH });
     }
