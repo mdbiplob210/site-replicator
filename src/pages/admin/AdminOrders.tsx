@@ -32,7 +32,7 @@ import {
 } from "lucide-react";
 import {
   useOrders, useOrderCounts, useCreateOrder, useUpdateOrderStatus,
-  useDeleteOrder, useNextOrderNumber, useOrderItems, getStatusFromTab, getStatusLabel,
+  useDeleteOrder, useRestoreOrder, useNextOrderNumber, useOrderItems, getStatusFromTab, getStatusLabel,
   getStatusColor, type Order, type OrderStatus, type OrderItemInput, type OrderDateFilter
 } from "@/hooks/useOrders";
 import {
