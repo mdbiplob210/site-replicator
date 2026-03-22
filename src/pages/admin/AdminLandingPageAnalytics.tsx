@@ -141,12 +141,13 @@ export default function AdminLandingPageAnalytics() {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
           {[
-            { label: "মোট ভিউ", value: totalViews, icon: Eye, color: "text-primary" },
-            { label: "ক্লিক", value: totalClicks, icon: MousePointerClick, color: "text-orange-500" },
-            { label: "কনভার্সন", value: totalConversions, icon: Target, color: "text-green-500" },
-            { label: "CTR", value: `${avgCtr.toFixed(1)}%`, icon: TrendingUp, color: "text-purple-500" },
+            { label: "পেজ ভিজিট", value: totalViews, icon: Eye, color: "text-primary" },
+            { label: "মোট ক্লিক", value: totalClicks, icon: MousePointerClick, color: "text-orange-500" },
+            { label: "অর্ডার ক্লিক", value: totalOrderClicks, icon: Target, color: "text-blue-500" },
+            { label: "অর্ডার সম্পন্ন", value: totalConversions, icon: Zap, color: "text-green-500" },
+            { label: "কনভার্সন %", value: `${(totalViews > 0 ? (totalConversions / totalViews) * 100 : 0).toFixed(1)}%`, icon: TrendingUp, color: "text-purple-500" },
             { label: "বাউন্স রেট", value: `${avgBounce.toFixed(0)}%`, icon: ArrowDown, color: "text-red-500" },
             { label: "লাইভ", value: liveData?.count || 0, icon: Activity, color: "text-green-600" },
           ].map((c, i) => (
