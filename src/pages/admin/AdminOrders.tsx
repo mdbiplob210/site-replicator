@@ -218,6 +218,7 @@ const AdminOrders = () => {
   // New order form state
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
+  const [searchedPhone, setSearchedPhone] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
   const [totalAmount, setTotalAmount] = useState(0);
   const [deliveryCharge, setDeliveryCharge] = useState(0);
