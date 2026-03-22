@@ -1059,7 +1059,7 @@ ttq.page();
       notes: formData.get('notes') || '',
       landing_page_slug: SLUG,
       visitor_id: VID,
-      session_id: sessionStorage.getItem('_lp_sid') || '',
+      session_id: (function(){ try { return sessionStorage.getItem('_lp_sid'); } catch(e) { return ''; } })() || '',
       device_type: window.innerWidth < 768 ? 'mobile' : window.innerWidth < 1024 ? 'tablet' : 'desktop'
     };
 
