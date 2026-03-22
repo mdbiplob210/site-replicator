@@ -191,11 +191,20 @@ export default function TrackOrder() {
   const courierEntries = courierData?.status === "success" && courierData?.data
     ? Object.entries(courierData.data)
         .filter(([k]) => k !== "summary")
-        .map(([k, v]: [string, any]) => ({ key: k, ...v }))
+        .map(([k, v]: [string, any]) => ({ key: k, logo: (v as any).logo, name: (v as any).name, ...v as any }))
         .filter((c: any) => c.total_parcel > 0)
     : [];
   const courierSummary = courierData?.data?.summary;
   const hasResults = order || (courierEntries.length > 0);
+
+  // Split featured (Steadfast, Pathao) vs others
+  const featuredCouriers = courierEntries.filter((c: any) => FEATURED_COURIERS.includes(c.key));
+  const otherCouriers = courierEntries.filter((c: any) => !FEATURED_COURIERS.includes(c.key));
+
+  const courierThemes: Record<string, { gradient: string; badge: string; accent: string }> = {
+    steadfast: { gradient: "from-orange-500 to-red-500", badge: "bg-orange-100 text-orange-700", accent: "text-orange-300" },
+    pathao: { gradient: "from-emerald-500 to-teal-600", badge: "bg-emerald-100 text-emerald-700", accent: "text-emerald-300" },
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
