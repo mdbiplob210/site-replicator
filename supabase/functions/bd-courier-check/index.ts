@@ -7,6 +7,13 @@ const corsHeaders = {
 };
 
 const CACHE_TTL_DAYS = 7;
+const JSON_HEADERS = { ...corsHeaders, "Content-Type": "application/json" };
+
+// Pre-initialize supabase client at module level (reused across requests)
+const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const supabase = createClient(supabaseUrl, serviceRoleKey);
+const bdcourierKey = Deno.env.get("BDCOURIER_API_KEY");
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -14,15 +21,12 @@ Deno.serve(async (req) => {
   }
 
   try {
-
     const body = await req.json();
     const { phone, action } = body;
 
-    const bdcourierKey = Deno.env.get("BDCOURIER_API_KEY");
     if (!bdcourierKey) {
       return new Response(JSON.stringify({ error: "BDCOURIER_API_KEY not configured" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500, headers: JSON_HEADERS,
       });
     }
 
@@ -31,10 +35,7 @@ Deno.serve(async (req) => {
         headers: { Authorization: `Bearer ${bdcourierKey}` },
       });
       const data = await resp.json();
-      return new Response(JSON.stringify(data), {
-        status: resp.status,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(JSON.stringify(data), { status: resp.status, headers: JSON_HEADERS });
     }
 
     if (action === "my-plan") {
@@ -42,44 +43,33 @@ Deno.serve(async (req) => {
         headers: { Authorization: `Bearer ${bdcourierKey}` },
       });
       const data = await resp.json();
-      return new Response(JSON.stringify(data), {
-        status: resp.status,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(JSON.stringify(data), { status: resp.status, headers: JSON_HEADERS });
     }
 
     if (!phone) {
       return new Response(JSON.stringify({ error: "Phone number required" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: JSON_HEADERS,
       });
     }
 
-    // ═══ Cache check: look for cached result within TTL ═══
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, serviceRoleKey);
-
-    const ttlCutoff = new Date(Date.now() - CACHE_TTL_DAYS * 24 * 60 * 60 * 1000).toISOString();
+    // Cache check — only fetch response_data column for speed
+    const ttlCutoff = new Date(Date.now() - CACHE_TTL_DAYS * 86400000).toISOString();
 
     const { data: cached } = await supabase
       .from("courier_check_cache")
-      .select("response_data, created_at")
+      .select("response_data")
       .eq("phone", phone)
       .gte("created_at", ttlCutoff)
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (cached) {
-      console.log(`[bd-courier-check] Cache HIT for ${phone}`);
-      return new Response(JSON.stringify({ ...cached.response_data, _cached: true }), {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      return new Response(JSON.stringify({ ...cached.response_data as Record<string, unknown>, _cached: true }), {
+        status: 200, headers: JSON_HEADERS,
       });
     }
 
-    // ═══ Cache MISS — call BDCourier API ═══
-    console.log(`[bd-courier-check] Cache MISS for ${phone}, calling API`);
+    // Cache MISS — call BDCourier API
     const resp = await fetch("https://api.bdcourier.com/courier-check", {
       method: "POST",
       headers: {
@@ -91,32 +81,24 @@ Deno.serve(async (req) => {
 
     const data = await resp.json();
 
-    // Save to cache (upsert — update if phone exists with expired data)
+    // Save to cache in background (don't block response)
     if (resp.ok) {
-      await supabase
+      supabase
         .from("courier_check_cache")
         .upsert(
           { phone, response_data: data, created_at: new Date().toISOString() },
           { onConflict: "phone" }
-        );
+        )
+        .then(() => {});
     }
 
-    // Cleanup expired entries in background (don't await)
-    supabase
-      .from("courier_check_cache")
-      .delete()
-      .lt("created_at", ttlCutoff)
-      .then(() => {});
-
     return new Response(JSON.stringify(data), {
-      status: resp.status,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: resp.status, headers: JSON_HEADERS,
     });
   } catch (error) {
-    console.error("[bd-courier-check] Error:", error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : "Internal server error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: JSON_HEADERS }
     );
   }
 });
