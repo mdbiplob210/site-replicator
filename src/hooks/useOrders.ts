@@ -98,11 +98,11 @@ export const getStatusColor = (status: OrderStatus): string => {
 };
 
 // Select only columns needed for order list view
-const ORDER_LIST_COLS = "id, order_number, customer_name, customer_phone, customer_address, status, total_amount, delivery_charge, discount, product_cost, payment_status, source, notes, courier_note, cancel_reason, memo_printed, hold_until, created_at, updated_at";
+const ORDER_LIST_COLS = "id, order_number, customer_name, customer_phone, customer_address, status, total_amount, delivery_charge, discount, product_cost, payment_status, source, notes, courier_note, cancel_reason, memo_printed, hold_until, deleted_at, created_at, updated_at";
 
-export function useOrders(statusFilter: string | null = null, dateFilter: OrderDateFilter = "all", customFrom?: Date, customTo?: Date) {
+export function useOrders(statusFilter: string | null = null, dateFilter: OrderDateFilter = "all", customFrom?: Date, customTo?: Date, showDeleted = false) {
   return useQuery({
-    queryKey: ["orders", statusFilter, dateFilter, customFrom?.toISOString(), customTo?.toISOString()],
+    queryKey: ["orders", statusFilter, dateFilter, customFrom?.toISOString(), customTo?.toISOString(), showDeleted],
     queryFn: async () => {
       let allOrders: Order[] = [];
       let from = 0;
@@ -114,6 +114,13 @@ export function useOrders(statusFilter: string | null = null, dateFilter: OrderD
           .select(ORDER_LIST_COLS)
           .order("created_at", { ascending: false })
           .range(from, from + pageSize - 1);
+
+        // Filter deleted vs non-deleted
+        if (showDeleted) {
+          query = query.not("deleted_at", "is", null);
+        } else {
+          query = query.is("deleted_at", null);
+        }
 
         if (statusFilter) {
           query = query.eq("status", statusFilter as OrderStatus);
@@ -155,11 +162,11 @@ export function useOrderCounts(dateFilter: OrderDateFilter = "all", customFrom?:
     queryKey: ["order-counts", dateFilter, customFrom?.toISOString(), customTo?.toISOString()],
     queryFn: async () => {
       const range = getOrderDateRange(dateFilter, customFrom, customTo);
-      let allData: { status: OrderStatus }[] = [];
+      let allData: { status: OrderStatus; deleted_at: string | null }[] = [];
       let from = 0;
       const pageSize = 1000;
       while (true) {
-        let query = supabase.from("orders").select("status").range(from, from + pageSize - 1);
+        let query = supabase.from("orders").select("status, deleted_at").range(from, from + pageSize - 1);
         if (range.from) query = query.gte("created_at", range.from);
         if (range.to) query = query.lt("created_at", range.to);
 
@@ -171,8 +178,12 @@ export function useOrderCounts(dateFilter: OrderDateFilter = "all", customFrom?:
         from += pageSize;
       }
 
-      const counts: Record<string, number> = { "All Orders": allData.length };
-      for (const order of allData) {
+      // Count deleted separately
+      const deletedCount = allData.filter(o => o.deleted_at !== null).length;
+      const activeOrders = allData.filter(o => o.deleted_at === null);
+
+      const counts: Record<string, number> = { "All Orders": activeOrders.length, "Deleted": deletedCount };
+      for (const order of activeOrders) {
         const label = getStatusLabel(order.status);
         counts[label] = (counts[label] || 0) + 1;
       }
@@ -326,16 +337,43 @@ export function useDeleteOrder() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("orders").delete().eq("id", id);
+      // Soft delete - set deleted_at timestamp
+      const { error } = await supabase
+        .from("orders")
+        .update({ deleted_at: new Date().toISOString() } as any)
+        .eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       queryClient.invalidateQueries({ queryKey: ["order-counts"] });
-      toast.success("Order deleted!");
+      toast.success("অর্ডার ডিলিট হয়েছে! (Deleted ট্যাবে দেখতে পাবেন)");
     },
     onError: (error: Error) => {
       toast.error("Failed to delete order: " + error.message);
+    },
+  });
+}
+
+export function useRestoreOrder() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      // Restore - set deleted_at to null
+      const { error } = await supabase
+        .from("orders")
+        .update({ deleted_at: null } as any)
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      queryClient.invalidateQueries({ queryKey: ["order-counts"] });
+      toast.success("অর্ডার পুনরুদ্ধার হয়েছে!");
+    },
+    onError: (error: Error) => {
+      toast.error("Failed to restore order: " + error.message);
     },
   });
 }

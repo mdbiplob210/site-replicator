@@ -32,7 +32,7 @@ import {
 } from "lucide-react";
 import {
   useOrders, useOrderCounts, useCreateOrder, useUpdateOrderStatus,
-  useDeleteOrder, useNextOrderNumber, useOrderItems, getStatusFromTab, getStatusLabel,
+  useDeleteOrder, useRestoreOrder, useNextOrderNumber, useOrderItems, getStatusFromTab, getStatusLabel,
   getStatusColor, type Order, type OrderStatus, type OrderItemInput, type OrderDateFilter
 } from "@/hooks/useOrders";
 import {
@@ -68,6 +68,7 @@ const statusTabs = [
   { label: "Return", color: "bg-red-400", icon: ArrowLeft },
   { label: "Cancelled", color: "bg-red-500", icon: XCircle },
   { label: "Hand Delivery", color: "bg-cyan-500", icon: Hand },
+  { label: "Deleted", color: "bg-destructive", icon: Trash2 },
 ];
 
 const orderStatusSettings = [
@@ -463,7 +464,8 @@ const AdminOrders = () => {
   const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null);
   const [selectedAreaId, setSelectedAreaId] = useState<string | null>(null);
   const { user, session, loading: authLoading } = useAuth();
-  const statusFilter = getStatusFromTab(activeTab);
+  const isDeletedTab = activeTab === "Deleted";
+  const statusFilter = isDeletedTab ? null : getStatusFromTab(activeTab);
   const queryClient = useQueryClient();
 
   // Check user role & print_memo permission
@@ -495,11 +497,12 @@ const AdminOrders = () => {
   });
   const canPrintMemo = userRole === "admin" || hasPrintMemoPermission;
   const canTransferOrders = userRole === "admin" || hasTransferPermission;
-  const { data: orders = [], isLoading } = useOrders(statusFilter, orderDateFilter, customDateFrom, customDateTo);
+  const { data: orders = [], isLoading } = useOrders(statusFilter, orderDateFilter, customDateFrom, customDateTo, isDeletedTab);
   const { data: counts = {} } = useOrderCounts(orderDateFilter, customDateFrom, customDateTo);
   const createOrder = useCreateOrder();
   const updateStatus = useUpdateOrderStatus();
   const deleteOrder = useDeleteOrder();
+  const restoreOrder = useRestoreOrder();
   const { data: nextOrderNumber = "1" } = useNextOrderNumber();
   const { data: allProducts = [] } = usePublicProducts();
 
@@ -1375,14 +1378,22 @@ const AdminOrders = () => {
     setBulkStatusValue("");
   };
 
-  // Bulk delete
+  // Bulk delete / restore
   const handleBulkDelete = () => {
     if (selectedOrderIds.size === 0) return;
-    if (!confirm(`${selectedOrderIds.size}টি অর্ডার ডিলিট করবেন? এটি undo করা যাবে না!`)) return;
-    selectedOrderIds.forEach(id => {
-      deleteOrder.mutate(id);
-    });
-    toast.success(`${selectedOrderIds.size}টি অর্ডার ডিলিট হয়েছে!`);
+    if (isDeletedTab) {
+      if (!confirm(`${selectedOrderIds.size}টি অর্ডার পুনরুদ্ধার করবেন?`)) return;
+      selectedOrderIds.forEach(id => {
+        restoreOrder.mutate(id);
+      });
+      toast.success(`${selectedOrderIds.size}টি অর্ডার পুনরুদ্ধার হয়েছে!`);
+    } else {
+      if (!confirm(`${selectedOrderIds.size}টি অর্ডার ডিলিট করবেন?`)) return;
+      selectedOrderIds.forEach(id => {
+        deleteOrder.mutate(id);
+      });
+      toast.success(`${selectedOrderIds.size}টি অর্ডার ডিলিট হয়েছে!`);
+    }
     setSelectedOrderIds(new Set());
   };
 
@@ -2812,9 +2823,9 @@ const AdminOrders = () => {
               <Printer className="h-3.5 w-3.5" /> মেমো প্রিন্ট ({selectedOrderIds.size})
             </Button>
             )}
-            {/* Bulk Delete */}
-            <Button variant="destructive" size="sm" className="gap-1.5 h-8 rounded-xl text-xs" onClick={handleBulkDelete}>
-              <Trash2 className="h-3.5 w-3.5" /> ডিলিট
+            {/* Bulk Delete / Restore */}
+            <Button variant={isDeletedTab ? "outline" : "destructive"} size="sm" className="gap-1.5 h-8 rounded-xl text-xs" onClick={handleBulkDelete}>
+              {isDeletedTab ? <><RotateCcw className="h-3.5 w-3.5" /> পুনরুদ্ধার</> : <><Trash2 className="h-3.5 w-3.5" /> ডিলিট</>}
             </Button>
             <Button variant="ghost" size="sm" className="h-8 rounded-xl text-xs text-muted-foreground ml-auto" onClick={() => setSelectedOrderIds(new Set())}>
               <X className="h-3.5 w-3.5 mr-1" /> বাতিল
@@ -3612,10 +3623,16 @@ const AdminOrders = () => {
                         }}>
                           <FileText className="h-3.5 w-3.5" />
                         </button>
-                        {/* Delete */}
-                        <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-destructive/10 transition-colors text-muted-foreground hover:text-destructive" title="Delete" onClick={() => { if (confirm("অর্ডারটি ডিলিট করবেন?")) deleteOrder.mutate(order.id); }}>
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
+                        {/* Delete / Restore */}
+                        {isDeletedTab ? (
+                          <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-emerald-500/10 transition-colors text-muted-foreground hover:text-emerald-600" title="Restore" onClick={() => { if (confirm("অর্ডারটি পুনরুদ্ধার করবেন?")) restoreOrder.mutate(order.id); }}>
+                            <RotateCcw className="h-3.5 w-3.5" />
+                          </button>
+                        ) : (
+                          <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-destructive/10 transition-colors text-muted-foreground hover:text-destructive" title="Delete" onClick={() => { if (confirm("অর্ডারটি ডিলিট করবেন?")) deleteOrder.mutate(order.id); }}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
