@@ -57,7 +57,12 @@ const COURIER_LOGOS: Record<string, string> = {
   redx: "https://api.bdcourier.com/c-logo/redx-logo.png",
   ecourier: "https://api.bdcourier.com/c-logo/ecourier-logo.png",
   paperfly: "https://api.bdcourier.com/c-logo/paperfly-logo.png",
+  parceldex: "https://api.bdcourier.com/c-logo/parceldex-logo.png",
+  carrybee: "https://api.bdcourier.com/c-logo/carrybee-logo.webp",
 };
+
+// Priority couriers shown as featured cards
+const FEATURED_COURIERS = ["steadfast", "pathao"];
 
 export default function TrackOrder() {
   const [query, setQuery] = useState("");
@@ -186,11 +191,20 @@ export default function TrackOrder() {
   const courierEntries = courierData?.status === "success" && courierData?.data
     ? Object.entries(courierData.data)
         .filter(([k]) => k !== "summary")
-        .map(([k, v]: [string, any]) => ({ key: k, ...v }))
+        .map(([k, v]: [string, any]) => ({ key: k, logo: (v as any).logo, name: (v as any).name, ...v as any }))
         .filter((c: any) => c.total_parcel > 0)
     : [];
   const courierSummary = courierData?.data?.summary;
   const hasResults = order || (courierEntries.length > 0);
+
+  // Split featured (Steadfast, Pathao) vs others
+  const featuredCouriers = courierEntries.filter((c: any) => FEATURED_COURIERS.includes(c.key));
+  const otherCouriers = courierEntries.filter((c: any) => !FEATURED_COURIERS.includes(c.key));
+
+  const courierThemes: Record<string, { gradient: string; badge: string; accent: string }> = {
+    steadfast: { gradient: "from-orange-500 to-red-500", badge: "bg-orange-100 text-orange-700", accent: "text-orange-300" },
+    pathao: { gradient: "from-emerald-500 to-teal-600", badge: "bg-emerald-100 text-emerald-700", accent: "text-emerald-300" },
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
@@ -407,7 +421,6 @@ export default function TrackOrder() {
                     <p className="text-[10px] text-red-200/70 uppercase tracking-wider mt-0.5">ক্যান্সেল</p>
                   </div>
                 </div>
-                {/* Success rate bar */}
                 {courierSummary.total_parcel > 0 && (
                   <div className="mt-3">
                     <div className="flex justify-between text-[10px] mb-1">
@@ -427,27 +440,77 @@ export default function TrackOrder() {
               </div>
             </div>
 
-            {/* Per-courier breakdown */}
-            {courierEntries.length > 0 && (
+            {/* Featured Courier Cards (Steadfast & Pathao) */}
+            {featuredCouriers.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {featuredCouriers.map((courier: any, idx: number) => {
+                  const theme = courierThemes[courier.key] || { gradient: "from-gray-600 to-gray-700", badge: "bg-gray-100 text-gray-700", accent: "text-gray-300" };
+                  const successRate = courier.total_parcel > 0 ? Math.round((courier.success_parcel / courier.total_parcel) * 100) : 0;
+                  return (
+                    <div
+                      key={courier.key}
+                      className="bg-white rounded-2xl shadow-sm border border-border/50 overflow-hidden animate-fade-in"
+                      style={{ animationDelay: `${idx * 100}ms` }}
+                    >
+                      <div className={`bg-gradient-to-r ${theme.gradient} p-4 text-white`}>
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2.5">
+                            {courier.logo ? (
+                              <div className="h-8 w-8 bg-white rounded-lg flex items-center justify-center p-1">
+                                <img src={courier.logo} alt={courier.name || courier.key} className="h-6 w-auto object-contain" loading="lazy" />
+                              </div>
+                            ) : null}
+                            <div>
+                              <p className="font-bold text-sm">{courier.name || courier.key}</p>
+                              <p className="text-[10px] text-white/70">{courier.total_parcel} পার্সেল</p>
+                            </div>
+                          </div>
+                          <div className={`px-2.5 py-1 rounded-full text-xs font-bold ${successRate >= 70 ? "bg-white/20 text-white" : successRate >= 40 ? "bg-yellow-500/30 text-yellow-100" : "bg-red-500/30 text-red-100"}`}>
+                            {successRate}%
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2 text-center">
+                          <div className="bg-white/10 rounded-lg py-2">
+                            <p className="text-lg font-black">{courier.total_parcel}</p>
+                            <p className="text-[9px] text-white/60 uppercase">মোট</p>
+                          </div>
+                          <div className="bg-white/10 rounded-lg py-2">
+                            <p className="text-lg font-black text-emerald-200">{courier.success_parcel}</p>
+                            <p className="text-[9px] text-emerald-200/70 uppercase">সাকসেস</p>
+                          </div>
+                          <div className="bg-white/10 rounded-lg py-2">
+                            <p className="text-lg font-black text-red-200">{courier.cancelled_parcel}</p>
+                            <p className="text-[9px] text-red-200/70 uppercase">ক্যান্সেল</p>
+                          </div>
+                        </div>
+                        {/* Progress bar */}
+                        <div className="mt-3 h-2 bg-white/10 rounded-full overflow-hidden flex">
+                          <div className="h-full bg-emerald-300 transition-all duration-500" style={{ width: `${(courier.success_parcel / courier.total_parcel) * 100}%` }} />
+                          <div className="h-full bg-red-300 transition-all duration-500" style={{ width: `${(courier.cancelled_parcel / courier.total_parcel) * 100}%` }} />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Other couriers */}
+            {otherCouriers.length > 0 && (
               <div className="bg-white rounded-2xl shadow-sm border border-border/50 overflow-hidden">
                 <div className="p-4 border-b border-border/40">
                   <h3 className="font-bold text-sm text-foreground flex items-center gap-2">
                     <Box className="h-4 w-4 text-muted-foreground" />
-                    কুরিয়ার ভিত্তিক হিস্ট্রি
+                    অন্যান্য কুরিয়ার
                   </h3>
                 </div>
                 <div className="divide-y divide-border/30">
-                  {(showAllCouriers ? courierEntries : courierEntries.slice(0, 3)).map((courier: any, idx: number) => (
+                  {(showAllCouriers ? otherCouriers : otherCouriers.slice(0, 3)).map((courier: any, idx: number) => (
                     <div key={courier.key} className={`p-4 ${idx % 2 === 0 ? "bg-background" : "bg-muted/20"} animate-fade-in`} style={{ animationDelay: `${idx * 80}ms` }}>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          {COURIER_LOGOS[courier.key] ? (
-                            <img 
-                              src={COURIER_LOGOS[courier.key]} 
-                              alt={courier.key} 
-                              className="h-6 w-auto max-w-[80px] object-contain" 
-                              loading="lazy" 
-                            />
+                          {courier.logo ? (
+                            <img src={courier.logo} alt={courier.name || courier.key} className="h-6 w-auto max-w-[80px] object-contain" loading="lazy" />
                           ) : (
                             <span className="font-bold text-foreground text-sm capitalize">{courier.name || courier.key}</span>
                           )}
@@ -467,23 +530,16 @@ export default function TrackOrder() {
                           </div>
                         </div>
                       </div>
-                      {/* Mini progress bar per courier */}
                       {courier.total_parcel > 0 && (
                         <div className="mt-2 h-1.5 bg-gray-100 rounded-full overflow-hidden flex">
-                          <div 
-                            className="h-full bg-emerald-500 transition-all duration-500"
-                            style={{ width: `${(courier.success_parcel / courier.total_parcel) * 100}%` }}
-                          />
-                          <div 
-                            className="h-full bg-red-400 transition-all duration-500"
-                            style={{ width: `${(courier.cancelled_parcel / courier.total_parcel) * 100}%` }}
-                          />
+                          <div className="h-full bg-emerald-500 transition-all duration-500" style={{ width: `${(courier.success_parcel / courier.total_parcel) * 100}%` }} />
+                          <div className="h-full bg-red-400 transition-all duration-500" style={{ width: `${(courier.cancelled_parcel / courier.total_parcel) * 100}%` }} />
                         </div>
                       )}
                     </div>
                   ))}
                 </div>
-                {courierEntries.length > 3 && (
+                {otherCouriers.length > 3 && (
                   <button
                     onClick={() => setShowAllCouriers(!showAllCouriers)}
                     className="w-full py-3 text-sm text-blue-600 hover:bg-blue-50 transition flex items-center justify-center gap-1 border-t border-border/30"
@@ -491,7 +547,7 @@ export default function TrackOrder() {
                     {showAllCouriers ? (
                       <><ChevronUp className="h-4 w-4" /> কম দেখুন</>
                     ) : (
-                      <><ChevronDown className="h-4 w-4" /> আরো {courierEntries.length - 3}টি দেখুন</>
+                      <><ChevronDown className="h-4 w-4" /> আরো {otherCouriers.length - 3}টি দেখুন</>
                     )}
                   </button>
                 )}
