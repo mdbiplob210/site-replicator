@@ -1,7 +1,7 @@
-// Shared courier check fetcher — single cache, direct fetch for speed
+// Shared courier check fetcher — permanent cache, API called only once per phone
 import { supabase } from "@/integrations/supabase/client";
 
-const cache: Record<string, { d: any }> = {};
+const cache: Record<string, any> = {};
 const inflight: Record<string, Promise<any>> = {};
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -11,9 +11,8 @@ export async function fetchCourierCheck(phone: string): Promise<any> {
   const clean = phone.replace(/\D/g, "");
   if (clean.length < 11) return null;
 
-  // In-memory cache hit
-  const c = cache[clean];
-  if (c && Date.now() - c.t < TTL) return c.d;
+  // In-memory cache hit (permanent)
+  if (cache[clean]) return cache[clean];
 
   // Deduplicate concurrent requests for same phone
   if (inflight[clean]) return inflight[clean];
@@ -31,7 +30,7 @@ export async function fetchCourierCheck(phone: string): Promise<any> {
       });
       if (!resp.ok) throw new Error("API error");
       const data = await resp.json();
-      cache[clean] = { d: data, t: Date.now() };
+      cache[clean] = data;
       return data;
     } catch {
       return null;
@@ -46,8 +45,7 @@ export async function fetchCourierCheck(phone: string): Promise<any> {
 
 export function getCourierCacheEntry(phone: string) {
   const clean = phone.replace(/\D/g, "");
-  const c = cache[clean];
-  return c && Date.now() - c.t < TTL ? c.d : null;
+  return cache[clean] || null;
 }
 
 export function clearCourierCache(phone: string) {
