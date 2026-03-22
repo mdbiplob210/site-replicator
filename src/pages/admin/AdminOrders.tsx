@@ -68,6 +68,7 @@ const statusTabs = [
   { label: "Return", color: "bg-red-400", icon: ArrowLeft },
   { label: "Cancelled", color: "bg-red-500", icon: XCircle },
   { label: "Hand Delivery", color: "bg-cyan-500", icon: Hand },
+  { label: "Deleted", color: "bg-destructive", icon: Trash2 },
 ];
 
 const orderStatusSettings = [
