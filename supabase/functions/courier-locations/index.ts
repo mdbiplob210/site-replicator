@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 Deno.serve(async (req) => {
@@ -11,11 +11,13 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Auth check
+  const JSON_HEADERS = { ...corsHeaders, "Content-Type": "application/json" };
+
+  // Auth check - use getUser instead of getClaims
   const authHeader = req.headers.get("Authorization");
   if (!authHeader?.startsWith("Bearer ")) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 401, headers: JSON_HEADERS,
     });
   }
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -23,12 +25,13 @@ Deno.serve(async (req) => {
   const authClient = createClient(supabaseUrl, supabaseAnonKey, {
     global: { headers: { Authorization: authHeader } },
   });
-  const { data: claims, error: claimsErr } = await authClient.auth.getClaims(authHeader.replace("Bearer ", ""));
-  if (claimsErr || !claims?.claims) {
+  const { data: userData, error: userErr } = await authClient.auth.getUser();
+  if (userErr || !userData?.user) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 401, headers: JSON_HEADERS,
     });
   }
+
   try {
     const url = new URL(req.url);
     const providerId = url.searchParams.get("provider_id");
@@ -39,14 +42,13 @@ Deno.serve(async (req) => {
     if (!providerId || !action) {
       return new Response(
         JSON.stringify({ error: "provider_id and action required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: JSON_HEADERS }
       );
     }
 
     // Get provider config from DB
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, serviceKey);
 
     const { data: provider, error: provError } = await supabase
       .from("courier_providers")
@@ -57,7 +59,7 @@ Deno.serve(async (req) => {
     if (provError || !provider) {
       return new Response(
         JSON.stringify({ error: "Provider not found" }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 404, headers: JSON_HEADERS }
       );
     }
 
@@ -68,12 +70,14 @@ Deno.serve(async (req) => {
     if (configs.length === 0) {
       return new Response(
         JSON.stringify({ error: "No API config found for this provider" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: JSON_HEADERS }
       );
     }
 
     const config = configs[0]; // Use first API config
     const slug = provider.slug;
+
+    console.log(`[courier-locations] slug=${slug}, action=${action}, cityId=${cityId}, zoneId=${zoneId}`);
 
     let result: any = [];
 
@@ -88,50 +92,61 @@ Deno.serve(async (req) => {
     } else {
       return new Response(
         JSON.stringify({ error: `Unsupported courier: ${slug}` }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: JSON_HEADERS }
       );
     }
 
+    console.log(`[courier-locations] ${slug}/${action} returned ${result.length} items`);
+
     return new Response(JSON.stringify({ data: result }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: JSON_HEADERS,
     });
   } catch (err: any) {
-    console.error("Courier locations error:", err);
+    console.error("Courier locations error:", err.message || err);
     return new Response(
-      JSON.stringify({ error: "Internal server error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({ error: err.message || "Internal server error" }),
+      { status: 500, headers: JSON_HEADERS }
     );
   }
 });
 
 // ========== PATHAO ==========
 async function getPathaoToken(config: any): Promise<string> {
-  // If api_key looks like a bearer token, use it directly
+  // If api_key looks like a bearer token (long string), use it directly
   if (config.api_key && config.api_key.length > 50) {
     return config.api_key;
   }
 
   // Otherwise, issue token using client credentials
   const baseUrl = config.base_url || "https://api-hermes.pathao.com";
+
+  // Pathao requires: client_id, client_secret, username (email), password, grant_type
+  const tokenPayload = {
+    client_id: config.client_id || "",
+    client_secret: config.secret_key || "",
+    username: config.email || config.api_key || "",
+    password: config.password || config.secret_key || "",
+    grant_type: "password",
+  };
+
+  console.log(`[pathao-token] Requesting token from ${baseUrl}, client_id=${tokenPayload.client_id}, username=${tokenPayload.username}`);
+
   const resp = await fetch(`${baseUrl}/aladdin/api/v1/issue-token`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      client_id: config.client_id || "",
-      client_secret: config.secret_key || "",
-      username: config.api_key || "",
-      password: config.secret_key || "",
-      grant_type: "password",
-    }),
+    body: JSON.stringify(tokenPayload),
   });
 
   if (!resp.ok) {
     const errText = await resp.text();
+    console.error(`[pathao-token] Auth failed [${resp.status}]: ${errText}`);
     throw new Error(`Pathao auth failed [${resp.status}]: ${errText}`);
   }
 
   const data = await resp.json();
-  return data.token || data.access_token || "";
+  const token = data.token || data.access_token || "";
+  console.log(`[pathao-token] Token obtained, length=${token.length}`);
+  return token;
 }
 
 async function handlePathao(config: any, action: string, cityId: string | null, zoneId: string | null) {
@@ -155,9 +170,11 @@ async function handlePathao(config: any, action: string, cityId: string | null, 
     throw new Error(`Invalid action: ${action}`);
   }
 
+  console.log(`[pathao] Fetching ${endpoint}`);
   const resp = await fetch(endpoint, { headers });
   if (!resp.ok) {
     const errText = await resp.text();
+    console.error(`[pathao] API failed [${resp.status}]: ${errText}`);
     throw new Error(`Pathao API failed [${resp.status}]: ${errText}`);
   }
 
@@ -174,7 +191,6 @@ async function handlePathao(config: any, action: string, cityId: string | null, 
 // ========== STEADFAST ==========
 async function handleSteadfast(_config: any, action: string, _cityId: string | null, _zoneId: string | null) {
   // Steadfast doesn't have city/zone/area API - they take free-text address
-  // Return empty to signal no structured locations
   if (action === "cities" || action === "zones" || action === "areas") {
     return [];
   }
@@ -190,12 +206,10 @@ async function handleRedx(config: any, action: string, _cityId: string | null, _
   };
 
   if (action === "cities") {
-    // RedX uses areas endpoint
     const resp = await fetch(`${baseUrl}/pickup/areas`, { headers });
     if (!resp.ok) return [];
     const data = await resp.json();
     const areas = data?.areas || [];
-    // Extract unique districts as "cities"
     const districtMap: Record<string, any> = {};
     areas.forEach((a: any) => {
       if (a.district_name && !districtMap[a.district_name]) {
@@ -219,10 +233,7 @@ async function handleEcourier(config: any, action: string, cityId: string | null
   };
 
   if (action === "cities") {
-    const resp = await fetch(`${baseUrl}/city-list`, {
-      method: "POST",
-      headers,
-    });
+    const resp = await fetch(`${baseUrl}/city-list`, { method: "POST", headers });
     if (!resp.ok) return [];
     const data = await resp.json();
     return (data || []).map((c: any) => ({ id: c.name, name: c.name }));
@@ -230,8 +241,7 @@ async function handleEcourier(config: any, action: string, cityId: string | null
 
   if (action === "zones" && cityId) {
     const resp = await fetch(`${baseUrl}/thana-list`, {
-      method: "POST",
-      headers,
+      method: "POST", headers,
       body: JSON.stringify({ city: cityId }),
     });
     if (!resp.ok) return [];
@@ -241,8 +251,7 @@ async function handleEcourier(config: any, action: string, cityId: string | null
 
   if (action === "areas" && cityId) {
     const resp = await fetch(`${baseUrl}/area-list`, {
-      method: "POST",
-      headers,
+      method: "POST", headers,
       body: JSON.stringify({ postcode: cityId }),
     });
     if (!resp.ok) return [];
