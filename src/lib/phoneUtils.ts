@@ -26,8 +26,8 @@ export function sanitizePhoneInput(raw: string): string {
   return result;
 }
 
-/** Validate Bangladesh phone: 01[3-9]XXXXXXXX (11 digits) or +8801... */
+/** Validate phone: minimum 11 digits, allows 11-15 digit numbers. Bengali digits should be sanitized first. */
 export function isValidBDPhone(phone: string): boolean {
   const cleaned = phone.replace(/^\+?880/, "0");
-  return /^01[3-9]\d{8}$/.test(cleaned);
+  return /^\d{11,15}$/.test(cleaned);
 }

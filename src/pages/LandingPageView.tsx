@@ -941,9 +941,9 @@ ttq.page();
     }
     return result;
   }
-  function isValidBDPhone(phone) {
-    var cleaned = phone.replace(/^\\+?880/, '0');
-    return /^01[3-9]\\d{8}$/.test(cleaned);
+  function isValidPhone(phone) {
+    var cleaned = phone.replace(/^\\+?880/, '0').replace(/[^0-9]/g, '');
+    return /^\\d{11,15}$/.test(cleaned);
   }
   document.addEventListener('input', function(e) {
     if (e.target && (e.target.name === 'customer_phone' || e.target.name === 'phone' || e.target.type === 'tel')) {
@@ -954,9 +954,9 @@ ttq.page();
     var form = e.target.closest('[data-checkout-form]');
     if (!form) return;
     var phoneInput = form.querySelector('[name="customer_phone"]') || form.querySelector('[name="phone"]') || form.querySelector('[type="tel"]');
-    if (phoneInput && !isValidBDPhone(phoneInput.value)) {
+    if (phoneInput && !isValidPhone(phoneInput.value)) {
       e.preventDefault(); e.stopImmediatePropagation();
-      alert('অনুগ্রহ করে সঠিক বাংলাদেশের মোবাইল নম্বর দিন (01XXXXXXXXX)');
+      alert('অনুগ্রহ করে সঠিক মোবাইল নম্বর দিন (কমপক্ষে ১১ সংখ্যা)');
       phoneInput.focus(); return false;
     }
   }, true);
