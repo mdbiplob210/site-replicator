@@ -30,7 +30,6 @@ const COLORS = ["hsl(var(--primary))", "#f97316", "#10b981", "#8b5cf6", "#ef4444
 const tooltipStyle = { backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", color: "hsl(var(--foreground))" };
 
 export default function AdminLandingPageAnalytics() {
-  const { data: summaries, isLoading } = useLandingPageAnalyticsSummary();
   const { data: pages } = useLandingPages();
   const [selectedPageId, setSelectedPageId] = useState<string>("all");
   const [days, setDays] = useState(7);
@@ -39,6 +38,7 @@ export default function AdminLandingPageAnalytics() {
   const pageFilter = selectedPageId === "all" ? undefined : selectedPageId;
   const useCustomDate = startDate && endDate;
 
+  const { data: summaries, isLoading } = useLandingPageAnalyticsSummary(days, useCustomDate ? startDate : undefined, useCustomDate ? endDate : undefined);
   const { data: dailyStats } = useLandingPageDailyStats(pageFilter, days, useCustomDate ? startDate : undefined, useCustomDate ? endDate : undefined);
   const { data: funnelData } = useLandingPageFunnel(pageFilter, days);
   const { data: utmData } = useLandingPageUTM(pageFilter, days);
@@ -58,9 +58,10 @@ export default function AdminLandingPageAnalytics() {
   }, [summaries, pageFilter]);
 
   const totalViews = filteredSummaries.reduce((s, p) => s + p.views, 0);
-  const totalClicks = filteredSummaries.reduce((s, p) => s + p.clicks, 0);
+  const totalOrderClicks = filteredSummaries.reduce((s, p) => s + p.orderClicks, 0);
   const totalConversions = filteredSummaries.reduce((s, p) => s + p.conversions, 0);
-  const avgCtr = totalViews > 0 ? (totalClicks / totalViews) * 100 : 0;
+  const totalClicks = filteredSummaries.reduce((s, p) => s + p.clicks, 0);
+  const avgCtr = totalViews > 0 ? (totalOrderClicks / totalViews) * 100 : 0;
   const avgBounce = filteredSummaries.length > 0 ? filteredSummaries.reduce((s, p) => s + p.bounceRate, 0) / filteredSummaries.length : 0;
 
   const handleExportCSV = () => {
@@ -140,12 +141,13 @@ export default function AdminLandingPageAnalytics() {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
           {[
-            { label: "মোট ভিউ", value: totalViews, icon: Eye, color: "text-primary" },
-            { label: "ক্লিক", value: totalClicks, icon: MousePointerClick, color: "text-orange-500" },
-            { label: "কনভার্সন", value: totalConversions, icon: Target, color: "text-green-500" },
-            { label: "CTR", value: `${avgCtr.toFixed(1)}%`, icon: TrendingUp, color: "text-purple-500" },
+            { label: "পেজ ভিজিট", value: totalViews, icon: Eye, color: "text-primary" },
+            { label: "মোট ক্লিক", value: totalClicks, icon: MousePointerClick, color: "text-orange-500" },
+            { label: "অর্ডার ক্লিক", value: totalOrderClicks, icon: Target, color: "text-blue-500" },
+            { label: "অর্ডার সম্পন্ন", value: totalConversions, icon: Zap, color: "text-green-500" },
+            { label: "কনভার্সন %", value: `${(totalViews > 0 ? (totalConversions / totalViews) * 100 : 0).toFixed(1)}%`, icon: TrendingUp, color: "text-purple-500" },
             { label: "বাউন্স রেট", value: `${avgBounce.toFixed(0)}%`, icon: ArrowDown, color: "text-red-500" },
             { label: "লাইভ", value: liveData?.count || 0, icon: Activity, color: "text-green-600" },
           ].map((c, i) => (
@@ -203,9 +205,12 @@ export default function AdminLandingPageAnalytics() {
                   <table className="w-full text-sm">
                     <thead><tr className="border-b text-muted-foreground text-xs">
                       <th className="text-left py-2 px-2">পেজ</th>
-                      <th className="text-right py-2 px-2">ভিউ</th><th className="text-right py-2 px-2">ক্লিক</th>
-                      <th className="text-right py-2 px-2">কনভ.</th><th className="text-right py-2 px-2">CTR</th>
-                      <th className="text-right py-2 px-2">কনভ.%</th><th className="text-right py-2 px-2">বাউন্স</th>
+                      <th className="text-right py-2 px-2">ভিজিট</th>
+                      <th className="text-right py-2 px-2">মোট ক্লিক</th>
+                      <th className="text-right py-2 px-2">অর্ডার ক্লিক</th>
+                      <th className="text-right py-2 px-2">অর্ডার</th>
+                      <th className="text-right py-2 px-2">কনভ.%</th>
+                      <th className="text-right py-2 px-2">বাউন্স</th>
                       <th className="text-right py-2 px-2">সময়</th>
                     </tr></thead>
                     <tbody>{filteredSummaries.map((s) => (
@@ -213,8 +218,8 @@ export default function AdminLandingPageAnalytics() {
                         <td className="py-2 px-2"><p className="font-medium text-foreground truncate max-w-[120px]">{s.title}</p><p className="text-xs text-muted-foreground font-mono">/lp/{s.slug}</p></td>
                         <td className="text-right py-2 px-2 font-medium">{s.views}</td>
                         <td className="text-right py-2 px-2">{s.clicks}</td>
+                        <td className="text-right py-2 px-2 text-blue-600 font-medium">{s.orderClicks}</td>
                         <td className="text-right py-2 px-2 font-medium text-green-600">{s.conversions}</td>
-                        <td className="text-right py-2 px-2">{s.ctr.toFixed(1)}%</td>
                         <td className="text-right py-2 px-2">{s.conversionRate.toFixed(1)}%</td>
                         <td className="text-right py-2 px-2">{s.bounceRate.toFixed(0)}%</td>
                         <td className="text-right py-2 px-2">{s.avgTimeOnPage}s</td>

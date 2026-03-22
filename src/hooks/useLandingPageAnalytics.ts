@@ -34,6 +34,7 @@ export interface PageAnalyticsSummary {
   slug: string;
   views: number;
   clicks: number;
+  orderClicks: number;
   conversions: number;
   ctr: number;
   conversionRate: number;
@@ -72,9 +73,9 @@ export function useLandingPageEvents(pageId?: string, startDate?: string, endDat
   });
 }
 
-export function useLandingPageAnalyticsSummary() {
+export function useLandingPageAnalyticsSummary(days = 30, startDate?: string, endDate?: string) {
   return useQuery({
-    queryKey: ["landing-page-analytics-summary"],
+    queryKey: ["landing-page-analytics-summary", days, startDate, endDate],
     queryFn: async () => {
       const { data: pages, error: pagesError } = await supabase
         .from("landing_pages" as any)
@@ -82,14 +83,18 @@ export function useLandingPageAnalyticsSummary() {
         .order("created_at", { ascending: false });
       if (pagesError) throw pagesError;
 
-      // Fetch all events (paginate to avoid 1000 row limit)
+      const { since, until } = getDateRange(days, startDate, endDate);
+
+      // Fetch all events with pagination and date filter
       let allEvents: any[] = [];
       let from = 0;
       const pageSize = 1000;
       while (true) {
         const { data: batch, error: batchError } = await supabase
           .from("landing_page_events" as any)
-          .select("landing_page_id, event_type, visitor_id, session_id, time_on_page")
+          .select("landing_page_id, event_type, event_name, visitor_id, session_id, time_on_page")
+          .gte("created_at", since)
+          .lte("created_at", until)
           .range(from, from + pageSize - 1);
         if (batchError) throw batchError;
         if (!batch || batch.length === 0) break;
@@ -97,15 +102,20 @@ export function useLandingPageAnalyticsSummary() {
         if (batch.length < pageSize) break;
         from += pageSize;
       }
-      const events = allEvents;
 
       const typedPages = pages as unknown as { id: string; title: string; slug: string }[];
-      const typedEvents = events as unknown as { landing_page_id: string; event_type: string; visitor_id: string | null; session_id: string | null; time_on_page: number | null }[];
+      const typedEvents = allEvents as unknown as { landing_page_id: string; event_type: string; event_name: string | null; visitor_id: string | null; session_id: string | null; time_on_page: number | null }[];
 
       return typedPages.map((page) => {
         const pe = typedEvents.filter((e) => e.landing_page_id === page.id);
         const views = pe.filter((e) => e.event_type === "view").length;
         const clicks = pe.filter((e) => e.event_type === "click").length;
+        // Order button clicks - clicks that contain order-related text
+        const orderClicks = pe.filter((e) => {
+          if (e.event_type !== "click") return false;
+          const name = (e.event_name || "").toLowerCase();
+          return name.includes("অর্ডার") || name.includes("order") || name.includes("কনফার্ম") || name.includes("confirm") || name.includes("buy");
+        }).length;
         const conversions = pe.filter((e) => e.event_type === "conversion").length;
         const exitEvents = pe.filter((e) => e.event_type === "exit" && e.time_on_page);
         const avgTime = exitEvents.length > 0 ? exitEvents.reduce((s, e) => s + (e.time_on_page || 0), 0) / exitEvents.length : 0;
@@ -125,7 +135,7 @@ export function useLandingPageAnalyticsSummary() {
           landing_page_id: page.id,
           title: page.title,
           slug: page.slug,
-          views, clicks, conversions,
+          views, clicks, orderClicks, conversions,
           ctr: views > 0 ? (clicks / views) * 100 : 0,
           conversionRate: views > 0 ? (conversions / views) * 100 : 0,
           avgTimeOnPage: Math.round(avgTime),
