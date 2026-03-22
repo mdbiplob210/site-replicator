@@ -539,6 +539,17 @@ const AdminOrders = () => {
     toast.success("Refreshing data...");
   }, [queryClient]);
 
+  // Preload courier check cache from DB — avoids individual edge function calls on refresh
+  useEffect(() => {
+    if (!orders.length) return;
+    const phones = orders
+      .map((o: any) => o.customer_phone)
+      .filter(Boolean) as string[];
+    if (phones.length > 0) {
+      void preloadCourierCache(phones);
+    }
+  }, [orders]);
+
   // Courier orders for filtering
   const { data: courierOrders = [] } = useQuery({
     queryKey: ["courier-orders-filter"],
