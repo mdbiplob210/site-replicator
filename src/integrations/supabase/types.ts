@@ -247,6 +247,27 @@ export type Database = {
         }
         Relationships: []
       }
+      courier_check_cache: {
+        Row: {
+          created_at: string
+          id: string
+          phone: string
+          response_data: Json
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          phone: string
+          response_data?: Json
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          phone?: string
+          response_data?: Json
+        }
+        Relationships: []
+      }
       courier_orders: {
         Row: {
           consignment_id: string | null
