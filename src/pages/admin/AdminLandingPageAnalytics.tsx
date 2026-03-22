@@ -205,9 +205,12 @@ export default function AdminLandingPageAnalytics() {
                   <table className="w-full text-sm">
                     <thead><tr className="border-b text-muted-foreground text-xs">
                       <th className="text-left py-2 px-2">পেজ</th>
-                      <th className="text-right py-2 px-2">ভিউ</th><th className="text-right py-2 px-2">ক্লিক</th>
-                      <th className="text-right py-2 px-2">কনভ.</th><th className="text-right py-2 px-2">CTR</th>
-                      <th className="text-right py-2 px-2">কনভ.%</th><th className="text-right py-2 px-2">বাউন্স</th>
+                      <th className="text-right py-2 px-2">ভিজিট</th>
+                      <th className="text-right py-2 px-2">মোট ক্লিক</th>
+                      <th className="text-right py-2 px-2">অর্ডার ক্লিক</th>
+                      <th className="text-right py-2 px-2">অর্ডার</th>
+                      <th className="text-right py-2 px-2">কনভ.%</th>
+                      <th className="text-right py-2 px-2">বাউন্স</th>
                       <th className="text-right py-2 px-2">সময়</th>
                     </tr></thead>
                     <tbody>{filteredSummaries.map((s) => (
@@ -215,8 +218,8 @@ export default function AdminLandingPageAnalytics() {
                         <td className="py-2 px-2"><p className="font-medium text-foreground truncate max-w-[120px]">{s.title}</p><p className="text-xs text-muted-foreground font-mono">/lp/{s.slug}</p></td>
                         <td className="text-right py-2 px-2 font-medium">{s.views}</td>
                         <td className="text-right py-2 px-2">{s.clicks}</td>
+                        <td className="text-right py-2 px-2 text-blue-600 font-medium">{s.orderClicks}</td>
                         <td className="text-right py-2 px-2 font-medium text-green-600">{s.conversions}</td>
-                        <td className="text-right py-2 px-2">{s.ctr.toFixed(1)}%</td>
                         <td className="text-right py-2 px-2">{s.conversionRate.toFixed(1)}%</td>
                         <td className="text-right py-2 px-2">{s.bounceRate.toFixed(0)}%</td>
                         <td className="text-right py-2 px-2">{s.avgTimeOnPage}s</td>
