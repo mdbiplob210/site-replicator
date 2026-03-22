@@ -137,6 +137,134 @@ const bdZoneList = [
   "Barisal Metro", "Mymensingh Metro", "Outside Metro",
 ];
 
+const LOCATION_GENERIC_WORDS = new Set([
+  "city", "district", "zila", "division", "upazila", "thana", "metro", "area",
+]);
+
+const BANGLA_VOWEL_SIGNS = new Set(["া", "ি", "ী", "ু", "ূ", "ৃ", "ে", "ৈ", "ো", "ৌ"]);
+const BANGLA_CONSONANTS = new Set([
+  "ক", "খ", "গ", "ঘ", "ঙ", "চ", "ছ", "জ", "ঝ", "ঞ", "ট", "ঠ", "ড", "ঢ", "ণ",
+  "ত", "থ", "দ", "ধ", "ন", "প", "ফ", "ব", "ভ", "ম", "য", "র", "ল", "শ", "ষ",
+  "স", "হ", "ড়", "ঢ়", "য়",
+]);
+
+const BANGLA_ROMAN_MAP: Record<string, string> = {
+  "অ": "o", "আ": "a", "ই": "i", "ঈ": "i", "উ": "u", "ঊ": "u", "ঋ": "ri", "এ": "e", "ঐ": "oi", "ও": "o", "ঔ": "ou",
+  "া": "a", "ি": "i", "ী": "i", "ু": "u", "ূ": "u", "ৃ": "ri", "ে": "e", "ৈ": "oi", "ো": "o", "ৌ": "ou",
+  "ং": "ng", "ঃ": "h", "ঁ": "n", "্": "",
+  "ক": "k", "খ": "kh", "গ": "g", "ঘ": "gh", "ঙ": "ng", "চ": "ch", "ছ": "chh", "জ": "j", "ঝ": "jh", "ঞ": "n",
+  "ট": "t", "ঠ": "th", "ড": "d", "ঢ": "dh", "ণ": "n", "ত": "t", "থ": "th", "দ": "d", "ধ": "dh", "ন": "n",
+  "প": "p", "ফ": "f", "ব": "b", "ভ": "v", "ম": "m", "য": "y", "র": "r", "ল": "l", "শ": "s", "ষ": "s", "স": "s", "হ": "h", "ড়": "r", "ঢ়": "rh", "য়": "y",
+};
+
+const transliterateBanglaText = (value: string) => {
+  let output = "";
+
+  for (let index = 0; index < value.length; index += 1) {
+    const current = value[index];
+    const next = value[index + 1];
+
+    if (BANGLA_CONSONANTS.has(current)) {
+      output += BANGLA_ROMAN_MAP[current] || "";
+      if (next === "্" || BANGLA_VOWEL_SIGNS.has(next)) {
+        continue;
+      }
+      output += "a";
+      continue;
+    }
+
+    output += BANGLA_ROMAN_MAP[current] ?? current;
+  }
+
+  return output.replace(/a$/g, "");
+};
+
+const normalizeLocationName = (value: string) => {
+  const romanized = /[\u0980-\u09FF]/.test(value) ? transliterateBanglaText(value) : value;
+
+  return romanized
+    .toLowerCase()
+    .replace(/['`.(),/-]/g, " ")
+    .replace(/\bchattogram\b/g, "chittagong")
+    .replace(/\bchattagram\b/g, "chittagong")
+    .replace(/\bcumilla\b/g, "comilla")
+    .replace(/\bjashore\b/g, "jessore")
+    .replace(/\bborishal\b/g, "barisal")
+    .replace(/\bcoxs\s*bazar\b/g, "cox bazar")
+    .replace(/\s+/g, " ")
+    .trim();
+};
+
+const toPhoneticKey = (value: string) =>
+  normalizeLocationName(value)
+    .replace(/z/g, "j")
+    .replace(/q/g, "k")
+    .replace(/x/g, "ks")
+    .replace(/ph/g, "f")
+    .replace(/bh/g, "v")
+    .replace(/sh/g, "s")
+    .replace(/[aeiou]/g, "")
+    .replace(/(.)\1+/g, "$1")
+    .replace(/\s+/g, "");
+
+const getLocationMatchScore = (address: string, candidate: string) => {
+  const normalizedAddress = normalizeLocationName(address);
+  const normalizedCandidate = normalizeLocationName(candidate);
+
+  if (!normalizedAddress || !normalizedCandidate) return 0;
+
+  let score = 0;
+
+  if (normalizedAddress.includes(normalizedCandidate)) {
+    score = Math.max(score, 120 + normalizedCandidate.length);
+  }
+
+  const addressTokens = normalizedAddress.split(" ").filter(Boolean);
+  const candidateTokens = normalizedCandidate
+    .split(" ")
+    .filter((token) => token.length > 1 && !LOCATION_GENERIC_WORDS.has(token));
+
+  const tokenHits = candidateTokens.filter((candidateToken) =>
+    addressTokens.some(
+      (addressToken) =>
+        addressToken === candidateToken ||
+        addressToken.includes(candidateToken) ||
+        candidateToken.includes(addressToken),
+    ),
+  ).length;
+
+  if (tokenHits > 0) {
+    score = Math.max(score, 72 + tokenHits * 12 + normalizedCandidate.length);
+  }
+
+  const addressKey = toPhoneticKey(address);
+  const candidateKey = toPhoneticKey(candidate);
+
+  if (candidateKey.length >= 3 && addressKey.includes(candidateKey)) {
+    score = Math.max(score, 88 + candidateKey.length);
+  }
+
+  return score;
+};
+
+const findBestLocationMatch = (
+  address: string,
+  locations: Array<{ id: string | number; name: string }>,
+) => {
+  let bestMatch: { id: string | number; name: string } | null = null;
+  let bestScore = 0;
+
+  for (const location of locations) {
+    const score = getLocationMatchScore(address, location.name);
+    if (score > bestScore) {
+      bestScore = score;
+      bestMatch = location;
+    }
+  }
+
+  return bestScore >= 78 ? bestMatch : null;
+};
+
 type View = "orders" | "incomplete" | "fakeOrder" | "courier" | "api";
 
 const AdminOrders = () => {
@@ -338,6 +466,71 @@ const AdminOrders = () => {
       });
     },
   });
+
+  const selectedCourier = useMemo(
+    () => courierProviders.find((provider: any) => provider.id === selectedCourierId) || null,
+    [courierProviders, selectedCourierId],
+  );
+  const lastAutoCityIdRef = useRef<string | null>(null);
+  const lastAutoZoneIdRef = useRef<string | null>(null);
+  const isPathaoCourier = selectedCourier?.slug === "pathao";
+
+  useEffect(() => {
+    if (!isPathaoCourier || !customerAddress.trim() || citiesLoading || courierCities.length === 0) {
+      return;
+    }
+
+    const canAutoUpdateCity = !selectedCityId || selectedCityId === lastAutoCityIdRef.current;
+    if (!canAutoUpdateCity) return;
+
+    const matchedCity = findBestLocationMatch(customerAddress, courierCities as Array<{ id: string | number; name: string }>);
+
+    if (matchedCity) {
+      const nextCityId = String(matchedCity.id);
+      if (selectedCityId !== nextCityId) {
+        setSelectedCityId(nextCityId);
+        setSelectedZoneId(null);
+        setSelectedAreaId(null);
+      }
+      lastAutoCityIdRef.current = nextCityId;
+      return;
+    }
+
+    if (selectedCityId && selectedCityId === lastAutoCityIdRef.current) {
+      setSelectedCityId(null);
+      setSelectedZoneId(null);
+      setSelectedAreaId(null);
+    }
+    lastAutoCityIdRef.current = null;
+  }, [citiesLoading, courierCities, customerAddress, isPathaoCourier, selectedCityId]);
+
+  useEffect(() => {
+    if (!isPathaoCourier || !selectedCityId || !customerAddress.trim() || zonesLoading || courierZones.length === 0) {
+      return;
+    }
+
+    const canAutoUpdateZone = !selectedZoneId || selectedZoneId === lastAutoZoneIdRef.current;
+    if (!canAutoUpdateZone) return;
+
+    const matchedZone = findBestLocationMatch(customerAddress, courierZones as Array<{ id: string | number; name: string }>);
+
+    if (matchedZone) {
+      const nextZoneId = String(matchedZone.id);
+      if (selectedZoneId !== nextZoneId) {
+        setSelectedZoneId(nextZoneId);
+        setSelectedAreaId(null);
+      }
+      lastAutoZoneIdRef.current = nextZoneId;
+      return;
+    }
+
+    if (selectedZoneId && selectedZoneId === lastAutoZoneIdRef.current) {
+      setSelectedZoneId(null);
+      setSelectedAreaId(null);
+    }
+    lastAutoZoneIdRef.current = null;
+  }, [courierZones, customerAddress, isPathaoCourier, selectedCityId, selectedZoneId, zonesLoading]);
+
   const { data: categories = [] } = useQuery({
     queryKey: ["categories-filter"],
     queryFn: async () => {
