@@ -1721,7 +1721,7 @@ const AdminOrders = () => {
                   )}
 
                   {/* Fraud Check & Old Orders by Phone */}
-                  {customerPhone && customerPhone.length >= 6 && (
+                  {searchedPhone && searchedPhone.length >= 6 && (
                     <div className="space-y-2">
                       {fraudCheckData && (
                         <div className="p-3 rounded-xl border border-border/60 bg-secondary/20">
