@@ -3685,9 +3685,12 @@ const AdminOrders = () => {
                         <span>{items.length} items</span>
                         <span>·</span>
                         {courierInfo ? (
-                          <span className="flex items-center gap-1">
+                          <span className="flex items-center gap-1 flex-wrap">
                             <Truck className="h-3 w-3 text-violet-500" />
                             {courierInfo.provider_name}
+                            {courierInfo.consignment_id && (
+                              <span className="font-mono text-[9px] bg-secondary/50 px-1 py-0.5 rounded">{courierInfo.consignment_id}</span>
+                            )}
                           </span>
                         ) : (
                           <span>No courier</span>
