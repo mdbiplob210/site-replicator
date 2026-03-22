@@ -3800,7 +3800,7 @@ export default AdminOrders;
 function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null; order: any; onClose: () => void }) {
   const { data: items = [], isLoading } = useOrderItems(orderId);
   const { data: allProducts = [] } = usePublicProducts();
-  const { user, isAdmin, userRoles } = useAuth();
+  const { user, isAdmin, userRoles, session } = useAuth();
   const queryClient = useQueryClient();
 
   // Check transfer permission inside this component
