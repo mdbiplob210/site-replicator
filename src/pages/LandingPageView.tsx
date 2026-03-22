@@ -960,6 +960,16 @@ ttq.page();
       phoneInput.focus(); return false;
     }
   }, true);
+  // Fix maxlength on all phone inputs (old saved HTML may have maxlength=11)
+  function fixPhoneMaxLength() {
+    var inputs = document.querySelectorAll('[name="customer_phone"],[name="phone"],[type="tel"]');
+    for (var i = 0; i < inputs.length; i++) {
+      if (inputs[i].maxLength && inputs[i].maxLength < 15) inputs[i].maxLength = 15;
+      if (inputs[i].getAttribute('pattern')) inputs[i].removeAttribute('pattern');
+    }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fixPhoneMaxLength);
+  else fixPhoneMaxLength();
 })();
 </script>`;
 
