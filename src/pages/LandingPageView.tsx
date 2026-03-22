@@ -69,11 +69,33 @@ window._lpTrack = {
     };
   },
   // Send server-side event via Conversions API (with per-page slug for token lookup)
+  // Stored user data for advanced matching
+  _userData: {},
+  setUserData: function(data) {
+    this._userData = Object.assign(this._userData || {}, data);
+    try { sessionStorage.setItem('_lp_fb_ud', JSON.stringify(this._userData)); } catch(e) {}
+  },
+  getUserData: function() {
+    if (this._userData && Object.keys(this._userData).length > 0) return this._userData;
+    try { var d = sessionStorage.getItem('_lp_fb_ud'); if (d) { this._userData = JSON.parse(d); return this._userData; } } catch(e) {}
+    return {};
+  },
+  normalizePhone: function(ph) {
+    if (!ph) return '';
+    var cleaned = ph.replace(/[^0-9]/g, '');
+    if (cleaned.indexOf('0') === 0) cleaned = '880' + cleaned.substring(1);
+    if (cleaned.indexOf('880') !== 0 && cleaned.length === 10) cleaned = '880' + cleaned;
+    return cleaned;
+  },
   sendServerEvent: function(eventName, customData, userData) {
     var CAPI_URL = '${supabaseUrl}/functions/v1/fb-conversions-api';
     var ANON = '${anonKey}';
     var extId = localStorage.getItem('_vid') || ('v_' + Date.now() + '_' + Math.random().toString(36).substr(2,12));
     if (!localStorage.getItem('_vid')) localStorage.setItem('_vid', extId);
+    
+    // Merge stored + provided user data
+    var ud = Object.assign({}, this.getUserData(), userData || {});
+    
     var payload = {
       pixel_id: '${page.fb_pixel_id || ''}',
       event_name: eventName,
@@ -82,20 +104,20 @@ window._lpTrack = {
       user_agent: navigator.userAgent,
       fbp: this.getFbp(),
       fbc: this.getFbc(),
-      user_external_id: extId,
+      user_external_id: ud.order_id || extId,
       custom_data: customData,
-      landing_page_slug: '${page.slug || ''}'
+      landing_page_slug: '${page.slug || ''}',
+      user_country: 'bd'
     };
-    // Add user PII if provided (will be hashed server-side)
-    if (userData) {
-      if (userData.phone) payload.user_phone = userData.phone;
-      if (userData.email) payload.user_email = userData.email;
-      if (userData.name) {
-        var parts = userData.name.trim().split(/\\s+/);
-        payload.user_fn = parts[0] || '';
-        payload.user_ln = parts.slice(1).join(' ') || '';
-      }
+    // Add user PII (will be hashed server-side)
+    if (ud.phone) payload.user_phone = this.normalizePhone(ud.phone);
+    if (ud.name) {
+      var parts = ud.name.trim().split(/\\s+/);
+      payload.user_fn = parts[0] || '';
+      payload.user_ln = parts.slice(1).join(' ') || '';
     }
+    if (ud.city) payload.user_ct = ud.city;
+    if (ud.email) payload.user_email = ud.email;
     try {
       var blob = new Blob([JSON.stringify(payload)], {type: 'application/json'});
       navigator.sendBeacon(CAPI_URL + '?apikey=' + ANON, blob);
