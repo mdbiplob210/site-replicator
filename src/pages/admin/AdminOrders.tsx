@@ -412,12 +412,22 @@ const AdminOrders = () => {
   const { data: customerStatsByPhone = {} } = useQuery({
     queryKey: ["customer-stats-by-phone"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("orders")
-        .select("customer_phone, status");
-      if (error) throw error;
+      let allData: any[] = [];
+      let from = 0;
+      const pageSize = 1000;
+      while (true) {
+        const { data, error } = await supabase
+          .from("orders")
+          .select("customer_phone, status")
+          .range(from, from + pageSize - 1);
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+        allData = allData.concat(data);
+        if (data.length < pageSize) break;
+        from += pageSize;
+      }
       const phoneMap: Record<string, { total: number; success: number; failed: number; confirmed: number; isNew: boolean }> = {};
-      (data || []).forEach((o: any) => {
+      allData.forEach((o: any) => {
         const phone = o.customer_phone;
         if (!phone) return;
         if (!phoneMap[phone]) phoneMap[phone] = { total: 0, success: 0, failed: 0, confirmed: 0, isNew: true };
