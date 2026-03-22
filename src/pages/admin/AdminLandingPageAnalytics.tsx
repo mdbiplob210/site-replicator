@@ -612,7 +612,7 @@ export default function AdminLandingPageAnalytics() {
 
           {/* ══════ AI Insights ══════ */}
           <TabsContent value="ai" className="space-y-4">
-            <AnalyticsAIInsights summaries={summaries} funnelData={funnelData} cohortData={cohortData} utmData={utmData} />
+            <AnalyticsAIInsights summaries={filteredSummaries} funnelData={funnelData} cohortData={cohortData} utmData={utmData} />
           </TabsContent>
         </Tabs>
       </div>
