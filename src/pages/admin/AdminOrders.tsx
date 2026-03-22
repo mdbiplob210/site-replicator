@@ -540,13 +540,16 @@ const AdminOrders = () => {
   }, [queryClient]);
 
   // Preload courier check cache from DB — avoids individual edge function calls on refresh
+  const [courierCacheReady, setCourierCacheReady] = useState(false);
   useEffect(() => {
     if (!orders.length) return;
     const phones = orders
       .map((o: any) => o.customer_phone)
       .filter(Boolean) as string[];
     if (phones.length > 0) {
-      void preloadCourierCache(phones);
+      preloadCourierCache(phones).then(() => setCourierCacheReady(true));
+    } else {
+      setCourierCacheReady(true);
     }
   }, [orders]);
 
