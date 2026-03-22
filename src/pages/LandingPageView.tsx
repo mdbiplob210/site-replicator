@@ -1056,7 +1056,9 @@ ttq.page();
       discount: parseFloat(formData.get('discount') || form.getAttribute('data-discount') || '0'),
       notes: formData.get('notes') || '',
       landing_page_slug: SLUG,
-      visitor_id: VID
+      visitor_id: VID,
+      session_id: sessionStorage.getItem('_lp_sid') || '',
+      device_type: window.innerWidth < 768 ? 'mobile' : window.innerWidth < 1024 ? 'tablet' : 'desktop'
     };
 
     fetch(ORDER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
