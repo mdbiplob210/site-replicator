@@ -46,7 +46,7 @@ import { CourierSuccessRate } from "@/components/admin/courier/CourierSuccessRat
 import { CourierHistoryBadge } from "@/components/admin/courier/CourierHistoryBadge";
 import { FakeOrderDetection } from "@/components/admin/fraud/FakeOrderDetection";
 import { useBulkMemoPrint } from "@/components/admin/courier/BulkMemoPrint";
-import { useCourierCities, useCourierZones, useCourierAreas } from "@/hooks/useCourierLocations";
+import { useCourierCities, useCourierZones, useCourierAreas, prefetchCourierLocations } from "@/hooks/useCourierLocations";
 import { ApiKeysView } from "@/components/admin/api/ApiKeysView";
 import { fetchCourierCheck } from "@/lib/courierCheckCache";
 import { Constants } from "@/integrations/supabase/types";
@@ -310,6 +310,59 @@ const findBestLocationMatch = (
   return bestScore >= 78 ? bestMatch : null;
 };
 
+const extractPathaoLocationHints = (address: string) => {
+  const normalizedAddress = normalizeLocationName(address);
+
+  if (!normalizedAddress) {
+    return { cityHints: [] as string[], zoneHints: [] as string[] };
+  }
+
+  return {
+    cityHints: bdDistrictList.filter((district) =>
+      normalizedAddress.includes(normalizeLocationName(district)),
+    ),
+    zoneHints: bdThanaList.filter((thana) =>
+      normalizedAddress.includes(normalizeLocationName(thana)),
+    ),
+  };
+};
+
+const findLocationByHints = (
+  locations: Array<{ id: string | number; name: string }>,
+  hints: string[],
+) => {
+  const normalizedHints = Array.from(
+    new Set(hints.map((hint) => normalizeLocationName(hint)).filter(Boolean)),
+  );
+
+  if (normalizedHints.length === 0) return null;
+
+  for (const hint of normalizedHints) {
+    const matchedLocation = locations.find((location) => {
+      const normalizedLocation = normalizeLocationName(location.name);
+      return (
+        normalizedLocation === hint ||
+        normalizedLocation.includes(hint) ||
+        hint.includes(normalizedLocation)
+      );
+    });
+
+    if (matchedLocation) {
+      return matchedLocation;
+    }
+  }
+
+  return null;
+};
+
+const resolvePathaoLocationMatch = (
+  address: string,
+  locations: Array<{ id: string | number; name: string }>,
+  hints: string[],
+) => {
+  return findLocationByHints(locations, hints) ?? findBestLocationMatch(address, locations);
+};
+
 type View = "orders" | "incomplete" | "fakeOrder" | "courier" | "api";
 
 const AdminOrders = () => {
@@ -409,7 +462,7 @@ const AdminOrders = () => {
   const [selectedCityId, setSelectedCityId] = useState<string | null>(null);
   const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null);
   const [selectedAreaId, setSelectedAreaId] = useState<string | null>(null);
-  const { user } = useAuth();
+  const { user, session, loading: authLoading } = useAuth();
   const statusFilter = getStatusFromTab(activeTab);
   const queryClient = useQueryClient();
 
@@ -516,9 +569,37 @@ const AdminOrders = () => {
     () => courierProviders.find((provider: any) => provider.id === selectedCourierId) || null,
     [courierProviders, selectedCourierId],
   );
+  const pathaoProviderId = useMemo(
+    () => courierProviders.find((provider: any) => provider.slug === "pathao")?.id ?? null,
+    [courierProviders],
+  );
   const lastAutoCityIdRef = useRef<string | null>(null);
   const lastAutoZoneIdRef = useRef<string | null>(null);
   const isPathaoCourier = selectedCourier?.slug === "pathao";
+
+  useEffect(() => {
+    if (!pathaoProviderId || !session?.access_token || authLoading) {
+      return;
+    }
+
+    void prefetchCourierLocations(queryClient, session.access_token, pathaoProviderId, "cities");
+  }, [authLoading, pathaoProviderId, queryClient, session?.access_token]);
+
+  useEffect(() => {
+    if (!isPathaoCourier || !selectedCourierId || !selectedCityId || !session?.access_token) {
+      return;
+    }
+
+    void prefetchCourierLocations(queryClient, session.access_token, selectedCourierId, "zones", selectedCityId);
+  }, [isPathaoCourier, queryClient, selectedCityId, selectedCourierId, session?.access_token]);
+
+  useEffect(() => {
+    if (!isPathaoCourier || !selectedCourierId || !selectedZoneId || !session?.access_token) {
+      return;
+    }
+
+    void prefetchCourierLocations(queryClient, session.access_token, selectedCourierId, "areas", undefined, selectedZoneId);
+  }, [isPathaoCourier, queryClient, selectedCourierId, selectedZoneId, session?.access_token]);
 
   useEffect(() => {
     if (!isPathaoCourier || !customerAddress.trim() || citiesLoading || courierCities.length === 0) {
@@ -528,7 +609,8 @@ const AdminOrders = () => {
     const canAutoUpdateCity = !selectedCityId || selectedCityId === lastAutoCityIdRef.current;
     if (!canAutoUpdateCity) return;
 
-    const matchedCity = findBestLocationMatch(customerAddress, courierCities as Array<{ id: string | number; name: string }>);
+    const { cityHints } = extractPathaoLocationHints(customerAddress);
+    const matchedCity = resolvePathaoLocationMatch(customerAddress, courierCities as Array<{ id: string | number; name: string }>, cityHints);
 
     if (matchedCity) {
       const nextCityId = String(matchedCity.id);
@@ -536,6 +618,9 @@ const AdminOrders = () => {
         setSelectedCityId(nextCityId);
         setSelectedZoneId(null);
         setSelectedAreaId(null);
+      }
+      if (session?.access_token && selectedCourierId) {
+        void prefetchCourierLocations(queryClient, session.access_token, selectedCourierId, "zones", nextCityId);
       }
       lastAutoCityIdRef.current = nextCityId;
       return;
@@ -557,13 +642,17 @@ const AdminOrders = () => {
     const canAutoUpdateZone = !selectedZoneId || selectedZoneId === lastAutoZoneIdRef.current;
     if (!canAutoUpdateZone) return;
 
-    const matchedZone = findBestLocationMatch(customerAddress, courierZones as Array<{ id: string | number; name: string }>);
+    const { zoneHints } = extractPathaoLocationHints(customerAddress);
+    const matchedZone = resolvePathaoLocationMatch(customerAddress, courierZones as Array<{ id: string | number; name: string }>, zoneHints);
 
     if (matchedZone) {
       const nextZoneId = String(matchedZone.id);
       if (selectedZoneId !== nextZoneId) {
         setSelectedZoneId(nextZoneId);
         setSelectedAreaId(null);
+      }
+      if (session?.access_token && selectedCourierId) {
+        void prefetchCourierLocations(queryClient, session.access_token, selectedCourierId, "areas", undefined, nextZoneId);
       }
       lastAutoZoneIdRef.current = nextZoneId;
       return;
@@ -2196,10 +2285,15 @@ const AdminOrders = () => {
                       কুরিয়ার সিলেক্ট
                     </h3>
                     <Select value={selectedCourierId || ""} onValueChange={(v) => {
-                      setSelectedCourierId(v || null);
+                      const nextCourierId = v || null;
+                      const nextCourier = courierProviders.find((cp: any) => cp.id === nextCourierId);
+                      setSelectedCourierId(nextCourierId);
                       setSelectedCityId(null);
                       setSelectedZoneId(null);
                       setSelectedAreaId(null);
+                      if (nextCourierId && nextCourier?.slug === "pathao" && session?.access_token) {
+                        void prefetchCourierLocations(queryClient, session.access_token, nextCourierId, "cities");
+                      }
                     }}>
                       <SelectTrigger className="rounded-xl h-9 text-sm">
                         <SelectValue placeholder="কুরিয়ার সিলেক্ট করুন" />
@@ -3880,16 +3974,29 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
     setEditCourierAreaId(null);
   }, [courierOrderRef, orderRef]);
 
-  // Auto-detect location from address
-  const detectedLoc = useMemo(() => {
-    const addr = editAddress.toLowerCase();
-    if (!addr) return { city: "", zone: "", area: "" };
-    const city = bdDistrictList.find(d => addr.includes(d.toLowerCase())) || "";
-    const zone = bdZoneList.find(z => addr.includes(z.toLowerCase().replace(" metro", "").replace(" sub", ""))) || 
-      (city ? (["Dhaka", "Chittagong", "Rajshahi", "Khulna", "Sylhet", "Rangpur"].includes(city) ? `${city} Metro` : "") : "");
-    const area = bdThanaList.find(t => addr.includes(t.toLowerCase())) || "";
-    return { city, zone, area };
-  }, [editAddress]);
+  useEffect(() => {
+    if (!isEditPathaoCourier || !editCourierId || !session?.access_token) {
+      return;
+    }
+
+    void prefetchCourierLocations(queryClient, session.access_token, editCourierId, "cities");
+  }, [editCourierId, isEditPathaoCourier, queryClient, session?.access_token]);
+
+  useEffect(() => {
+    if (!isEditPathaoCourier || !editCourierId || !editCourierCityId || !session?.access_token) {
+      return;
+    }
+
+    void prefetchCourierLocations(queryClient, session.access_token, editCourierId, "zones", editCourierCityId);
+  }, [editCourierCityId, editCourierId, isEditPathaoCourier, queryClient, session?.access_token]);
+
+  useEffect(() => {
+    if (!isEditPathaoCourier || !editCourierId || !editCourierZoneId || !session?.access_token) {
+      return;
+    }
+
+    void prefetchCourierLocations(queryClient, session.access_token, editCourierId, "areas", undefined, editCourierZoneId);
+  }, [editCourierId, editCourierZoneId, isEditPathaoCourier, queryClient, session?.access_token]);
 
   useEffect(() => {
     if (!isEditPathaoCourier || !editAddress.trim() || editCitiesLoading || editCourierCities.length === 0) {
@@ -3899,7 +4006,8 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
     const canAutoUpdateCity = !editCourierCityId || editCourierCityId === lastEditAutoCityIdRef.current;
     if (!canAutoUpdateCity) return;
 
-    const matchedCity = findBestLocationMatch(editAddress, editCourierCities as Array<{ id: string | number; name: string }>);
+    const { cityHints } = extractPathaoLocationHints(editAddress);
+    const matchedCity = resolvePathaoLocationMatch(editAddress, editCourierCities as Array<{ id: string | number; name: string }>, cityHints);
 
     if (matchedCity) {
       const nextCityId = String(matchedCity.id);
@@ -3907,6 +4015,9 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
         setEditCourierCityId(nextCityId);
         setEditCourierZoneId(null);
         setEditCourierAreaId(null);
+      }
+      if (session?.access_token && editCourierId) {
+        void prefetchCourierLocations(queryClient, session.access_token, editCourierId, "zones", nextCityId);
       }
       lastEditAutoCityIdRef.current = nextCityId;
       return;
@@ -3928,13 +4039,17 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
     const canAutoUpdateZone = !editCourierZoneId || editCourierZoneId === lastEditAutoZoneIdRef.current;
     if (!canAutoUpdateZone) return;
 
-    const matchedZone = findBestLocationMatch(editAddress, editCourierZones as Array<{ id: string | number; name: string }>);
+    const { zoneHints } = extractPathaoLocationHints(editAddress);
+    const matchedZone = resolvePathaoLocationMatch(editAddress, editCourierZones as Array<{ id: string | number; name: string }>, zoneHints);
 
     if (matchedZone) {
       const nextZoneId = String(matchedZone.id);
       if (editCourierZoneId !== nextZoneId) {
         setEditCourierZoneId(nextZoneId);
         setEditCourierAreaId(null);
+      }
+      if (session?.access_token && editCourierId) {
+        void prefetchCourierLocations(queryClient, session.access_token, editCourierId, "areas", undefined, nextZoneId);
       }
       lastEditAutoZoneIdRef.current = nextZoneId;
       return;
@@ -4264,10 +4379,15 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                 কুরিয়ার সিলেক্ট
               </h3>
               <Select value={editCourierId || ""} onValueChange={(v) => {
-                setEditCourierId(v || null);
+                const nextCourierId = v || null;
+                const nextCourier = editCourierProviders.find((cp: any) => cp.id === nextCourierId);
+                setEditCourierId(nextCourierId);
                 setEditCourierCityId(null);
                 setEditCourierZoneId(null);
                 setEditCourierAreaId(null);
+                if (nextCourierId && nextCourier?.slug === "pathao" && session?.access_token) {
+                  void prefetchCourierLocations(queryClient, session.access_token, nextCourierId, "cities");
+                }
               }}>
                 <SelectTrigger className="rounded-xl h-9 text-sm">
                   <SelectValue placeholder="কুরিয়ার সিলেক্ট করুন" />
