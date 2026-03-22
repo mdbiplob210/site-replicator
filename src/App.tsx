@@ -173,6 +173,7 @@ const App = () => {
       </BrowserRouter>
     </AuthProvider>
   </QueryClientProvider>
+  <Analytics />
   </ErrorBoundary>
 );
 };
