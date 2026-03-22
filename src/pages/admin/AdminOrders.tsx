@@ -48,6 +48,7 @@ import { FakeOrderDetection } from "@/components/admin/fraud/FakeOrderDetection"
 import { useBulkMemoPrint } from "@/components/admin/courier/BulkMemoPrint";
 import { useCourierCities, useCourierZones, useCourierAreas } from "@/hooks/useCourierLocations";
 import { ApiKeysView } from "@/components/admin/api/ApiKeysView";
+import { fetchCourierCheck } from "@/lib/courierCheckCache";
 import { Constants } from "@/integrations/supabase/types";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import * as XLSX from "@datalens-tech/xlsx";
