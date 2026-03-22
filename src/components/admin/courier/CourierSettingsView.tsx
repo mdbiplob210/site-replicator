@@ -125,7 +125,7 @@ function CourierProviderCard({
   const [showToken, setShowToken] = useState(false);
 
   const addConfig = () => {
-    setConfigs([...configs, { label: "", base_url: "", api_key: "", secret_key: "", client_id: "", store_id: "" }]);
+    setConfigs([...configs, { label: "", base_url: "", api_key: "", secret_key: "", client_id: "", store_id: "", email: "", password: "", default_store_name: "", default_parcel_type: "Parcel", invoice_prefix: "#" }]);
   };
 
   const removeConfig = (idx: number) => {
@@ -226,17 +226,44 @@ function CourierProviderCard({
                 <Input type="password" placeholder="Secret Key" value={config.secret_key || ""} onChange={(e) => updateConfig(idx, "secret_key", e.target.value)} className="rounded-lg" />
               </div>
               {(provider.slug === 'pathao' || provider.slug === 'ecourier') && (
+                <div>
+                  <Label className="text-xs">{provider.slug === 'pathao' ? 'Client ID' : 'User ID'}</Label>
+                  <Input placeholder={provider.slug === 'pathao' ? 'Pathao Client ID' : 'eCourier User ID'} value={config.client_id || ""} onChange={(e) => updateConfig(idx, "client_id", e.target.value)} className="rounded-lg" />
+                </div>
+              )}
+              {provider.slug === 'pathao' && (
                 <>
                   <div>
-                    <Label className="text-xs">{provider.slug === 'pathao' ? 'Client ID' : 'User ID'}</Label>
-                    <Input placeholder={provider.slug === 'pathao' ? 'Pathao Client ID' : 'eCourier User ID'} value={config.client_id || ""} onChange={(e) => updateConfig(idx, "client_id", e.target.value)} className="rounded-lg" />
+                    <Label className="text-xs">Pathao Email*</Label>
+                    <Input type="email" placeholder="mdb552000@gmail.com" value={config.email || ""} onChange={(e) => updateConfig(idx, "email", e.target.value)} className="rounded-lg" />
                   </div>
-                  {provider.slug === 'pathao' && (
-                    <div>
-                      <Label className="text-xs">Store ID</Label>
-                      <Input placeholder="Pathao Store ID" value={config.store_id || ""} onChange={(e) => updateConfig(idx, "store_id", e.target.value)} className="rounded-lg" />
-                    </div>
-                  )}
+                  <div>
+                    <Label className="text-xs">Pathao Password*</Label>
+                    <Input type="password" placeholder="Password" value={config.password || ""} onChange={(e) => updateConfig(idx, "password", e.target.value)} className="rounded-lg" />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Default Store Name</Label>
+                    <Input placeholder="Store Name" value={config.default_store_name || ""} onChange={(e) => updateConfig(idx, "default_store_name", e.target.value)} className="rounded-lg" />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Store ID</Label>
+                    <Input placeholder="Pathao Store ID" value={config.store_id || ""} onChange={(e) => updateConfig(idx, "store_id", e.target.value)} className="rounded-lg" />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Default Parcel Type</Label>
+                    <select
+                      value={config.default_parcel_type || "Parcel"}
+                      onChange={(e) => updateConfig(idx, "default_parcel_type", e.target.value)}
+                      className="w-full h-10 rounded-lg border border-input bg-background px-3 text-sm"
+                    >
+                      <option value="Parcel">Parcel</option>
+                      <option value="Document">Document</option>
+                    </select>
+                  </div>
+                  <div>
+                    <Label className="text-xs">Invoice Prefix (Optional)</Label>
+                    <Input placeholder="#" value={config.invoice_prefix || ""} onChange={(e) => updateConfig(idx, "invoice_prefix", e.target.value)} className="rounded-lg" />
+                  </div>
                 </>
               )}
             </div>
