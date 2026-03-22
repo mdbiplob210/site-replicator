@@ -50,8 +50,8 @@ export const CourierHistoryBadge = memo(function CourierHistoryBadge({ phone }: 
   }, [clean, ok]);
 
   useEffect(() => {
-    if (ok && lastRef.current !== clean) { lastRef.current = clean; fetchData(); }
-    if (!ok) { setData(null); lastRef.current = ""; }
+    if (ok && lastRef.current !== clean) { lastRef.current = clean; setData(null); setLoading(true); fetchData(); }
+    if (!ok) { setData(null); setLoading(false); lastRef.current = ""; }
     return () => { abortRef.current?.abort(); };
   }, [clean, ok, fetchData]);
 
