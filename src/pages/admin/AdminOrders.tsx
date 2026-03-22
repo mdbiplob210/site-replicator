@@ -464,7 +464,8 @@ const AdminOrders = () => {
   const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null);
   const [selectedAreaId, setSelectedAreaId] = useState<string | null>(null);
   const { user, session, loading: authLoading } = useAuth();
-  const statusFilter = getStatusFromTab(activeTab);
+  const isDeletedTab = activeTab === "Deleted";
+  const statusFilter = isDeletedTab ? null : getStatusFromTab(activeTab);
   const queryClient = useQueryClient();
 
   // Check user role & print_memo permission
