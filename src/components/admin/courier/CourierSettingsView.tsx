@@ -17,7 +17,6 @@ interface CourierSettingsViewProps {
 export function CourierSettingsView({ onBack }: CourierSettingsViewProps) {
   const { data: providers, isLoading } = useCourierProviders();
   const updateProvider = useUpdateCourierProvider();
-  const { data: siteSettings } = useSiteSettings();
 
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const webhookBaseUrl = `${supabaseUrl}/functions/v1/courier-webhook`;
