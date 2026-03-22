@@ -834,17 +834,32 @@ const AdminOrders = () => {
     );
     const qty = Math.max(1, normalizeNumberValue(io.quantity) || 1);
     const savedUnitPrice = normalizeNumberValue(io.unit_price);
-    const derivedProductTotal = Math.max(
-      0,
-      normalizeNumberValue(io.total_amount) - normalizeNumberValue(io.delivery_charge) + normalizeNumberValue(io.discount)
-    );
-    const derivedUnitPrice = derivedProductTotal > 0 ? derivedProductTotal / qty : 0;
+    const savedTotalAmount = normalizeNumberValue(io.total_amount);
+    const savedDeliveryCharge = normalizeNumberValue(io.delivery_charge);
+    const savedDiscount = normalizeNumberValue(io.discount);
     const textUnitPrice = extractIncompletePriceFromText(io);
     const matchedUnitPrice = normalizeNumberValue(matchedProduct?.selling_price);
 
-    // Prioritize sane values; reject garbage (phone numbers parsed as prices)
-    const candidates = [savedUnitPrice, derivedUnitPrice, textUnitPrice, matchedUnitPrice];
-    const unitPrice = candidates.find(isSanePrice) || 0;
+    // Detect tiered pricing: product name like "২ পিস - ৳490" means ৳490 is the BUNDLE price
+    // In this case unit_price from DB is the bundle total, NOT per-piece
+    const isTieredBundle = qty > 1 && isSanePrice(savedUnitPrice) && isSanePrice(savedTotalAmount) 
+      && Math.abs(savedTotalAmount - savedUnitPrice) <= savedDeliveryCharge + savedDiscount + 1;
+
+    let unitPrice: number;
+    let totalPrice: number;
+
+    if (isTieredBundle) {
+      // unit_price is already the bundle total (e.g., ৳490 for 2 pieces)
+      totalPrice = savedUnitPrice;
+      unitPrice = Math.round(savedUnitPrice / qty);
+    } else {
+      // Normal case: find a sane per-unit price
+      const derivedProductTotal = Math.max(0, savedTotalAmount - savedDeliveryCharge + savedDiscount);
+      const derivedUnitPrice = derivedProductTotal > 0 ? derivedProductTotal / qty : 0;
+      const candidates = [savedUnitPrice, derivedUnitPrice, textUnitPrice, matchedUnitPrice];
+      unitPrice = candidates.find(isSanePrice) || 0;
+      totalPrice = unitPrice * qty;
+    }
 
     return {
       product_id: matchedProduct?.id || null,
@@ -852,7 +867,7 @@ const AdminOrders = () => {
       product_code: cleanIncompleteText(io.product_code) || matchedProduct?.product_code || "",
       quantity: qty,
       unit_price: unitPrice,
-      total_price: unitPrice * qty,
+      total_price: totalPrice,
     };
   };
 
