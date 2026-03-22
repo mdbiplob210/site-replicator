@@ -82,10 +82,22 @@ export function useLandingPageAnalyticsSummary() {
         .order("created_at", { ascending: false });
       if (pagesError) throw pagesError;
 
-      const { data: events, error: eventsError } = await supabase
-        .from("landing_page_events" as any)
-        .select("landing_page_id, event_type, visitor_id, session_id, time_on_page");
-      if (eventsError) throw eventsError;
+      // Fetch all events (paginate to avoid 1000 row limit)
+      let allEvents: any[] = [];
+      let from = 0;
+      const pageSize = 1000;
+      while (true) {
+        const { data: batch, error: batchError } = await supabase
+          .from("landing_page_events" as any)
+          .select("landing_page_id, event_type, visitor_id, session_id, time_on_page")
+          .range(from, from + pageSize - 1);
+        if (batchError) throw batchError;
+        if (!batch || batch.length === 0) break;
+        allEvents = allEvents.concat(batch);
+        if (batch.length < pageSize) break;
+        from += pageSize;
+      }
+      const events = allEvents;
 
       const typedPages = pages as unknown as { id: string; title: string; slug: string }[];
       const typedEvents = events as unknown as { landing_page_id: string; event_type: string; visitor_id: string | null; session_id: string | null; time_on_page: number | null }[];

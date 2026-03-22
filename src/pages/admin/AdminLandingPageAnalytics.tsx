@@ -51,11 +51,17 @@ export default function AdminLandingPageAnalytics() {
   const { data: cohortData } = useLandingPageCohort(pageFilter, 4);
   const { data: feedData } = useLandingPageRealtimeFeed(pageFilter);
 
-  const totalViews = summaries?.reduce((s, p) => s + p.views, 0) || 0;
-  const totalClicks = summaries?.reduce((s, p) => s + p.clicks, 0) || 0;
-  const totalConversions = summaries?.reduce((s, p) => s + p.conversions, 0) || 0;
+  const filteredSummaries = useMemo(() => {
+    if (!summaries) return [];
+    if (!pageFilter) return summaries;
+    return summaries.filter((s) => s.landing_page_id === pageFilter);
+  }, [summaries, pageFilter]);
+
+  const totalViews = filteredSummaries.reduce((s, p) => s + p.views, 0);
+  const totalClicks = filteredSummaries.reduce((s, p) => s + p.clicks, 0);
+  const totalConversions = filteredSummaries.reduce((s, p) => s + p.conversions, 0);
   const avgCtr = totalViews > 0 ? (totalClicks / totalViews) * 100 : 0;
-  const avgBounce = summaries && summaries.length > 0 ? summaries.reduce((s, p) => s + p.bounceRate, 0) / summaries.length : 0;
+  const avgBounce = filteredSummaries.length > 0 ? filteredSummaries.reduce((s, p) => s + p.bounceRate, 0) / filteredSummaries.length : 0;
 
   const handleExportCSV = () => {
     if (!allEvents || allEvents.length === 0) { toast.error("কোনো ডেটা নেই"); return; }
