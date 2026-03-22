@@ -98,11 +98,11 @@ export const getStatusColor = (status: OrderStatus): string => {
 };
 
 // Select only columns needed for order list view
-const ORDER_LIST_COLS = "id, order_number, customer_name, customer_phone, customer_address, status, total_amount, delivery_charge, discount, product_cost, payment_status, source, notes, courier_note, cancel_reason, memo_printed, hold_until, created_at, updated_at";
+const ORDER_LIST_COLS = "id, order_number, customer_name, customer_phone, customer_address, status, total_amount, delivery_charge, discount, product_cost, payment_status, source, notes, courier_note, cancel_reason, memo_printed, hold_until, deleted_at, created_at, updated_at";
 
-export function useOrders(statusFilter: string | null = null, dateFilter: OrderDateFilter = "all", customFrom?: Date, customTo?: Date) {
+export function useOrders(statusFilter: string | null = null, dateFilter: OrderDateFilter = "all", customFrom?: Date, customTo?: Date, showDeleted = false) {
   return useQuery({
-    queryKey: ["orders", statusFilter, dateFilter, customFrom?.toISOString(), customTo?.toISOString()],
+    queryKey: ["orders", statusFilter, dateFilter, customFrom?.toISOString(), customTo?.toISOString(), showDeleted],
     queryFn: async () => {
       let allOrders: Order[] = [];
       let from = 0;
@@ -114,6 +114,13 @@ export function useOrders(statusFilter: string | null = null, dateFilter: OrderD
           .select(ORDER_LIST_COLS)
           .order("created_at", { ascending: false })
           .range(from, from + pageSize - 1);
+
+        // Filter deleted vs non-deleted
+        if (showDeleted) {
+          query = query.not("deleted_at", "is", null);
+        } else {
+          query = query.is("deleted_at", null);
+        }
 
         if (statusFilter) {
           query = query.eq("status", statusFilter as OrderStatus);
