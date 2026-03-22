@@ -422,13 +422,19 @@ ttq.page();
       });
     }, true);
 
-    // ── Auto-fire Lead when phone number is entered ──
+    // ── Auto-fire Lead when phone number is entered + capture for advanced matching ──
     document.addEventListener('change', function(e) {
       if (!e.target) return;
       var isPhone = (e.target.name === 'customer_phone' || e.target.name === 'phone' || e.target.type === 'tel');
       if (!isPhone) return;
       var val = (e.target.value || '').replace(/[^0-9]/g, '');
       if (val.length >= 10) {
+        // Capture phone for advanced matching
+        if (window._updateFBAdvancedMatching) {
+          var form = e.target.closest('[data-checkout-form], form, #checkoutForm, #orderForm, .checkout-form, .order-form');
+          var nameInput = form ? (form.querySelector('input[name="customer_name"],input[name="name"],input[name="full_name"]') || {}) : {};
+          window._updateFBAdvancedMatching({ phone: val, name: nameInput.value || '' });
+        }
         fireOnce('auto_lead', function() {
           var form = e.target.closest('[data-checkout-form], form, #checkoutForm, #orderForm, .checkout-form, .order-form');
           var pName = form ? (form.getAttribute('data-product-name') || document.title) : document.title;
