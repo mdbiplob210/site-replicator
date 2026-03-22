@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { useCourierProviders, useUpdateCourierProvider, type ApiConfig } from "@/hooks/useCourier";
-import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { Truck, Plus, Trash2, Save, Globe, Copy, Shield, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { Truck, Plus, Trash2, Save, Globe, Copy, Shield, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { CourierBalanceView } from "./CourierBalanceView";
