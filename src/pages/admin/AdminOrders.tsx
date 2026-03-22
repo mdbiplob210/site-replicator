@@ -4362,7 +4362,7 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
 
             {/* Save Button */}
             <Button className="w-full rounded-xl shadow-sm" onClick={handleSaveChanges} disabled={isSaving}>
-              {isSaving ? <><Loader2 className="h-4 w-4 animate-spin" /> Saving...</> : "পরিবর্তন সেভ করুন"}
+              {isSaving ? <><Loader2 className="h-4 w-4 animate-spin" /> Saving...</> : editStatus && editStatus !== order.status ? `সেভ করুন ও স্ট্যাটাস আপডেট করুন` : "পরিবর্তন সেভ করুন"}
             </Button>
 
             {/* Activity Log */}
