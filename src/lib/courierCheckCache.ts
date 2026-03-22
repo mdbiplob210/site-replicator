@@ -1,4 +1,4 @@
-// Shared courier check fetcher — permanent cache, API called only once per phone
+// Shared courier check fetcher — permanent in-memory cache + DB cache preloading
 import { supabase } from "@/integrations/supabase/client";
 
 const cache: Record<string, any> = {};
@@ -6,6 +6,45 @@ const inflight: Record<string, Promise<any>> = {};
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+// Track which phones have been preloaded from DB (to avoid re-querying)
+let preloadedFromDb = false;
+
+/**
+ * Bulk preload cached courier data from DB into in-memory cache.
+ * Call once when orders page loads — avoids individual edge function calls.
+ */
+export async function preloadCourierCache(phones: string[]): Promise<void> {
+  const cleaned = phones
+    .map((p) => p?.replace(/\D/g, "") || "")
+    .filter((p) => p.length >= 11 && !cache[p]); // Only phones not already in memory
+
+  if (cleaned.length === 0) return;
+
+  // Remove duplicates
+  const unique = [...new Set(cleaned)];
+
+  try {
+    const { data } = await supabase
+      .from("courier_check_cache")
+      .select("phone, response_data, created_at")
+      .in("phone", unique);
+
+    if (data) {
+      const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
+      for (const row of data) {
+        const age = Date.now() - new Date(row.created_at).getTime();
+        if (age < ONE_WEEK) {
+          // Fresh cache — store in memory, no edge function needed
+          cache[row.phone] = { ...(row.response_data as Record<string, unknown>), _cached: true };
+        }
+      }
+    }
+    preloadedFromDb = true;
+  } catch {
+    // Silently fail — individual calls will still work
+  }
+}
 
 export async function fetchCourierCheck(phone: string): Promise<any> {
   const clean = phone.replace(/\D/g, "");

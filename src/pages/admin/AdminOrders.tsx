@@ -48,7 +48,7 @@ import { FakeOrderDetection } from "@/components/admin/fraud/FakeOrderDetection"
 import { useBulkMemoPrint } from "@/components/admin/courier/BulkMemoPrint";
 import { useCourierCities, useCourierZones, useCourierAreas, prefetchCourierLocations } from "@/hooks/useCourierLocations";
 import { ApiKeysView } from "@/components/admin/api/ApiKeysView";
-import { fetchCourierCheck } from "@/lib/courierCheckCache";
+import { fetchCourierCheck, preloadCourierCache } from "@/lib/courierCheckCache";
 import { Constants } from "@/integrations/supabase/types";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import * as XLSX from "@datalens-tech/xlsx";
@@ -538,6 +538,20 @@ const AdminOrders = () => {
     queryClient.invalidateQueries({ queryKey: ["next-order-number"] });
     toast.success("Refreshing data...");
   }, [queryClient]);
+
+  // Preload courier check cache from DB — avoids individual edge function calls on refresh
+  const [courierCacheReady, setCourierCacheReady] = useState(false);
+  useEffect(() => {
+    if (!orders.length) return;
+    const phones = orders
+      .map((o: any) => o.customer_phone)
+      .filter(Boolean) as string[];
+    if (phones.length > 0) {
+      preloadCourierCache(phones).then(() => setCourierCacheReady(true));
+    } else {
+      setCourierCacheReady(true);
+    }
+  }, [orders]);
 
   // Courier orders for filtering
   const { data: courierOrders = [] } = useQuery({
@@ -3392,7 +3406,7 @@ const AdminOrders = () => {
                     </TableCell>
                     {/* COURIER HISTORY: BDCourier external data */}
                     <TableCell className="px-3 py-3 text-center">
-                      <CourierHistoryBadge phone={order.customer_phone} />
+                      {courierCacheReady ? <CourierHistoryBadge phone={order.customer_phone} /> : <Loader2 className="h-3 w-3 animate-spin text-muted-foreground mx-auto" />}
                     </TableCell>
                     {/* STATUS */}
                     <TableCell className="px-3 py-3 text-center" onClick={(e) => e.stopPropagation()}>
@@ -3697,7 +3711,7 @@ const AdminOrders = () => {
                         )}
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <CourierHistoryBadge phone={order.customer_phone} />
+                        {courierCacheReady ? <CourierHistoryBadge phone={order.customer_phone} /> : <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
                         {order.source && <span className="bg-secondary/60 px-1.5 py-0.5 rounded text-[10px]">{order.source}</span>}
                       </div>
                     </div>
