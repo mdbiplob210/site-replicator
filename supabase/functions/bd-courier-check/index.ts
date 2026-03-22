@@ -7,13 +7,40 @@ const corsHeaders = {
 };
 
 const CACHE_TTL_DAYS = 7;
+const API_TIMEOUT_MS = 6000;
+const CACHE_RACE_MS = 150; // max ms to wait for DB cache before firing API
 const JSON_HEADERS = { ...corsHeaders, "Content-Type": "application/json" };
 
-// Pre-initialize supabase client at module level (reused across requests)
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const supabase = createClient(supabaseUrl, serviceRoleKey);
 const bdcourierKey = Deno.env.get("BDCOURIER_API_KEY");
+
+async function fetchFromApi(phone: string, signal?: AbortSignal): Promise<{ data: any; ok: boolean }> {
+  const resp = await fetch("https://api.bdcourier.com/courier-check", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${bdcourierKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ phone }),
+    signal,
+  });
+  const data = await resp.json();
+  return { data, ok: resp.ok };
+}
+
+async function fetchFromCache(phone: string): Promise<any | null> {
+  const ttlCutoff = new Date(Date.now() - CACHE_TTL_DAYS * 86400000).toISOString();
+  const { data: cached } = await supabase
+    .from("courier_check_cache")
+    .select("response_data")
+    .eq("phone", phone)
+    .gte("created_at", ttlCutoff)
+    .limit(1)
+    .maybeSingle();
+  return cached?.response_data ?? null;
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -52,48 +79,62 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Cache check — only fetch response_data column for speed
-    const ttlCutoff = new Date(Date.now() - CACHE_TTL_DAYS * 86400000).toISOString();
+    // RACE: DB cache vs API — fire both in parallel
+    // If cache resolves within CACHE_RACE_MS, use it and skip API
+    // Otherwise wait for API result
+    const abortCtrl = new AbortController();
 
-    const { data: cached } = await supabase
-      .from("courier_check_cache")
-      .select("response_data")
-      .eq("phone", phone)
-      .gte("created_at", ttlCutoff)
-      .limit(1)
-      .maybeSingle();
+    const cachePromise = fetchFromCache(phone).catch(() => null);
+    const apiPromise = fetchFromApi(phone, abortCtrl.signal).catch(() => null);
 
-    if (cached) {
-      return new Response(JSON.stringify({ ...cached.response_data as Record<string, unknown>, _cached: true }), {
-        status: 200, headers: JSON_HEADERS,
+    // Wait for cache with a short timeout
+    const cacheResult = await Promise.race([
+      cachePromise,
+      new Promise<null>((r) => setTimeout(() => r(null), CACHE_RACE_MS)),
+    ]);
+
+    if (cacheResult) {
+      // Cache hit — abort API call, return cached data
+      abortCtrl.abort();
+      return new Response(
+        JSON.stringify({ ...(cacheResult as Record<string, unknown>), _cached: true }),
+        { status: 200, headers: JSON_HEADERS }
+      );
+    }
+
+    // Cache miss or slow — wait for API
+    const apiResult = await Promise.race([
+      apiPromise,
+      new Promise<null>((r) => setTimeout(() => r(null), API_TIMEOUT_MS)),
+    ]);
+
+    if (!apiResult) {
+      // Both timed out — check if cache eventually returned
+      const lateCacheResult = await cachePromise;
+      if (lateCacheResult) {
+        return new Response(
+          JSON.stringify({ ...(lateCacheResult as Record<string, unknown>), _cached: true }),
+          { status: 200, headers: JSON_HEADERS }
+        );
+      }
+      return new Response(JSON.stringify({ error: "Request timeout" }), {
+        status: 504, headers: JSON_HEADERS,
       });
     }
 
-    // Cache MISS — call BDCourier API
-    const resp = await fetch("https://api.bdcourier.com/courier-check", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${bdcourierKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ phone }),
-    });
-
-    const data = await resp.json();
-
-    // Save to cache in background (don't block response)
-    if (resp.ok) {
+    // Save to cache in background
+    if (apiResult.ok) {
       supabase
         .from("courier_check_cache")
         .upsert(
-          { phone, response_data: data, created_at: new Date().toISOString() },
+          { phone, response_data: apiResult.data, created_at: new Date().toISOString() },
           { onConflict: "phone" }
         )
         .then(() => {});
     }
 
-    return new Response(JSON.stringify(data), {
-      status: resp.status, headers: JSON_HEADERS,
+    return new Response(JSON.stringify(apiResult.data), {
+      status: apiResult.ok ? 200 : 400, headers: JSON_HEADERS,
     });
   } catch (error) {
     return new Response(
