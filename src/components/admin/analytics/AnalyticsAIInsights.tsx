@@ -38,12 +38,58 @@ ${utmData?.sources?.slice(0, 5).map(s => `- ${s.name}: ${s.views} ভিউ, ${s
 3. **A/B টেস্ট আইডিয়া** — ২-৩টি A/B টেস্ট সাজেশন
 4. **কনভার্সন বাড়ানোর কৌশল** — অ্যাকশনেবল ৩-৫টি টিপস`;
 
-      const { data, error } = await supabase.functions.invoke("analyze-ads", {
-        body: { prompt, model: "google/gemini-2.5-flash" },
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analyze-ads`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify({
+            messages: [{ role: "user", content: prompt }],
+          }),
+        }
+      );
 
-      if (error) throw error;
-      setInsights(data?.analysis || data?.text || "ইনসাইট জেনারেট করা যায়নি।");
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || "AI gateway error");
+      }
+
+      // Parse SSE stream
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error("No response body");
+      const decoder = new TextDecoder();
+      let result = "";
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+
+        let newlineIndex: number;
+        while ((newlineIndex = buffer.indexOf("\n")) !== -1) {
+          let line = buffer.slice(0, newlineIndex);
+          buffer = buffer.slice(newlineIndex + 1);
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (!line.startsWith("data: ")) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") break;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) {
+              result += content;
+              setInsights(result);
+            }
+          } catch { /* partial JSON, skip */ }
+        }
+      }
+
+      if (!result) setInsights("ইনসাইট জেনারেট করা যায়নি।");
     } catch (err) {
       console.error("AI Error:", err);
       setInsights("AI ইনসাইট জেনারেট করতে সমস্যা হয়েছে। পরে আবার চেষ্টা করুন।");
