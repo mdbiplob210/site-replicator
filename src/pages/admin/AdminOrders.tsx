@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -3496,10 +3496,12 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
     }
   };
 
-  // Populate fields when order changes
+  // Populate fields when order changes (only on initial load or order switch)
   const orderRef = order?.id;
-  useMemo(() => {
-    if (order) {
+  const initializedOrderRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (order && orderRef && initializedOrderRef.current !== orderRef) {
+      initializedOrderRef.current = orderRef;
       setEditName(order.customer_name || "");
       setEditPhone(order.customer_phone || "");
       setEditAddress(order.customer_address || "");
@@ -3512,7 +3514,8 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
   }, [orderRef]);
 
   // Populate courier when existing courier order loads
-  useMemo(() => {
+  const courierOrderRef = existingCourierOrder?.id;
+  useEffect(() => {
     if (existingCourierOrder) {
       setEditCourierId(existingCourierOrder.courier_provider_id || null);
     } else {
@@ -3521,7 +3524,7 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
     setEditCourierCityId(null);
     setEditCourierZoneId(null);
     setEditCourierAreaId(null);
-  }, [existingCourierOrder?.id, orderRef]);
+  }, [courierOrderRef, orderRef]);
 
   // Auto-detect location from address
   const detectedLoc = useMemo(() => {
