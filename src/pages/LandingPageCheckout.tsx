@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { useLandingPageBySlug } from "@/hooks/useLandingPages";
 import { useRef } from "react";
 import { sanitizeHtmlScripts } from "@/lib/htmlSanitizer";
+import { landingPhoneValidationScript, normalizeLandingPhoneHtml } from "@/lib/landingPhoneHtml";
 
 export default function LandingPageCheckout() {
   const { slug } = useParams<{ slug: string }>();
@@ -527,55 +528,7 @@ ttq.track('InitiateCheckout');
 })();
 </script>`;
 
-    // Phone validation + Bengali digit conversion script
-    const phoneValidationScript = `
-<script>
-(function(){
-  var bengaliMap = {'০':'0','১':'1','২':'2','৩':'3','৪':'4','৫':'5','৬':'6','৭':'7','৮':'8','৯':'9'};
-  function sanitizePhone(val) {
-    var result = '';
-    for (var i = 0; i < val.length; i++) {
-      var ch = val[i];
-      if (bengaliMap[ch]) { result += bengaliMap[ch]; }
-      else if (/[0-9]/.test(ch)) { result += ch; }
-      else if (ch === '+' && result.length === 0) { result += ch; }
-    }
-    return result;
-  }
-  function isValidPhone(phone) {
-    var cleaned = phone.replace(/^\\+?880/, '0').replace(/[^0-9]/g, '');
-    return /^\\d{11,15}$/.test(cleaned);
-  }
-  document.addEventListener('input', function(e) {
-    if (e.target && (e.target.name === 'customer_phone' || e.target.name === 'phone' || e.target.type === 'tel')) {
-      e.target.value = sanitizePhone(e.target.value);
-    }
-  });
-  // Block form submit if phone invalid
-  document.addEventListener('submit', function(e) {
-    var form = e.target.closest('[data-checkout-form]');
-    if (!form) return;
-    var phoneInput = form.querySelector('[name="customer_phone"]') || form.querySelector('[name="phone"]') || form.querySelector('[type="tel"]');
-    if (phoneInput && !isValidPhone(phoneInput.value)) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      alert('অনুগ্রহ করে সঠিক মোবাইল নম্বর দিন (কমপক্ষে ১১ সংখ্যা)');
-      phoneInput.focus();
-      return false;
-    }
-  }, true); // capture phase to run before order script
-  // Fix maxlength on all phone inputs (old saved HTML may have maxlength=11)
-  function fixPhoneMaxLength() {
-    var inputs = document.querySelectorAll('[name="customer_phone"],[name="phone"],[type="tel"]');
-    for (var i = 0; i < inputs.length; i++) {
-      if (inputs[i].maxLength && inputs[i].maxLength < 15) inputs[i].maxLength = 15;
-      if (inputs[i].getAttribute('pattern')) inputs[i].removeAttribute('pattern');
-    }
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fixPhoneMaxLength);
-  else fixPhoneMaxLength();
-})();
-</script>`;
+    const phoneValidationScript = landingPhoneValidationScript;
 
     // Autocomplete enhancement script
     const autocompleteScript = `
@@ -619,13 +572,13 @@ ttq.track('InitiateCheckout');
 
     const allScripts = richTrackingHelper + trackingScripts + partialTrackingScript + phoneValidationScript + orderScript + autocompleteScript + tierPricePatchScript;
 
-    const cleanHtml = sanitizeHtmlScripts(page.checkout_html!);
+    const cleanHtml = normalizeLandingPhoneHtml(sanitizeHtmlScripts(page.checkout_html!));
 
     if (cleanHtml.includes("</head>")) {
       return cleanHtml.replace("</head>", `${allScripts}</head>`);
     }
 
-    return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${allScripts}</head><body>${sanitizeHtmlScripts(page.checkout_html!)}</body></html>`;
+    return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${allScripts}</head><body>${cleanHtml}</body></html>`;
   };
 
   return (
