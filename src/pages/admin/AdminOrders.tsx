@@ -157,7 +157,7 @@ const BANGLA_DIGIT_MAP: Record<string, string> = {
 };
 
 const LOCATION_ALIAS_PATTERNS: Array<[RegExp, string]> = [
-  [/\bchattograma\b/g, "chittagong"],
+  [/\bchattogram\b/g, "chittagong"],
   [/\bchattograma\b/g, "chittagong"],
   [/\bchattagram\b/g, "chittagong"],
   [/\bchatgram\b/g, "chittagong"],
