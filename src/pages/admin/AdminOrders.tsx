@@ -4666,16 +4666,18 @@ function IncompleteOrderCard({ io, activeIncompleteTab, onConvert, deleteIncompl
           </div>
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
-          {activeIncompleteTab !== "Converted" && (
+          {!["Converted", "Deleted", "Cancelled"].includes(activeIncompleteTab) && (
             <Button size="sm" variant="outline" className="gap-1 text-xs" onClick={() => onConvert(io)}>
               <GitMerge className="h-3 w-3" /> অর্ডারে কনভার্ট
             </Button>
           )}
-          <Button size="sm" variant="ghost" className="text-destructive" onClick={() => {
-            if (confirm("ডিলিট করতে চান?")) deleteIncomplete.mutate(io.id);
-          }}>
-            <Trash2 className="h-3.5 w-3.5" />
-          </Button>
+          {!["Deleted", "Cancelled"].includes(activeIncompleteTab) && (
+            <Button size="sm" variant="ghost" className="text-destructive" onClick={() => {
+              if (confirm("ডিলিট করতে চান?")) deleteIncomplete.mutate(io.id);
+            }}>
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          )}
         </div>
       </div>
     </Card>
