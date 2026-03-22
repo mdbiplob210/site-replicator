@@ -1180,7 +1180,7 @@ const AdminOrders = () => {
       return;
     }
     const computedProductCost = orderItems.length > 0 ? itemsTotal : productCost;
-    const computedTotal = totalAmount || (computedProductCost + deliveryCharge - discount);
+    const computedTotal = computedProductCost + deliveryCharge - discount;
     const finalCancelReason = newOrderStatus === "cancelled" 
       ? (newOrderCancelReason === "others" ? newOrderCancelCustom : newOrderCancelReason) 
       : null;
