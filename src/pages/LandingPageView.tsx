@@ -492,10 +492,11 @@ ttq.page();
   var TRACK_URL = '${supabaseUrl}/functions/v1/track-landing-event';
   var ANON = '${anonKey}';
   var SLUG = '${page.slug}';
-  var VID = localStorage.getItem('_lp_vid');
-  if (!VID) { VID = 'v_' + Math.random().toString(36).substr(2,9) + Date.now(); localStorage.setItem('_lp_vid', VID); }
-  var SID = sessionStorage.getItem('_lp_sid');
-  if (!SID) { SID = 's_' + Math.random().toString(36).substr(2,9) + Date.now(); sessionStorage.setItem('_lp_sid', SID); }
+  var VID, SID;
+  try { VID = localStorage.getItem('_lp_vid'); } catch(e) {}
+  if (!VID) { VID = 'v_' + Math.random().toString(36).substr(2,9) + Date.now(); try { localStorage.setItem('_lp_vid', VID); } catch(e) {} }
+  try { SID = sessionStorage.getItem('_lp_sid'); } catch(e) {}
+  if (!SID) { SID = 's_' + Math.random().toString(36).substr(2,9) + Date.now(); try { sessionStorage.setItem('_lp_sid', SID); } catch(e) {} }
   var _pageStart = Date.now();
 
   // UTM params
