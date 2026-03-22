@@ -3623,10 +3623,16 @@ const AdminOrders = () => {
                         }}>
                           <FileText className="h-3.5 w-3.5" />
                         </button>
-                        {/* Delete */}
-                        <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-destructive/10 transition-colors text-muted-foreground hover:text-destructive" title="Delete" onClick={() => { if (confirm("অর্ডারটি ডিলিট করবেন?")) deleteOrder.mutate(order.id); }}>
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
+                        {/* Delete / Restore */}
+                        {isDeletedTab ? (
+                          <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-emerald-500/10 transition-colors text-muted-foreground hover:text-emerald-600" title="Restore" onClick={() => { if (confirm("অর্ডারটি পুনরুদ্ধার করবেন?")) restoreOrder.mutate(order.id); }}>
+                            <RotateCcw className="h-3.5 w-3.5" />
+                          </button>
+                        ) : (
+                          <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-destructive/10 transition-colors text-muted-foreground hover:text-destructive" title="Delete" onClick={() => { if (confirm("অর্ডারটি ডিলিট করবেন?")) deleteOrder.mutate(order.id); }}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
