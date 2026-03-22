@@ -688,7 +688,7 @@ ttq.page();
 <script>
 (function(){
   var shown = false;
-  var dismissed = sessionStorage.getItem('_exit_dismissed');
+  var dismissed; try { dismissed = sessionStorage.getItem('_exit_dismissed'); } catch(e) {}
   var timeLeft = ${exitTimer};
   var DISCOUNT = ${exitDiscount};
   var timerInterval = null;
