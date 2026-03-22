@@ -58,8 +58,9 @@ export const CourierHistoryBadge = memo(function CourierHistoryBadge({ phone }: 
   if (!ok) return <span className="text-[10px] text-muted-foreground">—</span>;
   if (loading && !data) return <Loader2 className="h-3 w-3 animate-spin text-muted-foreground mx-auto" />;
 
+  const SHOW_COURIERS = new Set(["pathao", "steadfast"]);
   const couriers = data?.status === "success" && data.data
-    ? Object.entries(data.data).filter(([k]) => k !== "summary").map(([k, v]: [string, any]) => ({ k, ...v }))
+    ? Object.entries(data.data).filter(([k]) => k !== "summary" && SHOW_COURIERS.has(k)).map(([k, v]: [string, any]) => ({ k, ...v }))
     : [];
   const summary = data?.data?.summary;
 
@@ -85,6 +86,15 @@ export const CourierHistoryBadge = memo(function CourierHistoryBadge({ phone }: 
           <span className="text-[10px] font-semibold text-destructive">{c.cancelled_parcel}✗</span>
         </div>
       ))}
+      {/* Total row */}
+      {summary && (
+        <div className="flex items-center justify-center gap-1 border-t border-border/30 pt-0.5">
+          <span className="text-[9px] font-bold text-muted-foreground">Total</span>
+          <span className="text-[10px] font-bold text-foreground">{summary.total_parcel}</span>
+          <span className="text-[10px] font-semibold text-emerald-600">{summary.success_parcel}✓</span>
+          <span className="text-[10px] font-semibold text-destructive">{summary.cancelled_parcel}✗</span>
+        </div>
+      )}
     </div>
   );
 });
