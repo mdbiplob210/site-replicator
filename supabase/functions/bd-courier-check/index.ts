@@ -6,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const CACHE_TTL_DAYS = 7;
+// Permanent cache — no TTL, once fetched never expires
 const API_TIMEOUT_MS = 6000;
 const CACHE_RACE_MS = 150; // max ms to wait for DB cache before firing API
 const JSON_HEADERS = { ...corsHeaders, "Content-Type": "application/json" };
