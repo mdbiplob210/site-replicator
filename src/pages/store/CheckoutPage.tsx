@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { ShoppingBag, ArrowLeft, Check, Package, CreditCard, MapPin, Phone, User } from "lucide-react";
-import { useTracking } from "@/hooks/useTracking";
+import { useTracking, setFBUserData } from "@/hooks/useTracking";
 import { trackWebsiteEvent } from "@/hooks/useWebsiteAnalytics";
 import { OptimizedImage } from "@/components/ui/optimized-image";
 import { getClientIp, parseDeviceInfo } from "@/lib/deviceDetect";
@@ -174,6 +174,10 @@ const CheckoutPage = () => {
     abandonedSaved.current = false;
     if (updates.phone !== undefined) {
       updates.phone = sanitizePhoneInput(updates.phone);
+      if (isValidBDPhone(updates.phone)) {
+        // Update FB advanced matching with phone + name
+        setFBUserData({ phone: updates.phone, fullName: form.name });
+      }
       if (!leadTracked.current && isValidBDPhone(updates.phone) && item) {
         leadTracked.current = true;
         trackLead({
@@ -183,6 +187,9 @@ const CheckoutPage = () => {
           customerName: form.name,
         });
       }
+    }
+    if (updates.name !== undefined && updates.name.trim().length >= 2) {
+      setFBUserData({ fullName: updates.name });
     }
     setForm(prev => ({ ...prev, ...updates }));
   };

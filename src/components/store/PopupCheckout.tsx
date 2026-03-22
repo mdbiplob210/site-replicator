@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { X, ShoppingBag, User, Phone, MapPin, Minus, Plus, CheckCircle2, Loader2, Users, Clock } from "lucide-react";
-import { useTracking } from "@/hooks/useTracking";
+import { useTracking, setFBUserData } from "@/hooks/useTracking";
 import { useProduct, useSuggestedProducts } from "@/hooks/usePublicProducts";
 import { OptimizedImage } from "@/components/ui/optimized-image";
 import { getDisplayImage } from "@/lib/imageUtils";
@@ -202,6 +202,10 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
     // Auto-sanitize phone: convert Bengali digits, strip non-digits
     if (updates.phone !== undefined) {
       updates.phone = sanitizePhoneInput(updates.phone);
+      if (isValidBDPhone(updates.phone)) {
+        // Update FB advanced matching with phone + name
+        setFBUserData({ phone: updates.phone, fullName: form.name });
+      }
       // Fire Lead event when valid phone entered
       if (!leadTracked.current && isValidBDPhone(updates.phone) && currentItem) {
         leadTracked.current = true;
@@ -212,6 +216,9 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
           customerName: form.name,
         });
       }
+    }
+    if (updates.name !== undefined && updates.name.trim().length >= 2) {
+      setFBUserData({ fullName: updates.name });
     }
     setForm(prev => ({ ...prev, ...updates }));
   };

@@ -5,8 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 // ============================================================
 // Comprehensive Tracking Hook
 // Supports: Facebook Pixel + CAPI, TikTok Pixel, GTM, Clarity
-// Features: Event deduplication, scroll depth, time on page,
-//           device/browser data, content engagement tracking
+// Features: Event deduplication, advanced matching for highest EMQ,
+//           scroll depth, time on page, device/browser data
 // ============================================================
 
 declare global {
@@ -18,6 +18,98 @@ declare global {
     clarity: any;
   }
 }
+
+// ============================================================
+// User Data Store for Advanced Matching (highest EMQ)
+// ============================================================
+interface FBUserData {
+  ph?: string;  // phone (raw, will be normalized)
+  fn?: string;  // first name
+  ln?: string;  // last name
+  ct?: string;  // city
+  country?: string;
+  external_id?: string;
+}
+
+const FB_USER_DATA_KEY = "_fb_ud";
+
+function getStoredUserData(): FBUserData {
+  try {
+    const raw = sessionStorage.getItem(FB_USER_DATA_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return {};
+}
+
+function storeUserData(data: FBUserData) {
+  try {
+    const existing = getStoredUserData();
+    const merged = { ...existing, ...data };
+    sessionStorage.setItem(FB_USER_DATA_KEY, JSON.stringify(merged));
+  } catch {}
+}
+
+/** Normalize phone for Meta: remove spaces, dashes, leading +880 → 880 prefix */
+function normalizePhoneForMeta(phone: string): string {
+  if (!phone) return "";
+  let cleaned = phone.replace(/[^0-9]/g, "");
+  // BD phone: if starts with 0, prepend 880
+  if (cleaned.startsWith("0")) cleaned = "880" + cleaned.slice(1);
+  // If doesn't start with 880, prepend it
+  if (!cleaned.startsWith("880") && cleaned.length === 10) cleaned = "880" + cleaned;
+  return cleaned;
+}
+
+/**
+ * Set user data for FB advanced matching. Call when form data is available.
+ * This updates both sessionStorage and the FB pixel via fbq('init').
+ */
+export function setFBUserData(params: {
+  phone?: string;
+  firstName?: string;
+  lastName?: string;
+  fullName?: string;
+  city?: string;
+  orderId?: string;
+}) {
+  const data: FBUserData = { country: "bd" };
+
+  if (params.phone) {
+    data.ph = normalizePhoneForMeta(params.phone);
+  }
+  if (params.firstName) data.fn = params.firstName.trim().toLowerCase();
+  if (params.lastName) data.ln = params.lastName.trim().toLowerCase();
+  if (params.fullName && !params.firstName) {
+    const parts = params.fullName.trim().split(/\s+/);
+    data.fn = (parts[0] || "").toLowerCase();
+    data.ln = (parts.slice(1).join(" ") || "").toLowerCase();
+  }
+  if (params.city) data.ct = params.city.trim().toLowerCase();
+  if (params.orderId) data.external_id = params.orderId;
+
+  storeUserData(data);
+
+  // Re-init pixel with updated user data if loaded
+  if (window.fbq && fbPixelIdGlobal) {
+    const ud = getStoredUserData();
+    window.fbq("init", fbPixelIdGlobal, buildFBInitParams(ud));
+  }
+}
+
+function buildFBInitParams(ud: FBUserData) {
+  return {
+    external_id: ud.external_id || getVisitorId(),
+    ph: ud.ph || "",
+    fn: ud.fn || "",
+    ln: ud.ln || "",
+    ct: ud.ct || "",
+    country: "bd",
+    // em, st, zp left empty (not using email)
+  };
+}
+
+// Global pixel ID reference for re-init
+let fbPixelIdGlobal = "";
 
 // Generate unique event ID for deduplication across browser pixel & CAPI
 function generateEventId(prefix = "evt"): string {
@@ -34,7 +126,6 @@ function getFbp(): string {
 function getFbc(): string {
   const match = document.cookie.match(/_fbc=([^;]+)/);
   if (match) return match[1];
-  // Try to build from URL fbclid
   const params = new URLSearchParams(window.location.search);
   const fbclid = params.get("fbclid");
   if (fbclid) return `fb.1.${Date.now()}.${fbclid}`;
@@ -117,6 +208,7 @@ let clarityLoaded = false;
 function loadFBPixel(pixelId: string) {
   if (fbPixelLoaded || !pixelId) return;
   fbPixelLoaded = true;
+  fbPixelIdGlobal = pixelId;
 
   (function (f: any, b: any, e: any, v: any, n?: any, t?: any, s?: any) {
     if (f.fbq) return;
@@ -128,12 +220,11 @@ function loadFBPixel(pixelId: string) {
     s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s);
   })(window, document, "script", "https://connect.facebook.net/en_US/fbevents.js");
 
-  window.fbq("init", pixelId, {
-    external_id: getVisitorId(),
-    em: "", ph: "", fn: "", ln: "", ct: "", st: "", zp: "", country: "",
-  });
+  // Init with stored user data for advanced matching
+  const ud = getStoredUserData();
+  window.fbq("init", pixelId, buildFBInitParams(ud));
 
-  // Enable advanced matching & automatic events
+  // Enable automatic configuration
   window.fbq("set", "autoConfig", true, pixelId);
 }
 
@@ -185,7 +276,6 @@ function loadGTM(gtmId: string) {
   script.src = `https://www.googletagmanager.com/gtm.js?id=${gtmId}`;
   document.head.appendChild(script);
 
-  // Also add noscript iframe
   const noscript = document.createElement("noscript");
   const iframe = document.createElement("iframe");
   iframe.src = `https://www.googletagmanager.com/ns.html?id=${gtmId}`;
@@ -219,7 +309,7 @@ function getVisitorId(): string {
 }
 
 // ============================================================
-// CAPI (Server-Side) Event Sender
+// CAPI (Server-Side) Event Sender — always sends user data
 // ============================================================
 async function sendCAPIEvent(params: {
   pixelId: string;
@@ -229,11 +319,16 @@ async function sendCAPIEvent(params: {
   customerPhone?: string;
   customerName?: string;
   customerEmail?: string;
+  customerCity?: string;
+  orderId?: string;
 }) {
   try {
-    const { pixelId, eventName, eventId, customData = {}, customerPhone, customerName, customerEmail } = params;
-    if (!pixelId) return; // No pixel configured, skip silently
-    
+    const { pixelId, eventName, eventId, customData = {}, customerPhone, customerName, customerEmail, customerCity, orderId } = params;
+    if (!pixelId) return;
+
+    // Get stored user data as fallback
+    const storedUD = getStoredUserData();
+
     const body: Record<string, any> = {
       pixel_id: pixelId,
       event_name: eventName,
@@ -242,21 +337,33 @@ async function sendCAPIEvent(params: {
       user_agent: navigator.userAgent,
       fbp: getFbp(),
       fbc: getFbc(),
-      user_external_id: getVisitorId(),
+      user_external_id: orderId || storedUD.external_id || getVisitorId(),
+      user_country: "bd",
       custom_data: {
         ...customData,
         visitor_id: getVisitorId(),
       },
     };
 
-    // Add user data for advanced matching (sent to edge function for hashing)
-    if (customerPhone) body.user_phone = customerPhone;
-    if (customerEmail) body.user_email = customerEmail;
+    // Phone: use provided or stored
+    const phone = customerPhone || (storedUD.ph ? storedUD.ph : "");
+    if (phone) body.user_phone = phone;
+
+    // Name: use provided or stored
     if (customerName) {
       const nameParts = customerName.trim().split(/\s+/);
       body.user_fn = nameParts[0] || "";
       body.user_ln = nameParts.slice(1).join(" ") || "";
+    } else {
+      if (storedUD.fn) body.user_fn = storedUD.fn;
+      if (storedUD.ln) body.user_ln = storedUD.ln;
     }
+
+    if (customerEmail) body.user_email = customerEmail;
+
+    // City
+    const city = customerCity || storedUD.ct || "";
+    if (city) body.user_ct = city;
 
     await supabase.functions.invoke("fb-conversions-api", { body });
   } catch {
@@ -279,11 +386,9 @@ export function useTracking() {
   // Initialize tracking scripts AFTER page is interactive (deferred)
   useEffect(() => {
     if (initialized.current || !settings) return;
-    // Don't load main website pixels on landing pages — they have their own
     if (window.location.pathname.startsWith("/lp/")) return;
     initialized.current = true;
 
-    // Defer tracking scripts to not block initial render
     const loadScripts = () => {
       if (fbPixelId) loadFBPixel(fbPixelId);
       if (tiktokPixelId) loadTikTokPixel(tiktokPixelId);
@@ -291,14 +396,13 @@ export function useTracking() {
       if (clarityId) loadClarity(clarityId);
     };
 
-    // Use requestIdleCallback if available, otherwise setTimeout
     if ('requestIdleCallback' in window) {
       (window as any).requestIdleCallback(loadScripts, { timeout: 3000 });
     } else {
       setTimeout(loadScripts, 1500);
     }
 
-    // Save UTM params to sessionStorage for later use
+    // Save UTM params
     const utms = getUtmParams();
     if (utms.utm_source || utms.fbclid || utms.gclid || utms.ttclid) {
       sessionStorage.setItem("_utm", JSON.stringify(utms));
@@ -312,17 +416,14 @@ export function useTracking() {
     const device = getDeviceInfo();
     const referrer = getReferrerInfo();
 
-    // FB Pixel
     if (fbPixelId && window.fbq) {
       window.fbq("track", "PageView", {}, { eventID: eventId });
     }
 
-    // TikTok
     if (tiktokPixelId && window.ttq) {
       window.ttq.page();
     }
 
-    // GTM
     if (gtmId && window.dataLayer) {
       window.dataLayer.push({
         event: "page_view",
@@ -334,7 +435,6 @@ export function useTracking() {
       });
     }
 
-    // CAPI (server-side PageView)
     if (fbPixelId) {
       sendCAPIEvent({
         pixelId: fbPixelId,
@@ -357,7 +457,6 @@ export function useTracking() {
     const eventId = generateEventId("vc");
     const contentId = product.productCode || product.id;
 
-    // FB Pixel
     if (fbPixelId && window.fbq) {
       window.fbq("track", "ViewContent", {
         content_name: product.name,
@@ -369,7 +468,6 @@ export function useTracking() {
       }, { eventID: eventId });
     }
 
-    // TikTok
     if (tiktokPixelId && window.ttq) {
       window.ttq.track("ViewContent", {
         content_id: contentId,
@@ -382,7 +480,6 @@ export function useTracking() {
       });
     }
 
-    // GTM
     if (gtmId && window.dataLayer) {
       window.dataLayer.push({
         event: "view_item",
@@ -400,7 +497,6 @@ export function useTracking() {
       });
     }
 
-    // CAPI
     if (fbPixelId) {
       sendCAPIEvent({
         pixelId: fbPixelId,
@@ -483,8 +579,14 @@ export function useTracking() {
   const trackInitiateCheckout = useCallback((params: {
     value: number; currency?: string; contentName: string;
     contentId: string; qty: number;
+    customerPhone?: string; customerName?: string;
   }) => {
     const eventId = generateEventId("ic");
+
+    // Store user data if provided
+    if (params.customerPhone || params.customerName) {
+      setFBUserData({ phone: params.customerPhone, fullName: params.customerName });
+    }
 
     if (fbPixelId && window.fbq) {
       window.fbq("track", "InitiateCheckout", {
@@ -529,6 +631,8 @@ export function useTracking() {
         pixelId: fbPixelId,
         eventName: "InitiateCheckout",
         eventId,
+        customerPhone: params.customerPhone,
+        customerName: params.customerName,
         customData: {
           content_name: params.contentName,
           content_ids: [params.contentId],
@@ -543,8 +647,13 @@ export function useTracking() {
 
   const trackAddPaymentInfo = useCallback((params: {
     value: number; currency?: string;
+    customerPhone?: string; customerName?: string;
   }) => {
     const eventId = generateEventId("api");
+
+    if (params.customerPhone || params.customerName) {
+      setFBUserData({ phone: params.customerPhone, fullName: params.customerName });
+    }
 
     if (fbPixelId && window.fbq) {
       window.fbq("track", "AddPaymentInfo", {
@@ -559,19 +668,41 @@ export function useTracking() {
         currency: params.currency || "BDT",
       });
     }
+
+    if (fbPixelId) {
+      sendCAPIEvent({
+        pixelId: fbPixelId,
+        eventName: "AddPaymentInfo",
+        eventId,
+        customerPhone: params.customerPhone,
+        customerName: params.customerName,
+        customData: {
+          value: params.value,
+          currency: params.currency || "BDT",
+        },
+      });
+    }
   }, [fbPixelId, tiktokPixelId]);
 
   const trackPurchase = useCallback((params: {
     value: number; currency?: string; orderId: string;
     contentName: string; contentId: string; qty: number;
-    customerPhone?: string; customerName?: string;
+    customerPhone?: string; customerName?: string; customerCity?: string;
   }) => {
     const eventId = generateEventId("pur");
 
     // Store eventId to prevent duplicate on page reload
     const purchaseKey = `_pur_${params.orderId}`;
-    if (sessionStorage.getItem(purchaseKey)) return; // Already tracked
+    if (sessionStorage.getItem(purchaseKey)) return;
     sessionStorage.setItem(purchaseKey, eventId);
+
+    // Update user data with all available info
+    setFBUserData({
+      phone: params.customerPhone,
+      fullName: params.customerName,
+      city: params.customerCity,
+      orderId: params.orderId,
+    });
 
     if (fbPixelId && window.fbq) {
       window.fbq("track", "Purchase", {
@@ -621,6 +752,8 @@ export function useTracking() {
         eventId,
         customerPhone: params.customerPhone,
         customerName: params.customerName,
+        customerCity: params.customerCity,
+        orderId: params.orderId,
         customData: {
           content_name: params.contentName,
           content_ids: [params.contentId],
@@ -664,6 +797,11 @@ export function useTracking() {
     customerPhone?: string; customerName?: string;
   }) => {
     const eventId = generateEventId("ld");
+
+    // Store user data immediately for advanced matching
+    if (params?.customerPhone || params?.customerName) {
+      setFBUserData({ phone: params?.customerPhone, fullName: params?.customerName });
+    }
 
     if (fbPixelId && window.fbq) {
       window.fbq("track", "Lead", {
@@ -766,7 +904,7 @@ export function useTracking() {
     }
   }, [fbPixelId, tiktokPixelId, gtmId]);
 
-  // Custom event for any additional tracking
+  // Custom event
   const trackCustomEvent = useCallback((eventName: string, data?: Record<string, any>) => {
     const eventId = generateEventId("ce");
 
@@ -820,7 +958,6 @@ export function useEngagementTracking() {
         maxScroll.current = scrollPercent;
       }
 
-      // Track milestones: 25%, 50%, 75%, 100%
       const milestones = [25, 50, 75, 100];
       for (const m of milestones) {
         if (scrollPercent >= m && !scrollMilestones.current.has(m)) {
@@ -832,7 +969,6 @@ export function useEngagementTracking() {
 
     const handleUnload = () => {
       const timeSpent = Math.round((Date.now() - startTime.current) / 1000);
-      // Use sendBeacon if possible for reliability
       if (navigator.sendBeacon) {
         const data = JSON.stringify({
           event: "TimeOnPage",
@@ -840,7 +976,6 @@ export function useEngagementTracking() {
           max_scroll: maxScroll.current,
           page: window.location.pathname,
         });
-        // We can't send to fbq on unload, but GTM dataLayer might pick it up
       }
       trackCustomEvent("TimeOnPage", {
         seconds: timeSpent,
@@ -855,7 +990,6 @@ export function useEngagementTracking() {
     return () => {
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("beforeunload", handleUnload);
-      // Track on component unmount too
       const timeSpent = Math.round((Date.now() - startTime.current) / 1000);
       if (timeSpent > 2) {
         trackCustomEvent("TimeOnPage", {
