@@ -497,11 +497,12 @@ const AdminOrders = () => {
   });
   const canPrintMemo = userRole === "admin" || hasPrintMemoPermission;
   const canTransferOrders = userRole === "admin" || hasTransferPermission;
-  const { data: orders = [], isLoading } = useOrders(statusFilter, orderDateFilter, customDateFrom, customDateTo);
+  const { data: orders = [], isLoading } = useOrders(statusFilter, orderDateFilter, customDateFrom, customDateTo, isDeletedTab);
   const { data: counts = {} } = useOrderCounts(orderDateFilter, customDateFrom, customDateTo);
   const createOrder = useCreateOrder();
   const updateStatus = useUpdateOrderStatus();
   const deleteOrder = useDeleteOrder();
+  const restoreOrder = useRestoreOrder();
   const { data: nextOrderNumber = "1" } = useNextOrderNumber();
   const { data: allProducts = [] } = usePublicProducts();
 
