@@ -43,6 +43,7 @@ import {
 import { usePublicProducts } from "@/hooks/usePublicProducts";
 import { CourierSettingsView } from "@/components/admin/courier/CourierSettingsView";
 import { CourierSuccessRate } from "@/components/admin/courier/CourierSuccessRate";
+import { CourierHistoryBadge } from "@/components/admin/courier/CourierHistoryBadge";
 import { FakeOrderDetection } from "@/components/admin/fraud/FakeOrderDetection";
 import { useBulkMemoPrint } from "@/components/admin/courier/BulkMemoPrint";
 import { useCourierCities, useCourierZones, useCourierAreas } from "@/hooks/useCourierLocations";
