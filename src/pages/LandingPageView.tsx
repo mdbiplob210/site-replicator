@@ -771,7 +771,7 @@ ttq.page();
   var PARTIAL_URL = '${supabaseUrl}/functions/v1/track-partial-order';
   var ANON = '${anonKey}';
   var SLUG = '${page.slug}';
-  var VID = localStorage.getItem('_lp_vid') || window._LP_VID || '';
+  var VID; try { VID = localStorage.getItem('_lp_vid'); } catch(e) {} VID = VID || window._LP_VID || '';
   if (!VID) {
     VID = 'v_' + Math.random().toString(36).substr(2,9) + Date.now();
     try { localStorage.setItem('_lp_vid', VID); } catch(e) {}
