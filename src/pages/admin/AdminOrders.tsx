@@ -105,6 +105,7 @@ const incompleteTabs = [
   { label: "Confirmed", icon: CheckCircle2 },
   { label: "Converted", icon: GitMerge },
   { label: "Hold", icon: PauseCircle },
+  { label: "Deleted", icon: Trash2 },
   { label: "Cancelled", icon: XCircle },
   { label: "Deleted", icon: Trash },
 ];
