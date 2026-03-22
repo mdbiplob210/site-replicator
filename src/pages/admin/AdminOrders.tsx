@@ -3421,13 +3421,18 @@ const AdminOrders = () => {
                     {/* COURIER: logo + name */}
                     <TableCell className="px-3 py-3 text-center" onClick={(e) => e.stopPropagation()}>
                       {courierInfo ? (
-                        <div className="flex items-center justify-center gap-1.5">
-                          {courierInfo.logo_url ? (
-                            <img src={courierInfo.logo_url} alt="" className="h-5 w-5 rounded object-contain" />
-                          ) : (
-                            <Truck className="h-3.5 w-3.5 text-violet-500" />
+                        <div className="flex flex-col items-center gap-0.5">
+                          <div className="flex items-center gap-1.5">
+                            {courierInfo.logo_url ? (
+                              <img src={courierInfo.logo_url} alt="" className="h-5 w-5 rounded object-contain" />
+                            ) : (
+                              <Truck className="h-3.5 w-3.5 text-violet-500" />
+                            )}
+                            <span className="text-xs font-medium text-foreground">{courierInfo.provider_name}</span>
+                          </div>
+                          {courierInfo.consignment_id && (
+                            <span className="text-[10px] font-mono text-muted-foreground bg-secondary/50 px-1.5 py-0.5 rounded">{courierInfo.consignment_id}</span>
                           )}
-                          <span className="text-xs font-medium text-foreground">{courierInfo.provider_name}</span>
                         </div>
                       ) : (
                         <span className="text-xs text-muted-foreground">—</span>
@@ -3680,9 +3685,12 @@ const AdminOrders = () => {
                         <span>{items.length} items</span>
                         <span>·</span>
                         {courierInfo ? (
-                          <span className="flex items-center gap-1">
+                          <span className="flex items-center gap-1 flex-wrap">
                             <Truck className="h-3 w-3 text-violet-500" />
                             {courierInfo.provider_name}
+                            {courierInfo.consignment_id && (
+                              <span className="font-mono text-[9px] bg-secondary/50 px-1 py-0.5 rounded">{courierInfo.consignment_id}</span>
+                            )}
                           </span>
                         ) : (
                           <span>No courier</span>
