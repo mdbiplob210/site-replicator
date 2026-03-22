@@ -6,4 +6,6 @@ import { prefetchCriticalData } from "./lib/prefetch";
 // Start fetching critical data BEFORE React even renders
 prefetchCriticalData();
 
-createRoot(document.getElementById("root")!).render(<App />);
+// Render immediately
+const root = createRoot(document.getElementById("root")!);
+root.render(<App />);

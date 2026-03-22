@@ -6,8 +6,8 @@
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-const PRODUCT_LIST_FIELDS = "id,name,product_code,selling_price,original_price,main_image_url,additional_images,category_id,stock_quantity,allow_out_of_stock_orders,free_delivery,slug";
-const PRODUCT_DETAIL_FIELDS = `${PRODUCT_LIST_FIELDS},short_description,detailed_description,youtube_url,status,created_at,updated_at`;
+const PRODUCT_LIST_FIELDS = "id,name,product_code,selling_price,original_price,main_image_url,category_id,stock_quantity,allow_out_of_stock_orders,free_delivery,slug";
+const PRODUCT_DETAIL_FIELDS = `${PRODUCT_LIST_FIELDS},short_description,detailed_description,youtube_url,status,additional_images,created_at,updated_at`;
 
 const headers: Record<string, string> = {
   apikey: SUPABASE_KEY,
@@ -38,9 +38,8 @@ function extractProductSlug(path: string) {
 
 async function fetchAndCache(key: string, url: string) {
   try {
-    const res = await fetch(url, { headers });
+    const res = await fetch(url, { headers, priority: "high" as any });
     if (!res.ok) return;
-
     const data = await res.json();
     prefetchCache[key] = { data, ts: Date.now() };
   } catch {
@@ -71,7 +70,7 @@ export function prefetchCriticalData() {
     return;
   }
 
-  // Product route: prefetch only current product (avoid downloading entire catalog)
+  // Product route: prefetch only current product
   if (isProductRoute(path)) {
     const slug = extractProductSlug(path);
     if (!slug) return;
