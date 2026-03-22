@@ -4154,10 +4154,12 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                   <button
                     key={s.value}
                     type="button"
-                    onClick={() => handleStatusChange(s.value)}
+                    onClick={() => setEditStatus(s.value)}
                     className={cn(
                       "flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold border-2 transition-all duration-200",
-                      order.status === s.value
+                      editStatus === s.value && editStatus !== order.status
+                        ? `${s.color} text-white border-transparent shadow-lg scale-[1.05] ring-2 ring-offset-1 ring-primary/40`
+                        : order.status === s.value
                         ? `${s.color} text-white border-transparent shadow-lg scale-[1.02]`
                         : "bg-secondary/30 text-foreground border-border/40 hover:border-primary/30 hover:bg-secondary/50"
                     )}
@@ -4167,6 +4169,20 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                   </button>
                 ))}
               </div>
+              {editStatus && editStatus !== order.status && (
+                <Button
+                  size="sm"
+                  className="w-full mt-2 rounded-xl font-semibold"
+                  onClick={() => handleStatusChange(editStatus)}
+                >
+                  <CheckCircle2 className="h-4 w-4 mr-1.5" />
+                  স্ট্যাটাস আপডেট করুন ({[
+                    { v: "processing", l: "New Order" }, { v: "confirmed", l: "Confirmed" }, { v: "in_courier", l: "In Courier" },
+                    { v: "on_hold", l: "Hold" }, { v: "hand_delivery", l: "Hand Delivery" }, { v: "cancelled", l: "Cancelled" },
+                    { v: "returned", l: "Return" }, { v: "pending_return", l: "Pending Return" },
+                  ].find(x => x.v === editStatus)?.l || editStatus})
+                </Button>
+              )}
               </div>
               {/* Show existing cancel reason */}
               {order.status === "cancelled" && (order as any).cancel_reason && (
