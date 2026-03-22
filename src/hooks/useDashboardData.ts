@@ -119,42 +119,73 @@ export function useDashboardData(filter: TimeFilter) {
   const courierBalance = courierBalanceQuery.data?.amount || 0;
   const courierCount = courierBalanceQuery.data?.count || 0;
 
-  // Order stats
+  // Single pass over orders for all stats
   const totalOrders = orders.length;
-  const totalAmount = orders.reduce((s, o) => s + Number(o.total_amount), 0);
+  let totalAmount = 0;
+  const statusCounts: Record<string, { count: number; amount: number }> = {};
+  const paymentCounts: Record<string, { count: number; amount: number }> = {};
+  let revenue = 0, deliveryCost = 0, productCost = 0, returnAmount = 0;
+  const hourlyOrders = new Array(24).fill(0);
+  const sourceMap = new Map<string, { count: number; amount: number }>();
 
-  const byStatus = (status: string) => orders.filter((o) => o.status === status);
-  const countAndAmount = (status: string) => {
-    const filtered = byStatus(status);
-    return {
-      count: filtered.length,
-      amount: filtered.reduce((s, o) => s + Number(o.total_amount), 0),
-      pct: totalOrders > 0 ? Math.round((filtered.length / totalOrders) * 100) : 0,
-    };
+  for (const o of orders) {
+    const amt = Number(o.total_amount);
+    totalAmount += amt;
+
+    // Status counts
+    if (!statusCounts[o.status]) statusCounts[o.status] = { count: 0, amount: 0 };
+    statusCounts[o.status].count++;
+    statusCounts[o.status].amount += amt;
+
+    // Payment stats
+    const ps = o.payment_status || "unpaid";
+    if (!paymentCounts[ps]) paymentCounts[ps] = { count: 0, amount: 0 };
+    paymentCounts[ps].count++;
+    paymentCounts[ps].amount += amt;
+
+    // Revenue/cost (exclude cancelled & returned)
+    if (o.status !== "cancelled" && o.status !== "returned") {
+      revenue += amt;
+      deliveryCost += Number(o.delivery_charge);
+      productCost += Number(o.product_cost);
+    }
+    if (o.status === "returned") returnAmount += amt;
+
+    // Hourly
+    hourlyOrders[new Date(o.created_at).getHours()]++;
+
+    // Source
+    const src = o.source || "Unknown";
+    const existing = sourceMap.get(src) || { count: 0, amount: 0 };
+    existing.count++;
+    existing.amount += amt;
+    sourceMap.set(src, existing);
+  }
+
+  const sc = (status: string) => {
+    const s = statusCounts[status] || { count: 0, amount: 0 };
+    return { ...s, pct: totalOrders > 0 ? Math.round((s.count / totalOrders) * 100) : 0 };
   };
 
-  const processing = countAndAmount("processing");
-  const confirmed = countAndAmount("confirmed");
-  const inquiry = countAndAmount("inquiry");
-  const cancelled = countAndAmount("cancelled");
-  const onHold = countAndAmount("on_hold");
-  const shipLater = countAndAmount("ship_later");
-  const inCourier = countAndAmount("in_courier");
-  const delivered = countAndAmount("delivered");
-  const returned = countAndAmount("returned");
-  const pendingReturn = countAndAmount("pending_return");
-  const handDelivery = countAndAmount("hand_delivery");
+  const processing = sc("processing");
+  const confirmed = sc("confirmed");
+  const inquiry = sc("inquiry");
+  const cancelled = sc("cancelled");
+  const onHold = sc("on_hold");
+  const shipLater = sc("ship_later");
+  const inCourier = sc("in_courier");
+  const delivered = sc("delivered");
+  const returned = sc("returned");
+  const pendingReturn = sc("pending_return");
+  const handDelivery = sc("hand_delivery");
 
   const incompleteTotal = processing.count + confirmed.count + inquiry.count + onHold.count + cancelled.count;
   const avgOrderValue = totalOrders > 0 ? Math.round(totalAmount / totalOrders) : 0;
 
-  const paidOrders = orders.filter((o) => o.payment_status === "paid");
-  const unpaidOrders = orders.filter((o) => o.payment_status === "unpaid");
-  const partialPaidOrders = orders.filter((o) => o.payment_status === "partial");
   const paymentStats = {
-    paid: { count: paidOrders.length, amount: paidOrders.reduce((s, o) => s + Number(o.total_amount), 0) },
-    unpaid: { count: unpaidOrders.length, amount: unpaidOrders.reduce((s, o) => s + Number(o.total_amount), 0) },
-    partial: { count: partialPaidOrders.length, amount: partialPaidOrders.reduce((s, o) => s + Number(o.total_amount), 0) },
+    paid: paymentCounts["paid"] || { count: 0, amount: 0 },
+    unpaid: paymentCounts["unpaid"] || { count: 0, amount: 0 },
+    partial: paymentCounts["partial"] || { count: 0, amount: 0 },
   };
 
   // Use Map for O(1) order lookup instead of O(n) find()
@@ -162,7 +193,7 @@ export function useDashboardData(filter: TimeFilter) {
   const productMap = new Map<string, { name: string; qty: number; revenue: number }>();
   for (const item of orderItems) {
     const order = orderMap.get(item.order_id);
-    if (!order || ["cancelled", "returned"].includes(order.status)) continue;
+    if (!order || order.status === "cancelled" || order.status === "returned") continue;
     const key = item.product_name || item.product_code || "Unknown";
     const existing = productMap.get(key) || { name: key, qty: 0, revenue: 0 };
     existing.qty += Number(item.quantity);
@@ -173,62 +204,35 @@ export function useDashboardData(filter: TimeFilter) {
     .sort((a, b) => b.qty - a.qty)
     .slice(0, 5);
 
-  const hourlyOrders = Array(24).fill(0);
-  for (const o of orders) {
-    const hour = new Date(o.created_at).getHours();
-    hourlyOrders[hour]++;
-  }
-
-  const sourceMap = new Map<string, { count: number; amount: number }>();
-  for (const o of orders) {
-    const src = o.source || "Unknown";
-    const existing = sourceMap.get(src) || { count: 0, amount: 0 };
-    existing.count++;
-    existing.amount += Number(o.total_amount);
-    sourceMap.set(src, existing);
-  }
   const sourceBreakdown = Array.from(sourceMap.entries())
     .map(([name, data]) => ({ name, ...data }))
     .sort((a, b) => b.count - a.count);
 
-  const revenue = orders
-    .filter((o) => !["cancelled", "returned"].includes(o.status))
-    .reduce((s, o) => s + Number(o.total_amount), 0);
-  const deliveryCost = orders
-    .filter((o) => !["cancelled", "returned"].includes(o.status))
-    .reduce((s, o) => s + Number(o.delivery_charge), 0);
-  const productCost = orders
-    .filter((o) => !["cancelled", "returned"].includes(o.status))
-    .reduce((s, o) => s + Number(o.product_cost), 0);
-  const returnAmount = orders
-    .filter((o) => o.status === "returned")
-    .reduce((s, o) => s + Number(o.total_amount), 0);
   const adsCostBdt = adSpends.reduce((s, a) => s + Number(a.amount_bdt), 0);
   const adsCostUsd = adSpends.reduce((s, a) => s + Number(a.amount_usd), 0);
   const estProfit = revenue - productCost - adsCostBdt - deliveryCost;
   const finalProfit = estProfit - returnAmount;
 
-  const bankBalance = finance
-    .filter((f) => f.type === "bank")
-    .reduce((s, f) => s + Number(f.amount), 0);
-  const loans = finance.filter((f) => f.type === "loan_in" || f.type === "loan_out");
-  const loanTotal = finance
-    .filter((f) => f.type === "loan_in").reduce((s, f) => s + Number(f.amount), 0)
-    - finance.filter((f) => f.type === "loan_out").reduce((s, f) => s + Number(f.amount), 0);
-  const investmentTotal = finance
-    .filter((f) => f.type === "investment_in").reduce((s, f) => s + Number(f.amount), 0)
-    - finance.filter((f) => f.type === "investment_out").reduce((s, f) => s + Number(f.amount), 0);
-  const totalIncome = finance
-    .filter((f) => f.type === "income")
-    .reduce((s, f) => s + Number(f.amount), 0);
-  const totalExpense = finance
-    .filter((f) => f.type === "expense")
-    .reduce((s, f) => s + Number(f.amount), 0);
-  const totalProductPurchase = finance
-    .filter((f) => f.type === "product_purchase")
-    .reduce((s, f) => s + Number(f.amount), 0);
-  const moneyIn = totalIncome + finance.filter((f) => f.type === "loan_in").reduce((s, f) => s + Number(f.amount), 0) + finance.filter((f) => f.type === "investment_in").reduce((s, f) => s + Number(f.amount), 0);
-  const moneyOut = totalExpense + totalProductPurchase + finance.filter((f) => f.type === "loan_out").reduce((s, f) => s + Number(f.amount), 0) + finance.filter((f) => f.type === "investment_out").reduce((s, f) => s + Number(f.amount), 0);
+  // Single pass over finance
+  let bankBalance = 0, loanIn = 0, loanOut = 0, investIn = 0, investOut = 0;
+  let totalIncome = 0, totalExpense = 0, totalProductPurchase = 0, loanCount = 0;
+  for (const f of finance) {
+    const amt = Number(f.amount);
+    switch (f.type) {
+      case "bank": bankBalance += amt; break;
+      case "loan_in": loanIn += amt; loanCount++; break;
+      case "loan_out": loanOut += amt; loanCount++; break;
+      case "investment_in": investIn += amt; break;
+      case "investment_out": investOut += amt; break;
+      case "income": totalIncome += amt; break;
+      case "expense": totalExpense += amt; break;
+      case "product_purchase": totalProductPurchase += amt; break;
+    }
+  }
+  const loanTotal = loanIn - loanOut;
+  const investmentTotal = investIn - investOut;
+  const moneyIn = totalIncome + loanIn + investIn;
+  const moneyOut = totalExpense + totalProductPurchase + loanOut + investOut;
 
   const stockValue = products.reduce(
     (s, p) => s + Number(p.purchase_price) * Number(p.stock_quantity),
