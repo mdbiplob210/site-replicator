@@ -6,6 +6,11 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const PATHAO_LOCATION_CACHE_TTL_MS = 15 * 60 * 1000;
+
+let pathaoTokenCache: { key: string; token: string; expiresAt: number } | null = null;
+const pathaoLocationCache = new Map<string, { data: Array<{ id: string | number; name: string }>; expiresAt: number }>();
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -111,10 +116,25 @@ Deno.serve(async (req) => {
 });
 
 // ========== PATHAO ==========
+const getPathaoConfigCacheKey = (config: any) =>
+  JSON.stringify([
+    config.base_url || "https://api-hermes.pathao.com",
+    config.client_id || "",
+    config.email || config.api_key || "",
+    config.secret_key || "",
+    config.password || "",
+  ]);
+
 async function getPathaoToken(config: any): Promise<string> {
   // If api_key looks like a bearer token (long string), use it directly
   if (config.api_key && config.api_key.length > 50) {
     return config.api_key;
+  }
+
+  const cacheKey = getPathaoConfigCacheKey(config);
+  if (pathaoTokenCache && pathaoTokenCache.key === cacheKey && Date.now() < pathaoTokenCache.expiresAt) {
+    console.log("[pathao-token] Using cached token");
+    return pathaoTokenCache.token;
   }
 
   // Otherwise, issue token using client credentials
@@ -145,6 +165,12 @@ async function getPathaoToken(config: any): Promise<string> {
 
   const data = await resp.json();
   const token = data.token || data.access_token || "";
+  const expiresInSeconds = Number(data.expires_in || 3600);
+  pathaoTokenCache = {
+    key: cacheKey,
+    token,
+    expiresAt: Date.now() + Math.max(expiresInSeconds - 60, 60) * 1000,
+  };
   console.log(`[pathao-token] Token obtained, length=${token.length}`);
   return token;
 }
@@ -170,6 +196,13 @@ async function handlePathao(config: any, action: string, cityId: string | null, 
     throw new Error(`Invalid action: ${action}`);
   }
 
+  const cacheKey = `${getPathaoConfigCacheKey(config)}:${endpoint}`;
+  const cachedLocations = pathaoLocationCache.get(cacheKey);
+  if (cachedLocations && Date.now() < cachedLocations.expiresAt) {
+    console.log(`[pathao] Cache hit for ${endpoint}`);
+    return cachedLocations.data;
+  }
+
   console.log(`[pathao] Fetching ${endpoint}`);
   const resp = await fetch(endpoint, { headers });
   if (!resp.ok) {
@@ -182,10 +215,17 @@ async function handlePathao(config: any, action: string, cityId: string | null, 
   // Pathao returns { data: { data: [...] } } or { data: [...] }
   const items = data?.data?.data || data?.data || [];
 
-  return items.map((item: any) => ({
+  const mappedItems = items.map((item: any) => ({
     id: item.city_id || item.zone_id || item.area_id || item.id,
     name: item.city_name || item.zone_name || item.area_name || item.name,
   }));
+
+  pathaoLocationCache.set(cacheKey, {
+    data: mappedItems,
+    expiresAt: Date.now() + PATHAO_LOCATION_CACHE_TTL_MS,
+  });
+
+  return mappedItems;
 }
 
 // ========== STEADFAST ==========
