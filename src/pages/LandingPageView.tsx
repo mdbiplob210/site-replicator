@@ -583,10 +583,24 @@ ttq.page();
 
     var el = e.target.closest('[data-track-event]');
     if (el) {
-      // Don't fire client-side conversion — server-side submit-landing-order already creates conversion events
       send('click', el.getAttribute('data-track-event'), { click_x: parseFloat(clickX), click_y: parseFloat(clickY), click_element: clickEl, page_height: pageH });
-    } else if (e.target.closest('a, button, [role="button"], input[type="submit"]')) {
-      send('click', (e.target.closest('a, button, [role="button"], input[type="submit"]').textContent || '').trim().substring(0, 50), { click_x: parseFloat(clickX), click_y: parseFloat(clickY), click_element: clickEl, page_height: pageH });
+    } else {
+      // Match buttons, links, and any element with onclick or cursor:pointer styling
+      var clickable = e.target.closest('a, button, [role="button"], input[type="submit"], [onclick], .btn, .order-btn, .checkout-btn');
+      if (!clickable) {
+        // Check if element or parent has pointer cursor (common for styled div buttons)
+        var checkEl = e.target;
+        for (var i = 0; i < 3 && checkEl; i++) {
+          try {
+            var cs = window.getComputedStyle(checkEl);
+            if (cs.cursor === 'pointer' && (checkEl.tagName !== 'HTML' && checkEl.tagName !== 'BODY')) { clickable = checkEl; break; }
+          } catch(ex) {}
+          checkEl = checkEl.parentElement;
+        }
+      }
+      if (clickable) {
+        send('click', (clickable.textContent || '').trim().substring(0, 50), { click_x: parseFloat(clickX), click_y: parseFloat(clickY), click_element: clickEl, page_height: pageH });
+      }
     }
   });
 
