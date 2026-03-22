@@ -195,7 +195,7 @@ const CheckoutPage = () => {
       return;
     }
     if (!isValidBDPhone(form.phone)) {
-      toast.error("Please enter a valid Bangladesh phone number (01XXXXXXXXX)");
+      toast.error("অনুগ্রহ করে সঠিক মোবাইল নম্বর দিন (কমপক্ষে ১১ সংখ্যা)");
       return;
     }
     setSubmitting(true);
