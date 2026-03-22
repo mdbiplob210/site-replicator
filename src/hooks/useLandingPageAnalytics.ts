@@ -1,6 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+const LANDING_EVENT_PAGE_SIZE = 1000;
+const ORDER_INTENT_KEYWORDS = ["অর্ডার", "order", "confirm", "buy", "checkout", "submit", "purchase"];
+const WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000;
+
 export interface LandingPageEvent {
   id: string;
   landing_page_id: string;
@@ -42,33 +46,128 @@ export interface PageAnalyticsSummary {
   bounceRate: number;
 }
 
-// Helper to build date filter
-function getDateRange(days: number, startDate?: string, endDate?: string) {
-  if (startDate && endDate) {
-    return { since: startDate, until: endDate };
-  }
-  const since = new Date();
-  since.setDate(since.getDate() - days);
-  return { since: since.toISOString(), until: new Date().toISOString() };
+interface DateRange {
+  since: string;
+  until: string;
+  totalDays: number;
 }
 
-export function useLandingPageEvents(pageId?: string, startDate?: string, endDate?: string) {
+interface FetchLandingEventsOptions {
+  select: string;
+  pageId?: string;
+  since?: string;
+  until?: string;
+  limit?: number;
+  orderBy?: string;
+  ascending?: boolean;
+  applyQuery?: (query: any) => any;
+}
+
+function toDateBoundary(dateString: string, endOfDay = false) {
+  const value = new Date(`${dateString}T${endOfDay ? "23:59:59.999" : "00:00:00.000"}`);
+  return value.toISOString();
+}
+
+function getDateRange(days: number, startDate?: string, endDate?: string): DateRange {
+  if (startDate && endDate) {
+    const since = toDateBoundary(startDate, false);
+    const until = toDateBoundary(endDate, true);
+    const totalDays = Math.max(
+      Math.round((new Date(until).getTime() - new Date(since).getTime()) / (24 * 60 * 60 * 1000)) + 1,
+      1
+    );
+
+    return { since, until, totalDays };
+  }
+
+  const untilDate = new Date();
+  untilDate.setHours(23, 59, 59, 999);
+
+  const sinceDate = new Date(untilDate);
+  sinceDate.setDate(sinceDate.getDate() - Math.max(days - 1, 0));
+  sinceDate.setHours(0, 0, 0, 0);
+
+  return {
+    since: sinceDate.toISOString(),
+    until: untilDate.toISOString(),
+    totalDays: Math.max(days, 1),
+  };
+}
+
+async function fetchLandingEvents<T>({
+  select,
+  pageId,
+  since,
+  until,
+  limit,
+  orderBy,
+  ascending = false,
+  applyQuery,
+}: FetchLandingEventsOptions): Promise<T[]> {
+  let from = 0;
+  const rows: T[] = [];
+
+  while (true) {
+    let query = supabase.from("landing_page_events" as any).select(select);
+
+    if (pageId) query = query.eq("landing_page_id", pageId);
+    if (since) query = query.gte("created_at", since);
+    if (until) query = query.lte("created_at", until);
+    if (applyQuery) query = applyQuery(query);
+    if (orderBy) query = query.order(orderBy, { ascending });
+
+    const upperBound = limit
+      ? Math.min(from + LANDING_EVENT_PAGE_SIZE - 1, limit - 1)
+      : from + LANDING_EVENT_PAGE_SIZE - 1;
+
+    const { data, error } = await query.range(from, upperBound);
+    if (error) throw error;
+
+    const batch = (data ?? []) as T[];
+    if (batch.length === 0) break;
+
+    rows.push(...batch);
+
+    if (batch.length < LANDING_EVENT_PAGE_SIZE) break;
+    if (limit && rows.length >= limit) break;
+
+    from += LANDING_EVENT_PAGE_SIZE;
+  }
+
+  return limit ? rows.slice(0, limit) : rows;
+}
+
+function buildDailyMap(range: DateRange) {
+  const map: Record<string, { views: number; clicks: number; conversions: number }> = {};
+  const date = new Date(range.since);
+
+  for (let i = 0; i < range.totalDays; i++) {
+    const key = date.toISOString().split("T")[0];
+    map[key] = { views: 0, clicks: 0, conversions: 0 };
+    date.setDate(date.getDate() + 1);
+  }
+
+  return map;
+}
+
+function isOrderIntentClick(eventName: string | null, clickElement?: string | null) {
+  const content = `${eventName ?? ""} ${clickElement ?? ""}`.toLowerCase();
+  return ORDER_INTENT_KEYWORDS.some((keyword) => content.includes(keyword.toLowerCase()));
+}
+
+export function useLandingPageEvents(pageId?: string, days = 30, startDate?: string, endDate?: string) {
   return useQuery({
-    queryKey: ["landing-page-events", pageId, startDate, endDate],
+    queryKey: ["landing-page-events", pageId, days, startDate, endDate],
     queryFn: async () => {
-      let query = supabase
-        .from("landing_page_events" as any)
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(1000);
-
-      if (pageId) query = query.eq("landing_page_id", pageId);
-      if (startDate) query = query.gte("created_at", startDate);
-      if (endDate) query = query.lte("created_at", endDate);
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return data as unknown as LandingPageEvent[];
+      const range = getDateRange(days, startDate, endDate);
+      return fetchLandingEvents<LandingPageEvent>({
+        select: "*",
+        pageId,
+        since: range.since,
+        until: range.until,
+        orderBy: "created_at",
+        ascending: false,
+      });
     },
   });
 }
@@ -81,66 +180,75 @@ export function useLandingPageAnalyticsSummary(days = 30, startDate?: string, en
         .from("landing_pages" as any)
         .select("id, title, slug")
         .order("created_at", { ascending: false });
+
       if (pagesError) throw pagesError;
 
-      const { since, until } = getDateRange(days, startDate, endDate);
+      const range = getDateRange(days, startDate, endDate);
+      const events = await fetchLandingEvents<{
+        landing_page_id: string;
+        event_type: string;
+        event_name: string | null;
+        visitor_id: string | null;
+        session_id: string | null;
+        time_on_page: number | null;
+        click_element: string | null;
+      }>({
+        select: "landing_page_id, event_type, event_name, visitor_id, session_id, time_on_page, click_element",
+        since: range.since,
+        until: range.until,
+      });
 
-      // Fetch all events with pagination and date filter
-      let allEvents: any[] = [];
-      let from = 0;
-      const pageSize = 1000;
-      while (true) {
-        const { data: batch, error: batchError } = await supabase
-          .from("landing_page_events" as any)
-          .select("landing_page_id, event_type, event_name, visitor_id, session_id, time_on_page")
-          .gte("created_at", since)
-          .lte("created_at", until)
-          .range(from, from + pageSize - 1);
-        if (batchError) throw batchError;
-        if (!batch || batch.length === 0) break;
-        allEvents = allEvents.concat(batch);
-        if (batch.length < pageSize) break;
-        from += pageSize;
-      }
+      const eventsByPage = new Map<string, typeof events>();
+      events.forEach((event) => {
+        const existing = eventsByPage.get(event.landing_page_id) ?? [];
+        existing.push(event);
+        eventsByPage.set(event.landing_page_id, existing);
+      });
 
-      const typedPages = pages as unknown as { id: string; title: string; slug: string }[];
-      const typedEvents = allEvents as unknown as { landing_page_id: string; event_type: string; event_name: string | null; visitor_id: string | null; session_id: string | null; time_on_page: number | null }[];
+      const typedPages = (pages ?? []) as { id: string; title: string; slug: string }[];
 
       return typedPages.map((page) => {
-        const pe = typedEvents.filter((e) => e.landing_page_id === page.id);
-        const views = pe.filter((e) => e.event_type === "view").length;
-        const clicks = pe.filter((e) => e.event_type === "click").length;
-        // Order button clicks - clicks that contain order-related text
-        const orderClicks = pe.filter((e) => {
-          if (e.event_type !== "click") return false;
-          const name = (e.event_name || "").toLowerCase();
-          return name.includes("অর্ডার") || name.includes("order") || name.includes("কনফার্ম") || name.includes("confirm") || name.includes("buy");
-        }).length;
-        const conversions = pe.filter((e) => e.event_type === "conversion").length;
-        const exitEvents = pe.filter((e) => e.event_type === "exit" && e.time_on_page);
-        const avgTime = exitEvents.length > 0 ? exitEvents.reduce((s, e) => s + (e.time_on_page || 0), 0) / exitEvents.length : 0;
+        const pageEvents = eventsByPage.get(page.id) ?? [];
+        const views = pageEvents.filter((event) => event.event_type === "view").length;
+        const clicks = pageEvents.filter((event) => event.event_type === "click").length;
+        const orderClicks = pageEvents.filter(
+          (event) => event.event_type === "click" && isOrderIntentClick(event.event_name, event.click_element)
+        ).length;
+        const conversions = pageEvents.filter((event) => event.event_type === "conversion").length;
+        const exitEvents = pageEvents.filter((event) => event.event_type === "exit" && event.time_on_page);
+        const avgTimeOnPage =
+          exitEvents.length > 0
+            ? exitEvents.reduce((sum, event) => sum + (event.time_on_page || 0), 0) / exitEvents.length
+            : 0;
 
         const sessions = new Map<string, Set<string>>();
-        pe.forEach((e) => {
-          const sid = e.session_id || e.visitor_id || "unknown";
-          if (!sessions.has(sid)) sessions.set(sid, new Set());
-          sessions.get(sid)!.add(e.event_type);
+        pageEvents.forEach((event) => {
+          const sessionKey = event.session_id || event.visitor_id || `anonymous-${event.landing_page_id}`;
+          const types = sessions.get(sessionKey) ?? new Set<string>();
+          types.add(event.event_type);
+          sessions.set(sessionKey, types);
         });
+
         let bounces = 0;
         sessions.forEach((types) => {
-          if (types.size <= 2 && types.has("view") && (types.size === 1 || types.has("exit"))) bounces++;
+          if (types.size <= 2 && types.has("view") && (types.size === 1 || types.has("exit"))) {
+            bounces += 1;
+          }
         });
 
         return {
           landing_page_id: page.id,
           title: page.title,
           slug: page.slug,
-          views, clicks, orderClicks, conversions,
+          views,
+          clicks,
+          orderClicks,
+          conversions,
           ctr: views > 0 ? (clicks / views) * 100 : 0,
           conversionRate: views > 0 ? (conversions / views) * 100 : 0,
-          avgTimeOnPage: Math.round(avgTime),
+          avgTimeOnPage: Math.round(avgTimeOnPage),
           bounceRate: sessions.size > 0 ? (bounces / sessions.size) * 100 : 0,
-        } as PageAnalyticsSummary;
+        } satisfies PageAnalyticsSummary;
       });
     },
   });
@@ -150,47 +258,24 @@ export function useLandingPageDailyStats(pageId?: string, days = 7, startDate?: 
   return useQuery({
     queryKey: ["landing-page-daily-stats", pageId, days, startDate, endDate],
     queryFn: async () => {
-      const { since, until } = getDateRange(days, startDate, endDate);
+      const range = getDateRange(days, startDate, endDate);
+      const events = await fetchLandingEvents<{ event_type: string; created_at: string }>({
+        select: "event_type, created_at",
+        pageId,
+        since: range.since,
+        until: range.until,
+        orderBy: "created_at",
+        ascending: true,
+      });
 
-      // Fetch with pagination to avoid 1000 row limit
-      let allData: any[] = [];
-      let from = 0;
-      const pageSize = 1000;
-      while (true) {
-        let query = supabase
-          .from("landing_page_events" as any)
-          .select("event_type, created_at")
-          .gte("created_at", since)
-          .lte("created_at", until)
-          .order("created_at", { ascending: true })
-          .range(from, from + pageSize - 1);
+      const dailyMap = buildDailyMap(range);
 
-        if (pageId) query = query.eq("landing_page_id", pageId);
-
-        const { data: batch, error } = await query;
-        if (error) throw error;
-        if (!batch || batch.length === 0) break;
-        allData = allData.concat(batch);
-        if (batch.length < pageSize) break;
-        from += pageSize;
-      }
-
-      const typedData = allData as unknown as { event_type: string; created_at: string }[];
-      const dailyMap: Record<string, { views: number; clicks: number; conversions: number }> = {};
-
-      for (let i = 0; i < days; i++) {
-        const d = new Date();
-        d.setDate(d.getDate() - (days - 1 - i));
-        const key = d.toISOString().split("T")[0];
-        dailyMap[key] = { views: 0, clicks: 0, conversions: 0 };
-      }
-
-      typedData.forEach((e) => {
-        const key = e.created_at.split("T")[0];
+      events.forEach((event) => {
+        const key = event.created_at.split("T")[0];
         if (!dailyMap[key]) dailyMap[key] = { views: 0, clicks: 0, conversions: 0 };
-        if (e.event_type === "view") dailyMap[key].views++;
-        else if (e.event_type === "click") dailyMap[key].clicks++;
-        else if (e.event_type === "conversion") dailyMap[key].conversions++;
+        if (event.event_type === "view") dailyMap[key].views += 1;
+        if (event.event_type === "click") dailyMap[key].clicks += 1;
+        if (event.event_type === "conversion") dailyMap[key].conversions += 1;
       });
 
       return Object.entries(dailyMap).map(([date, stats]) => ({ date, ...stats }));
@@ -198,144 +283,161 @@ export function useLandingPageDailyStats(pageId?: string, days = 7, startDate?: 
   });
 }
 
-export function useLandingPageFunnel(pageId?: string, days = 30) {
+export function useLandingPageFunnel(pageId?: string, days = 30, startDate?: string, endDate?: string) {
   return useQuery({
-    queryKey: ["landing-page-funnel", pageId, days],
+    queryKey: ["landing-page-funnel", pageId, days, startDate, endDate],
     queryFn: async () => {
-      const since = new Date(); since.setDate(since.getDate() - days);
-
-      let allEvents: any[] = [];
-      let from = 0;
-      const pageSize = 1000;
-      while (true) {
-        let query = supabase.from("landing_page_events" as any)
-          .select("event_type, event_name, visitor_id")
-          .gte("created_at", since.toISOString())
-          .range(from, from + pageSize - 1);
-        if (pageId) query = query.eq("landing_page_id", pageId);
-        const { data: batch, error } = await query;
-        if (error) throw error;
-        if (!batch || batch.length === 0) break;
-        allEvents = allEvents.concat(batch);
-        if (batch.length < pageSize) break;
-        from += pageSize;
-      }
-
-      const events = allEvents as unknown as { event_type: string; event_name: string | null; visitor_id: string | null }[];
-      const steps = ["view", "scroll_50", "form_view", "form_start", "phone_entered", "conversion"];
-      const stepLabels: Record<string, string> = {
-        view: "পেজ ভিউ", scroll_50: "৫০% স্ক্রল", form_view: "ফর্ম দেখা",
-        form_start: "ফর্ম শুরু", phone_entered: "ফোন দেওয়া", conversion: "অর্ডার",
-      };
-
-      const visitors = new Map<string, Set<string>>();
-      events.forEach((e) => {
-        const key = e.event_type === "funnel" ? (e.event_name || "") : (e.event_type === "scroll" ? (e.event_name || "") : e.event_type);
-        const vid = e.visitor_id || "unknown";
-        if (!visitors.has(key)) visitors.set(key, new Set());
-        visitors.get(key)!.add(vid);
+      const range = getDateRange(days, startDate, endDate);
+      const events = await fetchLandingEvents<{ event_type: string; event_name: string | null; visitor_id: string | null }>({
+        select: "event_type, event_name, visitor_id",
+        pageId,
+        since: range.since,
+        until: range.until,
       });
 
-      return steps.map((step) => ({ step, label: stepLabels[step] || step, count: visitors.get(step)?.size || 0 }));
+      const steps = ["view", "scroll_50", "form_view", "form_start", "phone_entered", "conversion"];
+      const stepLabels: Record<string, string> = {
+        view: "পেজ ভিউ",
+        scroll_50: "৫০% স্ক্রল",
+        form_view: "ফর্ম দেখা",
+        form_start: "ফর্ম শুরু",
+        phone_entered: "ফোন দেওয়া",
+        conversion: "অর্ডার",
+      };
+
+      const visitorsByStep = new Map<string, Set<string>>();
+      events.forEach((event) => {
+        const stepKey =
+          event.event_type === "funnel" || event.event_type === "scroll"
+            ? event.event_name || ""
+            : event.event_type;
+        const visitorId = event.visitor_id || "unknown";
+        const visitors = visitorsByStep.get(stepKey) ?? new Set<string>();
+        visitors.add(visitorId);
+        visitorsByStep.set(stepKey, visitors);
+      });
+
+      return steps.map((step) => ({
+        step,
+        label: stepLabels[step] || step,
+        count: visitorsByStep.get(step)?.size || 0,
+      }));
     },
   });
 }
 
-export function useLandingPageUTM(pageId?: string, days = 30) {
+export function useLandingPageUTM(pageId?: string, days = 30, startDate?: string, endDate?: string) {
   return useQuery({
-    queryKey: ["landing-page-utm", pageId, days],
+    queryKey: ["landing-page-utm", pageId, days, startDate, endDate],
     queryFn: async () => {
-      const since = new Date(); since.setDate(since.getDate() - days);
+      const range = getDateRange(days, startDate, endDate);
+      const events = await fetchLandingEvents<{
+        event_type: string;
+        utm_source: string | null;
+        utm_medium: string | null;
+        utm_campaign: string | null;
+        visitor_id: string | null;
+      }>({
+        select: "event_type, utm_source, utm_medium, utm_campaign, visitor_id",
+        pageId,
+        since: range.since,
+        until: range.until,
+        applyQuery: (query) => query.in("event_type", ["view", "conversion"]),
+      });
 
-      let allEvents: any[] = [];
-      let from = 0;
-      const pageSize = 1000;
-      while (true) {
-        let query = supabase.from("landing_page_events" as any)
-          .select("event_type, utm_source, utm_medium, utm_campaign, visitor_id")
-          .gte("created_at", since.toISOString())
-          .in("event_type", ["view", "conversion"])
-          .range(from, from + pageSize - 1);
-        if (pageId) query = query.eq("landing_page_id", pageId);
-        const { data: batch, error } = await query;
-        if (error) throw error;
-        if (!batch || batch.length === 0) break;
-        allEvents = allEvents.concat(batch);
-        if (batch.length < pageSize) break;
-        from += pageSize;
-      }
-
-      const events = allEvents as unknown as { event_type: string; utm_source: string | null; utm_medium: string | null; utm_campaign: string | null; visitor_id: string | null }[];
-
-      const groupBy = (keyFn: (e: typeof events[0]) => string) => {
+      const groupBy = (keyFn: (event: (typeof events)[number]) => string) => {
         const map = new Map<string, { views: number; conversions: number }>();
-        events.forEach((e) => {
-          const key = keyFn(e);
-          if (!map.has(key)) map.set(key, { views: 0, conversions: 0 });
-          const entry = map.get(key)!;
-          if (e.event_type === "view") entry.views++;
-          else if (e.event_type === "conversion") entry.conversions++;
+        events.forEach((event) => {
+          const key = keyFn(event);
+          const current = map.get(key) ?? { views: 0, conversions: 0 };
+          if (event.event_type === "view") current.views += 1;
+          if (event.event_type === "conversion") current.conversions += 1;
+          map.set(key, current);
         });
-        return Array.from(map.entries()).map(([name, stats]) => ({
-          name, ...stats, rate: stats.views > 0 ? ((stats.conversions / stats.views) * 100) : 0,
-        })).sort((a, b) => b.views - a.views);
+
+        return Array.from(map.entries())
+          .map(([name, stats]) => ({
+            name,
+            ...stats,
+            rate: stats.views > 0 ? (stats.conversions / stats.views) * 100 : 0,
+          }))
+          .sort((a, b) => b.views - a.views);
       };
 
       return {
-        sources: groupBy((e) => e.utm_source || "direct"),
-        campaigns: groupBy((e) => e.utm_campaign || "none"),
+        sources: groupBy((event) => event.utm_source || "direct"),
+        campaigns: groupBy((event) => event.utm_campaign || "none"),
       };
     },
   });
 }
 
-export function useLandingPageDeviceStats(pageId?: string, days = 30) {
+export function useLandingPageDeviceStats(pageId?: string, days = 30, startDate?: string, endDate?: string) {
   return useQuery({
-    queryKey: ["landing-page-devices", pageId, days],
+    queryKey: ["landing-page-devices", pageId, days, startDate, endDate],
     queryFn: async () => {
-      const since = new Date(); since.setDate(since.getDate() - days);
-      let query = supabase.from("landing_page_events" as any)
-        .select("device_type, browser, os").eq("event_type", "view")
-        .gte("created_at", since.toISOString());
-      if (pageId) query = query.eq("landing_page_id", pageId);
+      const range = getDateRange(days, startDate, endDate);
+      const events = await fetchLandingEvents<{ device_type: string | null; browser: string | null; os: string | null }>({
+        select: "device_type, browser, os",
+        pageId,
+        since: range.since,
+        until: range.until,
+        applyQuery: (query) => query.eq("event_type", "view"),
+      });
 
-      const { data, error } = await query;
-      if (error) throw error;
-
-      const events = data as unknown as { device_type: string | null; browser: string | null; os: string | null }[];
       const countBy = (key: "device_type" | "browser" | "os") => {
         const map = new Map<string, number>();
-        events.forEach((e) => map.set(e[key] || "Unknown", (map.get(e[key] || "Unknown") || 0) + 1));
-        return Array.from(map.entries()).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count);
+        events.forEach((event) => {
+          const label = event[key] || "Unknown";
+          map.set(label, (map.get(label) || 0) + 1);
+        });
+        return Array.from(map.entries())
+          .map(([name, count]) => ({ name, count }))
+          .sort((a, b) => b.count - a.count);
       };
-      return { devices: countBy("device_type"), browsers: countBy("browser"), operatingSystems: countBy("os") };
+
+      return {
+        devices: countBy("device_type"),
+        browsers: countBy("browser"),
+        operatingSystems: countBy("os"),
+      };
     },
   });
 }
 
-export function useLandingPageScrollStats(pageId?: string, days = 30) {
+export function useLandingPageScrollStats(pageId?: string, days = 30, startDate?: string, endDate?: string) {
   return useQuery({
-    queryKey: ["landing-page-scroll", pageId, days],
+    queryKey: ["landing-page-scroll", pageId, days, startDate, endDate],
     queryFn: async () => {
-      const since = new Date(); since.setDate(since.getDate() - days);
-      let query = supabase.from("landing_page_events" as any)
-        .select("event_name, visitor_id").eq("event_type", "scroll")
-        .gte("created_at", since.toISOString());
-      if (pageId) query = query.eq("landing_page_id", pageId);
-
-      const { data, error } = await query;
-      if (error) throw error;
-
-      const events = data as unknown as { event_name: string | null; visitor_id: string | null }[];
-      const milestones = ["scroll_25", "scroll_50", "scroll_75", "scroll_100"];
-      const labels: Record<string, string> = { scroll_25: "25%", scroll_50: "50%", scroll_75: "75%", scroll_100: "100%" };
-      const visitors = new Map<string, Set<string>>();
-      events.forEach((e) => {
-        const key = e.event_name || "";
-        if (!visitors.has(key)) visitors.set(key, new Set());
-        visitors.get(key)!.add(e.visitor_id || "unknown");
+      const range = getDateRange(days, startDate, endDate);
+      const events = await fetchLandingEvents<{ event_name: string | null; visitor_id: string | null }>({
+        select: "event_name, visitor_id",
+        pageId,
+        since: range.since,
+        until: range.until,
+        applyQuery: (query) => query.eq("event_type", "scroll"),
       });
-      return milestones.map((m) => ({ milestone: labels[m] || m, visitors: visitors.get(m)?.size || 0 }));
+
+      const milestones = ["scroll_25", "scroll_50", "scroll_75", "scroll_100"];
+      const labels: Record<string, string> = {
+        scroll_25: "25%",
+        scroll_50: "50%",
+        scroll_75: "75%",
+        scroll_100: "100%",
+      };
+
+      const visitorsByMilestone = new Map<string, Set<string>>();
+      events.forEach((event) => {
+        const milestone = event.event_name || "";
+        const visitors = visitorsByMilestone.get(milestone) ?? new Set<string>();
+        visitors.add(event.visitor_id || "unknown");
+        visitorsByMilestone.set(milestone, visitors);
+      });
+
+      return milestones.map((milestone) => ({
+        milestone: labels[milestone] || milestone,
+        visitors: visitorsByMilestone.get(milestone)?.size || 0,
+      }));
     },
   });
 }
@@ -345,73 +447,77 @@ export function useLandingPageLiveVisitors(pageId?: string) {
     queryKey: ["landing-page-live-visitors", pageId],
     refetchInterval: 15000,
     queryFn: async () => {
-      const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-      let query = supabase.from("landing_page_events" as any)
-        .select("visitor_id, landing_page_id, device_type, utm_source, created_at")
-        .gte("created_at", fiveMinAgo).eq("event_type", "view");
-      if (pageId) query = query.eq("landing_page_id", pageId);
+      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+      const events = await fetchLandingEvents<{
+        visitor_id: string | null;
+        landing_page_id: string;
+        device_type: string | null;
+        utm_source: string | null;
+        created_at: string;
+      }>({
+        select: "visitor_id, landing_page_id, device_type, utm_source, created_at",
+        pageId,
+        since: fiveMinutesAgo,
+        until: new Date().toISOString(),
+        applyQuery: (query) => query.eq("event_type", "view"),
+      });
 
-      const { data, error } = await query;
-      if (error) throw error;
-
-      const events = data as unknown as { visitor_id: string | null; landing_page_id: string; device_type: string | null; utm_source: string | null; created_at: string }[];
-      return { count: new Set(events.map((e) => e.visitor_id || e.created_at)).size, visitors: events.slice(0, 20) };
+      return {
+        count: new Set(events.map((event) => event.visitor_id || event.created_at)).size,
+        visitors: events.slice(0, 20),
+      };
     },
   });
 }
 
-// Heatmap data (click positions)
-export function useLandingPageHeatmap(pageId?: string, days = 30) {
+export function useLandingPageHeatmap(pageId?: string, days = 30, startDate?: string, endDate?: string) {
   return useQuery({
-    queryKey: ["landing-page-heatmap", pageId, days],
+    queryKey: ["landing-page-heatmap", pageId, days, startDate, endDate],
     queryFn: async () => {
-      const since = new Date(); since.setDate(since.getDate() - days);
-      let query = supabase.from("landing_page_events" as any)
-        .select("click_x, click_y, click_element, page_height, event_type")
-        .in("event_type", ["click", "conversion"])
-        .gte("created_at", since.toISOString())
-        .not("click_x", "is", null);
-      if (pageId) query = query.eq("landing_page_id", pageId);
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return (data as unknown as { click_x: number; click_y: number; click_element: string | null; page_height: number | null; event_type: string }[]) || [];
+      const range = getDateRange(days, startDate, endDate);
+      return fetchLandingEvents<{
+        click_x: number;
+        click_y: number;
+        click_element: string | null;
+        page_height: number | null;
+        event_type: string;
+      }>({
+        select: "click_x, click_y, click_element, page_height, event_type",
+        pageId,
+        since: range.since,
+        until: range.until,
+        applyQuery: (query) => query.in("event_type", ["click", "conversion"]).not("click_x", "is", null),
+      });
     },
   });
 }
 
-// Hourly heatmap
-export function useLandingPageHourlyStats(pageId?: string, days = 7) {
+export function useLandingPageHourlyStats(pageId?: string, days = 7, startDate?: string, endDate?: string) {
   return useQuery({
-    queryKey: ["landing-page-hourly", pageId, days],
+    queryKey: ["landing-page-hourly", pageId, days, startDate, endDate],
     queryFn: async () => {
-      const since = new Date(); since.setDate(since.getDate() - days);
-      let query = supabase.from("landing_page_events" as any)
-        .select("event_type, created_at")
-        .eq("event_type", "view")
-        .gte("created_at", since.toISOString());
-      if (pageId) query = query.eq("landing_page_id", pageId);
+      const range = getDateRange(days, startDate, endDate);
+      const events = await fetchLandingEvents<{ created_at: string }>({
+        select: "created_at",
+        pageId,
+        since: range.since,
+        until: range.until,
+        applyQuery: (query) => query.eq("event_type", "view"),
+      });
 
-      const { data, error } = await query;
-      if (error) throw error;
-
-      const events = data as unknown as { created_at: string }[];
       const dayNames = ["রবি", "সোম", "মঙ্গল", "বুধ", "বৃহ", "শুক্র", "শনি"];
       const grid: { day: string; hour: number; count: number }[] = [];
 
-      // Initialize grid
-      for (let d = 0; d < 7; d++) {
-        for (let h = 0; h < 24; h++) {
-          grid.push({ day: dayNames[d], hour: h, count: 0 });
+      for (let day = 0; day < 7; day += 1) {
+        for (let hour = 0; hour < 24; hour += 1) {
+          grid.push({ day: dayNames[day], hour, count: 0 });
         }
       }
 
-      events.forEach((e) => {
-        const dt = new Date(e.created_at);
-        const dayIdx = dt.getDay();
-        const hour = dt.getHours();
-        const idx = dayIdx * 24 + hour;
-        if (grid[idx]) grid[idx].count++;
+      events.forEach((event) => {
+        const timestamp = new Date(event.created_at);
+        const index = timestamp.getDay() * 24 + timestamp.getHours();
+        if (grid[index]) grid[index].count += 1;
       });
 
       return grid;
@@ -419,73 +525,67 @@ export function useLandingPageHourlyStats(pageId?: string, days = 7) {
   });
 }
 
-// Cohort / retention data
-export function useLandingPageCohort(pageId?: string, weeks = 4) {
+export function useLandingPageCohort(pageId?: string, weeks = 4, startDate?: string, endDate?: string) {
   return useQuery({
-    queryKey: ["landing-page-cohort", pageId, weeks],
+    queryKey: ["landing-page-cohort", pageId, weeks, startDate, endDate],
     queryFn: async () => {
-      const since = new Date(); since.setDate(since.getDate() - weeks * 7);
-      let query = supabase.from("landing_page_events" as any)
-        .select("visitor_id, created_at, event_type")
-        .eq("event_type", "view")
-        .gte("created_at", since.toISOString());
-      if (pageId) query = query.eq("landing_page_id", pageId);
+      const range = getDateRange(weeks * 7, startDate, endDate);
+      const events = await fetchLandingEvents<{ visitor_id: string | null; created_at: string }>({
+        select: "visitor_id, created_at",
+        pageId,
+        since: range.since,
+        until: range.until,
+        applyQuery: (query) => query.eq("event_type", "view"),
+      });
 
-      const { data, error } = await query;
-      if (error) throw error;
-
-      const events = data as unknown as { visitor_id: string | null; created_at: string }[];
-
-      // Group visitors by their first visit week
+      const rangeEndTime = new Date(range.until).getTime();
       const visitorFirstWeek = new Map<string, number>();
       const visitorWeeks = new Map<string, Set<number>>();
 
-      events.forEach((e) => {
-        const vid = e.visitor_id || "unknown";
-        const dt = new Date(e.created_at);
-        const weekNum = Math.floor((Date.now() - dt.getTime()) / (7 * 24 * 60 * 60 * 1000));
-        const invertedWeek = weeks - 1 - weekNum;
+      events.forEach((event) => {
+        const visitorId = event.visitor_id || "unknown";
+        const weekOffset = Math.floor((rangeEndTime - new Date(event.created_at).getTime()) / WEEK_IN_MS);
+        const invertedWeek = weeks - 1 - weekOffset;
         if (invertedWeek < 0 || invertedWeek >= weeks) return;
 
-        if (!visitorFirstWeek.has(vid) || invertedWeek < visitorFirstWeek.get(vid)!) {
-          visitorFirstWeek.set(vid, invertedWeek);
+        const currentFirstWeek = visitorFirstWeek.get(visitorId);
+        if (currentFirstWeek === undefined || invertedWeek < currentFirstWeek) {
+          visitorFirstWeek.set(visitorId, invertedWeek);
         }
-        if (!visitorWeeks.has(vid)) visitorWeeks.set(vid, new Set());
-        visitorWeeks.get(vid)!.add(invertedWeek);
+
+        const trackedWeeks = visitorWeeks.get(visitorId) ?? new Set<number>();
+        trackedWeeks.add(invertedWeek);
+        visitorWeeks.set(visitorId, trackedWeeks);
       });
 
-      // Build cohort matrix
       const cohorts: { week: string; total: number; retention: number[] }[] = [];
-      for (let w = 0; w < weeks; w++) {
+      for (let week = 0; week < weeks; week += 1) {
         const cohortVisitors = new Set<string>();
-        visitorFirstWeek.forEach((firstWeek, vid) => {
-          if (firstWeek === w) cohortVisitors.add(vid);
+        visitorFirstWeek.forEach((firstWeek, visitorId) => {
+          if (firstWeek === week) cohortVisitors.add(visitorId);
         });
 
         const retention: number[] = [];
-        for (let r = 0; r <= weeks - 1 - w; r++) {
+        for (let offset = 0; offset <= weeks - 1 - week; offset += 1) {
           let retained = 0;
-          cohortVisitors.forEach((vid) => {
-            if (visitorWeeks.get(vid)?.has(w + r)) retained++;
+          cohortVisitors.forEach((visitorId) => {
+            if (visitorWeeks.get(visitorId)?.has(week + offset)) retained += 1;
           });
           retention.push(cohortVisitors.size > 0 ? Math.round((retained / cohortVisitors.size) * 100) : 0);
         }
 
-        const weekStart = new Date();
-        weekStart.setDate(weekStart.getDate() - (weeks - 1 - w) * 7);
         cohorts.push({
-          week: `সপ্তাহ ${w + 1}`,
+          week: `সপ্তাহ ${week + 1}`,
           total: cohortVisitors.size,
           retention,
         });
       }
 
-      // New vs returning
       const allVisitors = new Set<string>();
       const returningVisitors = new Set<string>();
-      visitorWeeks.forEach((weeks, vid) => {
-        allVisitors.add(vid);
-        if (weeks.size > 1) returningVisitors.add(vid);
+      visitorWeeks.forEach((trackedWeeks, visitorId) => {
+        allVisitors.add(visitorId);
+        if (trackedWeeks.size > 1) returningVisitors.add(visitorId);
       });
 
       return {
@@ -493,27 +593,36 @@ export function useLandingPageCohort(pageId?: string, weeks = 4) {
         totalVisitors: allVisitors.size,
         newVisitors: allVisitors.size - returningVisitors.size,
         returningVisitors: returningVisitors.size,
-        retentionRate: allVisitors.size > 0 ? ((returningVisitors.size / allVisitors.size) * 100) : 0,
+        retentionRate: allVisitors.size > 0 ? (returningVisitors.size / allVisitors.size) * 100 : 0,
       };
     },
   });
 }
 
-// Realtime feed (last 50 events)
-export function useLandingPageRealtimeFeed(pageId?: string) {
+export function useLandingPageRealtimeFeed(pageId?: string, startDate?: string, endDate?: string) {
   return useQuery({
-    queryKey: ["landing-page-feed", pageId],
+    queryKey: ["landing-page-feed", pageId, startDate, endDate],
     refetchInterval: 10000,
     queryFn: async () => {
-      let query = supabase.from("landing_page_events" as any)
-        .select("id, event_type, event_name, visitor_id, device_type, utm_source, created_at, click_element")
-        .order("created_at", { ascending: false })
-        .limit(50);
-      if (pageId) query = query.eq("landing_page_id", pageId);
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return data as unknown as { id: string; event_type: string; event_name: string | null; visitor_id: string | null; device_type: string | null; utm_source: string | null; created_at: string; click_element: string | null }[];
+      const range = startDate && endDate ? getDateRange(1, startDate, endDate) : undefined;
+      return fetchLandingEvents<{
+        id: string;
+        event_type: string;
+        event_name: string | null;
+        visitor_id: string | null;
+        device_type: string | null;
+        utm_source: string | null;
+        created_at: string;
+        click_element: string | null;
+      }>({
+        select: "id, event_type, event_name, visitor_id, device_type, utm_source, created_at, click_element",
+        pageId,
+        since: range?.since,
+        until: range?.until,
+        orderBy: "created_at",
+        ascending: false,
+        limit: 50,
+      });
     },
   });
 }

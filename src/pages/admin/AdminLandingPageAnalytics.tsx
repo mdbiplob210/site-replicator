@@ -40,16 +40,16 @@ export default function AdminLandingPageAnalytics() {
 
   const { data: summaries, isLoading } = useLandingPageAnalyticsSummary(days, useCustomDate ? startDate : undefined, useCustomDate ? endDate : undefined);
   const { data: dailyStats } = useLandingPageDailyStats(pageFilter, days, useCustomDate ? startDate : undefined, useCustomDate ? endDate : undefined);
-  const { data: funnelData } = useLandingPageFunnel(pageFilter, days);
-  const { data: utmData } = useLandingPageUTM(pageFilter, days);
-  const { data: deviceData } = useLandingPageDeviceStats(pageFilter, days);
-  const { data: scrollData } = useLandingPageScrollStats(pageFilter, days);
+  const { data: funnelData } = useLandingPageFunnel(pageFilter, days, useCustomDate ? startDate : undefined, useCustomDate ? endDate : undefined);
+  const { data: utmData } = useLandingPageUTM(pageFilter, days, useCustomDate ? startDate : undefined, useCustomDate ? endDate : undefined);
+  const { data: deviceData } = useLandingPageDeviceStats(pageFilter, days, useCustomDate ? startDate : undefined, useCustomDate ? endDate : undefined);
+  const { data: scrollData } = useLandingPageScrollStats(pageFilter, days, useCustomDate ? startDate : undefined, useCustomDate ? endDate : undefined);
   const { data: liveData } = useLandingPageLiveVisitors(pageFilter);
-  const { data: allEvents } = useLandingPageEvents(pageFilter, useCustomDate ? startDate : undefined, useCustomDate ? endDate : undefined);
-  const { data: heatmapData } = useLandingPageHeatmap(pageFilter, days);
-  const { data: hourlyData } = useLandingPageHourlyStats(pageFilter, days);
-  const { data: cohortData } = useLandingPageCohort(pageFilter, 4);
-  const { data: feedData } = useLandingPageRealtimeFeed(pageFilter);
+  const { data: allEvents } = useLandingPageEvents(pageFilter, days, useCustomDate ? startDate : undefined, useCustomDate ? endDate : undefined);
+  const { data: heatmapData } = useLandingPageHeatmap(pageFilter, days, useCustomDate ? startDate : undefined, useCustomDate ? endDate : undefined);
+  const { data: hourlyData } = useLandingPageHourlyStats(pageFilter, days, useCustomDate ? startDate : undefined, useCustomDate ? endDate : undefined);
+  const { data: cohortData } = useLandingPageCohort(pageFilter, 4, useCustomDate ? startDate : undefined, useCustomDate ? endDate : undefined);
+  const { data: feedData } = useLandingPageRealtimeFeed(pageFilter, useCustomDate ? startDate : undefined, useCustomDate ? endDate : undefined);
 
   const filteredSummaries = useMemo(() => {
     if (!summaries) return [];
