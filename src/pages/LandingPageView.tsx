@@ -499,6 +499,7 @@ ttq.page();
   try { SID = sessionStorage.getItem('_lp_sid'); } catch(e) {}
   if (!SID) { SID = 's_' + Math.random().toString(36).substr(2,9) + Date.now(); try { sessionStorage.setItem('_lp_sid', SID); } catch(e) {} }
   var _pageStart = Date.now();
+  window._lpLastTrackedClickAt = window._lpLastTrackedClickAt || 0;
 
   // UTM params
   var urlParams = new URLSearchParams(window.location.search);
@@ -514,6 +515,24 @@ ttq.page();
   var w = window.innerWidth;
   var _devType = w < 768 ? 'mobile' : w < 1024 ? 'tablet' : 'desktop';
 
+  function postEvent(body) {
+    return fetch(TRACK_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':ANON,'Authorization':'Bearer '+ANON},
+      body:body,
+      keepalive:true
+    }).catch(function(){});
+  }
+
+  function sendWithBeacon(body) {
+    try {
+      if (navigator.sendBeacon) {
+        return navigator.sendBeacon(TRACK_URL + '?apikey=' + encodeURIComponent(ANON), new Blob([body], {type:'text/plain'}));
+      }
+    } catch(e) {}
+    return false;
+  }
+
   function send(eventType, eventName, extra) {
     var payload = Object.assign({
       slug: SLUG,
@@ -527,20 +546,12 @@ ttq.page();
       screen_height: screen.height
     }, _utm, extra || {});
     var body = JSON.stringify(payload);
-    // Use fetch for view events (most reliable), sendBeacon for exit/scroll
-    if (eventType === 'view' || eventType === 'conversion' || eventType === 'click') {
-      fetch(TRACK_URL, {method:'POST', headers:{'Content-Type':'application/json','apikey':ANON,'Authorization':'Bearer '+ANON}, body:body}).catch(function(){});
-    } else {
-      var sent = false;
-      try {
-        if (navigator.sendBeacon) {
-          sent = navigator.sendBeacon(TRACK_URL + '?apikey=' + ANON, new Blob([body], {type: 'text/plain'}));
-        }
-      } catch(e) {}
-      if (!sent) {
-        fetch(TRACK_URL, {method:'POST', headers:{'Content-Type':'application/json','apikey':ANON,'Authorization':'Bearer '+ANON}, body:body}).catch(function(){});
-      }
+    if (eventType === 'view') {
+      postEvent(body);
+      return;
     }
+    if (sendWithBeacon(body)) return;
+    postEvent(body);
   }
   send('view');
 
@@ -583,6 +594,7 @@ ttq.page();
 
     var el = e.target.closest('[data-track-event]');
     if (el) {
+      window._lpLastTrackedClickAt = Date.now();
       send('click', el.getAttribute('data-track-event'), { click_x: parseFloat(clickX), click_y: parseFloat(clickY), click_element: clickEl, page_height: pageH });
     } else {
       // Match buttons, links, and any element with onclick or cursor:pointer styling
@@ -599,6 +611,7 @@ ttq.page();
         }
       }
       if (clickable) {
+        window._lpLastTrackedClickAt = Date.now();
         send('click', (clickable.textContent || '').trim().substring(0, 50), { click_x: parseFloat(clickX), click_y: parseFloat(clickY), click_element: clickEl, page_height: pageH });
       }
     }
@@ -1057,6 +1070,16 @@ ttq.page();
     var btn = form.querySelector('[type="submit"], button:not([type])');
     var btnOrigText = btn ? btn.textContent : '';
     if (btn) { btn.disabled = true; btn.textContent = 'অপেক্ষা করুন...'; }
+
+    if (window._lpSend && (Date.now() - (window._lpLastTrackedClickAt || 0) > 1500)) {
+      window._lpLastTrackedClickAt = Date.now();
+      window._lpSend('click', btnOrigText || 'order_submit', {
+        click_x: 50,
+        click_y: 50,
+        click_element: 'FORM_SUBMIT:' + (btnOrigText || 'submit'),
+        page_height: document.body.scrollHeight || 0
+      });
+    }
 
     var formData = new FormData(form);
     var payload = {
