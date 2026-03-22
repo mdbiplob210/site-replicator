@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, useRef, memo } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useState, useEffect, useRef, memo } from "react";
+import { fetchCourierCheck, getCourierCacheEntry } from "@/lib/courierCheckCache";
 import { Loader2 } from "lucide-react";
 
 const COURIER_LOGOS: Record<string, string> = {
@@ -12,53 +12,49 @@ const COURIER_LOGOS: Record<string, string> = {
   deshbideshe: "https://api.bdcourier.com/c-logo/deshbideshe-logo.png",
 };
 
-// In-memory cache shared across all instances
-const cache: Record<string, { d: any; t: number }> = {};
-const TTL = 10 * 60 * 1000;
+const SHOW_COURIERS = new Set(["pathao", "steadfast"]);
 
 interface Props {
   phone: string | null | undefined;
 }
 
 export const CourierHistoryBadge = memo(function CourierHistoryBadge({ phone }: Props) {
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  const abortRef = useRef<AbortController | null>(null);
-  const lastRef = useRef("");
-
   const clean = phone?.replace(/\D/g, "") || "";
   const ok = clean.length >= 11;
-
-  const fetchData = useCallback(async () => {
-    if (!ok) return;
-    const c = cache[clean];
-    if (c && Date.now() - c.t < TTL) { setData(c.d); return; }
-    abortRef.current?.abort();
-    const ctrl = new AbortController();
-    abortRef.current = ctrl;
-    setLoading(true);
-    try {
-      const { data: r, error: e } = await supabase.functions.invoke("bd-courier-check", { body: { phone: clean } });
-      if (ctrl.signal.aborted) return;
-      if (e) throw e;
-      setData(r); cache[clean] = { d: r, t: Date.now() };
-    } catch {
-      // silently fail
-    } finally {
-      if (!ctrl.signal.aborted) setLoading(false);
-    }
-  }, [clean, ok]);
+  
+  // Try instant cache hit for initial render
+  const [data, setData] = useState<any>(() => ok ? getCourierCacheEntry(clean) : null);
+  const [loading, setLoading] = useState(false);
+  const lastRef = useRef("");
+  const mountedRef = useRef(true);
 
   useEffect(() => {
-    if (ok && lastRef.current !== clean) { lastRef.current = clean; setData(null); setLoading(true); fetchData(); }
-    if (!ok) { setData(null); setLoading(false); lastRef.current = ""; }
-    return () => { abortRef.current?.abort(); };
-  }, [clean, ok, fetchData]);
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
+
+  useEffect(() => {
+    if (!ok) { setData(null); setLoading(false); lastRef.current = ""; return; }
+    if (lastRef.current === clean) return;
+    lastRef.current = clean;
+    
+    // Instant cache check
+    const cached = getCourierCacheEntry(clean);
+    if (cached) { setData(cached); setLoading(false); return; }
+    
+    setData(null);
+    setLoading(true);
+    fetchCourierCheck(clean).then((r) => {
+      if (mountedRef.current && lastRef.current === clean) {
+        setData(r);
+        setLoading(false);
+      }
+    });
+  }, [clean, ok]);
 
   if (!ok) return <span className="text-[10px] text-muted-foreground">—</span>;
   if (loading && !data) return <Loader2 className="h-3 w-3 animate-spin text-muted-foreground mx-auto" />;
 
-  const SHOW_COURIERS = new Set(["pathao", "steadfast"]);
   const couriers = data?.status === "success" && data.data
     ? Object.entries(data.data).filter(([k]) => k !== "summary" && SHOW_COURIERS.has(k)).map(([k, v]: [string, any]) => ({ k, ...v }))
     : [];
@@ -74,7 +70,6 @@ export const CourierHistoryBadge = memo(function CourierHistoryBadge({ phone }: 
 
   return (
     <div className="rounded border border-border/40 overflow-hidden text-[10px]" onClick={(e) => e.stopPropagation()}>
-      {/* Header */}
       <div className="grid grid-cols-[1fr_28px_28px_28px] items-center bg-muted/50 px-1.5 py-0.5">
         <span className="font-bold text-muted-foreground text-[8px] uppercase">Courier</span>
         <span className="font-bold text-muted-foreground text-[8px] text-center">T</span>
@@ -95,7 +90,6 @@ export const CourierHistoryBadge = memo(function CourierHistoryBadge({ phone }: 
           <span className="font-extrabold text-destructive text-center">{c.cancelled_parcel}</span>
         </div>
       ))}
-      {/* Total row */}
       {summary && (
         <div className="grid grid-cols-[1fr_28px_28px_28px] items-center px-1.5 py-[3px] bg-muted/40 border-t border-border/40">
           <span className="font-extrabold text-foreground text-[9px]">Total</span>

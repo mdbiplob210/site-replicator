@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, useRef, memo } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useState, useEffect, useRef, memo } from "react";
+import { fetchCourierCheck, getCourierCacheEntry, clearCourierCache } from "@/lib/courierCheckCache";
 import { RefreshCw, Loader2, Truck } from "lucide-react";
 
 const COURIER_LOGOS: Record<string, string> = {
@@ -9,46 +9,57 @@ const COURIER_LOGOS: Record<string, string> = {
 
 const ALLOWED_COURIERS = new Set(["pathao", "steadfast"]);
 
-const cache: Record<string, { d: any; t: number }> = {};
-const TTL = 10 * 60 * 1000;
-
 interface Props { phone: string | null | undefined; compact?: boolean; }
 
 export const CourierSuccessRate = memo(function CourierSuccessRate({ phone }: Props) {
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState("");
-  const abortRef = useRef<AbortController | null>(null);
-  const lastRef = useRef("");
-
   const clean = phone?.replace(/\D/g, "") || "";
   const ok = clean.length >= 11;
 
-  const fetch_ = useCallback(async (force = false) => {
-    if (!ok) return;
-    const c = cache[clean];
-    if (!force && c && Date.now() - c.t < TTL) { setData(c.d); setErr(""); return; }
-    abortRef.current?.abort();
-    const ctrl = new AbortController();
-    abortRef.current = ctrl;
-    setLoading(true); setErr("");
-    try {
-      const { data: r, error: e } = await supabase.functions.invoke("bd-courier-check", { body: { phone: clean } });
-      if (ctrl.signal.aborted) return;
-      if (e) throw e;
-      setData(r); cache[clean] = { d: r, t: Date.now() };
-    } catch (e: any) {
-      if (!ctrl.signal.aborted) setErr(e.message || "Error");
-    } finally {
-      if (!ctrl.signal.aborted) setLoading(false);
-    }
-  }, [clean, ok]);
+  const [data, setData] = useState<any>(() => ok ? getCourierCacheEntry(clean) : null);
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState("");
+  const lastRef = useRef("");
+  const mountedRef = useRef(true);
 
   useEffect(() => {
-    if (ok && lastRef.current !== clean) { lastRef.current = clean; setData(null); setLoading(true); setErr(""); fetch_(); }
-    if (!ok) { setData(null); setErr(""); setLoading(false); lastRef.current = ""; }
-    return () => { abortRef.current?.abort(); };
-  }, [clean, ok, fetch_]);
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
+
+  const doFetch = (force = false) => {
+    if (!ok) return;
+    if (force) clearCourierCache(clean);
+    
+    const cached = getCourierCacheEntry(clean);
+    if (!force && cached) { setData(cached); setErr(""); setLoading(false); return; }
+    
+    setLoading(true); setErr("");
+    fetchCourierCheck(clean).then((r) => {
+      if (mountedRef.current && lastRef.current === clean) {
+        if (r) { setData(r); setErr(""); }
+        else setErr("Error");
+        setLoading(false);
+      }
+    });
+  };
+
+  useEffect(() => {
+    if (!ok) { setData(null); setErr(""); setLoading(false); lastRef.current = ""; return; }
+    if (lastRef.current === clean) return;
+    lastRef.current = clean;
+    
+    const cached = getCourierCacheEntry(clean);
+    if (cached) { setData(cached); setLoading(false); return; }
+    
+    setData(null); setLoading(true); setErr("");
+    fetchCourierCheck(clean).then((r) => {
+      if (mountedRef.current && lastRef.current === clean) {
+        if (r) { setData(r); setErr(""); }
+        else setErr("Error");
+        setLoading(false);
+      }
+    });
+  }, [clean, ok]);
 
   if (!ok) return null;
 
@@ -59,7 +70,6 @@ export const CourierSuccessRate = memo(function CourierSuccessRate({ phone }: Pr
 
   return (
     <div className="rounded-lg border border-border/30 overflow-hidden">
-      {/* Blue header row */}
       <div className="grid grid-cols-[1fr_60px_60px_60px] items-center bg-primary px-3 py-1.5">
         <span className="text-[10px] font-bold text-primary-foreground uppercase tracking-wide flex items-center gap-1">
           <Truck className="h-3 w-3" /> Courier
@@ -69,7 +79,6 @@ export const CourierSuccessRate = memo(function CourierSuccessRate({ phone }: Pr
         <span className="text-[10px] font-bold text-primary-foreground text-center uppercase">Cancel</span>
       </div>
 
-      {/* Loading */}
       {loading && !data && (
         <div className="px-3 py-4 flex items-center justify-center">
           <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
@@ -95,28 +104,27 @@ export const CourierSuccessRate = memo(function CourierSuccessRate({ phone }: Pr
                     )}
                   </div>
                   <span className="text-xs font-bold text-foreground text-center">{c.total_parcel}</span>
-                  <span className="text-xs font-bold text-center" style={{ color: "#16a34a" }}>{c.success_parcel}</span>
-                  <span className="text-xs font-bold text-center" style={{ color: "#ef4444" }}>{c.cancelled_parcel}</span>
+                  <span className="text-xs font-bold text-center text-emerald-600">{c.success_parcel}</span>
+                  <span className="text-xs font-bold text-center text-destructive">{c.cancelled_parcel}</span>
                 </div>
               ))}
             </div>
           )}
 
-          {/* Total footer row */}
           {summary && (
             <div className="grid grid-cols-[1fr_60px_60px_60px] items-center px-3 py-2 bg-muted/20 border-t border-border/30">
               <span className="text-xs font-extrabold text-foreground flex items-center gap-1">
                 Total
                 <button
                   className="ml-1 h-4 w-4 rounded flex items-center justify-center hover:bg-primary/10 transition-colors disabled:opacity-30"
-                  disabled={loading} onClick={() => fetch_(true)}
+                  disabled={loading} onClick={() => doFetch(true)}
                 >
                   {loading ? <Loader2 className="h-2.5 w-2.5 animate-spin text-primary" /> : <RefreshCw className="h-2.5 w-2.5 text-muted-foreground" />}
                 </button>
               </span>
               <span className="text-xs font-extrabold text-foreground text-center">{summary.total_parcel}</span>
-              <span className="text-xs font-extrabold text-center" style={{ color: "#16a34a" }}>{summary.success_parcel}</span>
-              <span className="text-xs font-extrabold text-center" style={{ color: "#ef4444" }}>{summary.cancelled_parcel}</span>
+              <span className="text-xs font-extrabold text-center text-emerald-600">{summary.success_parcel}</span>
+              <span className="text-xs font-extrabold text-center text-destructive">{summary.cancelled_parcel}</span>
             </div>
           )}
         </>
