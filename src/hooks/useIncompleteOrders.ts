@@ -155,7 +155,7 @@ export function useDeleteIncompleteOrder() {
     mutationFn: async (id: string) => {
       const { error } = await supabase
         .from("incomplete_orders" as any)
-        .delete()
+        .update({ status: "deleted", updated_at: new Date().toISOString() } as any)
         .eq("id", id);
       if (error) throw error;
     },

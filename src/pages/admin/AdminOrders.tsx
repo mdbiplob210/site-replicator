@@ -1292,7 +1292,7 @@ const AdminOrders = () => {
         if (convertingIncompleteId) {
           await supabase
             .from("incomplete_orders" as any)
-            .delete()
+            .update({ status: "converted", updated_at: new Date().toISOString() } as any)
             .eq("id", convertingIncompleteId);
           queryClient.invalidateQueries({ queryKey: ["incomplete-orders"] });
           queryClient.invalidateQueries({ queryKey: ["incomplete-order-counts"] });
