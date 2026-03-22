@@ -4205,7 +4205,7 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
       const isGoingToCourier = editStatus === "in_courier" && order.status !== "in_courier";
       const courierProviderId = editCourierId || existingCourierOrder?.courier_provider_id;
       if (isGoingToCourier && courierProviderId) {
-        const provider = courierProviders?.find((p: any) => p.id === courierProviderId);
+        const provider = editCourierProviders?.find((p: any) => p.id === courierProviderId);
         const hasApiConfig = provider?.api_configs && Array.isArray(provider.api_configs) && provider.api_configs.length > 0 && (provider.api_configs[0] as any)?.api_key;
         
         if (hasApiConfig) {
