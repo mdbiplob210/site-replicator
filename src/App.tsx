@@ -175,6 +175,7 @@ const App = () => {
     </AuthProvider>
   </QueryClientProvider>
   <Analytics />
+  <SpeedInsights />
   </ErrorBoundary>
 );
 };
