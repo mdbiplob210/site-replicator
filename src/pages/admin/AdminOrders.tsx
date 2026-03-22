@@ -823,6 +823,9 @@ const AdminOrders = () => {
     return currencyMatches[0] || 0;
   };
 
+  // Sanity check: reject prices that are absurdly high (likely garbage/phone numbers)
+  const isSanePrice = (v: number) => v > 0 && v < 1_000_000;
+
   const buildIncompleteOrderItem = (io: any) => {
     if (!io?.product_name && !io?.product_code) return null;
 
@@ -838,7 +841,10 @@ const AdminOrders = () => {
     const derivedUnitPrice = derivedProductTotal > 0 ? derivedProductTotal / qty : 0;
     const textUnitPrice = extractIncompletePriceFromText(io);
     const matchedUnitPrice = normalizeNumberValue(matchedProduct?.selling_price);
-    const unitPrice = savedUnitPrice || derivedUnitPrice || textUnitPrice || matchedUnitPrice || 0;
+
+    // Prioritize sane values; reject garbage (phone numbers parsed as prices)
+    const candidates = [savedUnitPrice, derivedUnitPrice, textUnitPrice, matchedUnitPrice];
+    const unitPrice = candidates.find(isSanePrice) || 0;
 
     return {
       product_id: matchedProduct?.id || null,
