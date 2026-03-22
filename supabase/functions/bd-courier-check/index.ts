@@ -6,9 +6,8 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-// Permanent cache — no TTL, once fetched never expires
 const API_TIMEOUT_MS = 6000;
-const CACHE_RACE_MS = 150; // max ms to wait for DB cache before firing API
+const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 1 week
 const JSON_HEADERS = { ...corsHeaders, "Content-Type": "application/json" };
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -28,16 +27,6 @@ async function fetchFromApi(phone: string, signal?: AbortSignal): Promise<{ data
   });
   const data = await resp.json();
   return { data, ok: resp.ok };
-}
-
-async function fetchFromCache(phone: string): Promise<any | null> {
-  const { data: cached } = await supabase
-    .from("courier_check_cache")
-    .select("response_data")
-    .eq("phone", phone)
-    .limit(1)
-    .maybeSingle();
-  return cached?.response_data ?? null;
 }
 
 Deno.serve(async (req) => {
@@ -77,41 +66,37 @@ Deno.serve(async (req) => {
       });
     }
 
-    // RACE: DB cache vs API — fire both in parallel
-    // If cache resolves within CACHE_RACE_MS, use it and skip API
-    // Otherwise wait for API result
-    const abortCtrl = new AbortController();
+    // Step 1: Check DB cache first — if fresh (< 7 days), return immediately, NO API call
+    const { data: cached } = await supabase
+      .from("courier_check_cache")
+      .select("response_data, created_at")
+      .eq("phone", phone)
+      .limit(1)
+      .maybeSingle();
 
-    const cachePromise = fetchFromCache(phone).catch(() => null);
-    const apiPromise = fetchFromApi(phone, abortCtrl.signal).catch(() => null);
-
-    // Wait for cache with a short timeout
-    const cacheResult = await Promise.race([
-      cachePromise,
-      new Promise<null>((r) => setTimeout(() => r(null), CACHE_RACE_MS)),
-    ]);
-
-    if (cacheResult) {
-      // Cache hit — abort API call, return cached data
-      abortCtrl.abort();
-      return new Response(
-        JSON.stringify({ ...(cacheResult as Record<string, unknown>), _cached: true }),
-        { status: 200, headers: JSON_HEADERS }
-      );
+    if (cached) {
+      const cacheAge = Date.now() - new Date(cached.created_at).getTime();
+      if (cacheAge < CACHE_TTL_MS) {
+        // Cache is fresh — return directly, zero API calls
+        return new Response(
+          JSON.stringify({ ...(cached.response_data as Record<string, unknown>), _cached: true }),
+          { status: 200, headers: JSON_HEADERS }
+        );
+      }
     }
 
-    // Cache miss or slow — wait for API
+    // Step 2: Cache miss or stale — call external API
+    const abortCtrl = new AbortController();
     const apiResult = await Promise.race([
-      apiPromise,
+      fetchFromApi(phone, abortCtrl.signal).catch(() => null),
       new Promise<null>((r) => setTimeout(() => r(null), API_TIMEOUT_MS)),
     ]);
 
     if (!apiResult) {
-      // Both timed out — check if cache eventually returned
-      const lateCacheResult = await cachePromise;
-      if (lateCacheResult) {
+      // API timed out — return stale cache if available
+      if (cached) {
         return new Response(
-          JSON.stringify({ ...(lateCacheResult as Record<string, unknown>), _cached: true }),
+          JSON.stringify({ ...(cached.response_data as Record<string, unknown>), _cached: true }),
           { status: 200, headers: JSON_HEADERS }
         );
       }
@@ -120,7 +105,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Save to cache in background
+    // Step 3: Save fresh result to cache
     if (apiResult.ok) {
       supabase
         .from("courier_check_cache")
