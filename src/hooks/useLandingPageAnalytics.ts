@@ -150,21 +150,32 @@ export function useLandingPageDailyStats(pageId?: string, days = 7, startDate?: 
   return useQuery({
     queryKey: ["landing-page-daily-stats", pageId, days, startDate, endDate],
     queryFn: async () => {
-      const { since } = getDateRange(days, startDate, endDate);
+      const { since, until } = getDateRange(days, startDate, endDate);
 
-      let query = supabase
-        .from("landing_page_events" as any)
-        .select("event_type, created_at")
-        .gte("created_at", since)
-        .order("created_at", { ascending: true });
+      // Fetch with pagination to avoid 1000 row limit
+      let allData: any[] = [];
+      let from = 0;
+      const pageSize = 1000;
+      while (true) {
+        let query = supabase
+          .from("landing_page_events" as any)
+          .select("event_type, created_at")
+          .gte("created_at", since)
+          .lte("created_at", until)
+          .order("created_at", { ascending: true })
+          .range(from, from + pageSize - 1);
 
-      if (endDate) query = query.lte("created_at", endDate);
-      if (pageId) query = query.eq("landing_page_id", pageId);
+        if (pageId) query = query.eq("landing_page_id", pageId);
 
-      const { data, error } = await query;
-      if (error) throw error;
+        const { data: batch, error } = await query;
+        if (error) throw error;
+        if (!batch || batch.length === 0) break;
+        allData = allData.concat(batch);
+        if (batch.length < pageSize) break;
+        from += pageSize;
+      }
 
-      const typedData = data as unknown as { event_type: string; created_at: string }[];
+      const typedData = allData as unknown as { event_type: string; created_at: string }[];
       const dailyMap: Record<string, { views: number; clicks: number; conversions: number }> = {};
 
       for (let i = 0; i < days; i++) {
