@@ -1024,7 +1024,7 @@ ttq.page();
 (function(){
   var ORDER_URL = '${supabaseUrl}/functions/v1/submit-landing-order';
   var SLUG = '${page.slug}';
-  var VID = localStorage.getItem('_lp_vid') || '';
+  var VID; try { VID = localStorage.getItem('_lp_vid'); } catch(e) {} VID = VID || '';
   var _submitting = false;
 
   document.addEventListener('submit', function(e) {
