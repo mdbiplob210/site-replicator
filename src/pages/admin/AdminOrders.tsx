@@ -107,7 +107,6 @@ const incompleteTabs = [
   { label: "Hold", icon: PauseCircle },
   { label: "Deleted", icon: Trash2 },
   { label: "Cancelled", icon: XCircle },
-  { label: "Deleted", icon: Trash },
 ];
 
 // Bangladesh Districts, Thanas, Zones
