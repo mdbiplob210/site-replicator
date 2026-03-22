@@ -2832,12 +2832,6 @@ const AdminOrders = () => {
                           <a href={`https://wa.me/${(order.customer_phone || "").replace(/[^0-9]/g, "").replace(/^0/, "880")}`} target="_blank" rel="noopener noreferrer" className="h-5 w-5 rounded flex items-center justify-center hover:bg-emerald-500/10 text-emerald-600" title="WhatsApp">
                             <MessageSquare className="h-3 w-3" />
                           </a>
-                          {custStats && custStats.total > 0 && (
-                            <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground ml-1">
-                              <BarChart3 className="h-2.5 w-2.5" />
-                              <span className="font-semibold">{custStats.total}</span>
-                            </span>
-                          )}
                         </div>
                       )}
                       {order.customer_address && (
