@@ -199,7 +199,7 @@ export default function AdminLandingPageAnalytics() {
             <Card>
               <CardHeader><CardTitle className="text-base">পেজ পারফরম্যান্স</CardTitle></CardHeader>
               <CardContent className="overflow-x-auto">
-                {summaries && summaries.length > 0 ? (
+                {filteredSummaries.length > 0 ? (
                   <table className="w-full text-sm">
                     <thead><tr className="border-b text-muted-foreground text-xs">
                       <th className="text-left py-2 px-2">পেজ</th>
@@ -208,7 +208,7 @@ export default function AdminLandingPageAnalytics() {
                       <th className="text-right py-2 px-2">কনভ.%</th><th className="text-right py-2 px-2">বাউন্স</th>
                       <th className="text-right py-2 px-2">সময়</th>
                     </tr></thead>
-                    <tbody>{summaries.map((s) => (
+                    <tbody>{filteredSummaries.map((s) => (
                       <tr key={s.landing_page_id} className="border-b last:border-0 hover:bg-muted/50">
                         <td className="py-2 px-2"><p className="font-medium text-foreground truncate max-w-[120px]">{s.title}</p><p className="text-xs text-muted-foreground font-mono">/lp/{s.slug}</p></td>
                         <td className="text-right py-2 px-2 font-medium">{s.views}</td>
