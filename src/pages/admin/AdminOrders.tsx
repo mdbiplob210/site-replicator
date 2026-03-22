@@ -43,6 +43,7 @@ import {
 import { usePublicProducts } from "@/hooks/usePublicProducts";
 import { CourierSettingsView } from "@/components/admin/courier/CourierSettingsView";
 import { CourierSuccessRate } from "@/components/admin/courier/CourierSuccessRate";
+import { CourierHistoryBadge } from "@/components/admin/courier/CourierHistoryBadge";
 import { FakeOrderDetection } from "@/components/admin/fraud/FakeOrderDetection";
 import { useBulkMemoPrint } from "@/components/admin/courier/BulkMemoPrint";
 import { useCourierCities, useCourierZones, useCourierAreas } from "@/hooks/useCourierLocations";
@@ -2831,12 +2832,6 @@ const AdminOrders = () => {
                           <a href={`https://wa.me/${(order.customer_phone || "").replace(/[^0-9]/g, "").replace(/^0/, "880")}`} target="_blank" rel="noopener noreferrer" className="h-5 w-5 rounded flex items-center justify-center hover:bg-emerald-500/10 text-emerald-600" title="WhatsApp">
                             <MessageSquare className="h-3 w-3" />
                           </a>
-                          {custStats && custStats.total > 0 && (
-                            <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground ml-1">
-                              <BarChart3 className="h-2.5 w-2.5" />
-                              <span className="font-semibold">{custStats.total}</span>
-                            </span>
-                          )}
                         </div>
                       )}
                       {order.customer_address && (
@@ -2874,24 +2869,9 @@ const AdminOrders = () => {
                     <TableCell className="px-3 py-3 text-center">
                       <span className="text-base font-bold text-foreground">৳{Number(order.total_amount).toLocaleString()}</span>
                     </TableCell>
-                    {/* COURIER ACTIVITY: customer order history */}
+                    {/* COURIER HISTORY: BDCourier external data */}
                     <TableCell className="px-3 py-3 text-center">
-                      {custStats && custStats.total > 0 ? (
-                        <div className="space-y-0.5">
-                          <div className="flex items-center justify-center gap-1">
-                            <span className="text-xs font-bold text-foreground">{custStats.total}</span>
-                            <span className="text-[10px] text-muted-foreground">orders</span>
-                          </div>
-                          <div className="flex items-center justify-center gap-1.5 text-[10px]">
-                            <span className="text-emerald-600 font-semibold">{custStats.success}✓</span>
-                            <span className="text-destructive font-semibold">{custStats.failed}✗</span>
-                          </div>
-                        </div>
-                      ) : (
-                        <Badge variant="outline" className="text-[10px] font-medium border-blue-300 text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-700 dark:text-blue-400">
-                          New
-                        </Badge>
-                      )}
+                      <CourierHistoryBadge phone={order.customer_phone} />
                     </TableCell>
                     {/* STATUS */}
                     <TableCell className="px-3 py-3 text-center" onClick={(e) => e.stopPropagation()}>
@@ -3188,11 +3168,7 @@ const AdminOrders = () => {
                         )}
                       </div>
                       <div className="flex items-center gap-1.5">
-                        {custStats && custStats.total > 0 && (
-                          <span className="text-[10px] font-semibold">
-                            {custStats.total}📦 {custStats.success}✓ {custStats.failed}✗
-                          </span>
-                        )}
+                        <CourierHistoryBadge phone={order.customer_phone} />
                         {order.source && <span className="bg-secondary/60 px-1.5 py-0.5 rounded text-[10px]">{order.source}</span>}
                       </div>
                     </div>
