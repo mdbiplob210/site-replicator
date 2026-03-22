@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 type LocationItem = { id: string | number; name: string };
 
@@ -15,12 +16,21 @@ async function fetchCourierLocations(
   if (cityId) params.set("city_id", String(cityId));
   if (zoneId) params.set("zone_id", String(zoneId));
 
+  // Get current user session token
+  const { data: sessionData } = await supabase.auth.getSession();
+  const accessToken = sessionData?.session?.access_token;
+  
+  if (!accessToken) {
+    console.warn("No auth session for courier locations");
+    return [];
+  }
+
   const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
   const url = `https://${projectId}.supabase.co/functions/v1/courier-locations?${params.toString()}`;
 
   const resp = await fetch(url, {
     headers: {
-      Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+      Authorization: `Bearer ${accessToken}`,
       apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
     },
   });

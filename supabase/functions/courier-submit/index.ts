@@ -26,8 +26,8 @@ Deno.serve(async (req) => {
   const authClient = createClient(supabaseUrl, supabaseAnonKey, {
     global: { headers: { Authorization: authHeader } },
   });
-  const { data: claims, error: claimsErr } = await authClient.auth.getClaims(authHeader.replace("Bearer ", ""));
-  if (claimsErr || !claims?.claims) {
+  const { data: userData, error: userErr } = await authClient.auth.getUser();
+  if (userErr || !userData?.user) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: JSON_HEADERS });
   }
 
@@ -129,8 +129,8 @@ async function getPathaoToken(config: any): Promise<string> {
     body: JSON.stringify({
       client_id: config.client_id || "",
       client_secret: config.secret_key || "",
-      username: config.api_key || "",
-      password: config.secret_key || "",
+      username: config.email || config.api_key || "",
+      password: config.password || config.secret_key || "",
       grant_type: "password",
     }),
   });
