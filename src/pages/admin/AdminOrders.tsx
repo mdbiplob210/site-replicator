@@ -3174,11 +3174,7 @@ const AdminOrders = () => {
                         )}
                       </div>
                       <div className="flex items-center gap-1.5">
-                        {custStats && custStats.total > 0 && (
-                          <span className="text-[10px] font-semibold">
-                            {custStats.total}📦 {custStats.success}✓ {custStats.failed}✗
-                          </span>
-                        )}
+                        <CourierHistoryBadge phone={order.customer_phone} />
                         {order.source && <span className="bg-secondary/60 px-1.5 py-0.5 rounded text-[10px]">{order.source}</span>}
                       </div>
                     </div>
