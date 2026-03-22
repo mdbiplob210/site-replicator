@@ -90,8 +90,8 @@ window._lpTrack = {
   sendServerEvent: function(eventName, customData, userData) {
     var CAPI_URL = '${supabaseUrl}/functions/v1/fb-conversions-api';
     var ANON = '${anonKey}';
-    var extId = localStorage.getItem('_vid') || ('v_' + Date.now() + '_' + Math.random().toString(36).substr(2,12));
-    if (!localStorage.getItem('_vid')) localStorage.setItem('_vid', extId);
+    var extId; try { extId = localStorage.getItem('_vid'); } catch(e) {}
+    if (!extId) { extId = 'v_' + Date.now() + '_' + Math.random().toString(36).substr(2,12); try { localStorage.setItem('_vid', extId); } catch(e) {} }
     
     // Merge stored + provided user data
     var ud = Object.assign({}, this.getUserData(), userData || {});
