@@ -174,6 +174,10 @@ const CheckoutPage = () => {
     abandonedSaved.current = false;
     if (updates.phone !== undefined) {
       updates.phone = sanitizePhoneInput(updates.phone);
+      if (isValidBDPhone(updates.phone)) {
+        // Update FB advanced matching with phone + name
+        setFBUserData({ phone: updates.phone, fullName: form.name });
+      }
       if (!leadTracked.current && isValidBDPhone(updates.phone) && item) {
         leadTracked.current = true;
         trackLead({
@@ -183,6 +187,9 @@ const CheckoutPage = () => {
           customerName: form.name,
         });
       }
+    }
+    if (updates.name !== undefined && updates.name.trim().length >= 2) {
+      setFBUserData({ fullName: updates.name });
     }
     setForm(prev => ({ ...prev, ...updates }));
   };
