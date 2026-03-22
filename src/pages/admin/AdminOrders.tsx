@@ -1716,8 +1716,8 @@ const AdminOrders = () => {
                   </div>
 
                   {/* Courier Success Rate - auto loads on phone */}
-                  {customerPhone && customerPhone.length >= 11 && (
-                    <CourierSuccessRate phone={customerPhone} compact />
+                   {searchedPhone && searchedPhone.length >= 11 && (
+                    <CourierSuccessRate phone={searchedPhone} compact />
                   )}
 
                   {/* Fraud Check & Old Orders by Phone */}
