@@ -41,3 +41,9 @@ verify_jwt = false
 
 [functions.track-website-event]
 verify_jwt = false
+
+[functions.courier-submit]
+verify_jwt = false
+
+[functions.bd-courier-check]
+verify_jwt = false
