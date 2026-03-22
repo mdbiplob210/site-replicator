@@ -1127,6 +1127,7 @@ const AdminOrders = () => {
 
     setCustomerName(io.customer_name || "");
     setCustomerPhone(io.customer_phone || "");
+    setSearchedPhone(io.customer_phone || "");
     setCustomerAddress(io.customer_address || "");
     setDeliveryCharge(safeDeliveryCharge);
     setDiscount(safeDiscount);
