@@ -50,11 +50,9 @@ export function CourierSettingsView({ onBack }: CourierSettingsViewProps) {
           <p className="text-xs text-muted-foreground">
             Set this URL in your courier service dashboard. Delivery, return, and price change updates will be automatic.
           </p>
-          {customDomain && (
-            <Badge variant="outline" className="text-xs">
-              🌐 Domain: {customDomain}
-            </Badge>
-          )}
+          <Badge variant="outline" className="text-xs">
+            🌐 {supabaseUrl}
+          </Badge>
           {providers?.map((p) => (
             <div key={p.slug} className="flex items-center gap-2">
               <Label className="w-24 capitalize font-medium text-xs">{p.slug}:</Label>
