@@ -1421,7 +1421,7 @@ const AdminOrders = () => {
                 <p className="text-sm text-muted-foreground">২৪ ঘণ্টার মধ্যে ব্লক হওয়া ও abandoned অর্ডারসমূহ</p>
               </div>
             </div>
-            <Badge variant="secondary" className="ml-auto">{incompleteCounts.total || 0} মোট</Badge>
+            <Badge variant="secondary" className="ml-auto">{(incompleteCounts as Record<string, number>).processing || 0} Processing</Badge>
           </div>
 
           {/* Source filter: All / IP Blocked / Abandoned Form */}
