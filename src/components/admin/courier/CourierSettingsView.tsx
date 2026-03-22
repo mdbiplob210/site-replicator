@@ -6,7 +6,6 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { useCourierProviders, useUpdateCourierProvider, type ApiConfig } from "@/hooks/useCourier";
-import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { Truck, Plus, Trash2, Save, Globe, Copy, Shield, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { CourierBalanceView } from "./CourierBalanceView";
@@ -18,12 +17,9 @@ interface CourierSettingsViewProps {
 export function CourierSettingsView({ onBack }: CourierSettingsViewProps) {
   const { data: providers, isLoading } = useCourierProviders();
   const updateProvider = useUpdateCourierProvider();
-  const { data: siteSettings } = useSiteSettings();
 
-  const customDomain = siteSettings?.custom_domain || siteSettings?.site_domain;
-  const webhookBaseUrl = customDomain
-    ? `https://${customDomain}/api/courier-webhook`
-    : `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/courier-webhook`;
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const webhookBaseUrl = `${supabaseUrl}/functions/v1/courier-webhook`;
 
   return (
     <div className="space-y-6">
@@ -52,11 +48,9 @@ export function CourierSettingsView({ onBack }: CourierSettingsViewProps) {
           <p className="text-xs text-muted-foreground">
             Set this URL in your courier service dashboard. Delivery, return, and price change updates will be automatic.
           </p>
-          {customDomain && (
-            <Badge variant="outline" className="text-xs">
-              🌐 Domain: {customDomain}
-            </Badge>
-          )}
+          <Badge variant="outline" className="text-xs">
+            🌐 {supabaseUrl}
+          </Badge>
           {providers?.map((p) => (
             <div key={p.slug} className="flex items-center gap-2">
               <Label className="w-24 capitalize font-medium text-xs">{p.slug}:</Label>
