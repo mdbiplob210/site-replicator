@@ -337,16 +337,43 @@ export function useDeleteOrder() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("orders").delete().eq("id", id);
+      // Soft delete - set deleted_at timestamp
+      const { error } = await supabase
+        .from("orders")
+        .update({ deleted_at: new Date().toISOString() } as any)
+        .eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       queryClient.invalidateQueries({ queryKey: ["order-counts"] });
-      toast.success("Order deleted!");
+      toast.success("অর্ডার ডিলিট হয়েছে! (Deleted ট্যাবে দেখতে পাবেন)");
     },
     onError: (error: Error) => {
       toast.error("Failed to delete order: " + error.message);
+    },
+  });
+}
+
+export function useRestoreOrder() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      // Restore - set deleted_at to null
+      const { error } = await supabase
+        .from("orders")
+        .update({ deleted_at: null } as any)
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      queryClient.invalidateQueries({ queryKey: ["order-counts"] });
+      toast.success("অর্ডার পুনরুদ্ধার হয়েছে!");
+    },
+    onError: (error: Error) => {
+      toast.error("Failed to restore order: " + error.message);
     },
   });
 }
