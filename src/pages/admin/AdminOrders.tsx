@@ -3711,7 +3711,7 @@ const AdminOrders = () => {
                         )}
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <CourierHistoryBadge phone={order.customer_phone} />
+                        {courierCacheReady ? <CourierHistoryBadge phone={order.customer_phone} /> : <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
                         {order.source && <span className="bg-secondary/60 px-1.5 py-0.5 rounded text-[10px]">{order.source}</span>}
                       </div>
                     </div>
