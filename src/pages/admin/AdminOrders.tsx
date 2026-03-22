@@ -218,6 +218,7 @@ const AdminOrders = () => {
   // New order form state
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
+  const [searchedPhone, setSearchedPhone] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
   const [totalAmount, setTotalAmount] = useState(0);
   const [deliveryCharge, setDeliveryCharge] = useState(0);
@@ -1126,6 +1127,7 @@ const AdminOrders = () => {
 
     setCustomerName(io.customer_name || "");
     setCustomerPhone(io.customer_phone || "");
+    setSearchedPhone(io.customer_phone || "");
     setCustomerAddress(io.customer_address || "");
     setDeliveryCharge(safeDeliveryCharge);
     setDiscount(safeDiscount);
@@ -1205,6 +1207,7 @@ const AdminOrders = () => {
   const resetForm = () => {
     setCustomerName("");
     setCustomerPhone("");
+    setSearchedPhone("");
     setCustomerAddress("");
     setTotalAmount(0);
     setDeliveryCharge(0);
@@ -1223,44 +1226,41 @@ const AdminOrders = () => {
     setNewOrderCancelCustom("");
   };
 
-  // Old orders lookup by phone
+  // Old orders lookup by phone - only triggers on Enter
   const { data: oldOrdersByPhone = [] } = useQuery({
-    queryKey: ["old-orders-phone", customerPhone],
+    queryKey: ["old-orders-phone", searchedPhone],
     queryFn: async () => {
-      if (!customerPhone || customerPhone.length < 6) return [];
+      if (!searchedPhone || searchedPhone.length < 6) return [];
       const { data, error } = await supabase
         .from("orders")
         .select("*")
-        .eq("customer_phone", customerPhone)
+        .eq("customer_phone", searchedPhone)
         .order("created_at", { ascending: false })
         .limit(20);
       if (error) throw error;
       return data as Order[];
     },
-    enabled: !!customerPhone && customerPhone.length >= 6,
+    enabled: !!searchedPhone && searchedPhone.length >= 6,
   });
 
-  // Fraud check - courier delivery history by phone
+  // Fraud check - courier delivery history by phone - only triggers on Enter
   const { data: fraudCheckData } = useQuery({
-    queryKey: ["fraud-check", customerPhone],
+    queryKey: ["fraud-check", searchedPhone],
     queryFn: async () => {
-      if (!customerPhone || customerPhone.length < 6) return null;
-      // Get all orders for this phone
+      if (!searchedPhone || searchedPhone.length < 6) return null;
       const { data: phoneOrders, error } = await supabase
         .from("orders")
         .select("id, status, total_amount")
-        .eq("customer_phone", customerPhone);
+        .eq("customer_phone", searchedPhone);
       if (error) throw error;
       if (!phoneOrders || phoneOrders.length === 0) return null;
 
       const orderIds = phoneOrders.map(o => o.id);
-      // Get courier orders for these
       const { data: courierData } = await supabase
         .from("courier_orders")
         .select("order_id, courier_status, courier_provider_id")
         .in("order_id", orderIds);
 
-      // Get provider names
       const { data: providers } = await supabase
         .from("courier_providers")
         .select("id, name");
@@ -1268,7 +1268,6 @@ const AdminOrders = () => {
       const providerMap: Record<string, string> = {};
       (providers || []).forEach((p: any) => { providerMap[p.id] = p.name; });
 
-      // Aggregate by provider
       const stats: Record<string, { total: number; delivered: number; returned: number; cancelled: number }> = {};
       (courierData || []).forEach((co: any) => {
         const name = providerMap[co.courier_provider_id] || "Unknown";
@@ -1287,7 +1286,7 @@ const AdminOrders = () => {
 
       return { totalOrders, deliveredCount, cancelledCount, returnedCount, totalSpent, courierStats: stats };
     },
-    enabled: !!customerPhone && customerPhone.length >= 6,
+    enabled: !!searchedPhone && searchedPhone.length >= 6,
   });
 
   if (currentView === "api") {
@@ -1460,7 +1459,7 @@ const AdminOrders = () => {
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-xs font-semibold text-muted-foreground">ফোন নম্বর</Label>
-                    <Input value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} placeholder="01XXXXXXXXX" className="rounded-xl" />
+                    <Input value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); setSearchedPhone(customerPhone); } }} placeholder="01XXXXXXXXX — Enter চাপুন সার্চ করতে" className="rounded-xl" />
                   </div>
                 </div>
                 <div className="space-y-1.5">
@@ -1712,18 +1711,18 @@ const AdminOrders = () => {
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs font-semibold text-muted-foreground">ফোন নম্বর</Label>
-                        <Input placeholder="01XXXXXXXXX" className="rounded-xl h-10 text-sm" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} />
+                        <Input placeholder="01XXXXXXXXX — Enter চাপুন সার্চ করতে" className="rounded-xl h-10 text-sm" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); setSearchedPhone(customerPhone); } }} />
                       </div>
                     </div>
                   </div>
 
                   {/* Courier Success Rate - auto loads on phone */}
-                  {customerPhone && customerPhone.length >= 11 && (
-                    <CourierSuccessRate phone={customerPhone} compact />
+                   {searchedPhone && searchedPhone.length >= 11 && (
+                    <CourierSuccessRate phone={searchedPhone} compact />
                   )}
 
                   {/* Fraud Check & Old Orders by Phone */}
-                  {customerPhone && customerPhone.length >= 6 && (
+                  {searchedPhone && searchedPhone.length >= 6 && (
                     <div className="space-y-2">
                       {fraudCheckData && (
                         <div className="p-3 rounded-xl border border-border/60 bg-secondary/20">
