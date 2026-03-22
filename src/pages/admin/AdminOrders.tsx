@@ -1081,7 +1081,7 @@ const AdminOrders = () => {
     
     // Try API-based bulk submit first
     const provider = courierProviders?.find((p: any) => p.id === courierId);
-    const hasApiConfig = provider?.api_configs?.length > 0 && provider?.api_configs[0]?.api_key;
+    const hasApiConfig = provider?.api_configs && Array.isArray(provider.api_configs) && provider.api_configs.length > 0 && (provider.api_configs[0] as any)?.api_key;
     
     if (hasApiConfig) {
       try {
