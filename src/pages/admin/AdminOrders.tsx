@@ -2875,24 +2875,9 @@ const AdminOrders = () => {
                     <TableCell className="px-3 py-3 text-center">
                       <span className="text-base font-bold text-foreground">৳{Number(order.total_amount).toLocaleString()}</span>
                     </TableCell>
-                    {/* COURIER ACTIVITY: customer order history */}
+                    {/* COURIER HISTORY: BDCourier external data */}
                     <TableCell className="px-3 py-3 text-center">
-                      {custStats && custStats.total > 0 ? (
-                        <div className="space-y-0.5">
-                          <div className="flex items-center justify-center gap-1">
-                            <span className="text-xs font-bold text-foreground">{custStats.total}</span>
-                            <span className="text-[10px] text-muted-foreground">orders</span>
-                          </div>
-                          <div className="flex items-center justify-center gap-1.5 text-[10px]">
-                            <span className="text-emerald-600 font-semibold">{custStats.success}✓</span>
-                            <span className="text-destructive font-semibold">{custStats.failed}✗</span>
-                          </div>
-                        </div>
-                      ) : (
-                        <Badge variant="outline" className="text-[10px] font-medium border-blue-300 text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-700 dark:text-blue-400">
-                          New
-                        </Badge>
-                      )}
+                      <CourierHistoryBadge phone={order.customer_phone} />
                     </TableCell>
                     {/* STATUS */}
                     <TableCell className="px-3 py-3 text-center" onClick={(e) => e.stopPropagation()}>
