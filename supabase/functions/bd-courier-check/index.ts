@@ -14,13 +14,6 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const authHeader = req.headers.get("authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
 
     const body = await req.json();
     const { phone, action } = body;
@@ -108,11 +101,12 @@ Deno.serve(async (req) => {
         );
     }
 
-    // ═══ Cleanup: delete expired cache entries (older than TTL) ═══
-    await supabase
+    // Cleanup expired entries in background (don't await)
+    supabase
       .from("courier_check_cache")
       .delete()
-      .lt("created_at", ttlCutoff);
+      .lt("created_at", ttlCutoff)
+      .then(() => {});
 
     return new Response(JSON.stringify(data), {
       status: resp.status,

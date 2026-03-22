@@ -45,8 +45,8 @@ export const CourierSuccessRate = memo(function CourierSuccessRate({ phone }: Pr
   }, [clean, ok]);
 
   useEffect(() => {
-    if (ok && lastRef.current !== clean) { lastRef.current = clean; fetch_(); }
-    if (!ok) { setData(null); setErr(""); lastRef.current = ""; }
+    if (ok && lastRef.current !== clean) { lastRef.current = clean; setData(null); setLoading(true); setErr(""); fetch_(); }
+    if (!ok) { setData(null); setErr(""); setLoading(false); lastRef.current = ""; }
     return () => { abortRef.current?.abort(); };
   }, [clean, ok, fetch_]);
 
