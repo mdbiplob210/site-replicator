@@ -4,7 +4,7 @@ import { trackWebsiteEvent } from "@/hooks/useWebsiteAnalytics";
 
 /**
  * WebsiteEventTracker - Tracks page_view events on every route change.
- * Place inside BrowserRouter.
+ * Uses requestIdleCallback to avoid blocking main thread.
  */
 export function WebsiteEventTracker() {
   const location = useLocation();
@@ -16,14 +16,15 @@ export function WebsiteEventTracker() {
 
     if (location.pathname !== lastPath.current) {
       lastPath.current = location.pathname;
-      // Small delay for title to update
-      setTimeout(() => {
+      // Use requestIdleCallback to avoid blocking rendering
+      const schedule = window.requestIdleCallback || ((cb: () => void) => setTimeout(cb, 150));
+      schedule(() => {
         trackWebsiteEvent({
           event_type: "page_view",
           page_path: location.pathname,
           page_title: document.title,
         });
-      }, 200);
+      });
     }
   }, [location.pathname]);
 
