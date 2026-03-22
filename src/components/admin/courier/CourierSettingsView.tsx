@@ -125,7 +125,7 @@ function CourierProviderCard({
   const [showToken, setShowToken] = useState(false);
 
   const addConfig = () => {
-    setConfigs([...configs, { label: "", base_url: "", api_key: "", secret_key: "", client_id: "", store_id: "" }]);
+    setConfigs([...configs, { label: "", base_url: "", api_key: "", secret_key: "", client_id: "", store_id: "", email: "", password: "", default_store_name: "", default_parcel_type: "Parcel", invoice_prefix: "#" }]);
   };
 
   const removeConfig = (idx: number) => {
