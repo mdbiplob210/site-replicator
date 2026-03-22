@@ -28,7 +28,15 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const body = await req.json();
+    // Handle both application/json and text/plain (sendBeacon uses text/plain to avoid CORS preflight)
+    const contentType = req.headers.get("content-type") || "";
+    let body: any;
+    if (contentType.includes("application/json")) {
+      body = await req.json();
+    } else {
+      const text = await req.text();
+      body = JSON.parse(text);
+    }
     const {
       slug, event_type, event_name, visitor_id, referrer,
       utm_source, utm_medium, utm_campaign, utm_content, utm_term,

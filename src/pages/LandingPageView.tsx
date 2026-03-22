@@ -524,11 +524,21 @@ ttq.page();
       screen_width: screen.width,
       screen_height: screen.height
     }, _utm, extra || {});
-    try {
-      var blob = new Blob([JSON.stringify(payload)], {type: 'application/json'});
-      navigator.sendBeacon(TRACK_URL + '?apikey=' + ANON, blob);
-    } catch(e) {
-      fetch(TRACK_URL, {method:'POST', headers:{'Content-Type':'application/json','apikey':ANON}, body:JSON.stringify(payload)}).catch(function(){});
+    var body = JSON.stringify(payload);
+    // Use fetch for view events (most reliable), sendBeacon for exit/scroll
+    if (eventType === 'view' || eventType === 'conversion') {
+      fetch(TRACK_URL, {method:'POST', headers:{'Content-Type':'application/json','apikey':ANON,'Authorization':'Bearer '+ANON}, body:body}).catch(function(){});
+    } else {
+      var sent = false;
+      try {
+        if (navigator.sendBeacon) {
+          // Use text/plain to avoid CORS preflight issues with sendBeacon
+          sent = navigator.sendBeacon(TRACK_URL + '?apikey=' + ANON, new Blob([body], {type: 'text/plain'}));
+        }
+      } catch(e) {}
+      if (!sent) {
+        fetch(TRACK_URL, {method:'POST', headers:{'Content-Type':'application/json','apikey':ANON,'Authorization':'Bearer '+ANON}, body:body}).catch(function(){});
+      }
     }
   }
   send('view');
@@ -572,7 +582,8 @@ ttq.page();
 
     var el = e.target.closest('[data-track-event]');
     if (el) {
-      send('conversion', el.getAttribute('data-track-event'), { click_x: parseFloat(clickX), click_y: parseFloat(clickY), click_element: clickEl, page_height: pageH });
+      // Don't fire client-side conversion — server-side submit-landing-order already creates conversion events
+      send('click', el.getAttribute('data-track-event'), { click_x: parseFloat(clickX), click_y: parseFloat(clickY), click_element: clickEl, page_height: pageH });
     } else if (e.target.closest('a, button, [role="button"], input[type="submit"]')) {
       send('click', (e.target.closest('a, button, [role="button"], input[type="submit"]').textContent || '').trim().substring(0, 50), { click_x: parseFloat(clickX), click_y: parseFloat(clickY), click_element: clickEl, page_height: pageH });
     }
@@ -790,7 +801,7 @@ ttq.page();
     if (!options.forceFetch) {
       try {
         if (navigator.sendBeacon) {
-          sent = navigator.sendBeacon(PARTIAL_URL + '?apikey=' + ANON, new Blob([body], { type: 'application/json' }));
+          sent = navigator.sendBeacon(PARTIAL_URL + '?apikey=' + ANON, new Blob([body], { type: 'text/plain' }));
         }
       } catch(e) {}
     }
@@ -1045,7 +1056,9 @@ ttq.page();
       discount: parseFloat(formData.get('discount') || form.getAttribute('data-discount') || '0'),
       notes: formData.get('notes') || '',
       landing_page_slug: SLUG,
-      visitor_id: VID
+      visitor_id: VID,
+      session_id: sessionStorage.getItem('_lp_sid') || '',
+      device_type: window.innerWidth < 768 ? 'mobile' : window.innerWidth < 1024 ? 'tablet' : 'desktop'
     };
 
     fetch(ORDER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
