@@ -1128,8 +1128,8 @@ ttq.page();
 window.SUPABASE_URL = '${supabaseUrl}';
 window.SUPABASE_ANON_KEY = '${anonKey}';
 window._LP_SLUG = '${page.slug}';
-window._LP_VID = localStorage.getItem('_lp_vid') || '';
-if (!window._LP_VID) { window._LP_VID = 'v_' + Math.random().toString(36).substr(2,9) + Date.now(); localStorage.setItem('_lp_vid', window._LP_VID); }
+try { window._LP_VID = localStorage.getItem('_lp_vid') || ''; } catch(e) { window._LP_VID = ''; }
+if (!window._LP_VID) { window._LP_VID = 'v_' + Math.random().toString(36).substr(2,9) + Date.now(); try { localStorage.setItem('_lp_vid', window._LP_VID); } catch(e) {} }
 </script>
 `;
 
