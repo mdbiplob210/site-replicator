@@ -1241,27 +1241,24 @@ const AdminOrders = () => {
     enabled: !!searchedPhone && searchedPhone.length >= 6,
   });
 
-  // Fraud check - courier delivery history by phone
+  // Fraud check - courier delivery history by phone - only triggers on Enter
   const { data: fraudCheckData } = useQuery({
-    queryKey: ["fraud-check", customerPhone],
+    queryKey: ["fraud-check", searchedPhone],
     queryFn: async () => {
-      if (!customerPhone || customerPhone.length < 6) return null;
-      // Get all orders for this phone
+      if (!searchedPhone || searchedPhone.length < 6) return null;
       const { data: phoneOrders, error } = await supabase
         .from("orders")
         .select("id, status, total_amount")
-        .eq("customer_phone", customerPhone);
+        .eq("customer_phone", searchedPhone);
       if (error) throw error;
       if (!phoneOrders || phoneOrders.length === 0) return null;
 
       const orderIds = phoneOrders.map(o => o.id);
-      // Get courier orders for these
       const { data: courierData } = await supabase
         .from("courier_orders")
         .select("order_id, courier_status, courier_provider_id")
         .in("order_id", orderIds);
 
-      // Get provider names
       const { data: providers } = await supabase
         .from("courier_providers")
         .select("id, name");
@@ -1269,7 +1266,6 @@ const AdminOrders = () => {
       const providerMap: Record<string, string> = {};
       (providers || []).forEach((p: any) => { providerMap[p.id] = p.name; });
 
-      // Aggregate by provider
       const stats: Record<string, { total: number; delivered: number; returned: number; cancelled: number }> = {};
       (courierData || []).forEach((co: any) => {
         const name = providerMap[co.courier_provider_id] || "Unknown";
@@ -1288,7 +1284,7 @@ const AdminOrders = () => {
 
       return { totalOrders, deliveredCount, cancelledCount, returnedCount, totalSpent, courierStats: stats };
     },
-    enabled: !!customerPhone && customerPhone.length >= 6,
+    enabled: !!searchedPhone && searchedPhone.length >= 6,
   });
 
   if (currentView === "api") {
