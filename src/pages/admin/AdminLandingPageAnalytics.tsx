@@ -30,7 +30,6 @@ const COLORS = ["hsl(var(--primary))", "#f97316", "#10b981", "#8b5cf6", "#ef4444
 const tooltipStyle = { backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", color: "hsl(var(--foreground))" };
 
 export default function AdminLandingPageAnalytics() {
-  const { data: summaries, isLoading } = useLandingPageAnalyticsSummary();
   const { data: pages } = useLandingPages();
   const [selectedPageId, setSelectedPageId] = useState<string>("all");
   const [days, setDays] = useState(7);
@@ -39,6 +38,7 @@ export default function AdminLandingPageAnalytics() {
   const pageFilter = selectedPageId === "all" ? undefined : selectedPageId;
   const useCustomDate = startDate && endDate;
 
+  const { data: summaries, isLoading } = useLandingPageAnalyticsSummary(days, useCustomDate ? startDate : undefined, useCustomDate ? endDate : undefined);
   const { data: dailyStats } = useLandingPageDailyStats(pageFilter, days, useCustomDate ? startDate : undefined, useCustomDate ? endDate : undefined);
   const { data: funnelData } = useLandingPageFunnel(pageFilter, days);
   const { data: utmData } = useLandingPageUTM(pageFilter, days);
@@ -58,9 +58,10 @@ export default function AdminLandingPageAnalytics() {
   }, [summaries, pageFilter]);
 
   const totalViews = filteredSummaries.reduce((s, p) => s + p.views, 0);
-  const totalClicks = filteredSummaries.reduce((s, p) => s + p.clicks, 0);
+  const totalOrderClicks = filteredSummaries.reduce((s, p) => s + p.orderClicks, 0);
   const totalConversions = filteredSummaries.reduce((s, p) => s + p.conversions, 0);
-  const avgCtr = totalViews > 0 ? (totalClicks / totalViews) * 100 : 0;
+  const totalClicks = filteredSummaries.reduce((s, p) => s + p.clicks, 0);
+  const avgCtr = totalViews > 0 ? (totalOrderClicks / totalViews) * 100 : 0;
   const avgBounce = filteredSummaries.length > 0 ? filteredSummaries.reduce((s, p) => s + p.bounceRate, 0) / filteredSummaries.length : 0;
 
   const handleExportCSV = () => {
