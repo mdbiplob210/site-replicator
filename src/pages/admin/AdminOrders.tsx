@@ -1162,6 +1162,10 @@ const AdminOrders = () => {
 
   // Handle status change with cancel/hold interception
   const handleStatusChange = (orderId: string, newStatus: string, oldStatus: string) => {
+    if (newStatus === "in_courier") {
+      toast.error("In Courier স্ট্যাটাস শুধুমাত্র কুরিয়ার API-এর মাধ্যমে সম্ভব!");
+      return;
+    }
     if (newStatus === "cancelled") {
       setCancelOrderId(orderId);
       setCancelReason("");
@@ -1216,23 +1220,16 @@ const AdminOrders = () => {
     setHoldOrderId(null);
   };
 
-  // Move confirmed orders with courier to in_courier
-  const handleBulkInCourier = () => {
-    const confirmedWithCourier = filteredOrders.filter(o => o.status === "confirmed" && courierByOrderId[o.id]);
-    if (confirmedWithCourier.length === 0) {
-      toast.error("কুরিয়ার সিলেক্ট করা কোনো confirmed অর্ডার নেই!");
-      return;
-    }
-    confirmedWithCourier.forEach(o => {
-      updateStatus.mutate({ id: o.id, status: "in_courier" as OrderStatus });
-      logActivity(o.id, "status_changed", "status", "Confirmed", "In Courier");
-    });
-    toast.success(`${confirmedWithCourier.length}টি অর্ডার In Courier-এ পাঠানো হয়েছে!`);
-  };
+  // handleBulkInCourier removed — in_courier only via courier API
 
   // Bulk status change
   const handleBulkStatusChange = (newStatus: string) => {
     if (selectedOrderIds.size === 0) return;
+    if (newStatus === "in_courier") {
+      toast.error("In Courier স্ট্যাটাস শুধুমাত্র কুরিয়ার API-এর মাধ্যমে সম্ভব!");
+      setBulkStatusValue("");
+      return;
+    }
     if (newStatus === "cancelled") {
       // For cancel, apply directly without reason dialog for bulk
       selectedOrderIds.forEach(id => {
@@ -1418,7 +1415,10 @@ const AdminOrders = () => {
     setBulkCourierId("");
     setBulkCourierSubmitting(false);
     setBulkCourierProgress({ done: 0, total: 0 });
-    // Keep dialog open to show results — user will close manually
+    // Navigate to In Courier tab after successful submit
+    if (successCount > 0) {
+      setActiveTab("In Courier");
+    }
   };
   
   const executeBulkCourierSubmit = async (courierId: string, orderIds: string[]) => {
@@ -1519,6 +1519,10 @@ const AdminOrders = () => {
     setBulkCourierId("");
     setBulkCourierSubmitting(false);
     setBulkCourierProgress({ done: 0, total: 0 });
+    // Navigate to In Courier tab after successful submit
+    if (successCount > 0) {
+      setActiveTab("In Courier");
+    }
   };
 
   // All users for bulk transfer
@@ -2676,17 +2680,7 @@ const AdminOrders = () => {
           </div>
         </div>
 
-        {/* In Courier button for Confirmed tab */}
-        {activeTab === "Confirmed" && (
-          <div className="flex items-center gap-2">
-            <Button size="sm" className="gap-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white shadow-sm" onClick={handleBulkInCourier}>
-              <Truck className="h-4 w-4" /> In Courier-এ পাঠান
-            </Button>
-            <span className="text-xs text-muted-foreground">
-              (কুরিয়ার সিলেক্ট করা {filteredOrders.filter(o => o.status === "confirmed" && courierByOrderId[o.id]).length}টি অর্ডার)
-            </span>
-          </div>
-        )}
+        {/* In Courier button removed — only via courier API */}
 
         {/* Search & Filters */}
         <Card className="p-2 sm:p-3 border-border/40 flex items-center gap-2 sm:gap-3 flex-wrap shadow-sm">
@@ -2813,7 +2807,7 @@ const AdminOrders = () => {
                 <SelectValue placeholder="স্ট্যাটাস চেঞ্জ" />
               </SelectTrigger>
               <SelectContent>
-                {Constants.public.Enums.order_status.map((s) => (
+                {Constants.public.Enums.order_status.filter((s) => s !== "in_courier").map((s) => (
                   <SelectItem key={s} value={s}>
                     <div className="flex items-center gap-2">
                       <span className={`h-2 w-2 rounded-full ${getStatusColor(s as OrderStatus)}`} />
@@ -3495,7 +3489,7 @@ const AdminOrders = () => {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {(() => { const employeeStatuses = ["processing", "confirmed", "on_hold", "hand_delivery", "cancelled"] as const; const adminStatuses = [...["processing", "confirmed", "in_courier", "on_hold", "hand_delivery", "cancelled"] as const, ...(order.status === "pending_return" ? ["returned" as const] : []), ...(order.status === "in_courier" ? ["pending_return" as const] : [])]; return (isEmployee ? employeeStatuses : adminStatuses).map((s) => (
+                          {(() => { const employeeStatuses = ["processing", "confirmed", "on_hold", "hand_delivery", "cancelled"] as const; const adminStatuses = [...["processing", "confirmed", "on_hold", "hand_delivery", "cancelled"] as const, ...(order.status === "pending_return" ? ["returned" as const] : []), ...(order.status === "in_courier" ? ["pending_return" as const] : [])]; return (isEmployee ? employeeStatuses : adminStatuses).map((s) => (
                             <SelectItem key={s} value={s}>
                               <div className="flex items-center gap-2">
                                 <span className={`h-2 w-2 rounded-full ${getStatusColor(s as OrderStatus)}`} />
@@ -3717,7 +3711,7 @@ const AdminOrders = () => {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            {(() => { const employeeStatuses = ["processing", "confirmed", "on_hold", "hand_delivery", "cancelled"] as const; const adminStatuses = [...["processing", "confirmed", "in_courier", "on_hold", "hand_delivery", "cancelled"] as const, ...(order.status === "pending_return" ? ["returned" as const] : []), ...(order.status === "in_courier" ? ["pending_return" as const] : [])]; return (isEmployee ? employeeStatuses : adminStatuses).map((s) => (
+                            {(() => { const employeeStatuses = ["processing", "confirmed", "on_hold", "hand_delivery", "cancelled"] as const; const adminStatuses = [...["processing", "confirmed", "on_hold", "hand_delivery", "cancelled"] as const, ...(order.status === "pending_return" ? ["returned" as const] : []), ...(order.status === "in_courier" ? ["pending_return" as const] : [])]; return (isEmployee ? employeeStatuses : adminStatuses).map((s) => (
                               <SelectItem key={s} value={s}>
                                 <div className="flex items-center gap-2">
                                   <span className={`h-2 w-2 rounded-full ${getStatusColor(s as OrderStatus)}`} />
@@ -3855,6 +3849,10 @@ const AdminOrders = () => {
           onOpenChange={(open) => {
             setPathaoBulkPreviewOpen(open);
             if (!open) {
+              // Navigate to In Courier tab when closing after results
+              if (pathaoBulkResults.some(r => r.success)) {
+                setActiveTab("In Courier");
+              }
               setPathaoBulkOrders([]);
               setPathaoBulkCourierId("");
               setPathaoBulkResults([]);
@@ -4209,6 +4207,10 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
 
   const handleStatusChange = async (newStatus: string) => {
     if (!orderId || !order || newStatus === order.status) return;
+    if (newStatus === "in_courier") {
+      toast.error("In Courier স্ট্যাটাস শুধুমাত্র কুরিয়ার API-এর মাধ্যমে সম্ভব!");
+      return;
+    }
     if (newStatus === "cancelled") {
       setDetailCancelReason("");
       setDetailCancelCustom("");
@@ -4832,7 +4834,7 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                 {[
                   { value: "processing", label: "New Order", color: "bg-blue-500", icon: Clock },
                   { value: "confirmed", label: "Confirmed", color: "bg-emerald-600", icon: CheckCircle2 },
-                  { value: "in_courier", label: "In Courier", color: "bg-violet-500", icon: Truck },
+                  /* in_courier removed — only via courier API */
                   { value: "on_hold", label: "Hold", color: "bg-yellow-500", icon: PauseCircle },
                   { value: "hand_delivery", label: "Hand Delivery", color: "bg-cyan-500", icon: Hand },
                   { value: "cancelled", label: "Cancelled", color: "bg-red-500", icon: XCircle },
