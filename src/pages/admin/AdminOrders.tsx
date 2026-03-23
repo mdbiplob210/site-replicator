@@ -2731,9 +2731,11 @@ const AdminOrders = () => {
             </Button>
             )}
             {/* Bulk Delete / Restore */}
+            {canDeleteOrders && (
             <Button variant={isDeletedTab ? "outline" : "destructive"} size="sm" className="gap-1.5 h-8 rounded-xl text-xs" onClick={handleBulkDelete}>
               {isDeletedTab ? <><RotateCcw className="h-3.5 w-3.5" /> পুনরুদ্ধার</> : <><Trash2 className="h-3.5 w-3.5" /> ডিলিট</>}
             </Button>
+            )}
             <Button variant="ghost" size="sm" className="h-8 rounded-xl text-xs text-muted-foreground ml-auto" onClick={() => setSelectedOrderIds(new Set())}>
               <X className="h-3.5 w-3.5 mr-1" /> বাতিল
             </Button>
