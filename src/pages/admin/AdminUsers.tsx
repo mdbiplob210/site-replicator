@@ -21,7 +21,7 @@ import {
   Ban, Calendar, Smartphone, Laptop, Globe, MapPin
 } from "lucide-react";
 import {
-  useEmployees, useTogglePermission, useTogglePanel,
+  useEmployees, useTogglePermission, useTogglePanel, usePanelStats,
   ALL_PERMISSIONS, type PermissionKey
 } from "@/hooks/useEmployeePermissions";
 import {
