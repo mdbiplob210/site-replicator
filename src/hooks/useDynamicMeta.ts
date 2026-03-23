@@ -16,26 +16,25 @@ export function useDynamicMeta() {
       document.querySelector('meta[name="twitter:title"]')?.setAttribute("content", siteName);
     }
 
-    const siteLogo = settings.site_logo;
-    if (siteLogo) {
-      // Update favicon
+    // Favicon: prioritize site_favicon, fall back to site_logo
+    const faviconSrc = settings.site_favicon || settings.site_logo;
+    if (faviconSrc) {
       let favicon = document.querySelector('link[rel="icon"]') as HTMLLinkElement;
       if (!favicon) {
         favicon = document.createElement("link");
         favicon.rel = "icon";
         document.head.appendChild(favicon);
       }
-      favicon.href = siteLogo;
-      favicon.type = siteLogo.endsWith(".svg") ? "image/svg+xml" : "image/png";
+      favicon.href = faviconSrc;
+      favicon.type = faviconSrc.endsWith(".svg") ? "image/svg+xml" : faviconSrc.endsWith(".ico") ? "image/x-icon" : "image/png";
 
-      // Also update apple-touch-icon if exists
       let apple = document.querySelector('link[rel="apple-touch-icon"]') as HTMLLinkElement;
       if (!apple) {
         apple = document.createElement("link");
         apple.rel = "apple-touch-icon";
         document.head.appendChild(apple);
       }
-      apple.href = siteLogo;
+      apple.href = faviconSrc;
     }
 
     // Set canonical for homepage

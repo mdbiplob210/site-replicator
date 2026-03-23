@@ -109,7 +109,9 @@ function GeneralTab() {
   const [customDomain, setCustomDomain] = useState("");
   const [loaded, setLoaded] = useState(false);
   const [logoUrl, setLogoUrl] = useState("");
+  const [faviconUrl, setFaviconUrl] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [faviconUploading, setFaviconUploading] = useState(false);
   // New fields
   const [marqueeText, setMarqueeText] = useState("");
   const [footerDescription, setFooterDescription] = useState("");
@@ -138,6 +140,7 @@ function GeneralTab() {
     setInstagramUrl(settings["instagram_url"] || "");
     setCustomDomain(settings["custom_domain"] || "");
     setLogoUrl(settings["site_logo"] || "");
+    setFaviconUrl(settings["site_favicon"] || "");
     setMarqueeText(settings["marquee_text"] || "");
     setFooterDescription(settings["footer_description"] || "");
     setFooterQuickLinks(settings["footer_quick_links"] || "");
@@ -268,6 +271,60 @@ function GeneralTab() {
                 {logoUrl && (
                   <Button variant="ghost" size="icon" className="text-destructive" onClick={handleRemoveLogo}>
                     <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Favicon */}
+          <div>
+            <label className="text-sm font-medium text-foreground">Favicon (Browser Tab Icon)</label>
+            <p className="text-xs text-muted-foreground mt-0.5">Suggested: 32×32px or 64×64px square icon. PNG, ICO or SVG. Max 1MB.</p>
+            <div className="flex items-center gap-4 mt-3">
+              <div className="h-10 w-10 rounded-lg border-2 border-dashed border-border flex items-center justify-center overflow-hidden bg-secondary/30">
+                {faviconUrl ? (
+                  <img src={faviconUrl} alt="Favicon" className="h-full w-full object-contain" />
+                ) : (
+                  <Globe className="h-4 w-4 text-muted-foreground" />
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <label>
+                  <input type="file" accept="image/png,image/x-icon,image/svg+xml,image/webp,image/jpeg" className="hidden" onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    if (file.size > 1 * 1024 * 1024) { toast.error("Max 1MB!"); return; }
+                    setFaviconUploading(true);
+                    try {
+                      const ext = file.name.split(".").pop();
+                      const filePath = `favicon.${ext}`;
+                      await supabase.storage.from("site-assets").remove([filePath]);
+                      const { error: uploadError } = await supabase.storage.from("site-assets").upload(filePath, file, { upsert: true });
+                      if (uploadError) throw uploadError;
+                      const { data: urlData } = supabase.storage.from("site-assets").getPublicUrl(filePath);
+                      const publicUrl = urlData.publicUrl + "?t=" + Date.now();
+                      setFaviconUrl(publicUrl);
+                      await updateSetting.mutateAsync({ key: "site_favicon", value: publicUrl });
+                      toast.success("Favicon uploaded!");
+                    } catch (err: any) { toast.error(err.message || "Upload failed"); }
+                    finally { setFaviconUploading(false); }
+                  }} />
+                  <Button variant="outline" className="gap-2" size="sm" asChild disabled={faviconUploading}>
+                    <span><Upload className="h-3.5 w-3.5" /> {faviconUploading ? "Uploading..." : "Upload Favicon"}</span>
+                  </Button>
+                </label>
+                {faviconUrl && (
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={async () => {
+                    try {
+                      const fileName = faviconUrl.split("/").pop()?.split("?")[0];
+                      if (fileName) await supabase.storage.from("site-assets").remove([fileName]);
+                      setFaviconUrl("");
+                      await updateSetting.mutateAsync({ key: "site_favicon", value: "" });
+                      toast.success("Favicon removed!");
+                    } catch (err: any) { toast.error(err.message); }
+                  }}>
+                    <Trash2 className="h-3.5 w-3.5" />
                   </Button>
                 )}
               </div>
