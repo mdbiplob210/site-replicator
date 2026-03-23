@@ -210,7 +210,7 @@ export function useDashboardData(filter: TimeFilter) {
 
   const adsCostBdt = adSpends.reduce((s, a) => s + Number(a.amount_bdt), 0);
   const adsCostUsd = adSpends.reduce((s, a) => s + Number(a.amount_usd), 0);
-  const estProfit = revenue - productCost - adsCostBdt - deliveryCost;
+  const estProfit = revenue - adsCostBdt;
   const finalProfit = estProfit - returnAmount;
 
   // Single pass over finance

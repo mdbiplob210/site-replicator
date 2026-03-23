@@ -64,9 +64,7 @@ const AdminDashboard = () => {
 
   const profitItems = [
     { label: "REVENUE", value: fmt(profitStats.revenue), icon: DollarSign, iconColor: "text-blue-600", bgGradient: "from-blue-100 to-blue-50" },
-    { label: "PRODUCT COST", value: fmt(profitStats.productCost), icon: Package, iconColor: "text-slate-600", bgGradient: "from-slate-100 to-slate-50" },
     { label: "ADS COST", value: fmt(profitStats.adsCostBdt), sub: `($${profitStats.adsCostUsd.toFixed(2)})`, icon: Target, iconColor: "text-violet-600", bgGradient: "from-violet-100 to-violet-50" },
-    { label: "DELIVERY", value: fmt(profitStats.deliveryCost), icon: Truck, iconColor: "text-cyan-600", bgGradient: "from-cyan-100 to-cyan-50" },
     { label: "RETURNS", value: fmt(profitStats.returnAmount), icon: AlertTriangle, iconColor: "text-red-500", bgGradient: "from-red-100 to-red-50" },
     { label: "EST. PROFIT", value: fmt(profitStats.estProfit), icon: TrendingUp, iconColor: "text-emerald-600", bgGradient: "from-emerald-100 to-emerald-50" },
     { label: "FINAL PROFIT", value: fmt(profitStats.finalProfit), icon: Receipt, iconColor: "text-teal-600", bgGradient: "from-teal-100 to-teal-50" },
