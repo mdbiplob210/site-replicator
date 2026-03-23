@@ -492,7 +492,7 @@ const AdminUsers = () => {
                             return "n/a";
                           };
 
-                          const hasPanel = user.roles.some(r => ["user", "manager", "moderator"].includes(r));
+                          const hasPanel = user.roles.some(r => ["admin", "user", "manager", "moderator"].includes(r));
 
                           return (
                             <TableRow key={user.id}>
@@ -650,25 +650,28 @@ const AdminUsers = () => {
                             </div>
                           )}
 
-                          {!isAdmin && (
-                            <div className="flex items-center gap-3">
-                              <Button size="sm" variant="outline" className="gap-1.5 text-xs" onClick={() => handleGrantAll(emp.user_id)}>
-                                <Check className="h-3.5 w-3.5" /> Grant All
-                              </Button>
-                              <Button size="sm" variant="outline" className="gap-1.5 text-xs text-destructive" onClick={() => handleRevokeAll(emp.user_id)}>
-                                <X className="h-3.5 w-3.5" /> Revoke All
-                              </Button>
-                              <div className="ml-auto flex items-center gap-2">
-                                <span className="text-sm text-muted-foreground">Order Panel</span>
-                                <Switch
-                                  checked={emp.panel?.is_active || false}
-                                  onCheckedChange={(checked) =>
-                                    handleTogglePanel(emp.user_id, emp.full_name || "Panel", checked)
-                                  }
-                                />
-                              </div>
+                          {/* Order Panel toggle for all roles including admin */}
+                          <div className="flex items-center gap-3">
+                            {!isAdmin && (
+                              <>
+                                <Button size="sm" variant="outline" className="gap-1.5 text-xs" onClick={() => handleGrantAll(emp.user_id)}>
+                                  <Check className="h-3.5 w-3.5" /> Grant All
+                                </Button>
+                                <Button size="sm" variant="outline" className="gap-1.5 text-xs text-destructive" onClick={() => handleRevokeAll(emp.user_id)}>
+                                  <X className="h-3.5 w-3.5" /> Revoke All
+                                </Button>
+                              </>
+                            )}
+                            <div className="ml-auto flex items-center gap-2">
+                              <span className="text-sm text-muted-foreground">Order Panel</span>
+                              <Switch
+                                checked={emp.panel?.is_active || false}
+                                onCheckedChange={(checked) =>
+                                  handleTogglePanel(emp.user_id, emp.full_name || "Panel", checked)
+                                }
+                              />
                             </div>
-                          )}
+                          </div>
 
                           {Object.entries(permissionGroups).map(([group, perms]) => {
                             const GroupIcon = groupIcons[group] || Settings;
