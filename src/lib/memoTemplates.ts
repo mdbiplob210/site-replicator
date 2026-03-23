@@ -254,7 +254,7 @@ export function generateStandardMemo(d: MemoData): string {
 
   const itemRows = d.items.map((it, index) => {
     const fallbackPrice = d.items.length === 1
-      ? Number(it.total_price ?? it.unit_price ?? d.order.product_cost ?? (Number(d.order.total_amount || 0) - Number(d.order.delivery_charge || 0) + Number(d.order.discount || 0)) ?? 0)
+      ? Number(it.total_price ?? it.unit_price ?? d.order.product_cost ?? (Number(d.order.total_amount || 0) - Number(d.order.delivery_charge || 0) + Number(d.order.discount || 0)))
       : Number(it.total_price ?? it.unit_price ?? 0);
     const fallbackQty = Number(it.quantity ?? 1);
 
