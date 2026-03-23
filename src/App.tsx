@@ -25,6 +25,7 @@ const OrderSuccess = lazy(() => import("./pages/store/OrderSuccess"));
 const TrackOrder = lazy(() => import("./pages/store/TrackOrder"));
 const Login = lazy(() => import("./pages/Login"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const LandingPageView = lazy(() => import("./pages/LandingPageView"));
 const LandingPageCheckout = lazy(() => import("./pages/LandingPageCheckout"));
 const Landing = lazy(() => import("./pages/Landing"));
