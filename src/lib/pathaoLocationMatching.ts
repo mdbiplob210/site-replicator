@@ -12,12 +12,6 @@ export const PATHAO_DISTRICT_OPTIONS = [
 ];
 
 export const PATHAO_THANA_OPTIONS = [
-export const PATHAO_ZONE_OPTIONS = [
-  "Dhaka Metro", "Dhaka Sub", "Chittagong Metro", "Chittagong Sub",
-  "Rajshahi Metro", "Khulna Metro", "Sylhet Metro", "Rangpur Metro",
-  "Barisal Metro", "Mymensingh Metro", "Outside Metro",
-];
-
   "Mirpur", "Uttara", "Gulshan", "Dhanmondi", "Mohammadpur", "Motijheel", "Tejgaon", "Badda", "Rampura", "Khilgaon",
   "Banani", "Cantonment", "Lalbagh", "Demra", "Jatrabari", "Kadamtali", "Shyampur", "Sutrapur", "Wari", "Hazaribagh",
   "Kamrangirchar", "Panchlaish", "Halishahar", "Bayezid", "Double Mooring", "Pahartali", "Bakalia", "Chandgaon",
@@ -26,6 +20,12 @@ export const PATHAO_ZONE_OPTIONS = [
   "Nagarpur", "Sakhipur", "Basail", "Delduar", "Hemayetpur", "Ashulia", "Keraniganj Sadar", "Ukhia", "Ramu",
   "Teknaf", "Chakaria", "Pallabi", "Kafrul", "Turag", "Ramna", "Adabor", "Agrabad", "Patenga", "Kotwali",
   "Khulshi", "EPZ", "Bandar", "Hathazari", "Fatikchhari", "Sitakunda",
+];
+
+export const PATHAO_ZONE_OPTIONS = [
+  "Dhaka Metro", "Dhaka Sub", "Chittagong Metro", "Chittagong Sub",
+  "Rajshahi Metro", "Khulna Metro", "Sylhet Metro", "Rangpur Metro",
+  "Barisal Metro", "Mymensingh Metro", "Outside Metro",
 ];
 
 const LOCATION_GENERIC_WORDS = new Set([
