@@ -3971,13 +3971,21 @@ const AdminOrders = () => {
         {/* Pathao Bulk Submit Preview */}
         <PathaoBulkSubmitPreview
           open={pathaoBulkPreviewOpen}
-          onOpenChange={setPathaoBulkPreviewOpen}
+          onOpenChange={(open) => {
+            setPathaoBulkPreviewOpen(open);
+            if (!open) {
+              setPathaoBulkOrders([]);
+              setPathaoBulkCourierId("");
+              setPathaoBulkResults([]);
+            }
+          }}
           orders={pathaoBulkOrders}
           providerId={pathaoBulkCourierId}
           providerName="Pathao"
           onSubmit={handlePathaoBulkSubmitWithLocations}
           isSubmitting={bulkCourierSubmitting}
           progress={bulkCourierProgress}
+          submitResults={pathaoBulkResults}
         />
       </div>
     </AdminLayout>
