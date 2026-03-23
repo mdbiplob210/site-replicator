@@ -3397,7 +3397,7 @@ const AdminOrders = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredOrders.map((order, idx) => {
+                {paginatedOrders.map((order, idx) => {
                   const courierInfo = courierByOrderId[order.id];
                   const items = orderItemsByOrderId[order.id] || [];
                   const custStats = order.customer_phone ? customerStatsByPhone[order.customer_phone] : null;
