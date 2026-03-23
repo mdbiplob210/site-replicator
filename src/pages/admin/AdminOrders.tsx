@@ -667,11 +667,13 @@ const AdminOrders = () => {
   // Filtered orders by search + advanced filters
   const filteredOrders = useMemo(() => {
     return orders.filter((o) => {
-      // Employee restriction: only show assigned orders
-      if (!isAdmin && assignedOrderIds instanceof Set && !assignedOrderIds.has(o.id)) return false;
-      if (searchQuery) {
+      // Employee restriction: only show assigned orders UNLESS actively searching
+      const isSearching = !!searchQuery.trim();
+      if (!isAdmin && assignedOrderIds instanceof Set && !assignedOrderIds.has(o.id) && !isSearching) return false;
+      if (isSearching) {
         const q = searchQuery.toLowerCase();
-        if (!(o.customer_name.toLowerCase().includes(q) || o.order_number.toLowerCase().includes(q) || (o.customer_phone && o.customer_phone.toLowerCase().includes(q)))) return false;
+        const matchesSearch = o.customer_name.toLowerCase().includes(q) || o.order_number.toLowerCase().includes(q) || (o.customer_phone && o.customer_phone.toLowerCase().includes(q));
+        if (!matchesSearch) return false;
       }
       if (filterSource && !(o.source || "Panel").toLowerCase().includes(filterSource.toLowerCase())) return false;
       if (filterPhone && !(o.customer_phone && o.customer_phone.includes(filterPhone))) return false;
