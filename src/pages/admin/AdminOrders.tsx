@@ -3493,7 +3493,7 @@ const AdminOrders = () => {
                                 {getStatusLabel(s as OrderStatus)}
                               </div>
                             </SelectItem>
-                          ))}
+                          )); })()}
                         </SelectContent>
                       </Select>
                       {order.status === "cancelled" && (order as any).cancel_reason && (
