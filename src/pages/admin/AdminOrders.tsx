@@ -3681,7 +3681,7 @@ const AdminOrders = () => {
 
             {/* Mobile Card Layout */}
             <div className="md:hidden divide-y divide-border/30">
-              {filteredOrders.map((order, idx) => {
+              {paginatedOrders.map((order, idx) => {
                 const items = orderItemsByOrderId[order.id] || [];
                 const custStats = order.customer_phone ? customerStatsByPhone[order.customer_phone] : null;
                 const courierInfo = courierByOrderId[order.id];
