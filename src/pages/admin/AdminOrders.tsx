@@ -56,6 +56,13 @@ import { useSiteSettings } from "@/hooks/useSiteSettings";
 import * as XLSX from "@datalens-tech/xlsx";
 import { toast } from "sonner";
 import { getDisplayImage } from "@/lib/imageUtils";
+import {
+  extractPathaoLocationHints,
+  PATHAO_DISTRICT_OPTIONS,
+  PATHAO_THANA_OPTIONS,
+  PATHAO_ZONE_OPTIONS,
+  resolvePathaoLocationMatch,
+} from "@/lib/pathaoLocationMatching";
 
 const statusTabs = [
   { label: "All Orders", color: "bg-primary", icon: ShoppingCart },
@@ -111,260 +118,6 @@ const incompleteTabs = [
   { label: "Deleted", icon: Trash2 },
   { label: "Cancelled", icon: XCircle },
 ];
-
-// Bangladesh Districts, Thanas, Zones
-const bdDistrictList = [
-  "Dhaka", "Chittagong", "Rajshahi", "Khulna", "Barisal", "Sylhet", "Rangpur", "Mymensingh",
-  "Comilla", "Gazipur", "Narayanganj", "Tangail", "Kishoreganj", "Manikganj", "Munshiganj",
-  "Narsingdi", "Faridpur", "Gopalganj", "Madaripur", "Shariatpur", "Rajbari",
-  "Cox's Bazar", "Bogra", "Jessore", "Dinajpur", "Pabna", "Noakhali", "Brahmanbaria",
-  "Habiganj", "Moulvibazar", "Sunamganj", "Feni", "Lakshmipur", "Chandpur",
-  "Pirojpur", "Jhalokati", "Barguna", "Patuakhali", "Bhola", "Kushtia", "Meherpur",
-  "Chuadanga", "Jhenaidah", "Magura", "Narail", "Satkhira", "Bagerhat",
-  "Chapainawabganj", "Naogaon", "Natore", "Nawabganj", "Joypurhat", "Sirajganj",
-  "Thakurgaon", "Panchagarh", "Nilphamari", "Lalmonirhat", "Kurigram", "Gaibandha",
-  "Sherpur", "Jamalpur", "Netrokona",
-];
-
-const bdThanaList = [
-  "Dhanmondi", "Gulshan", "Banani", "Uttara", "Mirpur", "Mohammadpur", "Tejgaon", "Motijheel",
-  "Ramna", "Lalbagh", "Kotwali", "Pallabi", "Kafrul", "Cantonment", "Turag", "Savar",
-  "Keraniganj", "Demra", "Jatrabari", "Sutrapur", "Wari", "Khilgaon", "Badda",
-  "Adabor", "Hazaribagh", "Kamrangirchar", "Shyampur", "Kadamtali",
-  "Agrabad", "Patenga", "Halishahar", "Double Mooring", "Pahartali", "Bayezid",
-];
-
-const bdZoneList = [
-  "Dhaka Metro", "Dhaka Sub", "Chittagong Metro", "Chittagong Sub",
-  "Rajshahi Metro", "Khulna Metro", "Sylhet Metro", "Rangpur Metro",
-  "Barisal Metro", "Mymensingh Metro", "Outside Metro",
-];
-
-const LOCATION_GENERIC_WORDS = new Set([
-  "city", "district", "zila", "division", "upazila", "thana", "metro", "area",
-]);
-
-const LOCATION_CONTEXT_KEYWORDS = ["district", "zila", "jela", "jila", "city", "thana", "upazila", "area", "zone"];
-
-const BANGLA_DIGIT_MAP: Record<string, string> = {
-  "০": "0",
-  "১": "1",
-  "২": "2",
-  "৩": "3",
-  "৪": "4",
-  "৫": "5",
-  "৬": "6",
-  "৭": "7",
-  "৮": "8",
-  "৯": "9",
-};
-
-const LOCATION_ALIAS_PATTERNS: Array<[RegExp, string]> = [
-  [/\bchattogram\b/g, "chittagong"],
-  [/\bchattograma\b/g, "chittagong"],
-  [/\bchattagrama\b/g, "chittagong"],
-  [/\bchattagram\b/g, "chittagong"],
-  [/\bchatgram\b/g, "chittagong"],
-  [/\bctg\b/g, "chittagong"],
-  [/\bcumilla\b/g, "comilla"],
-  [/\bjashore\b/g, "jessore"],
-  [/\bborishal\b/g, "barisal"],
-  [/\bcoxs\s*bazar\b/g, "cox bazar"],
-  [/\bb\s*baria\b/g, "brahmanbaria"],
-  [/\bchandgao\b/g, "chandgaon"],
-  [/\bchandagao\b/g, "chandgaon"],
-  [/\bbayejid\b/g, "bayazid"],
-  [/\bhathajari\b/g, "hathazari"],
-  [/\bfatikchari\b/g, "fatikchhari"],
-];
-
-const BANGLA_VOWEL_SIGNS = new Set(["া", "ি", "ী", "ু", "ূ", "ৃ", "ে", "ৈ", "ো", "ৌ"]);
-const BANGLA_CONSONANTS = new Set([
-  "ক", "খ", "গ", "ঘ", "ঙ", "চ", "ছ", "জ", "ঝ", "ঞ", "ট", "ঠ", "ড", "ঢ", "ণ",
-  "ত", "থ", "দ", "ধ", "ন", "প", "ফ", "ব", "ভ", "ম", "য", "র", "ল", "শ", "ষ",
-  "স", "হ", "ড়", "ঢ়", "য়",
-]);
-
-const BANGLA_ROMAN_MAP: Record<string, string> = {
-  "অ": "o", "আ": "a", "ই": "i", "ঈ": "i", "উ": "u", "ঊ": "u", "ঋ": "ri", "এ": "e", "ঐ": "oi", "ও": "o", "ঔ": "ou",
-  "া": "a", "ি": "i", "ী": "i", "ু": "u", "ূ": "u", "ৃ": "ri", "ে": "e", "ৈ": "oi", "ো": "o", "ৌ": "ou",
-  "ং": "ng", "ঃ": "h", "ঁ": "n", "্": "",
-  "ক": "k", "খ": "kh", "গ": "g", "ঘ": "gh", "ঙ": "ng", "চ": "ch", "ছ": "chh", "জ": "j", "ঝ": "jh", "ঞ": "n",
-  "ট": "t", "ঠ": "th", "ড": "d", "ঢ": "dh", "ণ": "n", "ত": "t", "থ": "th", "দ": "d", "ধ": "dh", "ন": "n",
-  "প": "p", "ফ": "f", "ব": "b", "ভ": "v", "ম": "m", "য": "y", "র": "r", "ল": "l", "শ": "s", "ষ": "s", "স": "s", "হ": "h", "ড়": "r", "ঢ়": "rh", "য়": "y",
-};
-
-const transliterateBanglaText = (value: string) => {
-  let output = "";
-
-  for (let index = 0; index < value.length; index += 1) {
-    const current = value[index];
-    const next = value[index + 1];
-
-    if (BANGLA_CONSONANTS.has(current)) {
-      output += BANGLA_ROMAN_MAP[current] || "";
-      if (next === "্" || BANGLA_VOWEL_SIGNS.has(next)) {
-        continue;
-      }
-      output += "a";
-      continue;
-    }
-
-    output += BANGLA_ROMAN_MAP[current] ?? current;
-  }
-
-  return output.replace(/a$/g, "");
-};
-
-const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
-const normalizeLocationName = (value: string) => {
-  const digitNormalized = value.replace(/[০-৯]/g, (char) => BANGLA_DIGIT_MAP[char] ?? char);
-  const romanized = /[\u0980-\u09FF]/.test(digitNormalized) ? transliterateBanglaText(digitNormalized) : digitNormalized;
-
-  let normalized = romanized
-    .toLowerCase()
-    .replace(/[’']/g, "'")
-    .replace(/[।,:;()[\]{}]/g, " ")
-    .replace(/['`./\\-]/g, " ");
-
-  for (const [pattern, replacement] of LOCATION_ALIAS_PATTERNS) {
-    normalized = normalized.replace(pattern, replacement);
-  }
-
-  return normalized.replace(/\s+/g, " ").trim();
-};
-
-const toPhoneticKey = (value: string) =>
-  normalizeLocationName(value)
-    .replace(/z/g, "j")
-    .replace(/q/g, "k")
-    .replace(/x/g, "ks")
-    .replace(/ph/g, "f")
-    .replace(/bh/g, "v")
-    .replace(/sh/g, "s")
-    .replace(/[aeiou]/g, "")
-    .replace(/(.)\1+/g, "$1")
-    .replace(/\s+/g, "");
-
-const getLocationMatchScore = (address: string, candidate: string) => {
-  const normalizedAddress = normalizeLocationName(address);
-  const normalizedCandidate = normalizeLocationName(candidate);
-
-  if (!normalizedAddress || !normalizedCandidate) return 0;
-
-  let score = 0;
-
-  if (normalizedAddress.includes(normalizedCandidate)) {
-    score = Math.max(score, 120 + normalizedCandidate.length);
-  }
-
-  const addressTokens = normalizedAddress.split(" ").filter(Boolean);
-  const candidateTokens = normalizedCandidate
-    .split(" ")
-    .filter((token) => token.length > 1 && !LOCATION_GENERIC_WORDS.has(token));
-
-  const tokenHits = candidateTokens.filter((candidateToken) =>
-    addressTokens.some(
-      (addressToken) =>
-        addressToken === candidateToken ||
-        addressToken.includes(candidateToken) ||
-        candidateToken.includes(addressToken),
-    ),
-  ).length;
-
-  if (tokenHits > 0) {
-    score = Math.max(score, 72 + tokenHits * 12 + normalizedCandidate.length);
-  }
-
-  const contextPattern = candidateTokens
-    .map((candidateToken) => `(?:${LOCATION_CONTEXT_KEYWORDS.join("|")})\\s+${escapeRegExp(candidateToken)}`)
-    .join("|");
-
-  if (contextPattern && new RegExp(`\\b(?:${contextPattern})\\b`).test(normalizedAddress)) {
-    score = Math.max(score, 144 + normalizedCandidate.length);
-  }
-
-  const addressKey = toPhoneticKey(address);
-  const candidateKey = toPhoneticKey(candidate);
-
-  if (candidateKey.length >= 3 && addressKey.includes(candidateKey)) {
-    score = Math.max(score, 88 + candidateKey.length);
-  }
-
-  return score;
-};
-
-const findBestLocationMatch = (
-  address: string,
-  locations: Array<{ id: string | number; name: string }>,
-) => {
-  let bestMatch: { id: string | number; name: string } | null = null;
-  let bestScore = 0;
-
-  for (const location of locations) {
-    const score = getLocationMatchScore(address, location.name);
-    if (score > bestScore) {
-      bestScore = score;
-      bestMatch = location;
-    }
-  }
-
-  return bestScore >= 78 ? bestMatch : null;
-};
-
-const extractPathaoLocationHints = (address: string) => {
-  const normalizedAddress = normalizeLocationName(address);
-
-  if (!normalizedAddress) {
-    return { cityHints: [] as string[], zoneHints: [] as string[] };
-  }
-
-  return {
-    cityHints: bdDistrictList.filter((district) =>
-      normalizedAddress.includes(normalizeLocationName(district)),
-    ),
-    zoneHints: bdThanaList.filter((thana) =>
-      normalizedAddress.includes(normalizeLocationName(thana)),
-    ),
-  };
-};
-
-const findLocationByHints = (
-  locations: Array<{ id: string | number; name: string }>,
-  hints: string[],
-) => {
-  const normalizedHints = Array.from(
-    new Set(hints.map((hint) => normalizeLocationName(hint)).filter(Boolean)),
-  );
-
-  if (normalizedHints.length === 0) return null;
-
-  for (const hint of normalizedHints) {
-    const matchedLocation = locations.find((location) => {
-      const normalizedLocation = normalizeLocationName(location.name);
-      return (
-        normalizedLocation === hint ||
-        normalizedLocation.includes(hint) ||
-        hint.includes(normalizedLocation)
-      );
-    });
-
-    if (matchedLocation) {
-      return matchedLocation;
-    }
-  }
-
-  return null;
-};
-
-const resolvePathaoLocationMatch = (
-  address: string,
-  locations: Array<{ id: string | number; name: string }>,
-  hints: string[],
-) => {
-  return findLocationByHints(locations, hints) ?? findBestLocationMatch(address, locations);
-};
 
 type View = "orders" | "incomplete" | "fakeOrder" | "courier" | "api";
 
@@ -3242,7 +2995,7 @@ const AdminOrders = () => {
                     <SelectTrigger className="rounded-lg h-7 text-xs"><SelectValue placeholder="All" /></SelectTrigger>
                     <SelectContent className="max-h-60">
                       <SelectItem value="all">All Districts</SelectItem>
-                      {bdDistrictList.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                      {PATHAO_DISTRICT_OPTIONS.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
@@ -3252,7 +3005,7 @@ const AdminOrders = () => {
                     <SelectTrigger className="rounded-lg h-7 text-xs"><SelectValue placeholder="All" /></SelectTrigger>
                     <SelectContent className="max-h-60">
                       <SelectItem value="all">All Thanas</SelectItem>
-                      {bdThanaList.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                      {PATHAO_THANA_OPTIONS.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
@@ -3262,7 +3015,7 @@ const AdminOrders = () => {
                     <SelectTrigger className="rounded-lg h-7 text-xs"><SelectValue placeholder="All" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Zones</SelectItem>
-                      {bdZoneList.map((z) => <SelectItem key={z} value={z}>{z}</SelectItem>)}
+                      {PATHAO_ZONE_OPTIONS.map((z) => <SelectItem key={z} value={z}>{z}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
