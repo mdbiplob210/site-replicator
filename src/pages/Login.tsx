@@ -6,7 +6,8 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, type AppRole, type PermissionKey } from "@/contexts/AuthContext";
+import { getDefaultAdminRoute } from "@/lib/adminAccess";
 import { validatePassword, isLoginRateLimited, recordLoginAttempt, isValidEmail } from "@/lib/security";
 
 const COLORS = [
@@ -26,17 +27,19 @@ const Login = () => {
   const animFrameRef = useRef<number>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user, isAdmin, loading: authLoading } = useAuth();
+  const { user, isAdmin, userRoles, userPermissions, loading: authLoading } = useAuth();
 
   useEffect(() => {
     if (!authLoading && user) {
-      supabase.from("user_roles").select("role").eq("user_id", user.id).then(({ data }) => {
-        if (data && data.length > 0) {
-          navigate("/admin", { replace: true });
-        }
+      const nextRoute = getDefaultAdminRoute({
+        isAdmin,
+        userRoles,
+        userPermissions,
       });
+
+      navigate(nextRoute ?? "/", { replace: true });
     }
-  }, [user, isAdmin, authLoading, navigate]);
+  }, [user, isAdmin, userRoles, userPermissions, authLoading, navigate]);
 
   // Particle canvas animation
   useEffect(() => {
@@ -113,7 +116,9 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      if (!isValidEmail(email)) {
+      const normalizedEmail = email.trim().toLowerCase();
+
+      if (!isValidEmail(normalizedEmail)) {
         toast({ title: "Error", description: "Please enter a valid email", variant: "destructive" });
         setLoading(false);
         return;
@@ -128,15 +133,15 @@ const Login = () => {
         }
 
         const { error } = await supabase.auth.signUp({
-          email: email.trim().toLowerCase(),
+          email: normalizedEmail,
           password,
           options: { data: { full_name: fullName.trim() }, emailRedirectTo: window.location.origin },
         });
         if (error) throw error;
-        await recordLoginAttempt(email, true);
+        await recordLoginAttempt(normalizedEmail, true);
         toast({ title: "Success!", description: "Account created. Please verify your email." });
       } else {
-        const rateCheck = await isLoginRateLimited(email);
+        const rateCheck = await isLoginRateLimited(normalizedEmail);
         if (rateCheck.limited) {
           const mins = Math.ceil(rateCheck.remainingSeconds / 60);
           toast({ title: "🚫 Temporarily Blocked", description: `Too many failed attempts. Try again in ${mins} minute(s).`, variant: "destructive" });
@@ -144,18 +149,32 @@ const Login = () => {
           return;
         }
 
-        const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
         if (error) {
-          await recordLoginAttempt(email, false);
+          await recordLoginAttempt(normalizedEmail, false);
           throw error;
         }
-        await recordLoginAttempt(email, true);
+
+        await recordLoginAttempt(normalizedEmail, true);
         toast({ title: "🏆 Success!", description: "Logged in successfully!" });
-        const { data: roleData } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", data.user.id);
-        navigate(roleData && roleData.length > 0 ? "/admin" : "/", { replace: true });
+
+        const [{ data: roleData, error: rolesError }, { data: permissionData, error: permissionsError }] = await Promise.all([
+          supabase.from("user_roles").select("role").eq("user_id", data.user.id),
+          supabase.from("employee_permissions").select("permission").eq("user_id", data.user.id),
+        ]);
+
+        if (rolesError) throw rolesError;
+        if (permissionsError) throw permissionsError;
+
+        const roles = (roleData || []).map((row) => row.role as AppRole);
+        const permissions = (permissionData || []).map((row) => row.permission as PermissionKey);
+        const nextRoute = getDefaultAdminRoute({
+          isAdmin: roles.includes("admin"),
+          userRoles: roles,
+          userPermissions: permissions,
+        });
+
+        navigate(nextRoute ?? "/", { replace: true });
       }
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
