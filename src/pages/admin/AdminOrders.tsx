@@ -542,6 +542,24 @@ const AdminOrders = () => {
     toast.success("Refreshing data...");
   }, [queryClient]);
 
+  // ═══ Realtime: auto-refresh orders & incomplete orders when DB changes ═══
+  useEffect(() => {
+    const channel = supabase
+      .channel("admin-orders-realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, () => {
+        queryClient.invalidateQueries({ queryKey: ["orders"] });
+        queryClient.invalidateQueries({ queryKey: ["order-counts"] });
+        queryClient.invalidateQueries({ queryKey: ["next-order-number"] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "incomplete_orders" }, () => {
+        queryClient.invalidateQueries({ queryKey: ["incomplete-orders"] });
+        queryClient.invalidateQueries({ queryKey: ["incomplete-order-counts"] });
+        queryClient.invalidateQueries({ queryKey: ["incomplete-slug-options"] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [queryClient]);
+
   // Preload courier check cache from DB — avoids individual edge function calls on refresh
   const [courierCacheReady, setCourierCacheReady] = useState(false);
   useEffect(() => {
