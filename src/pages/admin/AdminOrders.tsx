@@ -1671,18 +1671,19 @@ const AdminOrders = () => {
     setBulkCourierProgress({ done: 0, total: 0 });
   };
 
-  // Employee panels for bulk transfer
+  // All users for bulk transfer
   const { data: bulkTransferPanels = [] } = useQuery({
-    queryKey: ["employee-panels-bulk-transfer"],
+    queryKey: ["all-users-for-transfer"],
     queryFn: async () => {
-      const { data: panels, error } = await supabase.from("employee_panels").select("*").eq("is_active", true);
-      if (error) throw error;
-      const userIds = panels?.map(p => p.user_id) || [];
+      const { data: roles, error: rolesErr } = await supabase.from("user_roles").select("user_id, role");
+      if (rolesErr) throw rolesErr;
+      const userIds = [...new Set(roles?.map(r => r.user_id) || [])];
       if (userIds.length === 0) return [];
       const { data: profiles } = await supabase.from("profiles").select("user_id, full_name").in("user_id", userIds);
-      return (panels || []).map(p => ({
-        ...p,
-        full_name: profiles?.find(pr => pr.user_id === p.user_id)?.full_name || p.panel_name,
+      return userIds.map(uid => ({
+        user_id: uid,
+        full_name: profiles?.find(p => p.user_id === uid)?.full_name || `User (${uid.slice(0, 8)})`,
+        role: roles?.find(r => r.user_id === uid)?.role || "user",
       }));
     },
   });
