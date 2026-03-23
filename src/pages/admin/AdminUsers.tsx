@@ -39,6 +39,7 @@ interface UserProfile {
 
 type TabType = "users" | "rules" | "tracking" | "activity";
 type TrackingSubTab = "live" | "performance";
+type RoleFilter = "all" | "admin" | "manager" | "user" | "accounting" | "ad_analytics" | "no_role";
 
 const groupIcons: Record<string, any> = {
   "Orders": ShoppingCart,
