@@ -1442,6 +1442,7 @@ const AdminOrders = () => {
   const [pathaoBulkPreviewOpen, setPathaoBulkPreviewOpen] = useState(false);
   const [pathaoBulkCourierId, setPathaoBulkCourierId] = useState("");
   const [pathaoBulkOrders, setPathaoBulkOrders] = useState<import("@/components/admin/courier/PathaoBulkSubmitPreview").BulkOrderEntry[]>([]);
+  const [pathaoBulkResults, setPathaoBulkResults] = useState<import("@/components/admin/courier/PathaoBulkSubmitPreview").SubmitResultEntry[]>([]);
   
   const handleBulkCourierSubmit = async (courierId: string) => {
     if (selectedOrderIds.size === 0 || !courierId) return;
