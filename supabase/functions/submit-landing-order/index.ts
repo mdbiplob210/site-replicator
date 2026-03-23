@@ -342,7 +342,7 @@ Deno.serve(async (req) => {
         delivery_charge,
         discount,
         total_amount: totalAmount,
-        notes: notes ? `[LP: ${landing_page_slug || "unknown"}] ${notes}` : `[LP: ${landing_page_slug || "unknown"}]`,
+        notes: null,
         status: "processing",
         source: "landing_page",
         client_ip: clientIp,

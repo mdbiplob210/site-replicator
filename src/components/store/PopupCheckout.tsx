@@ -252,7 +252,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
         customer_name: form.name,
         customer_phone: form.phone,
         customer_address: form.address,
-        notes: form.notes || null,
+        notes: null,
         total_amount: total,
         product_cost: subtotal,
         discount: totalDiscount,
