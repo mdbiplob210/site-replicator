@@ -198,6 +198,10 @@ const AdminOrders = () => {
   const [filterNotes, setFilterNotes] = useState("");
   const [filterUrl, setFilterUrl] = useState("");
   const [filterOrderTag, setFilterOrderTag] = useState("");
+
+  // Pagination
+  const [perPage, setPerPage] = useState(25);
+  const [currentPage, setCurrentPage] = useState(1);
   const [filterSalesType, setFilterSalesType] = useState("all");
 
   // New order form state
