@@ -3715,7 +3715,7 @@ const AdminOrders = () => {
                                   {getStatusLabel(s as OrderStatus)}
                                 </div>
                               </SelectItem>
-                            ))}
+                            )); })()}
                           </SelectContent>
                         </Select>
                       </div>
