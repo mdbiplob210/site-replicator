@@ -1928,6 +1928,17 @@ const AdminOrders = () => {
                     </div>
                   )}
                 </div>
+                {/* Editable Delivery & Discount */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><Truck className="h-3 w-3" /> ডেলিভারি চার্জ</Label>
+                    <Input type="number" value={deliveryCharge} onChange={(e) => setDeliveryCharge(Number(e.target.value) || 0)} className="rounded-xl" min={0} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><ArrowRightLeft className="h-3 w-3" /> ডিসকাউন্ট</Label>
+                    <Input type="number" value={discount} onChange={(e) => setDiscount(Number(e.target.value) || 0)} className="rounded-xl" min={0} />
+                  </div>
+                </div>
                 <div className="bg-primary/5 border border-primary/20 rounded-xl p-4">
                   <div className="flex justify-between text-sm"><span>প্রোডাক্ট মূল্য</span><span>৳{itemsTotal.toLocaleString()}</span></div>
                   <div className="flex justify-between text-sm"><span>ডেলিভারি</span><span>৳{deliveryCharge}</span></div>
