@@ -4875,11 +4875,31 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                       className="rounded-xl text-xs justify-start gap-1.5 h-9 hover:bg-indigo-50 hover:border-indigo-300 dark:hover:bg-indigo-900/20"
                       disabled={isTransferring}
                       onClick={() => {
-                        setTransferToUserId(p.user_id);
-                        // Trigger transfer immediately
-                        setTimeout(() => {
+                        // Instant 1-click transfer
+                        (async () => {
                           setTransferToUserId(p.user_id);
-                        }, 0);
+                          setIsTransferring(true);
+                          try {
+                            const { error } = await supabase.rpc("bulk_transfer_orders" as any, {
+                              _order_ids: [orderId],
+                              _target_user_id: p.user_id,
+                              _assigned_by: user?.id || null,
+                            });
+                            if (error) throw error;
+                            const fromPanel = transferPanels.find((tp: any) => tp.user_id === currentAssignment?.assigned_to);
+                            logActivity("order_transferred", "assigned_to", fromPanel?.full_name || "unassigned", p.full_name, `অর্ডার ট্রান্সফার: ${fromPanel?.full_name || "Unassigned"} → ${p.full_name} (by ${user?.email || "Unknown"})`);
+                            queryClient.invalidateQueries({ queryKey: ["order-assignments"] });
+                            queryClient.invalidateQueries({ queryKey: ["order-assignments-list"] });
+                            queryClient.invalidateQueries({ queryKey: ["order-assignment-detail", orderId] });
+                            queryClient.invalidateQueries({ queryKey: ["panel-stats"] });
+                            toast.success(`অর্ডার সফলভাবে ${p.full_name}-এর কাছে ট্রান্সফার হয়েছে!`);
+                          } catch (e: any) {
+                            toast.error("ট্রান্সফার ব্যর্থ: " + e.message);
+                          } finally {
+                            setIsTransferring(false);
+                            setTransferToUserId(null);
+                          }
+                        })();
                       }}
                     >
                       <Users className="h-3 w-3 text-indigo-500 shrink-0" />
