@@ -366,11 +366,16 @@ export function PathaoBulkSubmitPreview({ open, onOpenChange, orders, providerId
                             </span>
                           )}
                         </>
-                      ) : (
-                        <Badge variant="destructive" className="text-[8px] px-1 py-0 h-4">
-                          <AlertCircle className="h-2.5 w-2.5 mr-0.5" /> ব্যর্থ
-                        </Badge>
-                      )
+                        <>
+                          <Badge variant="destructive" className="text-[8px] px-1 py-0 h-4">
+                            <AlertCircle className="h-2.5 w-2.5 mr-0.5" /> ব্যর্থ
+                          </Badge>
+                          {result.error && (
+                            <span className="text-[7px] text-destructive max-w-[120px] text-center leading-tight line-clamp-3" title={result.error}>
+                              {result.error}
+                            </span>
+                          )}
+                        </>
                     ) : isPathao ? (
                       state?.cityId && state?.zoneId ? (
                         <CheckCircle2 className="h-4 w-4 text-emerald-500" />
