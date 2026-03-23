@@ -263,6 +263,15 @@ const AdminOrders = () => {
   const canPrintMemo = userRole === "admin" || hasPrintMemoPermission;
   const canTransferOrders = userRole === "admin" || hasTransferPermission;
   const canDeleteOrders = userRole === "admin" || hasDeletePermission;
+  // Fetch user's display name from profile
+  const { data: userDisplayName } = useQuery({
+    queryKey: ["user-profile-name", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("full_name").eq("user_id", user!.id).limit(1).maybeSingle();
+      return data?.full_name || user?.email || "System";
+    },
+    enabled: !!user?.id,
+  });
   const { data: orders = [], isLoading } = useOrders(statusFilter, orderDateFilter, customDateFrom, customDateTo, isDeletedTab);
   const { data: counts = {} } = useOrderCounts(orderDateFilter, customDateFrom, customDateTo, assignedOrderIds);
   const createOrder = useCreateOrder();
@@ -1044,7 +1053,7 @@ const AdminOrders = () => {
       await supabase.from("order_activity_logs" as any).insert({
         order_id: orderId,
         user_id: user?.id || null,
-        user_name: user?.email || "System",
+        user_name: userDisplayName || user?.email || "System",
         action,
         field_name: fieldName || null,
         old_value: oldValue || null,
@@ -1788,6 +1797,7 @@ const AdminOrders = () => {
                   activeIncompleteTab={activeIncompleteTab}
                   onConvert={openConvertAsNewOrder}
                   deleteIncomplete={deleteIncomplete}
+                  canDeleteOrders={canDeleteOrders}
                 />
               ))}
             </div>
@@ -3784,6 +3794,14 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
     enabled: !!user?.id,
   });
   const canTransferOrders = isAdmin || hasTransferPerm;
+  const { data: userDisplayName } = useQuery({
+    queryKey: ["user-profile-name-detail", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("full_name").eq("user_id", user!.id).limit(1).maybeSingle();
+      return data?.full_name || user?.email || "System";
+    },
+    enabled: !!user?.id,
+  });
   const itemsTotal = items.reduce((s: number, i: any) => s + Number(i.total_price), 0);
   
   // Editable fields
@@ -4085,7 +4103,7 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
     if (!orderId) return;
     try {
       await supabase.from("order_activity_logs" as any).insert({
-        order_id: orderId, user_id: user?.id || null, user_name: user?.email || "System",
+        order_id: orderId, user_id: user?.id || null, user_name: userDisplayName || user?.email || "System",
         action, field_name: fieldName || null, old_value: oldValue || null, new_value: newValue || null, details: details || null,
       } as any);
     } catch (e) { console.error(e); }
@@ -5122,8 +5140,8 @@ function CourierStatusModal({
   );
 }
 
-function IncompleteOrderCard({ io, activeIncompleteTab, onConvert, deleteIncomplete }: {
-  io: any; activeIncompleteTab: string; onConvert: (io: any) => void; deleteIncomplete: any;
+function IncompleteOrderCard({ io, activeIncompleteTab, onConvert, deleteIncomplete, canDeleteOrders }: {
+  io: any; activeIncompleteTab: string; onConvert: (io: any) => void; deleteIncomplete: any; canDeleteOrders: boolean;
 }) {
   const [noteInput, setNoteInput] = useState("");
   const [isSavingNote, setIsSavingNote] = useState(false);
@@ -5245,7 +5263,7 @@ function IncompleteOrderCard({ io, activeIncompleteTab, onConvert, deleteIncompl
               <GitMerge className="h-3 w-3" /> অর্ডারে কনভার্ট
             </Button>
           )}
-          {!["Deleted", "Cancelled"].includes(activeIncompleteTab) && (
+          {canDeleteOrders && !["Deleted", "Cancelled"].includes(activeIncompleteTab) && (
             <Button size="sm" variant="ghost" className="text-destructive" onClick={() => {
               if (confirm("ডিলিট করতে চান?")) deleteIncomplete.mutate(io.id);
             }}>
