@@ -1053,7 +1053,7 @@ const AdminOrders = () => {
       await supabase.from("order_activity_logs" as any).insert({
         order_id: orderId,
         user_id: user?.id || null,
-        user_name: user?.email || "System",
+        user_name: userDisplayName || user?.email || "System",
         action,
         field_name: fieldName || null,
         old_value: oldValue || null,
