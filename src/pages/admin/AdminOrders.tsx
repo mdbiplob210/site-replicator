@@ -3983,7 +3983,7 @@ const AdminOrders = () => {
           }}
           orders={pathaoBulkOrders}
           providerId={pathaoBulkCourierId}
-          providerName="Pathao"
+          providerName={courierProviders?.find((p: any) => p.id === pathaoBulkCourierId)?.name || "Courier"}
           onSubmit={handlePathaoBulkSubmitWithLocations}
           isSubmitting={bulkCourierSubmitting}
           progress={bulkCourierProgress}
