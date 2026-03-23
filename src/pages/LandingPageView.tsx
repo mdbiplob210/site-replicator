@@ -1359,7 +1359,36 @@ if (!window._LP_VID) { window._LP_VID = 'v_' + Math.random().toString(36).substr
 </script>
 `;
 
-    const allScripts = globalsScript + richTrackingHelper + trackingScripts + conversionScript + analyticsScript + partialTrackingScript + phoneValidationScript + orderScript + autocompleteScript + exitIntentScript + debugPanelScript + tierPricePatchScript;
+    // Heartbeat script for live visitor tracking
+    const heartbeatScript = `
+<script>
+(function(){
+  var HB_URL = '${supabaseUrl}/functions/v1/visitor-heartbeat';
+  var ANON = '${anonKey}';
+  var SLUG = '${page.slug}';
+  var VID; try { VID = localStorage.getItem('_lp_vid'); } catch(e) {} VID = VID || '';
+  function sendHB() {
+    var phone = '';
+    try {
+      var phoneInput = document.querySelector('input[name="phone"], input[name="customer_phone"], input[type="tel"]');
+      if (phoneInput) phone = phoneInput.value.replace(/\\D/g, '');
+    } catch(e) {}
+    try {
+      fetch(HB_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': ANON },
+        body: JSON.stringify({ visitor_id: VID, customer_phone: phone || null, page_slug: SLUG }),
+        keepalive: true
+      });
+    } catch(e) {}
+  }
+  sendHB();
+  setInterval(sendHB, 30000);
+})();
+</script>
+`;
+
+    const allScripts = globalsScript + richTrackingHelper + trackingScripts + conversionScript + analyticsScript + partialTrackingScript + phoneValidationScript + orderScript + autocompleteScript + exitIntentScript + debugPanelScript + tierPricePatchScript + heartbeatScript;
 
     const cleanHtml = normalizeLandingPhoneHtml(sanitizeHtmlScripts(page.html_content));
 
