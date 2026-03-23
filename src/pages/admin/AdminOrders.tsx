@@ -1481,10 +1481,12 @@ const AdminOrders = () => {
     if (!courierId || ordersWithLocations.length === 0) return;
     
     setBulkCourierSubmitting(true);
+    setPathaoBulkResults([]);
     const total = ordersWithLocations.length;
     setBulkCourierProgress({ done: 0, total });
     let successCount = 0;
     let failCount = 0;
+    const results: import("@/components/admin/courier/PathaoBulkSubmitPreview").SubmitResultEntry[] = [];
     
     try {
       const { data: sessionData } = await supabase.auth.getSession();
@@ -1513,13 +1515,17 @@ const AdminOrders = () => {
           const result = await resp.json();
           if (result.success) {
             successCount++;
+            results.push({ orderId: orderLoc.orderId, success: true, consignment_id: result.consignment_id || result.tracking_id || "" });
             logActivity(orderLoc.orderId, "status_changed", "status", "", "In Courier", `Pathao API সাবমিট (City: ${orderLoc.cityId}, Zone: ${orderLoc.zoneId})`);
           } else {
             failCount++;
+            results.push({ orderId: orderLoc.orderId, success: false, error: result.error || "Unknown error" });
           }
-        } catch {
+        } catch (e: any) {
           failCount++;
+          results.push({ orderId: orderLoc.orderId, success: false, error: e?.message || "Network error" });
         }
+        setPathaoBulkResults([...results]);
         setBulkCourierProgress(prev => ({ ...prev, done: prev.done + 1 }));
       }
     } catch {
@@ -1533,7 +1539,12 @@ const AdminOrders = () => {
           await supabase.from("orders").update({ status: "in_courier" as any }).eq("id", orderLoc.orderId);
           logActivity(orderLoc.orderId, "status_changed", "status", "", "In Courier", "Pathao বাল্ক সাবমিট (ম্যানুয়াল)");
           successCount++;
-        } catch { failCount++; }
+          results.push({ orderId: orderLoc.orderId, success: true });
+        } catch {
+          failCount++;
+          results.push({ orderId: orderLoc.orderId, success: false, error: "Manual fallback failed" });
+        }
+        setPathaoBulkResults([...results]);
         setBulkCourierProgress(prev => ({ ...prev, done: prev.done + 1 }));
       }
     }
@@ -1551,9 +1562,7 @@ const AdminOrders = () => {
     setBulkCourierId("");
     setBulkCourierSubmitting(false);
     setBulkCourierProgress({ done: 0, total: 0 });
-    setPathaoBulkPreviewOpen(false);
-    setPathaoBulkOrders([]);
-    setPathaoBulkCourierId("");
+    // Keep dialog open to show results — user will close manually
   };
   
   const executeBulkCourierSubmit = async (courierId: string, orderIds: string[]) => {
