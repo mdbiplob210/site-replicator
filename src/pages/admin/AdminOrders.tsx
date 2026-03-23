@@ -3794,6 +3794,14 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
     enabled: !!user?.id,
   });
   const canTransferOrders = isAdmin || hasTransferPerm;
+  const { data: userDisplayName } = useQuery({
+    queryKey: ["user-profile-name-detail", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("full_name").eq("user_id", user!.id).limit(1).maybeSingle();
+      return data?.full_name || user?.email || "System";
+    },
+    enabled: !!user?.id,
+  });
   const itemsTotal = items.reduce((s: number, i: any) => s + Number(i.total_price), 0);
   
   // Editable fields
