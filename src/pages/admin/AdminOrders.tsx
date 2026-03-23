@@ -640,6 +640,56 @@ const AdminOrders = () => {
   const deleteIncomplete = useDeleteIncompleteOrder();
   const convertIncomplete = useConvertIncompleteToOrder();
 
+  // Repeat detection: get IPs and phones from existing orders
+  const { data: existingOrderFingerprints } = useQuery({
+    queryKey: ["order-fingerprints-for-repeat"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("orders")
+        .select("client_ip, customer_phone")
+        .not("deleted_at", "is", null)
+        .is("deleted_at", null);
+      if (error) throw error;
+      const ips = new Set<string>();
+      const phones = new Set<string>();
+      (data || []).forEach((o: any) => {
+        if (o.client_ip) ips.add(o.client_ip);
+        if (o.customer_phone) phones.add(o.customer_phone.replace(/\D/g, ""));
+      });
+      return { ips, phones };
+    },
+    staleTime: 60 * 1000,
+    enabled: currentView === "incomplete",
+  });
+
+  // Live visitors tracking
+  const { data: liveVisitors = [] } = useQuery({
+    queryKey: ["live-visitors"],
+    queryFn: async () => {
+      const cutoff = new Date(Date.now() - 60 * 1000).toISOString();
+      const { data, error } = await supabase
+        .from("live_visitors" as any)
+        .select("*")
+        .gte("last_seen_at", cutoff);
+      if (error) throw error;
+      return data as any[];
+    },
+    refetchInterval: 15000,
+    enabled: currentView === "incomplete",
+  });
+
+  // Subscribe to live_visitors realtime changes
+  useEffect(() => {
+    if (currentView !== "incomplete") return;
+    const channel = supabase
+      .channel("live-visitors-changes")
+      .on("postgres_changes", { event: "*", schema: "public", table: "live_visitors" }, () => {
+        queryClient.invalidateQueries({ queryKey: ["live-visitors"] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [currentView, queryClient]);
+
   // Filter products for search — show top selling (by order count) when empty
   const filteredProducts = useMemo(() => {
     // Build a sales count map from allOrderItems
