@@ -1793,16 +1793,34 @@ const AdminOrders = () => {
             </Card>
           ) : (
             <div className="space-y-3">
-              {incompleteOrders.map((io) => (
-                <IncompleteOrderCard
-                  key={io.id}
-                  io={io}
-                  activeIncompleteTab={activeIncompleteTab}
-                  onConvert={openConvertAsNewOrder}
-                  deleteIncomplete={deleteIncomplete}
-                  canDeleteOrders={canDeleteOrders}
-                />
-              ))}
+              {incompleteOrders.map((io) => {
+                const previewItem = buildIncompleteOrderItem(io);
+                const previewDeliveryCharge = (() => {
+                  const value = normalizeNumberValue(io.delivery_charge);
+                  return isSanePrice(value) ? value : 0;
+                })();
+                const previewDiscount = (() => {
+                  const value = normalizeNumberValue(io.discount);
+                  return isSanePrice(value) || value === 0 ? value : 0;
+                })();
+                const rawTotalAmount = normalizeNumberValue(io.total_amount);
+                const previewTotalAmount = previewItem
+                  ? Math.max(0, previewItem.total_price + previewDeliveryCharge - previewDiscount)
+                  : (isSanePrice(rawTotalAmount) || rawTotalAmount === 0 ? rawTotalAmount : 0);
+
+                return (
+                  <IncompleteOrderCard
+                    key={io.id}
+                    io={io}
+                    activeIncompleteTab={activeIncompleteTab}
+                    onConvert={openConvertAsNewOrder}
+                    deleteIncomplete={deleteIncomplete}
+                    canDeleteOrders={canDeleteOrders}
+                    previewItem={previewItem}
+                    previewTotalAmount={previewTotalAmount}
+                  />
+                );
+              })}
             </div>
           )}
         </div>
@@ -5126,8 +5144,14 @@ function CourierStatusModal({
   );
 }
 
-function IncompleteOrderCard({ io, activeIncompleteTab, onConvert, deleteIncomplete, canDeleteOrders }: {
-  io: any; activeIncompleteTab: string; onConvert: (io: any) => void; deleteIncomplete: any; canDeleteOrders: boolean;
+function IncompleteOrderCard({ io, activeIncompleteTab, onConvert, deleteIncomplete, canDeleteOrders, previewItem, previewTotalAmount }: {
+  io: any;
+  activeIncompleteTab: string;
+  onConvert: (io: any) => void;
+  deleteIncomplete: any;
+  canDeleteOrders: boolean;
+  previewItem: { product_name: string; product_code: string; quantity: number; total_price: number; unit_price: number } | null;
+  previewTotalAmount: number;
 }) {
   const [noteInput, setNoteInput] = useState("");
   const [isSavingNote, setIsSavingNote] = useState(false);
@@ -5191,16 +5215,18 @@ function IncompleteOrderCard({ io, activeIncompleteTab, onConvert, deleteIncompl
               <span className="text-foreground font-semibold">{io.customer_address || "N/A"}</span>
             </div>
           </div>
-          {io.product_name && (
-            <div className="text-xs flex items-center gap-1.5">
+          {previewItem && (
+            <div className="text-xs flex items-center gap-1.5 flex-wrap">
               <span className="font-bold text-foreground">প্রোডাক্ট:</span>
-              <span className="text-foreground font-semibold">{io.product_name} {io.product_code ? `(${io.product_code})` : ""} × {io.quantity}</span>
+              <span className="text-foreground font-semibold">
+                {previewItem.product_name} {previewItem.product_code ? `(${previewItem.product_code})` : ""} × {previewItem.quantity}
+              </span>
             </div>
           )}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-muted-foreground">
             <div><span className="font-medium">IP:</span> {io.client_ip || "N/A"}</div>
             <div><span className="font-medium">ডিভাইস:</span> {io.device_info || "N/A"}</div>
-            <div><span className="font-medium">মোট:</span> ৳{io.total_amount}</div>
+            <div><span className="font-medium">মোট:</span> ৳{previewTotalAmount}</div>
           </div>
           <p className="text-xs text-destructive/80 bg-destructive/5 rounded px-2 py-1 inline-block">
             🚫 {io.block_reason}
