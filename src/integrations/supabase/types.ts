@@ -890,6 +890,36 @@ export type Database = {
         }
         Relationships: []
       }
+      live_visitors: {
+        Row: {
+          client_ip: string | null
+          created_at: string
+          customer_phone: string | null
+          id: string
+          last_seen_at: string
+          page_slug: string | null
+          visitor_id: string | null
+        }
+        Insert: {
+          client_ip?: string | null
+          created_at?: string
+          customer_phone?: string | null
+          id?: string
+          last_seen_at?: string
+          page_slug?: string | null
+          visitor_id?: string | null
+        }
+        Update: {
+          client_ip?: string | null
+          created_at?: string
+          customer_phone?: string | null
+          id?: string
+          last_seen_at?: string
+          page_slug?: string | null
+          visitor_id?: string | null
+        }
+        Relationships: []
+      }
       login_activity: {
         Row: {
           browser: string | null
