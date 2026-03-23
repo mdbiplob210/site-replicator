@@ -492,7 +492,7 @@ const AdminUsers = () => {
                             return "n/a";
                           };
 
-                          const hasPanel = user.roles.some(r => ["user", "manager", "moderator"].includes(r));
+                          const hasPanel = user.roles.some(r => ["admin", "user", "manager", "moderator"].includes(r));
 
                           return (
                             <TableRow key={user.id}>
