@@ -17,7 +17,7 @@ import { toast } from "sonner";
 
 import BannerSettings from "@/components/admin/BannerSettings";
 
-type SettingsTab = "general" | "banners" | "buttons" | "buy_domain" | "tracking" | "data_reset";
+type SettingsTab = "general" | "banners" | "buttons" | "buy_domain" | "tracking" | "email" | "data_reset";
 
 const tabs: { id: SettingsTab; label: string; icon: any }[] = [
   { id: "general", label: "General", icon: Home },
@@ -25,6 +25,7 @@ const tabs: { id: SettingsTab; label: string; icon: any }[] = [
   { id: "buttons", label: "Buttons", icon: Sparkles },
   { id: "buy_domain", label: "Buy Domain", icon: Globe },
   { id: "tracking", label: "Tracking", icon: Code },
+  { id: "email", label: "Email", icon: Mail },
   { id: "data_reset", label: "Data Reset", icon: RotateCcw },
 ];
 
