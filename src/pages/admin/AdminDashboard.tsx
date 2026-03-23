@@ -11,6 +11,7 @@ import {
 import { useDashboardData, useSalesTrend } from "@/hooks/useDashboardData";
 import { useAuth } from "@/contexts/AuthContext";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from "recharts";
+import EmployeeDashboard from "@/components/admin/EmployeeDashboard";
 
 const timeFilters = ["Today", "Yesterday", "This Week", "This Month"] as const;
 
@@ -21,6 +22,11 @@ const AdminDashboard = () => {
   const { isLoading, orderStats, shippingStats, profitStats, financeStats, salesDetails } = useDashboardData(activeFilter);
   const { data: salesTrend } = useSalesTrend();
   const { isAdmin, userRoles } = useAuth();
+
+  // Non-admin employees get their own restricted dashboard
+  if (!isAdmin && userRoles.length > 0) {
+    return <EmployeeDashboard />;
+  }
 
   const hasRole = (role: string) => userRoles.includes(role as any);
   const canSeeOrders = isAdmin || hasRole("manager") || hasRole("moderator") || hasRole("user");
