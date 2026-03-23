@@ -45,6 +45,7 @@ import { CourierSettingsView } from "@/components/admin/courier/CourierSettingsV
 import { CourierSuccessRate } from "@/components/admin/courier/CourierSuccessRate";
 import { CourierHistoryBadge } from "@/components/admin/courier/CourierHistoryBadge";
 import { FakeOrderDetection } from "@/components/admin/fraud/FakeOrderDetection";
+import { PathaoBulkSubmitPreview } from "@/components/admin/courier/PathaoBulkSubmitPreview";
 import { useBulkMemoPrint } from "@/components/admin/courier/BulkMemoPrint";
 import { useCourierCities, useCourierZones, useCourierAreas, prefetchCourierLocations } from "@/hooks/useCourierLocations";
 import { ApiKeysView } from "@/components/admin/api/ApiKeysView";
