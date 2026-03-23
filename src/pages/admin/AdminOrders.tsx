@@ -1220,19 +1220,7 @@ const AdminOrders = () => {
     setHoldOrderId(null);
   };
 
-  // Move confirmed orders with courier to in_courier
-  const handleBulkInCourier = () => {
-    const confirmedWithCourier = filteredOrders.filter(o => o.status === "confirmed" && courierByOrderId[o.id]);
-    if (confirmedWithCourier.length === 0) {
-      toast.error("কুরিয়ার সিলেক্ট করা কোনো confirmed অর্ডার নেই!");
-      return;
-    }
-    confirmedWithCourier.forEach(o => {
-      updateStatus.mutate({ id: o.id, status: "in_courier" as OrderStatus });
-      logActivity(o.id, "status_changed", "status", "Confirmed", "In Courier");
-    });
-    toast.success(`${confirmedWithCourier.length}টি অর্ডার In Courier-এ পাঠানো হয়েছে!`);
-  };
+  // handleBulkInCourier removed — in_courier only via courier API
 
   // Bulk status change
   const handleBulkStatusChange = (newStatus: string) => {
