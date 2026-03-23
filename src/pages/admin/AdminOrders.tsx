@@ -5144,8 +5144,14 @@ function CourierStatusModal({
   );
 }
 
-function IncompleteOrderCard({ io, activeIncompleteTab, onConvert, deleteIncomplete, canDeleteOrders }: {
-  io: any; activeIncompleteTab: string; onConvert: (io: any) => void; deleteIncomplete: any; canDeleteOrders: boolean;
+function IncompleteOrderCard({ io, activeIncompleteTab, onConvert, deleteIncomplete, canDeleteOrders, previewItem, previewTotalAmount }: {
+  io: any;
+  activeIncompleteTab: string;
+  onConvert: (io: any) => void;
+  deleteIncomplete: any;
+  canDeleteOrders: boolean;
+  previewItem: { product_name: string; product_code: string; quantity: number; total_price: number; unit_price: number } | null;
+  previewTotalAmount: number;
 }) {
   const [noteInput, setNoteInput] = useState("");
   const [isSavingNote, setIsSavingNote] = useState(false);
