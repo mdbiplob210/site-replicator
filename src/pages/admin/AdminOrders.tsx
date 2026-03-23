@@ -647,7 +647,6 @@ const AdminOrders = () => {
       const { data, error } = await supabase
         .from("orders")
         .select("client_ip, customer_phone")
-        .not("deleted_at", "is", null)
         .is("deleted_at", null);
       if (error) throw error;
       const ips = new Set<string>();
