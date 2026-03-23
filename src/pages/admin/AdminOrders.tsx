@@ -5222,7 +5222,7 @@ function CourierStatusModal({
   );
 }
 
-function IncompleteOrderCard({ io, activeIncompleteTab, onConvert, deleteIncomplete, canDeleteOrders, previewItem, previewTotalAmount }: {
+function IncompleteOrderCard({ io, activeIncompleteTab, onConvert, deleteIncomplete, canDeleteOrders, previewItem, previewTotalAmount, isRepeatCustomer, isLive }: {
   io: any;
   activeIncompleteTab: string;
   onConvert: (io: any) => void;
@@ -5230,6 +5230,8 @@ function IncompleteOrderCard({ io, activeIncompleteTab, onConvert, deleteIncompl
   canDeleteOrders: boolean;
   previewItem: { product_name: string; product_code: string; quantity: number; total_price: number; unit_price: number } | null;
   previewTotalAmount: number;
+  isRepeatCustomer?: boolean;
+  isLive?: boolean;
 }) {
   const [noteInput, setNoteInput] = useState("");
   const [isSavingNote, setIsSavingNote] = useState(false);
