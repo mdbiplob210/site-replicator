@@ -98,8 +98,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const loginTrackedRef = useRef<Set<string>>(new Set());
+  const rolesCheckedRef = useRef<string | null>(null);
 
   useEffect(() => {
+    // Skip auth entirely on public routes for faster load
+    if (isPublicRoute()) {
+      setLoading(false);
+    }
+
     let initialSessionResolved = false;
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -107,15 +113,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          setTimeout(() => checkRolesAndPermissions(session.user.id), 0);
+          // Only check roles if not already checked for this user
+          if (rolesCheckedRef.current !== session.user.id) {
+            rolesCheckedRef.current = session.user.id;
+            setTimeout(() => checkRolesAndPermissions(session.user.id), 0);
+          }
 
           if (event === "SIGNED_IN" && !loginTrackedRef.current.has(session.user.id)) {
             loginTrackedRef.current.add(session.user.id);
-            setTimeout(() => {
+            // Defer login tracking to not block rendering
+            const schedule = window.requestIdleCallback || ((cb: () => void) => setTimeout(cb, 2000));
+            schedule(() => {
               trackLoginActivity(session.user.id, session.user.email || "", "success");
-            }, 100);
+            });
           }
         } else {
+          rolesCheckedRef.current = null;
           setIsAdmin(false);
           setUserRoles([]);
           setUserPermissions([]);
@@ -130,6 +143,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
+        rolesCheckedRef.current = session.user.id;
         checkRolesAndPermissions(session.user.id).finally(() => {
           initialSessionResolved = true;
           setLoading(false);

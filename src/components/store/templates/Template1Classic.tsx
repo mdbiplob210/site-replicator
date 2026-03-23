@@ -1,14 +1,15 @@
 import { Link, useNavigate } from "react-router-dom";
-import { ShoppingBag, Search, Star, Truck, ShieldCheck, RotateCcw, ChevronRight, Minus, Plus, ShoppingCart, Menu, X, Phone, MessageCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ShoppingBag, Search, Star, Truck, ShieldCheck, RotateCcw, ChevronRight, ShoppingCart, Menu, X, Phone, MessageCircle } from "lucide-react";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
 import { OptimizedImage } from "@/components/ui/optimized-image";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, lazy, Suspense } from "react";
 import { useTracking } from "@/hooks/useTracking";
-import { PopupCheckout } from "@/components/store/PopupCheckout";
-import { ExitDiscountBanner } from "@/components/store/ExitDiscountBanner";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import BannerCarousel from "@/components/store/BannerCarousel";
+
+// Lazy load modal components - not needed for initial render
+const PopupCheckout = lazy(() => import("@/components/store/PopupCheckout").then(m => ({ default: m.PopupCheckout })));
+const ExitDiscountBanner = lazy(() => import("@/components/store/ExitDiscountBanner").then(m => ({ default: m.ExitDiscountBanner })));
 
 const Template1Classic = () => {
   const { data: products = [], isLoading } = usePublicProducts();
@@ -463,18 +464,22 @@ const Template1Classic = () => {
         </div>
       </footer>
 
-      {showDiscountBanner && (
-        <ExitDiscountBanner onAccept={handleAcceptDiscount} onReject={handleRejectDiscount} />
-      )}
+      <Suspense fallback={null}>
+        {showDiscountBanner && (
+          <ExitDiscountBanner onAccept={handleAcceptDiscount} onReject={handleRejectDiscount} />
+        )}
 
-      {/* Popup Checkout */}
-      <PopupCheckout
-        item={checkoutItem}
-        open={checkoutOpen}
-        onClose={() => setCheckoutOpen(false)}
-        discount={appliedDiscount}
-        onExitIntent={handleExitIntent}
-      />
+        {/* Popup Checkout */}
+        {checkoutOpen && (
+          <PopupCheckout
+            item={checkoutItem}
+            open={checkoutOpen}
+            onClose={() => setCheckoutOpen(false)}
+            discount={appliedDiscount}
+            onExitIntent={handleExitIntent}
+          />
+        )}
+      </Suspense>
 
     </div>
   );

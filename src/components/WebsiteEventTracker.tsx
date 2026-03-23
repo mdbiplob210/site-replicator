@@ -1,10 +1,9 @@
 import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
-import { trackWebsiteEvent } from "@/hooks/useWebsiteAnalytics";
 
 /**
  * WebsiteEventTracker - Tracks page_view events on every route change.
- * Uses requestIdleCallback to avoid blocking main thread.
+ * Lazy-loads the tracking function and defers execution to avoid blocking.
  */
 export function WebsiteEventTracker() {
   const location = useLocation();
@@ -16,13 +15,15 @@ export function WebsiteEventTracker() {
 
     if (location.pathname !== lastPath.current) {
       lastPath.current = location.pathname;
-      // Use requestIdleCallback to avoid blocking rendering
-      const schedule = window.requestIdleCallback || ((cb: () => void) => setTimeout(cb, 150));
+      // Use requestIdleCallback + dynamic import to fully defer tracking
+      const schedule = window.requestIdleCallback || ((cb: () => void) => setTimeout(cb, 3000));
       schedule(() => {
-        trackWebsiteEvent({
-          event_type: "page_view",
-          page_path: location.pathname,
-          page_title: document.title,
+        import("@/hooks/useWebsiteAnalytics").then(({ trackWebsiteEvent }) => {
+          trackWebsiteEvent({
+            event_type: "page_view",
+            page_path: location.pathname,
+            page_title: document.title,
+          });
         });
       });
     }
