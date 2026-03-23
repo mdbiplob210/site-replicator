@@ -3274,38 +3274,30 @@ const AdminOrders = () => {
                           </span>
                         )}
                         {/* Note icon next to order number */}
-                        {order.notes ? (
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <button className="h-5 w-5 rounded flex items-center justify-center bg-primary/10 hover:bg-primary/20 transition-colors text-primary" title="নোট দেখুন">
+                        <Popover open={inlineNoteOrderId === order.id} onOpenChange={(open) => {
+                          if (open) { setInlineNoteOrderId(order.id); setInlineNoteText(order.notes || ""); }
+                          else { setInlineNoteOrderId(null); setInlineNoteText(""); }
+                        }}>
+                          <PopoverTrigger asChild>
+                            {order.notes ? (
+                              <button className="h-5 w-5 rounded flex items-center justify-center bg-primary/10 hover:bg-primary/20 transition-colors text-primary" title="নোট দেখুন/এডিট">
                                 <MessageSquare className="h-3 w-3" />
                               </button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-64 p-3 rounded-xl text-xs">
-                              <p className="font-semibold text-foreground mb-1 text-[11px]">Staff Note</p>
-                              <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed">{order.notes}</p>
-                            </PopoverContent>
-                          </Popover>
-                        ) : (
-                          <Popover open={inlineNoteOrderId === order.id} onOpenChange={(open) => {
-                            if (open) { setInlineNoteOrderId(order.id); setInlineNoteText(""); }
-                            else { setInlineNoteOrderId(null); setInlineNoteText(""); }
-                          }}>
-                            <PopoverTrigger asChild>
+                            ) : (
                               <button className="h-5 w-5 rounded flex items-center justify-center hover:bg-primary/10 transition-colors text-muted-foreground/40 hover:text-primary" title="নোট যোগ করুন">
                                 <Plus className="h-3 w-3" />
                               </button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-72 p-3 rounded-xl">
-                              <p className="text-xs font-semibold text-foreground mb-2">নোট লিখুন</p>
-                              <Textarea placeholder="এখানে নোট লিখুন..." rows={3} className="rounded-lg text-xs mb-2" value={inlineNoteText} onChange={(e) => setInlineNoteText(e.target.value)} autoFocus />
-                              <div className="flex gap-1.5">
-                                <Button size="sm" className="flex-1 h-7 text-xs rounded-lg" onClick={() => handleInlineNoteSave(order.id, inlineNoteText)}>সেভ করুন</Button>
-                                <Button size="sm" variant="outline" className="h-7 text-xs rounded-lg" onClick={() => { setInlineNoteOrderId(null); setInlineNoteText(""); }}>বাতিল</Button>
-                              </div>
-                            </PopoverContent>
-                          </Popover>
-                        )}
+                            )}
+                          </PopoverTrigger>
+                          <PopoverContent className="w-72 p-3 rounded-xl">
+                            <p className="text-xs font-semibold text-foreground mb-2">নোট লিখুন</p>
+                            <Textarea placeholder="এখানে নোট লিখুন..." rows={3} className="rounded-lg text-xs mb-2" value={inlineNoteText} onChange={(e) => setInlineNoteText(e.target.value)} autoFocus />
+                            <div className="flex gap-1.5">
+                              <Button size="sm" className="flex-1 h-7 text-xs rounded-lg" onClick={() => handleInlineNoteSave(order.id, inlineNoteText)}>সেভ করুন</Button>
+                              <Button size="sm" variant="outline" className="h-7 text-xs rounded-lg" onClick={() => { setInlineNoteOrderId(null); setInlineNoteText(""); }}>বাতিল</Button>
+                            </div>
+                          </PopoverContent>
+                        </Popover>
                       </div>
                       <p className="text-[11px] text-muted-foreground mt-0.5">{format(new Date(order.created_at), "dd MMM yy")}</p>
                       <p className="text-[10px] text-muted-foreground">{format(new Date(order.created_at), "hh:mm a")}</p>
