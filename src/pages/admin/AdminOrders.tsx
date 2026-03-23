@@ -1444,24 +1444,23 @@ const AdminOrders = () => {
   // Bulk order transfer
   const handleBulkTransfer = async (targetUserId: string) => {
     if (selectedOrderIds.size === 0 || !targetUserId) return;
-    let count = 0;
-    for (const orderId of selectedOrderIds) {
-      // Upsert assignment
-      const { data: existing } = await supabase.from("order_assignments").select("id").eq("order_id", orderId).limit(1);
-      if (existing && existing.length > 0) {
-        const { error } = await supabase.from("order_assignments").update({ assigned_to: targetUserId, status: "pending" } as any).eq("id", existing[0].id);
-        if (!error) count++;
-      } else {
-        const { error } = await supabase.from("order_assignments").insert({ order_id: orderId, assigned_to: targetUserId, assigned_by: user?.id || null, status: "pending" } as any);
-        if (!error) count++;
-      }
+    try {
+      const orderIds = Array.from(selectedOrderIds);
+      const { data: count, error } = await supabase.rpc("bulk_transfer_orders" as any, {
+        _order_ids: orderIds,
+        _target_user_id: targetUserId,
+        _assigned_by: user?.id || null,
+      });
+      if (error) throw error;
+      const targetPanel = bulkTransferPanels.find((p: any) => p.user_id === targetUserId);
+      queryClient.invalidateQueries({ queryKey: ["order-assignments-list"] });
+      queryClient.invalidateQueries({ queryKey: ["panel-stats"] });
+      toast.success(`${count || orderIds.length}টি অর্ডার ${targetPanel?.full_name || "এমপ্লয়ি"}-এর কাছে ট্রান্সফার হয়েছে!`);
+      setSelectedOrderIds(new Set());
+      setBulkTransferUserId("");
+    } catch (e: any) {
+      toast.error("বাল্ক ট্রান্সফার ব্যর্থ: " + e.message);
     }
-    const targetPanel = bulkTransferPanels.find((p: any) => p.user_id === targetUserId);
-    queryClient.invalidateQueries({ queryKey: ["order-assignments-list"] });
-    queryClient.invalidateQueries({ queryKey: ["panel-stats"] });
-    toast.success(`${count}টি অর্ডার ${targetPanel?.full_name || "এমপ্লয়ি"}-এর কাছে ট্রান্সফার হয়েছে!`);
-    setSelectedOrderIds(new Set());
-    setBulkTransferUserId("");
   };
 
   const openConvertAsNewOrder = (io: any) => {
@@ -3873,20 +3872,22 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
   });
 
   const handleTransferOrder = async () => {
-    if (!orderId || !transferToUserId) return;
+    if (!orderId) return;
+    const targetId = transferToUserId;
+    if (!targetId) return;
     setIsTransferring(true);
     try {
-      if (currentAssignment) {
-        const { error } = await supabase.from("order_assignments").update({ assigned_to: transferToUserId, status: "pending" } as any).eq("id", currentAssignment.id);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.from("order_assignments").insert({ order_id: orderId, assigned_to: transferToUserId, assigned_by: user?.id || null, status: "pending" } as any);
-        if (error) throw error;
-      }
-      const targetPanel = transferPanels.find((p: any) => p.user_id === transferToUserId);
+      const { error } = await supabase.rpc("bulk_transfer_orders" as any, {
+        _order_ids: [orderId],
+        _target_user_id: targetId,
+        _assigned_by: user?.id || null,
+      });
+      if (error) throw error;
+      const targetPanel = transferPanels.find((p: any) => p.user_id === targetId);
       const fromPanel = transferPanels.find((p: any) => p.user_id === currentAssignment?.assigned_to);
       const transferredBy = user?.email || "Unknown";
-      await logActivity("order_transferred", "assigned_to", fromPanel?.full_name || currentAssignment?.assigned_to || "unassigned", targetPanel?.full_name || transferToUserId, `অর্ডার ট্রান্সফার: ${fromPanel?.full_name || "Unassigned"} → ${targetPanel?.full_name || "Unknown"} (by ${transferredBy})`);
+      // Fire-and-forget activity log to not block UI
+      logActivity("order_transferred", "assigned_to", fromPanel?.full_name || currentAssignment?.assigned_to || "unassigned", targetPanel?.full_name || targetId, `অর্ডার ট্রান্সফার: ${fromPanel?.full_name || "Unassigned"} → ${targetPanel?.full_name || "Unknown"} (by ${transferredBy})`);
       queryClient.invalidateQueries({ queryKey: ["order-assignments"] });
       queryClient.invalidateQueries({ queryKey: ["order-assignments-list"] });
       queryClient.invalidateQueries({ queryKey: ["order-assignment-detail", orderId] });
@@ -4863,36 +4864,32 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                   </Badge>
                 )}
               </div>
-              {!transferOpen ? (
-                <Button variant="outline" size="sm" className="gap-1.5 rounded-xl text-xs w-full" onClick={() => setTransferOpen(true)}>
-                  <ArrowRightLeft className="h-3.5 w-3.5" /> অন্য প্যানেলে ট্রান্সফার করুন
-                </Button>
-              ) : (
-                <div className="space-y-3">
-                  <Select value={transferToUserId || ""} onValueChange={setTransferToUserId}>
-                    <SelectTrigger className="rounded-xl h-10 text-sm">
-                      <SelectValue placeholder="প্যানেল/এমপ্লয়ি সিলেক্ট করুন" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {transferPanels
-                        .filter((p: any) => p.user_id !== currentAssignment?.assigned_to)
-                        .map((p: any) => (
-                          <SelectItem key={p.user_id} value={p.user_id}>
-                            <span className="flex items-center gap-2">
-                              <span className="font-medium">{p.full_name}</span>
-                            </span>
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="flex-1 rounded-xl" onClick={() => { setTransferOpen(false); setTransferToUserId(null); }}>
-                      বাতিল
+              <div className="grid grid-cols-2 gap-2">
+                {transferPanels
+                  .filter((p: any) => p.user_id !== currentAssignment?.assigned_to)
+                  .map((p: any) => (
+                    <Button
+                      key={p.user_id}
+                      variant="outline"
+                      size="sm"
+                      className="rounded-xl text-xs justify-start gap-1.5 h-9 hover:bg-indigo-50 hover:border-indigo-300 dark:hover:bg-indigo-900/20"
+                      disabled={isTransferring}
+                      onClick={() => {
+                        setTransferToUserId(p.user_id);
+                        // Trigger transfer immediately
+                        setTimeout(() => {
+                          setTransferToUserId(p.user_id);
+                        }, 0);
+                      }}
+                    >
+                      <Users className="h-3 w-3 text-indigo-500 shrink-0" />
+                      <span className="truncate">{p.full_name}</span>
                     </Button>
-                    <Button size="sm" className="flex-1 rounded-xl gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white" onClick={handleTransferOrder} disabled={!transferToUserId || isTransferring}>
-                      {isTransferring ? <><Loader2 className="h-3.5 w-3.5 animate-spin" /> ট্রান্সফার হচ্ছে...</> : <><ArrowRightLeft className="h-3.5 w-3.5" /> ট্রান্সফার করুন</>}
-                    </Button>
-                  </div>
+                  ))}
+              </div>
+              {isTransferring && (
+                <div className="text-xs text-muted-foreground flex items-center gap-1.5 justify-center">
+                  <Loader2 className="h-3 w-3 animate-spin" /> ট্রান্সফার হচ্ছে...
                 </div>
               )}
             </div>
