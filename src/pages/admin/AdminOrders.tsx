@@ -3243,7 +3243,7 @@ const AdminOrders = () => {
                   <TableHead className="font-semibold text-xs text-muted-foreground px-3 py-2.5 uppercase tracking-wider text-center">History</TableHead>
                   <TableHead className="font-semibold text-xs text-muted-foreground px-3 py-2.5 uppercase tracking-wider text-center">Status</TableHead>
                   <TableHead className="font-semibold text-xs text-muted-foreground px-3 py-2.5 uppercase tracking-wider text-center">Courier</TableHead>
-                  <TableHead className="font-semibold text-xs text-muted-foreground px-3 py-2.5 uppercase tracking-wider text-center">Note</TableHead>
+                  
                   <TableHead className="font-semibold text-xs text-muted-foreground px-3 py-2.5 uppercase tracking-wider text-center">Source</TableHead>
                   <TableHead className="font-semibold text-xs text-muted-foreground px-3 py-2.5 uppercase tracking-wider text-right">Actions</TableHead>
                 </TableRow>
@@ -3265,14 +3265,39 @@ const AdminOrders = () => {
                       }} />
                     </TableCell>
                     {/* ORDER: number, date, time */}
-                    <TableCell className="px-3 py-3">
+                    <TableCell className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center gap-1.5">
-                        <p className="font-bold text-primary text-sm">#{order.order_number.replace(/^ORD-0*/, '')}</p>
+                        <p className="font-bold text-primary text-sm cursor-pointer" onClick={() => setDetailOrderId(order.id)}>#{order.order_number.replace(/^ORD-0*/, '')}</p>
                         {(order as any).memo_printed && (
                           <span className="inline-flex items-center justify-center h-4 w-4 rounded-full bg-emerald-500/20 text-emerald-600" title="মেমো প্রিন্টেড">
                             <Printer className="h-2.5 w-2.5" />
                           </span>
                         )}
+                        {/* Note icon next to order number */}
+                        <Popover open={inlineNoteOrderId === order.id} onOpenChange={(open) => {
+                          if (open) { setInlineNoteOrderId(order.id); setInlineNoteText(order.notes || ""); }
+                          else { setInlineNoteOrderId(null); setInlineNoteText(""); }
+                        }}>
+                          <PopoverTrigger asChild>
+                            {order.notes ? (
+                              <button className="h-5 w-5 rounded flex items-center justify-center bg-primary/10 hover:bg-primary/20 transition-colors text-primary" title="নোট দেখুন/এডিট">
+                                <MessageSquare className="h-3 w-3" />
+                              </button>
+                            ) : (
+                              <button className="h-5 w-5 rounded flex items-center justify-center hover:bg-primary/10 transition-colors text-muted-foreground/40 hover:text-primary" title="নোট যোগ করুন">
+                                <Plus className="h-3 w-3" />
+                              </button>
+                            )}
+                          </PopoverTrigger>
+                          <PopoverContent className="w-72 p-3 rounded-xl">
+                            <p className="text-xs font-semibold text-foreground mb-2">নোট লিখুন</p>
+                            <Textarea placeholder="এখানে নোট লিখুন..." rows={3} className="rounded-lg text-xs mb-2" value={inlineNoteText} onChange={(e) => setInlineNoteText(e.target.value)} autoFocus />
+                            <div className="flex gap-1.5">
+                              <Button size="sm" className="flex-1 h-7 text-xs rounded-lg" onClick={() => handleInlineNoteSave(order.id, inlineNoteText)}>সেভ করুন</Button>
+                              <Button size="sm" variant="outline" className="h-7 text-xs rounded-lg" onClick={() => { setInlineNoteOrderId(null); setInlineNoteText(""); }}>বাতিল</Button>
+                            </div>
+                          </PopoverContent>
+                        </Popover>
                       </div>
                       <p className="text-[11px] text-muted-foreground mt-0.5">{format(new Date(order.created_at), "dd MMM yy")}</p>
                       <p className="text-[10px] text-muted-foreground">{format(new Date(order.created_at), "hh:mm a")}</p>
@@ -3381,57 +3406,6 @@ const AdminOrders = () => {
                       ) : (
                         <span className="text-xs text-muted-foreground">—</span>
                       )}
-                    </TableCell>
-                    {/* NOTE: inline view + add */}
-                    <TableCell className="px-3 py-3 text-center" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center justify-center gap-1">
-                        {order.notes ? (
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <button className="h-7 w-7 rounded-lg flex items-center justify-center bg-primary/10 hover:bg-primary/20 transition-colors text-primary" title="নোট দেখুন">
-                                <MessageSquare className="h-3.5 w-3.5" />
-                              </button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-64 p-3 rounded-xl text-xs">
-                              <p className="font-semibold text-foreground mb-1 text-[11px]">Staff Note</p>
-                              <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed">{order.notes}</p>
-                            </PopoverContent>
-                          </Popover>
-                        ) : (
-                          <span className="h-7 w-7 rounded-lg flex items-center justify-center bg-muted/40 text-muted-foreground/40">
-                            <MessageSquare className="h-3.5 w-3.5" />
-                          </span>
-                        )}
-                        <Popover open={inlineNoteOrderId === order.id} onOpenChange={(open) => {
-                          if (open) { setInlineNoteOrderId(order.id); setInlineNoteText(order.notes || ""); }
-                          else { setInlineNoteOrderId(null); setInlineNoteText(""); }
-                        }}>
-                          <PopoverTrigger asChild>
-                            <button className="h-7 w-7 rounded-lg flex items-center justify-center bg-primary/10 hover:bg-primary/20 transition-colors text-primary" title="নোট যোগ/এডিট করুন">
-                              <Plus className="h-3.5 w-3.5" />
-                            </button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-72 p-3 rounded-xl">
-                            <p className="text-xs font-semibold text-foreground mb-2">নোট লিখুন</p>
-                            <Textarea
-                              placeholder="এখানে নোট লিখুন..."
-                              rows={3}
-                              className="rounded-lg text-xs mb-2"
-                              value={inlineNoteText}
-                              onChange={(e) => setInlineNoteText(e.target.value)}
-                              autoFocus
-                            />
-                            <div className="flex gap-1.5">
-                              <Button size="sm" className="flex-1 h-7 text-xs rounded-lg" onClick={() => handleInlineNoteSave(order.id, inlineNoteText)}>
-                                সেভ করুন
-                              </Button>
-                              <Button size="sm" variant="outline" className="h-7 text-xs rounded-lg" onClick={() => { setInlineNoteOrderId(null); setInlineNoteText(""); }}>
-                                বাতিল
-                              </Button>
-                            </div>
-                          </PopoverContent>
-                        </Popover>
-                      </div>
                     </TableCell>
                     {/* SOURCE */}
                     <TableCell className="px-3 py-3 text-center">
