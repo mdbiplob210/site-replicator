@@ -2516,7 +2516,7 @@ const AdminOrders = () => {
         {/* Status Tabs - Horizontal scroll on mobile, grid on desktop */}
         <div className="overflow-x-auto -mx-2 px-2 pb-2 scrollbar-hide">
           <div className="flex sm:grid sm:grid-cols-6 gap-1.5 sm:gap-2 min-w-max sm:min-w-0">
-            {statusTabs.map((tab) => (
+            {statusTabs.filter(tab => tab.label !== "Deleted" || canDeleteOrders).map((tab) => (
               <button
                 key={tab.label}
                 onClick={() => { setActiveTab(tab.label); setCancelReasonFilter("all"); queryClient.invalidateQueries({ queryKey: ["orders"] }); queryClient.invalidateQueries({ queryKey: ["order-counts"] }); }}
