@@ -114,6 +114,29 @@ const Login = () => {
     };
   }, []);
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const normalizedEmail = email.trim().toLowerCase();
+      if (!isValidEmail(normalizedEmail)) {
+        toast({ title: "Error", description: "Please enter a valid email", variant: "destructive" });
+        setLoading(false);
+        return;
+      }
+      const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      setResetSent(true);
+      toast({ title: "✅ Email Sent!", description: "পাসওয়ার্ড রিসেট লিংক আপনার ইমেইলে পাঠানো হয়েছে।" });
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
