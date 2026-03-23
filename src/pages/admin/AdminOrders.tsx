@@ -4263,7 +4263,7 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
 
   // Product search for detail dialog
   const { data: allOrderItemsForSales = [] } = useQuery({
-    queryKey: ["all-order-items-filter"],
+    queryKey: ["all-order-items-sales-filter"],
     queryFn: async () => {
       const { data, error } = await supabase.from("order_items").select("order_id, product_name, product_code, product_id");
       if (error) throw error;
