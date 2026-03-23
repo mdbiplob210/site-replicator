@@ -5255,7 +5255,7 @@ function IncompleteOrderCard({ io, activeIncompleteTab, onConvert, deleteIncompl
               <GitMerge className="h-3 w-3" /> অর্ডারে কনভার্ট
             </Button>
           )}
-          {!["Deleted", "Cancelled"].includes(activeIncompleteTab) && (
+          {canDeleteOrders && !["Deleted", "Cancelled"].includes(activeIncompleteTab) && (
             <Button size="sm" variant="ghost" className="text-destructive" onClick={() => {
               if (confirm("ডিলিট করতে চান?")) deleteIncomplete.mutate(io.id);
             }}>
