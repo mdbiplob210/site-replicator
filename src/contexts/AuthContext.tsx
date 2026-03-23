@@ -46,7 +46,7 @@ export const ROLE_DISPLAY_NAMES: Record<AppRole, string> = {
   admin: "Admin",
   moderator: "Moderator",
   manager: "Manager",
-  user: "User",
+  user: "Employee",
   accounting: "Accounting",
   ad_analytics: "Ad Analytics",
 };

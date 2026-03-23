@@ -510,7 +510,7 @@ const AdminUsers = () => {
                                 <SelectContent>
                                   <SelectItem value="admin">Admin</SelectItem>
                                   <SelectItem value="manager">Manager</SelectItem>
-                                  <SelectItem value="user">User</SelectItem>
+                                  <SelectItem value="user">Employee</SelectItem>
                                   <SelectItem value="accounting">Accounting</SelectItem>
                                   <SelectItem value="ad_analytics">Ad Analytics</SelectItem>
                                 </SelectContent>
