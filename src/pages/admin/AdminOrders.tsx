@@ -5262,11 +5262,21 @@ function IncompleteOrderCard({ io, activeIncompleteTab, onConvert, deleteIncompl
   };
 
   return (
-    <Card className="p-4 border-border/40">
+    <Card className={cn("p-4 border-border/40 transition-all", isRepeatCustomer && "border-yellow-400 bg-yellow-50/50 dark:bg-yellow-900/10 ring-1 ring-yellow-300/50")}>
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0 space-y-2">
           <div className="flex items-center gap-2 flex-wrap">
+            {isLive && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500 text-white text-xs font-bold animate-pulse shadow-lg shadow-emerald-500/30">
+                <span className="h-2.5 w-2.5 rounded-full bg-white animate-ping" />
+                <span className="h-2.5 w-2.5 rounded-full bg-white absolute" />
+                🟢 LIVE
+              </span>
+            )}
             <span className="font-bold text-foreground text-sm">{io.customer_name}</span>
+            {isRepeatCustomer && (
+              <Badge className="text-xs bg-yellow-500 text-white border-yellow-600 hover:bg-yellow-600">⚠️ রিপিট কাস্টমার</Badge>
+            )}
             {io.block_reason === "abandoned_form" ? (
               <Badge variant="secondary" className="text-xs bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">📝 Abandoned</Badge>
             ) : (
