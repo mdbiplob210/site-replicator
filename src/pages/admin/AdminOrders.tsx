@@ -3377,24 +3377,9 @@ const AdminOrders = () => {
                           else { setInlineNoteOrderId(null); setInlineNoteText(""); }
                         }}>
                           <PopoverTrigger asChild>
-                            {order.notes ? (
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <button className="h-5 w-5 rounded flex items-center justify-center bg-primary/10 hover:bg-primary/20 transition-colors text-primary">
-                                      <MessageSquare className="h-3 w-3" />
-                                    </button>
-                                  </TooltipTrigger>
-                                  <TooltipContent side="top" className="max-w-[200px] text-xs whitespace-pre-wrap">
-                                    {order.notes}
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            ) : (
-                              <button className="h-5 w-5 rounded flex items-center justify-center hover:bg-primary/10 transition-colors text-muted-foreground/40 hover:text-primary" title="নোট যোগ করুন">
-                                <Plus className="h-3 w-3" />
-                              </button>
-                            )}
+                            <button className={cn("h-5 w-5 rounded flex items-center justify-center transition-colors", order.notes ? "bg-primary/10 hover:bg-primary/20 text-primary" : "hover:bg-primary/10 text-muted-foreground/40 hover:text-primary")} title={order.notes || "নোট যোগ করুন"}>
+                              {order.notes ? <MessageSquare className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
+                            </button>
                           </PopoverTrigger>
                           <PopoverContent className="w-72 p-3 rounded-xl">
                             <p className="text-xs font-semibold text-foreground mb-2">নোট লিখুন</p>
