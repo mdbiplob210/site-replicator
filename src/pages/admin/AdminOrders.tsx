@@ -264,6 +264,7 @@ const AdminOrders = () => {
   const canPrintMemo = userRole === "admin" || hasPrintMemoPermission;
   const canTransferOrders = userRole === "admin" || hasTransferPermission;
   const canDeleteOrders = userRole === "admin" || hasDeletePermission;
+  const isEmployee = userRole !== "admin";
   // Fetch user's display name from profile
   const { data: userDisplayName } = useQuery({
     queryKey: ["user-profile-name", user?.id],
@@ -2580,14 +2581,20 @@ const AdminOrders = () => {
                   <div className="space-y-2">
                     <Label className="text-sm font-semibold flex items-center gap-1.5"><Activity className="h-4 w-4 text-primary" /> অর্ডার স্ট্যাটাস</Label>
                     <div className="grid grid-cols-4 gap-2">
-                      {[
+                      {(isEmployee ? [
+                        { value: "processing", label: "New Order", color: "bg-blue-500", icon: Clock },
+                        { value: "confirmed", label: "Confirmed", color: "bg-emerald-600", icon: CheckCircle2 },
+                        { value: "on_hold", label: "Hold", color: "bg-yellow-500", icon: PauseCircle },
+                        { value: "hand_delivery", label: "Hand Delivery", color: "bg-cyan-500", icon: Hand },
+                        { value: "cancelled", label: "Cancelled", color: "bg-red-500", icon: XCircle },
+                      ] : [
                         { value: "processing", label: "New Order", color: "bg-blue-500", icon: Clock },
                         { value: "confirmed", label: "Confirmed", color: "bg-emerald-600", icon: CheckCircle2 },
                         { value: "in_courier", label: "In Courier", color: "bg-violet-500", icon: Truck },
                         { value: "on_hold", label: "Hold", color: "bg-yellow-500", icon: PauseCircle },
                         { value: "hand_delivery", label: "Hand Delivery", color: "bg-cyan-500", icon: Hand },
                         { value: "cancelled", label: "Cancelled", color: "bg-red-500", icon: XCircle },
-                      ].map((s) => (
+                      ]).map((s) => (
                         <button
                           key={s.value}
                           type="button"
@@ -3485,14 +3492,14 @@ const AdminOrders = () => {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {([...["processing", "confirmed", "in_courier", "on_hold", "hand_delivery", "cancelled"] as const, ...(order.status === "pending_return" ? ["returned" as const] : []), ...(order.status === "in_courier" ? ["pending_return" as const] : [])]).map((s) => (
+                          {(() => { const employeeStatuses = ["processing", "confirmed", "on_hold", "hand_delivery", "cancelled"] as const; const adminStatuses = [...["processing", "confirmed", "in_courier", "on_hold", "hand_delivery", "cancelled"] as const, ...(order.status === "pending_return" ? ["returned" as const] : []), ...(order.status === "in_courier" ? ["pending_return" as const] : [])]; return (isEmployee ? employeeStatuses : adminStatuses).map((s) => (
                             <SelectItem key={s} value={s}>
                               <div className="flex items-center gap-2">
                                 <span className={`h-2 w-2 rounded-full ${getStatusColor(s as OrderStatus)}`} />
                                 {getStatusLabel(s as OrderStatus)}
                               </div>
                             </SelectItem>
-                          ))}
+                          )); })()}
                         </SelectContent>
                       </Select>
                       {order.status === "cancelled" && (order as any).cancel_reason && (
@@ -3707,14 +3714,14 @@ const AdminOrders = () => {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            {([...["processing", "confirmed", "in_courier", "on_hold", "hand_delivery", "cancelled"] as const, ...(order.status === "pending_return" ? ["returned" as const] : []), ...(order.status === "in_courier" ? ["pending_return" as const] : [])]).map((s) => (
+                            {(() => { const employeeStatuses = ["processing", "confirmed", "on_hold", "hand_delivery", "cancelled"] as const; const adminStatuses = [...["processing", "confirmed", "in_courier", "on_hold", "hand_delivery", "cancelled"] as const, ...(order.status === "pending_return" ? ["returned" as const] : []), ...(order.status === "in_courier" ? ["pending_return" as const] : [])]; return (isEmployee ? employeeStatuses : adminStatuses).map((s) => (
                               <SelectItem key={s} value={s}>
                                 <div className="flex items-center gap-2">
                                   <span className={`h-2 w-2 rounded-full ${getStatusColor(s as OrderStatus)}`} />
                                   {getStatusLabel(s as OrderStatus)}
                                 </div>
                               </SelectItem>
-                            ))}
+                            )); })()}
                           </SelectContent>
                         </Select>
                       </div>
