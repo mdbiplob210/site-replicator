@@ -21,7 +21,7 @@ import {
   Ban, Calendar, Smartphone, Laptop, Globe, MapPin
 } from "lucide-react";
 import {
-  useEmployees, useTogglePermission, useTogglePanel,
+  useEmployees, useTogglePermission, useTogglePanel, usePanelStats,
   ALL_PERMISSIONS, type PermissionKey
 } from "@/hooks/useEmployeePermissions";
 import {
@@ -39,6 +39,7 @@ interface UserProfile {
 
 type TabType = "users" | "rules" | "tracking" | "activity";
 type TrackingSubTab = "live" | "performance";
+type RoleFilter = "all" | "admin" | "manager" | "user" | "accounting" | "ad_analytics" | "no_role";
 
 const groupIcons: Record<string, any> = {
   "Orders": ShoppingCart,
@@ -56,6 +57,8 @@ const AdminUsers = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>("users");
   const [trackingSubTab, setTrackingSubTab] = useState<TrackingSubTab>("live");
+  const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
+  const [userSearch, setUserSearch] = useState("");
 
   // Create admin dialog
   const [createOpen, setCreateOpen] = useState(false);
@@ -163,6 +166,7 @@ const AdminUsers = () => {
 
   // Rules tab
   const { data: employees = [], isLoading: employeesLoading } = useEmployees();
+  const { data: panelStats = [] } = usePanelStats();
   const togglePermission = useTogglePermission();
   const togglePanel = useTogglePanel();
   const [expandedUser, setExpandedUser] = useState<string | null>(null);
@@ -396,184 +400,182 @@ const AdminUsers = () => {
         {/* ===== USERS TAB ===== */}
         {activeTab === "users" && (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card className="border-border/40">
-                <CardContent className="p-5 flex items-center gap-4">
-                  <div className="p-2.5 rounded-xl bg-primary/10"><Users className="h-5 w-5 text-primary" /></div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Total Users</p>
-                    <p className="text-2xl font-bold text-foreground">{users.length}</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="border-border/40">
-                <CardContent className="p-5 flex items-center gap-4">
-                  <div className="p-2.5 rounded-xl bg-destructive/10"><Shield className="h-5 w-5 text-destructive" /></div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Admins</p>
-                    <p className="text-2xl font-bold text-foreground">{adminCount}</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="border-border/40">
-                <CardContent className="p-5 flex items-center gap-4">
-                  <div className="p-2.5 rounded-xl bg-amber-500/10"><Users className="h-5 w-5 text-amber-600" /></div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Managers</p>
-                    <p className="text-2xl font-bold text-foreground">{modCount}</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="border-border/40">
-                <CardContent className="p-5 flex items-center gap-4">
-                  <div className="p-2.5 rounded-xl bg-emerald-500/10"><Activity className="h-5 w-5 text-emerald-600" /></div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Online Now</p>
-                    <p className="text-2xl font-bold text-emerald-600">{onlineCount}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
+            {/* Role Filter */}
             <Card className="border-border/40">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-lg font-bold">Team Members</CardTitle>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-4 flex-wrap">
+                  <div>
+                    <p className="text-sm font-bold text-foreground mb-1.5">Role</p>
+                    <Select value={roleFilter} onValueChange={(v) => setRoleFilter(v as RoleFilter)}>
+                      <SelectTrigger className="w-48">
+                        <SelectValue placeholder="All Role" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Role</SelectItem>
+                        <SelectItem value="admin">Admin</SelectItem>
+                        <SelectItem value="manager">Manager</SelectItem>
+                        <SelectItem value="user">Employee</SelectItem>
+                        <SelectItem value="accounting">Accounting</SelectItem>
+                        <SelectItem value="ad_analytics">Ad Analytics</SelectItem>
+                        <SelectItem value="no_role">No Role</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex-1 min-w-[200px]">
+                    <p className="text-sm font-bold text-foreground mb-1.5">Search</p>
+                    <div className="relative">
+                      <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        placeholder="Search by name..."
+                        value={userSearch}
+                        onChange={(e) => setUserSearch(e.target.value)}
+                        className="pl-9"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Admin List */}
+            <Card className="border-border/40">
+              <CardHeader className="flex flex-row items-center justify-between pb-3">
+                <CardTitle className="text-lg font-bold">Admin list</CardTitle>
                 <Button className="gap-2" onClick={() => setCreateOpen(true)}>
                   <UserPlus className="h-4 w-4" />
-                  Add User
+                  + Create new
                 </Button>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-0">
                 {loading ? (
                   <div className="flex justify-center py-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
                 ) : (
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>User</TableHead>
+                        <TableHead className="w-12">SL.</TableHead>
+                        <TableHead>Info</TableHead>
                         <TableHead>Role</TableHead>
-                        <TableHead>Assign Role</TableHead>
+                        <TableHead>Order Distribution</TableHead>
+                        <TableHead>Last Seen</TableHead>
                         <TableHead>Status</TableHead>
-                        <TableHead>Actions</TableHead>
+                        <TableHead className="text-right">Action</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {users.map((user) => {
-                        const presence = getPresenceStatus(user.user_id);
-                        return (
-                          <TableRow key={user.id}>
-                            <TableCell>
-                              <div className="flex items-center gap-3">
-                                <div className="relative">
-                                  <Avatar className="h-9 w-9">
-                                    <AvatarFallback className="bg-secondary text-foreground text-xs font-bold">
-                                      {(user.full_name || "U").charAt(0).toUpperCase()}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <span className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full ring-2 ring-card ${
-                                    presence.status === "online" ? "bg-emerald-500" :
-                                    presence.status === "idle" ? "bg-amber-500" : "bg-muted-foreground/30"
-                                  }`} />
-                                </div>
+                      {(() => {
+                        let filtered = users;
+                        if (roleFilter !== "all") {
+                          if (roleFilter === "no_role") {
+                            filtered = filtered.filter(u => u.roles.length === 0);
+                          } else {
+                            filtered = filtered.filter(u => u.roles.includes(roleFilter));
+                          }
+                        }
+                        if (userSearch.trim()) {
+                          const q = userSearch.toLowerCase();
+                          filtered = filtered.filter(u => (u.full_name || "").toLowerCase().includes(q));
+                        }
+                        return filtered.map((user, index) => {
+                          const presence = getPresenceStatus(user.user_id);
+                          const emp = employees.find(e => e.user_id === user.user_id);
+                          const panelActive = emp?.panel?.is_active || false;
+                          const panelStat = panelStats.find((p: any) => p.user_id === user.user_id);
+                          const pendingCount = panelStat?.pending_orders ?? 0;
+
+                          const getRoleName = () => {
+                            if (user.roles.includes("admin")) return "Admin";
+                            if (user.roles.includes("manager")) return "Manager";
+                            if (user.roles.includes("moderator")) return "Moderator";
+                            if (user.roles.includes("user")) return "Order Employee";
+                            if (user.roles.includes("accounting")) return "Accounting";
+                            if (user.roles.includes("ad_analytics")) return "Ad Analytics";
+                            return "n/a";
+                          };
+
+                          const hasPanel = user.roles.some(r => ["user", "manager", "moderator"].includes(r));
+
+                          return (
+                            <TableRow key={user.id}>
+                              <TableCell className="font-medium text-primary">{index + 1}</TableCell>
+                              <TableCell>
                                 <div>
-                                  <p className="text-sm font-semibold text-foreground">{user.full_name || "Unknown"}</p>
-                                  <p className="text-[11px] text-muted-foreground font-mono">{user.user_id.substring(0, 8)}...</p>
+                                  <p className="text-sm font-semibold text-primary">{user.full_name || "Unknown"}</p>
+                                  <p className="text-xs text-muted-foreground font-mono">{user.user_id.substring(0, 12)}...</p>
                                 </div>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                            {user.roles.length > 0 ? (
-                                <div className="flex gap-1 flex-wrap">
-                                  {user.roles.map((role) => {
-                                    const displayName = role === "moderator" ? "Moderator" : role === "manager" ? "Manager" : role === "accounting" ? "Accounting" : role === "ad_analytics" ? "Ad Analytics" : role === "admin" ? "Admin" : "User";
-                                    return (
-                                      <Badge
-                                        key={role}
-                                        variant={role === "admin" ? "default" : "secondary"}
-                                        className="text-xs cursor-pointer"
-                                        onClick={() => removeRole(user.user_id, role)}
-                                      >
-                                        {displayName} ✕
-                                      </Badge>
-                                    );
-                                  })}
-                                </div>
-                              ) : (
-                                <span className="text-muted-foreground text-sm">No role</span>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              <Select onValueChange={(val) => assignRole(user.user_id, val)}>
-                                <SelectTrigger className="w-36 h-8">
-                                  <SelectValue placeholder="Assign role..." />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="admin">Admin</SelectItem>
-                                  <SelectItem value="manager">Manager</SelectItem>
-                                  <SelectItem value="user">Employee</SelectItem>
-                                  <SelectItem value="accounting">Accounting</SelectItem>
-                                  <SelectItem value="ad_analytics">Ad Analytics</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant="secondary" className={`gap-1 ${
-                                presence.status === "online" ? "bg-emerald-500/10 text-emerald-600 border-emerald-200/50" :
-                                presence.status === "idle" ? "bg-amber-500/10 text-amber-600 border-amber-200/50" :
-                                "bg-muted text-muted-foreground"
-                              }`}>
-                                <span className={`h-2 w-2 rounded-full ${
-                                  presence.status === "online" ? "bg-emerald-500" :
-                                  presence.status === "idle" ? "bg-amber-500" : "bg-muted-foreground/50"
-                                }`} />
-                                {presence.label}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-1">
-                                <button
-                                  onClick={() => openEditDialog(user.user_id, user.full_name)}
-                                  className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
-                                  title="Edit User"
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </button>
-                                <button
-                                  onClick={() => { setActiveTab("tracking"); setTrackingSubTab("live"); }}
-                                  className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
-                                  title="Track"
-                                >
-                                  <Eye className="h-4 w-4" />
-                                </button>
-                                <button
-                                  onClick={() => { setActiveTab("rules"); setExpandedUser(user.user_id); }}
-                                  className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
-                                  title="Edit Rules"
-                                >
-                                  <Shield className="h-4 w-4" />
-                                </button>
-                                <button
-                                  onClick={() => handleDisableUser(user.user_id, user.full_name)}
-                                  className="p-1.5 rounded-lg hover:bg-amber-500/10 text-muted-foreground hover:text-amber-600 transition-colors"
-                                  title="Disable/Enable User"
-                                >
-                                  <Ban className="h-4 w-4" />
-                                </button>
-                                <button
-                                  onClick={() => handleDeleteUser(user.user_id, user.full_name)}
-                                  className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
-                                  title="Delete User"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
+                              </TableCell>
+                              <TableCell>
+                                <span className="text-sm text-foreground">{getRoleName()}</span>
+                              </TableCell>
+                              <TableCell>
+                                {hasPanel ? (
+                                  <div className="space-y-1">
+                                    <Switch
+                                      checked={panelActive}
+                                      onCheckedChange={(checked) =>
+                                        handleTogglePanel(user.user_id, user.full_name || "Panel", checked)
+                                      }
+                                    />
+                                    <p className="text-xs text-muted-foreground">
+                                      <strong>Pending:</strong> {pendingCount}
+                                    </p>
+                                  </div>
+                                ) : (
+                                  <span className="text-sm text-muted-foreground">n/a</span>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                <span className="text-sm text-muted-foreground">
+                                  {presence.lastSeen
+                                    ? formatDistanceToNow(presence.lastSeen, { addSuffix: true })
+                                    : presence.status === "online" ? "Active" : "n/a"
+                                  }
+                                </span>
+                              </TableCell>
+                              <TableCell>
+                                <Switch
+                                  checked={presence.status === "online" || presence.status === "idle" || user.roles.length > 0}
+                                  disabled
+                                />
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <Select onValueChange={(val) => {
+                                  if (val === "edit") openEditDialog(user.user_id, user.full_name);
+                                  if (val === "rules") { setActiveTab("rules"); setExpandedUser(user.user_id); }
+                                  if (val === "track") { setActiveTab("tracking"); setTrackingSubTab("live"); }
+                                  if (val === "disable") handleDisableUser(user.user_id, user.full_name);
+                                  if (val === "delete") handleDeleteUser(user.user_id, user.full_name);
+                                  if (val.startsWith("role_")) assignRole(user.user_id, val.replace("role_", ""));
+                                  if (val.startsWith("remove_")) removeRole(user.user_id, val.replace("remove_", ""));
+                                }}>
+                                  <SelectTrigger className="w-24 h-8 bg-primary text-primary-foreground border-0 hover:bg-primary/90">
+                                    <SelectValue placeholder="Action" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="edit">✏️ Edit</SelectItem>
+                                    <SelectItem value="rules">🔒 Rules</SelectItem>
+                                    <SelectItem value="track">👁️ Track</SelectItem>
+                                    <SelectItem value="disable">🚫 Disable</SelectItem>
+                                    <SelectItem value="delete">🗑️ Delete</SelectItem>
+                                    <SelectItem value="role_admin">→ Make Admin</SelectItem>
+                                    <SelectItem value="role_manager">→ Make Manager</SelectItem>
+                                    <SelectItem value="role_user">→ Make Employee</SelectItem>
+                                    {user.roles.map(r => (
+                                      <SelectItem key={`remove_${r}`} value={`remove_${r}`}>✕ Remove {r}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        });
+                      })()}
                     </TableBody>
                   </Table>
                 )}
+                <div className="p-3 text-xs text-muted-foreground border-t border-border/30">
+                  Showing {users.length} entries
+                </div>
               </CardContent>
             </Card>
           </>
