@@ -3957,6 +3957,18 @@ const AdminOrders = () => {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Pathao Bulk Submit Preview */}
+        <PathaoBulkSubmitPreview
+          open={pathaoBulkPreviewOpen}
+          onOpenChange={setPathaoBulkPreviewOpen}
+          orders={pathaoBulkOrders}
+          providerId={pathaoBulkCourierId}
+          providerName="Pathao"
+          onSubmit={handlePathaoBulkSubmitWithLocations}
+          isSubmitting={bulkCourierSubmitting}
+          progress={bulkCourierProgress}
+        />
       </div>
     </AdminLayout>
   );
