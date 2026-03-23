@@ -141,7 +141,7 @@ export function PathaoBulkSubmitPreview({ open, onOpenChange, orders, providerId
 
       newStates[order.id] = {
         cityId, zoneId: "", areaId: "",
-        weight: "0.2",
+        weight: "0.5",
         note: order.courier_note || order.notes || "",
         cityName, zoneName: "",
       };
