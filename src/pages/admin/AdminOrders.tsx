@@ -3561,13 +3561,13 @@ const AdminOrders = () => {
                       )}
                     </TableCell>
                     {/* ACTIONS */}
-                    <TableCell className="px-3 py-3 text-right" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center justify-end gap-1">
+                    <TableCell className="px-2 py-2 text-right" onClick={(e) => e.stopPropagation()}>
+                      <div className="grid grid-cols-3 gap-0.5 w-fit ml-auto">
                         {/* Activity Log Popover */}
                         <Popover>
                           <PopoverTrigger asChild>
-                            <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-secondary/60 transition-colors text-muted-foreground hover:text-foreground" title="Activity Log">
-                              <History className="h-3.5 w-3.5" />
+                            <button className="h-6 w-6 rounded-md flex items-center justify-center hover:bg-secondary/60 transition-colors text-muted-foreground hover:text-foreground" title="Activity Log">
+                              <History className="h-3 w-3" />
                             </button>
                           </PopoverTrigger>
                           <PopoverContent className="w-80 p-0 rounded-xl max-h-[300px] overflow-y-auto" side="left">
@@ -3575,14 +3575,14 @@ const AdminOrders = () => {
                           </PopoverContent>
                         </Popover>
                         {/* Edit */}
-                        <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-secondary/60 transition-colors text-muted-foreground hover:text-foreground" title="Edit" onClick={() => setDetailOrderId(order.id)}>
-                          <Pencil className="h-3.5 w-3.5" />
+                        <button className="h-6 w-6 rounded-md flex items-center justify-center hover:bg-secondary/60 transition-colors text-muted-foreground hover:text-foreground" title="Edit" onClick={() => setDetailOrderId(order.id)}>
+                          <Pencil className="h-3 w-3" />
                         </button>
                         {/* Block/Unblock Customer Toggle */}
                         {(() => {
                           const isBlocked = !!order.customer_phone && blockedPhoneSet.has(order.customer_phone);
                           return (
-                            <button className={`h-7 w-7 rounded-lg flex items-center justify-center transition-colors ${isBlocked ? "bg-red-500/15 text-red-500 hover:bg-red-500/25" : "hover:bg-red-500/10 text-muted-foreground hover:text-red-500"}`} title={isBlocked ? "Unblock Customer" : "Block Customer"} onClick={async () => {
+                            <button className={`h-6 w-6 rounded-md flex items-center justify-center transition-colors ${isBlocked ? "bg-red-500/15 text-red-500 hover:bg-red-500/25" : "hover:bg-red-500/10 text-muted-foreground hover:text-red-500"}`} title={isBlocked ? "Unblock Customer" : "Block Customer"} onClick={async () => {
                               if (!order.customer_phone) { toast.error("ফোন নম্বর নেই!"); return; }
                               if (isBlocked) {
                                 if (!confirm(`${order.customer_phone} আনব্লক করবেন?`)) return;
@@ -3599,12 +3599,12 @@ const AdminOrders = () => {
                               }
                               refetchBlockedPhones();
                             }}>
-                              <Ban className="h-3.5 w-3.5" />
+                              <Ban className="h-3 w-3" />
                             </button>
                           );
                         })()}
                         {/* Bill Print */}
-                        <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground" title="বিল প্রিন্ট" onClick={async () => {
+                        <button className="h-6 w-6 rounded-md flex items-center justify-center hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground" title="বিল প্রিন্ট" onClick={async () => {
                           const { data: items } = await supabase.from("order_items").select("product_name, product_code, quantity, unit_price, total_price").eq("order_id", order.id);
                           const printW = window.open("", "_blank");
                           if (!printW) return;
@@ -3656,17 +3656,17 @@ const AdminOrders = () => {
                             printW.onafterprint = () => printW.close();
                           }, 300);
                         }}>
-                          <FileText className="h-3.5 w-3.5" />
+                          <FileText className="h-3 w-3" />
                         </button>
                         {/* Delete / Restore */}
                         {canDeleteOrders && (
                         isDeletedTab ? (
-                          <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-emerald-500/10 transition-colors text-muted-foreground hover:text-emerald-600" title="Restore" onClick={() => { if (confirm("অর্ডারটি পুনরুদ্ধার করবেন?")) restoreOrder.mutate(order.id); }}>
-                            <RotateCcw className="h-3.5 w-3.5" />
+                          <button className="h-6 w-6 rounded-md flex items-center justify-center hover:bg-emerald-500/10 transition-colors text-muted-foreground hover:text-emerald-600" title="Restore" onClick={() => { if (confirm("অর্ডারটি পুনরুদ্ধার করবেন?")) restoreOrder.mutate(order.id); }}>
+                            <RotateCcw className="h-3 w-3" />
                           </button>
                         ) : (
-                          <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-destructive/10 transition-colors text-muted-foreground hover:text-destructive" title="Delete" onClick={() => { if (confirm("অর্ডারটি ডিলিট করবেন?")) deleteOrder.mutate(order.id); }}>
-                            <Trash2 className="h-3.5 w-3.5" />
+                          <button className="h-6 w-6 rounded-md flex items-center justify-center hover:bg-destructive/10 transition-colors text-muted-foreground hover:text-destructive" title="Delete" onClick={() => { if (confirm("অর্ডারটি ডিলিট করবেন?")) deleteOrder.mutate(order.id); }}>
+                            <Trash2 className="h-3 w-3" />
                           </button>
                         )
                         )}
