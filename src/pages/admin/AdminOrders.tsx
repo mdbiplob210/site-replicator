@@ -1493,24 +1493,6 @@ const AdminOrders = () => {
           setBulkCourierProgress(prev => ({ ...prev, done: prev.done + 1 }));
         }
       }
-    } else {
-      for (const orderId of orderIds) {
-        try {
-          const { error: courierError } = await supabase.from("courier_orders").upsert({
-            order_id: orderId,
-            courier_provider_id: courierId,
-            courier_status: "submitted",
-          } as any, { onConflict: "order_id" });
-          if (courierError) throw courierError;
-          const { error: statusError } = await supabase.from("orders").update({ status: "in_courier" as any }).eq("id", orderId);
-          if (statusError) throw statusError;
-          logActivity(orderId, "status_changed", "status", "", "In Courier", "বাল্ক কুরিয়ার সাবমিট");
-          successCount++;
-        } catch {
-          failCount++;
-        }
-        setBulkCourierProgress(prev => ({ ...prev, done: prev.done + 1 }));
-      }
     }
     
     queryClient.invalidateQueries({ queryKey: ["orders"] });
