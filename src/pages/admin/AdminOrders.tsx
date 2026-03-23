@@ -640,6 +640,55 @@ const AdminOrders = () => {
   const deleteIncomplete = useDeleteIncompleteOrder();
   const convertIncomplete = useConvertIncompleteToOrder();
 
+  // Repeat detection: get IPs and phones from existing orders
+  const { data: existingOrderFingerprints } = useQuery({
+    queryKey: ["order-fingerprints-for-repeat"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("orders")
+        .select("client_ip, customer_phone")
+        .is("deleted_at", null);
+      if (error) throw error;
+      const ips = new Set<string>();
+      const phones = new Set<string>();
+      (data || []).forEach((o: any) => {
+        if (o.client_ip) ips.add(o.client_ip);
+        if (o.customer_phone) phones.add(o.customer_phone.replace(/\D/g, ""));
+      });
+      return { ips, phones };
+    },
+    staleTime: 60 * 1000,
+    enabled: currentView === "incomplete",
+  });
+
+  // Live visitors tracking
+  const { data: liveVisitors = [] } = useQuery({
+    queryKey: ["live-visitors"],
+    queryFn: async () => {
+      const cutoff = new Date(Date.now() - 60 * 1000).toISOString();
+      const { data, error } = await supabase
+        .from("live_visitors" as any)
+        .select("*")
+        .gte("last_seen_at", cutoff);
+      if (error) throw error;
+      return data as any[];
+    },
+    refetchInterval: 15000,
+    enabled: currentView === "incomplete",
+  });
+
+  // Subscribe to live_visitors realtime changes
+  useEffect(() => {
+    if (currentView !== "incomplete") return;
+    const channel = supabase
+      .channel("live-visitors-changes")
+      .on("postgres_changes", { event: "*", schema: "public", table: "live_visitors" }, () => {
+        queryClient.invalidateQueries({ queryKey: ["live-visitors"] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [currentView, queryClient]);
+
   // Filter products for search — show top selling (by order count) when empty
   const filteredProducts = useMemo(() => {
     // Build a sales count map from allOrderItems
@@ -1808,6 +1857,21 @@ const AdminOrders = () => {
                   ? Math.max(0, previewItem.total_price + previewDeliveryCharge - previewDiscount)
                   : (isSanePrice(rawTotalAmount) || rawTotalAmount === 0 ? rawTotalAmount : 0);
 
+                const isRepeatCustomer = (() => {
+                  if (!existingOrderFingerprints) return false;
+                  if (io.client_ip && existingOrderFingerprints.ips.has(io.client_ip)) return true;
+                  if (io.customer_phone) {
+                    const cleanPhone = io.customer_phone.replace(/\D/g, "");
+                    if (cleanPhone && existingOrderFingerprints.phones.has(cleanPhone)) return true;
+                  }
+                  return false;
+                })();
+
+                const isLive = liveVisitors.some((v: any) =>
+                  (io.client_ip && v.client_ip === io.client_ip) ||
+                  (io.customer_phone && v.customer_phone && v.customer_phone.replace(/\D/g, "") === io.customer_phone.replace(/\D/g, ""))
+                );
+
                 return (
                   <IncompleteOrderCard
                     key={io.id}
@@ -1818,6 +1882,8 @@ const AdminOrders = () => {
                     canDeleteOrders={canDeleteOrders}
                     previewItem={previewItem}
                     previewTotalAmount={previewTotalAmount}
+                    isRepeatCustomer={isRepeatCustomer}
+                    isLive={isLive}
                   />
                 );
               })}
@@ -1927,6 +1993,17 @@ const AdminOrders = () => {
                       </div>
                     </div>
                   )}
+                </div>
+                {/* Editable Delivery & Discount */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><Truck className="h-3 w-3" /> ডেলিভারি চার্জ</Label>
+                    <Input type="number" value={deliveryCharge} onChange={(e) => setDeliveryCharge(Number(e.target.value) || 0)} className="rounded-xl" min={0} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><ArrowRightLeft className="h-3 w-3" /> ডিসকাউন্ট</Label>
+                    <Input type="number" value={discount} onChange={(e) => setDiscount(Number(e.target.value) || 0)} className="rounded-xl" min={0} />
+                  </div>
                 </div>
                 <div className="bg-primary/5 border border-primary/20 rounded-xl p-4">
                   <div className="flex justify-between text-sm"><span>প্রোডাক্ট মূল্য</span><span>৳{itemsTotal.toLocaleString()}</span></div>
@@ -5144,7 +5221,7 @@ function CourierStatusModal({
   );
 }
 
-function IncompleteOrderCard({ io, activeIncompleteTab, onConvert, deleteIncomplete, canDeleteOrders, previewItem, previewTotalAmount }: {
+function IncompleteOrderCard({ io, activeIncompleteTab, onConvert, deleteIncomplete, canDeleteOrders, previewItem, previewTotalAmount, isRepeatCustomer, isLive }: {
   io: any;
   activeIncompleteTab: string;
   onConvert: (io: any) => void;
@@ -5152,6 +5229,8 @@ function IncompleteOrderCard({ io, activeIncompleteTab, onConvert, deleteIncompl
   canDeleteOrders: boolean;
   previewItem: { product_name: string; product_code: string; quantity: number; total_price: number; unit_price: number } | null;
   previewTotalAmount: number;
+  isRepeatCustomer?: boolean;
+  isLive?: boolean;
 }) {
   const [noteInput, setNoteInput] = useState("");
   const [isSavingNote, setIsSavingNote] = useState(false);
@@ -5182,11 +5261,21 @@ function IncompleteOrderCard({ io, activeIncompleteTab, onConvert, deleteIncompl
   };
 
   return (
-    <Card className="p-4 border-border/40">
+    <Card className={cn("p-4 border-border/40 transition-all", isRepeatCustomer && "border-yellow-400 bg-yellow-50/50 dark:bg-yellow-900/10 ring-1 ring-yellow-300/50")}>
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0 space-y-2">
           <div className="flex items-center gap-2 flex-wrap">
+            {isLive && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500 text-white text-xs font-bold animate-pulse shadow-lg shadow-emerald-500/30">
+                <span className="h-2.5 w-2.5 rounded-full bg-white animate-ping" />
+                <span className="h-2.5 w-2.5 rounded-full bg-white absolute" />
+                🟢 LIVE
+              </span>
+            )}
             <span className="font-bold text-foreground text-sm">{io.customer_name}</span>
+            {isRepeatCustomer && (
+              <Badge className="text-xs bg-yellow-500 text-white border-yellow-600 hover:bg-yellow-600">⚠️ রিপিট কাস্টমার</Badge>
+            )}
             {io.block_reason === "abandoned_form" ? (
               <Badge variant="secondary" className="text-xs bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">📝 Abandoned</Badge>
             ) : (
