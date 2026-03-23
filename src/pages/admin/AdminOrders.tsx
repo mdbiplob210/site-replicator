@@ -3415,57 +3415,6 @@ const AdminOrders = () => {
                         <span className="text-xs text-muted-foreground">—</span>
                       )}
                     </TableCell>
-                    {/* NOTE: inline view + add */}
-                    <TableCell className="px-3 py-3 text-center" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center justify-center gap-1">
-                        {order.notes ? (
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <button className="h-7 w-7 rounded-lg flex items-center justify-center bg-primary/10 hover:bg-primary/20 transition-colors text-primary" title="নোট দেখুন">
-                                <MessageSquare className="h-3.5 w-3.5" />
-                              </button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-64 p-3 rounded-xl text-xs">
-                              <p className="font-semibold text-foreground mb-1 text-[11px]">Staff Note</p>
-                              <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed">{order.notes}</p>
-                            </PopoverContent>
-                          </Popover>
-                        ) : (
-                          <span className="h-7 w-7 rounded-lg flex items-center justify-center bg-muted/40 text-muted-foreground/40">
-                            <MessageSquare className="h-3.5 w-3.5" />
-                          </span>
-                        )}
-                        <Popover open={inlineNoteOrderId === order.id} onOpenChange={(open) => {
-                          if (open) { setInlineNoteOrderId(order.id); setInlineNoteText(order.notes || ""); }
-                          else { setInlineNoteOrderId(null); setInlineNoteText(""); }
-                        }}>
-                          <PopoverTrigger asChild>
-                            <button className="h-7 w-7 rounded-lg flex items-center justify-center bg-primary/10 hover:bg-primary/20 transition-colors text-primary" title="নোট যোগ/এডিট করুন">
-                              <Plus className="h-3.5 w-3.5" />
-                            </button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-72 p-3 rounded-xl">
-                            <p className="text-xs font-semibold text-foreground mb-2">নোট লিখুন</p>
-                            <Textarea
-                              placeholder="এখানে নোট লিখুন..."
-                              rows={3}
-                              className="rounded-lg text-xs mb-2"
-                              value={inlineNoteText}
-                              onChange={(e) => setInlineNoteText(e.target.value)}
-                              autoFocus
-                            />
-                            <div className="flex gap-1.5">
-                              <Button size="sm" className="flex-1 h-7 text-xs rounded-lg" onClick={() => handleInlineNoteSave(order.id, inlineNoteText)}>
-                                সেভ করুন
-                              </Button>
-                              <Button size="sm" variant="outline" className="h-7 text-xs rounded-lg" onClick={() => { setInlineNoteOrderId(null); setInlineNoteText(""); }}>
-                                বাতিল
-                              </Button>
-                            </div>
-                          </PopoverContent>
-                        </Popover>
-                      </div>
-                    </TableCell>
                     {/* SOURCE */}
                     <TableCell className="px-3 py-3 text-center">
                       {order.source ? (
