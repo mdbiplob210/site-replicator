@@ -57,6 +57,8 @@ const AdminUsers = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>("users");
   const [trackingSubTab, setTrackingSubTab] = useState<TrackingSubTab>("live");
+  const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
+  const [userSearch, setUserSearch] = useState("");
 
   // Create admin dialog
   const [createOpen, setCreateOpen] = useState(false);
