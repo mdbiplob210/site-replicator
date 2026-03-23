@@ -458,7 +458,6 @@ const AdminUsers = () => {
                         <TableHead>Role</TableHead>
                         <TableHead>Order Distribution</TableHead>
                         <TableHead>Last Seen</TableHead>
-                        <TableHead>Status</TableHead>
                         <TableHead className="text-right">Action</TableHead>
                       </TableRow>
                     </TableHeader>
