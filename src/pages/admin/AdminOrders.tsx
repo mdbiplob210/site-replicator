@@ -1100,6 +1100,28 @@ const AdminOrders = () => {
 
   const itemsTotal = orderItems.reduce((sum, i) => sum + Number(i.total_price || 0), 0);
 
+  // Auto-fill customer name & address from existing orders when phone number is entered
+  const lastAutoFillPhoneRef = useRef<string | null>(null);
+  const autoFillFromPhone = useCallback(async (phone: string) => {
+    const clean = phone.replace(/\D/g, "");
+    if (clean.length < 11 || clean === lastAutoFillPhoneRef.current) return;
+    lastAutoFillPhoneRef.current = clean;
+    try {
+      const { data } = await supabase
+        .from("orders")
+        .select("customer_name, customer_address")
+        .eq("customer_phone", clean)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (data) {
+        if (data.customer_name && !customerName) setCustomerName(data.customer_name);
+        if (data.customer_address && !customerAddress) setCustomerAddress(data.customer_address);
+        toast.info("পূর্বের অর্ডার থেকে তথ্য লোড হয়েছে");
+      }
+    } catch (e) { console.error("Auto-fill error:", e); }
+  }, [customerName, customerAddress]);
+
   const logActivity = async (orderId: string, action: string, fieldName?: string, oldValue?: string, newValue?: string, details?: string) => {
     try {
       await supabase.from("order_activity_logs" as any).insert({
