@@ -3377,9 +3377,9 @@ const AdminOrders = () => {
                 <TableRow className="bg-muted/30 border-b border-border/40">
                   <TableHead className="font-semibold text-xs text-muted-foreground px-3 py-2.5 w-[30px]">
                     <Checkbox 
-                      checked={selectedOrderIds.size === filteredOrders.length && filteredOrders.length > 0}
+                      checked={selectedOrderIds.size === paginatedOrders.length && paginatedOrders.length > 0}
                       onCheckedChange={(checked) => {
-                        if (checked) setSelectedOrderIds(new Set(filteredOrders.map(o => o.id)));
+                        if (checked) setSelectedOrderIds(new Set(paginatedOrders.map(o => o.id)));
                         else setSelectedOrderIds(new Set());
                       }}
                     />
