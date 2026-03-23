@@ -66,7 +66,12 @@ export const CourierSuccessRate = memo(function CourierSuccessRate({ phone }: Pr
   const allCouriers = data?.status === "success" && data.data
     ? Object.entries(data.data).filter(([k]) => k !== "summary" && ALLOWED_COURIERS.has(k)).map(([k, v]: [string, any]) => ({ k, ...v }))
     : [];
-  const summary = data?.data?.summary;
+  // Calculate summary from filtered couriers only (not API summary which includes all couriers)
+  const summary = allCouriers.length > 0 ? {
+    total_parcel: allCouriers.reduce((s: number, c: any) => s + (Number(c.total_parcel) || 0), 0),
+    success_parcel: allCouriers.reduce((s: number, c: any) => s + (Number(c.success_parcel) || 0), 0),
+    cancelled_parcel: allCouriers.reduce((s: number, c: any) => s + (Number(c.cancelled_parcel) || 0), 0),
+  } : null;
 
   return (
     <div className="rounded-lg border border-border/30 overflow-hidden">
