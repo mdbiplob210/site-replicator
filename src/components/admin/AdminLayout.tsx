@@ -364,7 +364,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
           <main className="flex-1 p-6 overflow-auto scrollbar-thin">
             {children}
           </main>
-          <DesignPreviewPanel />
+          
         </div>
       </div>
     </SidebarProvider>
