@@ -517,7 +517,7 @@ const AdminUsers = () => {
                                       }
                                     />
                                     <p className="text-xs text-muted-foreground">
-                                      <strong>Pending:</strong> {panelActive ? "Active" : "0"}
+                                      <strong>Pending:</strong> {pendingCount}
                                     </p>
                                   </div>
                                 ) : (
