@@ -251,8 +251,18 @@ const AdminOrders = () => {
     },
     enabled: !!user?.id && userRole !== undefined,
   });
+  const { data: hasDeletePermission = false } = useQuery({
+    queryKey: ["has-delete-orders", user?.id],
+    queryFn: async () => {
+      if (userRole === "admin") return true;
+      const { data } = await supabase.from("employee_permissions").select("id").eq("user_id", user!.id).eq("permission", "delete_orders" as any).limit(1);
+      return (data && data.length > 0) || false;
+    },
+    enabled: !!user?.id && userRole !== undefined,
+  });
   const canPrintMemo = userRole === "admin" || hasPrintMemoPermission;
   const canTransferOrders = userRole === "admin" || hasTransferPermission;
+  const canDeleteOrders = userRole === "admin" || hasDeletePermission;
   const { data: orders = [], isLoading } = useOrders(statusFilter, orderDateFilter, customDateFrom, customDateTo, isDeletedTab);
   const { data: counts = {} } = useOrderCounts(orderDateFilter, customDateFrom, customDateTo, assignedOrderIds);
   const createOrder = useCreateOrder();
