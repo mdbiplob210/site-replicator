@@ -157,16 +157,18 @@ export function useOrderItems(orderId: string | null) {
   });
 }
 
-export function useOrderCounts(dateFilter: OrderDateFilter = "all", customFrom?: Date, customTo?: Date) {
+export function useOrderCounts(dateFilter: OrderDateFilter = "all", customFrom?: Date, customTo?: Date, assignedOrderIds?: Set<string> | null) {
+  // When assignedOrderIds is a Set, we filter by it; null means admin (show all); undefined means still loading
+  const assignedKey = assignedOrderIds instanceof Set ? Array.from(assignedOrderIds).sort().join(",") : assignedOrderIds === null ? "admin" : "loading";
   return useQuery({
-    queryKey: ["order-counts", dateFilter, customFrom?.toISOString(), customTo?.toISOString()],
+    queryKey: ["order-counts", dateFilter, customFrom?.toISOString(), customTo?.toISOString(), assignedKey],
     queryFn: async () => {
       const range = getOrderDateRange(dateFilter, customFrom, customTo);
-      let allData: { status: OrderStatus; deleted_at: string | null }[] = [];
+      let allData: { status: OrderStatus; deleted_at: string | null; id: string }[] = [];
       let from = 0;
       const pageSize = 1000;
       while (true) {
-        let query = supabase.from("orders").select("status, deleted_at").range(from, from + pageSize - 1);
+        let query = supabase.from("orders").select("status, deleted_at, id").range(from, from + pageSize - 1);
         if (range.from) query = query.gte("created_at", range.from);
         if (range.to) query = query.lt("created_at", range.to);
 
@@ -176,6 +178,11 @@ export function useOrderCounts(dateFilter: OrderDateFilter = "all", customFrom?:
         allData = allData.concat(data as any[]);
         if (data.length < pageSize) break;
         from += pageSize;
+      }
+
+      // Filter by assigned orders for employees
+      if (assignedOrderIds instanceof Set) {
+        allData = allData.filter(o => assignedOrderIds.has(o.id));
       }
 
       // Count deleted separately
