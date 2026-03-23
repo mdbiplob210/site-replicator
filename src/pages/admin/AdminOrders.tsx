@@ -1448,9 +1448,10 @@ const AdminOrders = () => {
     if (selectedOrderIds.size === 0 || !courierId) return;
     const total = selectedOrderIds.size;
     
-    // Check if this is Pathao — open preview dialog instead of immediate submit
+    // Open preview dialog for Pathao, Steadfast, Redx
     const provider = courierProviders?.find((p: any) => p.id === courierId);
-    if (provider?.slug === "pathao") {
+    const previewSlugs = ["pathao", "steadfast", "redx"];
+    if (provider && previewSlugs.includes(provider.slug)) {
       const selectedOrders = orders.filter((o: any) => selectedOrderIds.has(o.id)).map((o: any) => ({
         id: o.id,
         order_number: o.order_number,
@@ -3982,7 +3983,7 @@ const AdminOrders = () => {
           }}
           orders={pathaoBulkOrders}
           providerId={pathaoBulkCourierId}
-          providerName="Pathao"
+          providerName={courierProviders?.find((p: any) => p.id === pathaoBulkCourierId)?.name || "Courier"}
           onSubmit={handlePathaoBulkSubmitWithLocations}
           isSubmitting={bulkCourierSubmitting}
           progress={bulkCourierProgress}
