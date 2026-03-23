@@ -251,8 +251,18 @@ const AdminOrders = () => {
     },
     enabled: !!user?.id && userRole !== undefined,
   });
+  const { data: hasDeletePermission = false } = useQuery({
+    queryKey: ["has-delete-orders", user?.id],
+    queryFn: async () => {
+      if (userRole === "admin") return true;
+      const { data } = await supabase.from("employee_permissions").select("id").eq("user_id", user!.id).eq("permission", "delete_orders" as any).limit(1);
+      return (data && data.length > 0) || false;
+    },
+    enabled: !!user?.id && userRole !== undefined,
+  });
   const canPrintMemo = userRole === "admin" || hasPrintMemoPermission;
   const canTransferOrders = userRole === "admin" || hasTransferPermission;
+  const canDeleteOrders = userRole === "admin" || hasDeletePermission;
   const { data: orders = [], isLoading } = useOrders(statusFilter, orderDateFilter, customDateFrom, customDateTo, isDeletedTab);
   const { data: counts = {} } = useOrderCounts(orderDateFilter, customDateFrom, customDateTo, assignedOrderIds);
   const createOrder = useCreateOrder();
@@ -2506,7 +2516,7 @@ const AdminOrders = () => {
         {/* Status Tabs - Horizontal scroll on mobile, grid on desktop */}
         <div className="overflow-x-auto -mx-2 px-2 pb-2 scrollbar-hide">
           <div className="flex sm:grid sm:grid-cols-6 gap-1.5 sm:gap-2 min-w-max sm:min-w-0">
-            {statusTabs.map((tab) => (
+            {statusTabs.filter(tab => tab.label !== "Deleted" || canDeleteOrders).map((tab) => (
               <button
                 key={tab.label}
                 onClick={() => { setActiveTab(tab.label); setCancelReasonFilter("all"); queryClient.invalidateQueries({ queryKey: ["orders"] }); queryClient.invalidateQueries({ queryKey: ["order-counts"] }); }}
@@ -2721,9 +2731,11 @@ const AdminOrders = () => {
             </Button>
             )}
             {/* Bulk Delete / Restore */}
+            {canDeleteOrders && (
             <Button variant={isDeletedTab ? "outline" : "destructive"} size="sm" className="gap-1.5 h-8 rounded-xl text-xs" onClick={handleBulkDelete}>
               {isDeletedTab ? <><RotateCcw className="h-3.5 w-3.5" /> পুনরুদ্ধার</> : <><Trash2 className="h-3.5 w-3.5" /> ডিলিট</>}
             </Button>
+            )}
             <Button variant="ghost" size="sm" className="h-8 rounded-xl text-xs text-muted-foreground ml-auto" onClick={() => setSelectedOrderIds(new Set())}>
               <X className="h-3.5 w-3.5 mr-1" /> বাতিল
             </Button>
@@ -3521,7 +3533,8 @@ const AdminOrders = () => {
                           <FileText className="h-3.5 w-3.5" />
                         </button>
                         {/* Delete / Restore */}
-                        {isDeletedTab ? (
+                        {canDeleteOrders && (
+                        isDeletedTab ? (
                           <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-emerald-500/10 transition-colors text-muted-foreground hover:text-emerald-600" title="Restore" onClick={() => { if (confirm("অর্ডারটি পুনরুদ্ধার করবেন?")) restoreOrder.mutate(order.id); }}>
                             <RotateCcw className="h-3.5 w-3.5" />
                           </button>
@@ -3529,6 +3542,7 @@ const AdminOrders = () => {
                           <button className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-destructive/10 transition-colors text-muted-foreground hover:text-destructive" title="Delete" onClick={() => { if (confirm("অর্ডারটি ডিলিট করবেন?")) deleteOrder.mutate(order.id); }}>
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>
+                        )
                         )}
                       </div>
                     </TableCell>
