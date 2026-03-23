@@ -465,7 +465,8 @@ const AdminOrders = () => {
   const [selectedCityId, setSelectedCityId] = useState<string | null>(null);
   const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null);
   const [selectedAreaId, setSelectedAreaId] = useState<string | null>(null);
-  const { user, session, loading: authLoading } = useAuth();
+  const { user, session, loading: authLoading, isAdmin } = useAuth();
+  const { data: assignedOrderIds } = useEmployeeAssignedOrderIds();
   const isDeletedTab = activeTab === "Deleted";
   const statusFilter = isDeletedTab ? null : getStatusFromTab(activeTab);
   const queryClient = useQueryClient();
