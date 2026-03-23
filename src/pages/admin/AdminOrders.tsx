@@ -5127,7 +5127,6 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                           <SelectItem key={p.user_id} value={p.user_id}>
                             <span className="flex items-center gap-2">
                               <span className="font-medium">{p.full_name}</span>
-                              <span className="text-xs text-muted-foreground">({p.panel_name})</span>
                             </span>
                           </SelectItem>
                         ))}
