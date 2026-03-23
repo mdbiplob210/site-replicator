@@ -1510,6 +1510,7 @@ const AdminOrders = () => {
               city_id: Number(orderLoc.cityId) || 1,
               zone_id: Number(orderLoc.zoneId) || 1,
               area_id: orderLoc.areaId ? Number(orderLoc.areaId) : undefined,
+              weight: orderLoc.weight || 0.2,
             }),
           });
           const result = await resp.json();
