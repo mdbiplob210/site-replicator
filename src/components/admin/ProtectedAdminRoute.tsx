@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth, type PermissionKey } from "@/contexts/AuthContext";
+import { getDefaultAdminRoute } from "@/lib/adminAccess";
 
 interface ProtectedAdminRouteProps {
   children: ReactNode;
@@ -8,7 +9,8 @@ interface ProtectedAdminRouteProps {
 }
 
 export function ProtectedAdminRoute({ children, requiredPermissions }: ProtectedAdminRouteProps) {
-  const { user, userRoles, isAdmin, hasPermission, loading } = useAuth();
+  const location = useLocation();
+  const { user, userRoles, userPermissions, isAdmin, hasPermission, loading } = useAuth();
 
   if (loading) {
     return (
@@ -19,18 +21,28 @@ export function ProtectedAdminRoute({ children, requiredPermissions }: Protected
   }
 
   if (!user) return <Navigate to="/login" replace />;
-  
-  // Must have at least one role to access admin panel
+
   if (userRoles.length === 0) return <Navigate to="/" replace />;
 
-  // Admin always has full access
   if (isAdmin) return <>{children}</>;
 
-  // If specific permissions are required, check them
   if (requiredPermissions && requiredPermissions.length > 0) {
-    const hasAccess = requiredPermissions.some(perm => hasPermission(perm));
+    const hasAccess = requiredPermissions.some((perm) => hasPermission(perm));
+
     if (!hasAccess) {
-      return <Navigate to="/admin" replace />;
+      const fallbackRoute = getDefaultAdminRoute({
+        isAdmin,
+        userRoles,
+        userPermissions,
+      });
+
+      if (!fallbackRoute) {
+        return <Navigate to="/" replace />;
+      }
+
+      if (location.pathname !== fallbackRoute) {
+        return <Navigate to={fallbackRoute} replace />;
+      }
     }
   }
 
