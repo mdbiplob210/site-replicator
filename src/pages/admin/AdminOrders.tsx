@@ -1100,6 +1100,28 @@ const AdminOrders = () => {
 
   const itemsTotal = orderItems.reduce((sum, i) => sum + Number(i.total_price || 0), 0);
 
+  // Auto-fill customer name & address from existing orders when phone number is entered
+  const lastAutoFillPhoneRef = useRef<string | null>(null);
+  const autoFillFromPhone = useCallback(async (phone: string) => {
+    const clean = phone.replace(/\D/g, "");
+    if (clean.length < 11 || clean === lastAutoFillPhoneRef.current) return;
+    lastAutoFillPhoneRef.current = clean;
+    try {
+      const { data } = await supabase
+        .from("orders")
+        .select("customer_name, customer_address")
+        .eq("customer_phone", clean)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (data) {
+        if (data.customer_name && !customerName) setCustomerName(data.customer_name);
+        if (data.customer_address && !customerAddress) setCustomerAddress(data.customer_address);
+        toast.info("পূর্বের অর্ডার থেকে তথ্য লোড হয়েছে");
+      }
+    } catch (e) { console.error("Auto-fill error:", e); }
+  }, [customerName, customerAddress]);
+
   const logActivity = async (orderId: string, action: string, fieldName?: string, oldValue?: string, newValue?: string, details?: string) => {
     try {
       await supabase.from("order_activity_logs" as any).insert({
@@ -1914,7 +1936,7 @@ const AdminOrders = () => {
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-xs font-semibold text-muted-foreground">ফোন নম্বর</Label>
-                    <Input value={customerPhone} onChange={(e) => { setCustomerPhone(e.target.value); const clean = e.target.value.replace(/\D/g, ""); if (clean.length >= 11) { fetchCourierCheck(clean); setSearchedPhone(e.target.value); } }} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); setSearchedPhone(customerPhone); } }} placeholder="01XXXXXXXXX — Enter চাপুন সার্চ করতে" className="rounded-xl" />
+                    <Input value={customerPhone} onChange={(e) => { setCustomerPhone(e.target.value); const clean = e.target.value.replace(/\D/g, ""); if (clean.length >= 11) { fetchCourierCheck(clean); setSearchedPhone(e.target.value); autoFillFromPhone(clean); } }} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); setSearchedPhone(customerPhone); } }} placeholder="01XXXXXXXXX — Enter চাপুন সার্চ করতে" className="rounded-xl" />
                   </div>
                 </div>
                 <div className="space-y-1.5">
@@ -2231,7 +2253,7 @@ const AdminOrders = () => {
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs font-semibold text-muted-foreground">ফোন নম্বর</Label>
-                        <Input placeholder="01XXXXXXXXX — Enter চাপুন সার্চ করতে" className="rounded-xl h-10 text-sm" value={customerPhone} onChange={(e) => { setCustomerPhone(e.target.value); const clean = e.target.value.replace(/\D/g, ""); if (clean.length >= 11) { fetchCourierCheck(clean); setSearchedPhone(e.target.value); } }} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); setSearchedPhone(customerPhone); } }} />
+                        <Input placeholder="01XXXXXXXXX — Enter চাপুন সার্চ করতে" className="rounded-xl h-10 text-sm" value={customerPhone} onChange={(e) => { setCustomerPhone(e.target.value); const clean = e.target.value.replace(/\D/g, ""); if (clean.length >= 11) { fetchCourierCheck(clean); setSearchedPhone(e.target.value); autoFillFromPhone(clean); } }} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); setSearchedPhone(customerPhone); } }} />
                       </div>
                     </div>
                   </div>
@@ -3377,24 +3399,9 @@ const AdminOrders = () => {
                           else { setInlineNoteOrderId(null); setInlineNoteText(""); }
                         }}>
                           <PopoverTrigger asChild>
-                            {order.notes ? (
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <button className="h-5 w-5 rounded flex items-center justify-center bg-primary/10 hover:bg-primary/20 transition-colors text-primary">
-                                      <MessageSquare className="h-3 w-3" />
-                                    </button>
-                                  </TooltipTrigger>
-                                  <TooltipContent side="top" className="max-w-[200px] text-xs whitespace-pre-wrap">
-                                    {order.notes}
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            ) : (
-                              <button className="h-5 w-5 rounded flex items-center justify-center hover:bg-primary/10 transition-colors text-muted-foreground/40 hover:text-primary" title="নোট যোগ করুন">
-                                <Plus className="h-3 w-3" />
-                              </button>
-                            )}
+                            <button className={cn("h-5 w-5 rounded flex items-center justify-center transition-colors", order.notes ? "bg-primary/10 hover:bg-primary/20 text-primary" : "hover:bg-primary/10 text-muted-foreground/40 hover:text-primary")} title={order.notes || "নোট যোগ করুন"}>
+                              {order.notes ? <MessageSquare className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
+                            </button>
                           </PopoverTrigger>
                           <PopoverContent className="w-72 p-3 rounded-xl">
                             <p className="text-xs font-semibold text-foreground mb-2">নোট লিখুন</p>
