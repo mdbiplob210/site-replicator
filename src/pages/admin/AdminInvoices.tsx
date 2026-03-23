@@ -16,10 +16,12 @@ function InvoicePrint({ invoice, courierName }: { invoice: Invoice; courierName:
     if (!content) return;
     const printWindow = window.open("", "_blank");
     if (!printWindow) return;
+    const favicon = document.querySelector('link[rel="icon"]')?.getAttribute('href') || '';
     printWindow.document.write(`
       <html>
       <head>
         <title>Invoice - ${invoice.invoice_number}</title>
+        ${favicon ? `<link rel="icon" href="${favicon}">` : ''}
         <style>
           * { margin: 0; padding: 0; box-sizing: border-box; }
           body { font-family: 'Segoe UI', sans-serif; padding: 24px; font-size: 14px; color: #111; }
