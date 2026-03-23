@@ -3784,6 +3784,20 @@ const AdminOrders = () => {
             <p className="text-muted-foreground">
               Showing {((currentPage - 1) * perPage) + 1} to {Math.min(currentPage * perPage, filteredOrders.length)} of {filteredOrders.length} entries
             </p>
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground">Show</span>
+              <Select value={String(perPage)} onValueChange={(v) => setPerPage(Number(v))}>
+                <SelectTrigger className="w-[80px] h-8 rounded-lg text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {[10, 25, 50, 100, 500, 1000].map(n => (
+                    <SelectItem key={n} value={String(n)}>{n}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <span className="text-muted-foreground">entries</span>
+            </div>
             <div className="flex items-center gap-1">
               <Button variant="outline" size="sm" className="h-8 rounded-lg" disabled={currentPage <= 1} onClick={() => setCurrentPage(p => p - 1)}>Previous</Button>
               {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
