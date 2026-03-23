@@ -128,6 +128,7 @@ const App = () => {
             <Route path="/store/checkout" element={<CheckoutPage />} />
             <Route path="/store/order-success" element={<OrderSuccess />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/admin" element={<Admin requiredPermissions={["view_dashboard"]}><AdminDashboard /></Admin>} />
             <Route path="/admin/orders" element={<Admin requiredPermissions={["view_orders"]}><AdminOrders /></Admin>} />
             <Route path="/admin/orders/backfill-items" element={<Admin requiredPermissions={["edit_orders"]}><AdminBackfillOrderItems /></Admin>} />
