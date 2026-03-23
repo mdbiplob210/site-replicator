@@ -23,6 +23,8 @@ const Login = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [forgotMode, setForgotMode] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animFrameRef = useRef<number>();
   const navigate = useNavigate();
@@ -111,6 +113,29 @@ const Login = () => {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const normalizedEmail = email.trim().toLowerCase();
+      if (!isValidEmail(normalizedEmail)) {
+        toast({ title: "Error", description: "Please enter a valid email", variant: "destructive" });
+        setLoading(false);
+        return;
+      }
+      const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      setResetSent(true);
+      toast({ title: "✅ Email Sent!", description: "পাসওয়ার্ড রিসেট লিংক আপনার ইমেইলে পাঠানো হয়েছে।" });
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -214,11 +239,70 @@ const Login = () => {
             <h1 className="text-xl sm:text-2xl font-bold" style={{ color: "#fff" }}>QUICK SHOP BD</h1>
             <p className="mt-1 flex items-center justify-center gap-1 text-xs sm:text-sm" style={{ color: "rgba(78,205,196,0.8)" }}>
               <Star className="h-3 w-3" />
-              {isSignUp ? "Create a new account" : "Welcome back"}
+              {forgotMode ? "Reset your password" : isSignUp ? "Create a new account" : "Welcome back"}
               <Star className="h-3 w-3" />
             </p>
           </div>
 
+          {forgotMode ? (
+            resetSent ? (
+              <div className="text-center py-4">
+                <p className="text-sm mb-3" style={{ color: "rgba(78,205,196,0.9)" }}>
+                  ✅ পাসওয়ার্ড রিসেট লিংক আপনার ইমেইলে পাঠানো হয়েছে। ইমেইল চেক করুন।
+                </p>
+                <button
+                  onClick={() => { setForgotMode(false); setResetSent(false); }}
+                  className="text-sm font-medium hover:underline"
+                  style={{ color: "#4ECDC4" }}
+                >
+                  ← Back to Login
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleForgotPassword} className="space-y-3 sm:space-y-4">
+                <div>
+                  <Input
+                    type="email"
+                    placeholder="📧 Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="border-0 text-sm font-bold"
+                    style={{
+                      background: "rgba(255,255,255,0.08)",
+                      color: "#000",
+                      borderBottom: "2px solid rgba(78,205,196,0.3)",
+                      borderRadius: "12px",
+                    }}
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  className="w-full border-0 text-base font-bold"
+                  disabled={loading}
+                  style={{
+                    background: "linear-gradient(135deg, #4ECDC4, #45B7D1, #96CEB4)",
+                    color: "#0a0a1e",
+                    borderRadius: "12px",
+                    boxShadow: "0 0 20px rgba(78,205,196,0.3)",
+                  }}
+                >
+                  {loading ? "Sending..." : "Send Reset Link"}
+                </Button>
+                <p className="text-center">
+                  <button
+                    type="button"
+                    onClick={() => setForgotMode(false)}
+                    className="text-sm font-medium hover:underline"
+                    style={{ color: "#4ECDC4" }}
+                  >
+                    ← Back to Login
+                  </button>
+                </p>
+              </form>
+            )
+          ) : (
+          <>
           <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
             {isSignUp && (
               <div>
@@ -303,13 +387,27 @@ const Login = () => {
             </Button>
           </form>
 
+          {!isSignUp && (
+            <p className="mt-2 text-right">
+              <button
+                type="button"
+                onClick={() => setForgotMode(true)}
+                className="text-xs font-medium hover:underline"
+                style={{ color: "rgba(78,205,196,0.7)" }}
+              >
+                Forgot Password?
+              </button>
+            </p>
+          )}
 
-          <p className="mt-5 text-center text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>
+          <p className="mt-3 text-center text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>
             {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
             <button onClick={() => setIsSignUp(!isSignUp)} className="font-medium hover:underline" style={{ color: "#4ECDC4" }}>
               {isSignUp ? "Sign In" : "Register"}
             </button>
           </p>
+          </>
+          )}
 
           <p className="mt-4 text-center text-[10px]" style={{ color: "rgba(255,255,255,0.25)" }}>
             © 2026 QUICK SHOP BD — Secure & Encrypted
