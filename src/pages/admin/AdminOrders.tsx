@@ -4094,7 +4094,7 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
     if (!orderId) return;
     try {
       await supabase.from("order_activity_logs" as any).insert({
-        order_id: orderId, user_id: user?.id || null, user_name: user?.email || "System",
+        order_id: orderId, user_id: user?.id || null, user_name: userDisplayName || user?.email || "System",
         action, field_name: fieldName || null, old_value: oldValue || null, new_value: newValue || null, details: details || null,
       } as any);
     } catch (e) { console.error(e); }
