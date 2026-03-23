@@ -82,6 +82,7 @@ export default function AdminWebsiteSettings() {
         {activeTab === "buttons" && <ButtonsTab />}
         {activeTab === "buy_domain" && <BuyDomainTab />}
         {activeTab === "tracking" && <TrackingTab />}
+        {activeTab === "email" && <EmailTab />}
         {activeTab === "data_reset" && <DataResetTab />}
       </div>
     </AdminLayout>
