@@ -1162,6 +1162,10 @@ const AdminOrders = () => {
 
   // Handle status change with cancel/hold interception
   const handleStatusChange = (orderId: string, newStatus: string, oldStatus: string) => {
+    if (newStatus === "in_courier") {
+      toast.error("In Courier স্ট্যাটাস শুধুমাত্র কুরিয়ার API-এর মাধ্যমে সম্ভব!");
+      return;
+    }
     if (newStatus === "cancelled") {
       setCancelOrderId(orderId);
       setCancelReason("");
