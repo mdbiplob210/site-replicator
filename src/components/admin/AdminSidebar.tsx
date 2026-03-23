@@ -59,7 +59,7 @@ const bottomMenuItems = [
   { title: "Meta Ads", url: "/admin/meta-ads", icon: Megaphone },
   { title: "Automation", url: "/admin/automation", icon: Zap },
   { title: "Backup", url: "/admin/backup", icon: Database },
-  { title: "Employee", url: "/admin/users", icon: Users },
+  { title: "Users", url: "/admin/users", icon: Users },
   { title: "Support", url: "/admin/support", icon: HeadphonesIcon },
   { title: "Coming Soon", url: "/admin/coming-soon", icon: Sparkles },
   { title: "Plan", url: "/admin/plan", icon: CreditCard },
