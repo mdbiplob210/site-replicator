@@ -524,18 +524,18 @@ const AdminUsers = () => {
                                 )}
                               </TableCell>
                               <TableCell>
-                                <span className="text-sm text-muted-foreground">
-                                  {presence.lastSeen
-                                    ? formatDistanceToNow(presence.lastSeen, { addSuffix: true })
-                                    : presence.status === "online" ? "Active" : "n/a"
-                                  }
-                                </span>
-                              </TableCell>
-                              <TableCell>
-                                <Switch
-                                  checked={presence.status === "online" || presence.status === "idle" || user.roles.length > 0}
-                                  disabled
-                                />
+                                {presence.status === "online" ? (
+                                  <span className="inline-flex items-center gap-1.5 text-sm font-medium text-emerald-600">
+                                    <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                                    Online
+                                  </span>
+                                ) : presence.lastSeen ? (
+                                  <span className="text-sm text-muted-foreground">
+                                    {formatDistanceToNow(presence.lastSeen, { addSuffix: true })}
+                                  </span>
+                                ) : (
+                                  <span className="text-sm text-muted-foreground">n/a</span>
+                                )}
                               </TableCell>
                               <TableCell className="text-right">
                                 <Select onValueChange={(val) => {
