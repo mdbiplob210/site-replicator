@@ -68,11 +68,11 @@ export function generatePOSMemo(d: MemoData): string {
 // ─── TEMPLATE STYLES ──────────────────────────────────────────
 const COMMON_BASE = `
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Segoe UI', 'Noto Sans Bengali', sans-serif; font-size: 11px; color: #1a1a2e; }
-  .barcode { font-family: 'Libre Barcode 39', monospace; font-size: 32px; line-height: 1; }
+  body { font-family: 'Segoe UI', 'Noto Sans Bengali', sans-serif; font-size: 10px; line-height: 1.15; color: #1a1a2e; }
+  .barcode { font-family: 'Libre Barcode 39', monospace; font-size: 26px; line-height: 0.95; }
   .items-table { width: 100%; border-collapse: collapse; }
-  .items-table th { font-size: 8px; font-weight: 700; padding: 3px 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .items-table td { padding: 3px 6px; font-size: 10px; }
+  .items-table th { font-size: 7px; font-weight: 700; padding: 2px 5px; text-transform: uppercase; letter-spacing: 0.45px; }
+  .items-table td { padding: 2px 5px; font-size: 9px; }
   @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
 `;
 
@@ -105,40 +105,40 @@ const STYLE_1 = `${COMMON_BASE}
   .total-row.grand-total { font-size: 13px; font-weight: 900; color: #0f172a; margin-top: 2px; padding-top: 3px; border-top: 2px solid #1e293b; }
   .courier-note { background: linear-gradient(135deg, #fef3c7, #fffbeb); border-left: 3px solid #f59e0b; padding: 4px 10px; margin: 4px 10px; border-radius: 0 4px 4px 0; font-size: 9px; color: #92400e; }
   .staff-note { padding: 3px 12px; font-size: 9px; color: #64748b; background: #f8fafc; }
-  .memo-footer { text-align: center; padding: 5px 12px; font-size: 8px; color: #94a3b8; border-top: 1px solid #f1f5f9; background: #fafbfc; }
+  .memo-footer { text-align: center; padding: 5px 12px; font-size: 8px; color: #94a3b8; border-top: 1px solid #f1f5f9; background: #fafbfc; margin-top: auto; flex-shrink: 0; }
   .memo-footer .thank-you { font-weight: 700; color: #64748b; font-size: 9px; }
 `;
 
 // Template 2: Clean Professional (blue)
 const STYLE_2 = `${COMMON_BASE}
-  .memo { max-width: 400px; margin: auto; background: #fff; border-radius: 6px; overflow: hidden; border: 2px solid #dbeafe; }
-  .memo-header { background: linear-gradient(135deg, #1d4ed8, #2563eb); color: #fff; padding: 6px 10px; }
-  .shop-name { font-size: 12px; font-weight: 800; }
-  .shop-logo { height: 18px; width: auto; }
-  .order-num { font-size: 14px; font-weight: 900; color: #bfdbfe; }
-  .order-date { font-size: 8px; color: #93c5fd; }
-  .courier-section { background: #eff6ff; border-bottom: 1px solid #bfdbfe; padding: 5px 10px; }
-  .courier-badge { background: #2563eb; color: white; padding: 2px 7px; border-radius: 4px; font-size: 8px; font-weight: 700; }
-  .courier-status { font-size: 7px; font-weight: 700; text-transform: uppercase; color: #1d4ed8; background: #dbeafe; padding: 1px 5px; border-radius: 4px; }
-  .tracking-box { background: #fff; border: 1px solid #bfdbfe; border-radius: 4px; padding: 3px 8px; text-align: center; margin-top: 3px; }
-  .tracking-label { font-size: 6px; color: #6b7280; text-transform: uppercase; letter-spacing: 2px; }
-  .tracking-id { font-size: 12px; font-weight: 900; letter-spacing: 2px; color: #1e3a5f; }
-  .section { padding: 5px 10px; border-bottom: 1px solid #f1f5f9; }
-  .section-title { font-size: 7px; font-weight: 700; color: #2563eb; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 2px; }
-  .info-grid { display: grid; grid-template-columns: 50px 1fr; gap: 1px 6px; }
-  .info-label { font-size: 8px; font-weight: 600; color: #64748b; }
-  .info-value { font-size: 9px; font-weight: 500; color: #1e293b; }
-  .phone-num { font-family: monospace; font-weight: 700; color: #1d4ed8; font-size: 9px; }
-  .items-table th { color: #2563eb; border-bottom: 2px solid #dbeafe; background: #eff6ff; }
+  .memo { max-width: 400px; margin: auto; background: #fff; border-radius: 6px; overflow: hidden; border: 2px solid #dbeafe; min-height: 0; }
+  .memo-header { background: linear-gradient(135deg, #1d4ed8, #2563eb); color: #fff; padding: 5px 8px; }
+  .shop-name { font-size: 11px; font-weight: 800; }
+  .shop-logo { height: 16px; width: auto; }
+  .order-num { font-size: 13px; font-weight: 900; color: #bfdbfe; }
+  .order-date { font-size: 7px; color: #93c5fd; }
+  .courier-section { background: #eff6ff; border-bottom: 1px solid #bfdbfe; padding: 4px 8px; }
+  .courier-badge { background: #2563eb; color: white; padding: 2px 6px; border-radius: 4px; font-size: 7px; font-weight: 700; }
+  .courier-status { font-size: 6px; font-weight: 700; text-transform: uppercase; color: #1d4ed8; background: #dbeafe; padding: 1px 4px; border-radius: 4px; }
+  .tracking-box { background: #fff; border: 1px solid #bfdbfe; border-radius: 4px; padding: 2px 6px; text-align: center; margin-top: 2px; }
+  .tracking-label { font-size: 6px; color: #6b7280; text-transform: uppercase; letter-spacing: 1.6px; }
+  .tracking-id { font-size: 11px; font-weight: 900; letter-spacing: 2px; color: #1e3a5f; }
+  .section { padding: 4px 8px; border-bottom: 1px solid #f1f5f9; }
+  .section-title { font-size: 6px; font-weight: 700; color: #2563eb; text-transform: uppercase; letter-spacing: 1.4px; margin-bottom: 2px; }
+  .info-grid { display: grid; grid-template-columns: 46px 1fr; gap: 1px 5px; }
+  .info-label { font-size: 7px; font-weight: 600; color: #64748b; }
+  .info-value { font-size: 8px; font-weight: 500; color: #1e293b; }
+  .phone-num { font-family: monospace; font-weight: 700; color: #1d4ed8; font-size: 8px; }
+  .items-table th { color: #2563eb; border-bottom: 1px solid #dbeafe; background: #eff6ff; }
   .items-table td { border-bottom: 1px solid #f1f5f9; }
-  .totals-section { padding: 3px 10px; background: #f8fafc; }
-  .total-row { display: flex; justify-content: space-between; padding: 1px 0; font-size: 9px; color: #475569; }
+  .totals-section { padding: 2px 8px; background: #f8fafc; }
+  .total-row { display: flex; justify-content: space-between; padding: 0; font-size: 8px; color: #475569; }
   .total-row.discount { color: #ef4444; }
-  .total-row.grand-total { font-size: 12px; font-weight: 900; color: #1d4ed8; margin-top: 1px; padding-top: 2px; border-top: 2px solid #2563eb; }
-  .courier-note { background: #fef3c7; border-left: 3px solid #f59e0b; padding: 3px 8px; margin: 3px 8px; border-radius: 0 4px 4px 0; font-size: 8px; color: #92400e; }
-  .staff-note { padding: 3px 10px; font-size: 8px; color: #64748b; background: #f8fafc; }
-  .memo-footer { text-align: center; padding: 4px 10px; font-size: 7px; color: #94a3b8; border-top: 2px solid #dbeafe; background: #eff6ff; }
-  .memo-footer .thank-you { font-weight: 700; color: #2563eb; font-size: 8px; }
+  .total-row.grand-total { font-size: 10px; font-weight: 900; color: #1d4ed8; margin-top: 1px; padding-top: 2px; border-top: 2px solid #2563eb; }
+  .courier-note { background: #fef3c7; border-left: 2px solid #f59e0b; padding: 2px 6px; margin: 2px 6px; border-radius: 0 3px 3px 0; font-size: 7px; color: #92400e; }
+  .staff-note { padding: 2px 8px; font-size: 7px; color: #64748b; background: #f8fafc; }
+  .memo-footer { text-align: center; padding: 3px 8px; font-size: 6px; color: #94a3b8; border-top: 1px solid #dbeafe; background: #eff6ff; margin-top: auto; flex-shrink: 0; }
+  .memo-footer .thank-you { font-weight: 700; color: #2563eb; font-size: 7px; }
 `;
 
 // Template 3: Modern Gradient (purple/pink)
