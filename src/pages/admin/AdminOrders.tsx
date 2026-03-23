@@ -198,6 +198,10 @@ const AdminOrders = () => {
   const [filterNotes, setFilterNotes] = useState("");
   const [filterUrl, setFilterUrl] = useState("");
   const [filterOrderTag, setFilterOrderTag] = useState("");
+
+  // Pagination
+  const [perPage, setPerPage] = useState(25);
+  const [currentPage, setCurrentPage] = useState(1);
   const [filterSalesType, setFilterSalesType] = useState("all");
 
   // New order form state
@@ -802,6 +806,16 @@ const AdminOrders = () => {
     + (filterProductIds.length > 0 ? 1 : (filterProductSearch ? 1 : 0))
     + [filterDeviceType, filterPaymentStatus, filterCourierProvider, filterCourierStatus, filterCategory, filterCourierCharged, filterSalesType, filterDistrict, filterThana, filterZone].filter(v => v !== "all").length
     + (orderDateFilter !== "all" ? 1 : 0);
+
+  // Reset page when filters change
+  useEffect(() => { setCurrentPage(1); }, [activeTab, searchQuery, orderDateFilter, filterSource, filterPhone, filterAmountMin, filterAmountMax, filterDeviceType, filterAddress, filterPaymentStatus, filterCourierProvider, filterCourierStatus, filterProductIds, filterCategory, filterCourierCharged, filterStatus, filterDistrict, filterThana, filterZone, perPage]);
+
+  // Paginated orders
+  const totalPages = Math.max(1, Math.ceil(filteredOrders.length / perPage));
+  const paginatedOrders = useMemo(() => {
+    const start = (currentPage - 1) * perPage;
+    return filteredOrders.slice(start, start + perPage);
+  }, [filteredOrders, currentPage, perPage]);
 
   // Site settings for shop name
   const { data: siteSettings } = useSiteSettings();
@@ -3334,6 +3348,27 @@ const AdminOrders = () => {
             <p className="text-sm text-muted-foreground/70 mt-1">Try adjusting your filters or create a new order</p>
           </Card>
         ) : (
+          <>
+          {/* Pagination Controls - Top */}
+          <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground">Show</span>
+              <Select value={String(perPage)} onValueChange={(v) => setPerPage(Number(v))}>
+                <SelectTrigger className="w-[80px] h-8 rounded-lg text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {[10, 25, 50, 100, 500, 1000].map(n => (
+                    <SelectItem key={n} value={String(n)}>{n}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <span className="text-muted-foreground">entries</span>
+            </div>
+            <p className="text-muted-foreground">
+              Showing {((currentPage - 1) * perPage) + 1} to {Math.min(currentPage * perPage, filteredOrders.length)} of {filteredOrders.length} entries
+            </p>
+          </div>
           <Card className="border-border/40 overflow-hidden shadow-sm">
             {/* Desktop Table */}
             <div className="hidden md:block overflow-x-auto">
@@ -3342,9 +3377,9 @@ const AdminOrders = () => {
                 <TableRow className="bg-muted/30 border-b border-border/40">
                   <TableHead className="font-semibold text-xs text-muted-foreground px-3 py-2.5 w-[30px]">
                     <Checkbox 
-                      checked={selectedOrderIds.size === filteredOrders.length && filteredOrders.length > 0}
+                      checked={selectedOrderIds.size === paginatedOrders.length && paginatedOrders.length > 0}
                       onCheckedChange={(checked) => {
-                        if (checked) setSelectedOrderIds(new Set(filteredOrders.map(o => o.id)));
+                        if (checked) setSelectedOrderIds(new Set(paginatedOrders.map(o => o.id)));
                         else setSelectedOrderIds(new Set());
                       }}
                     />
@@ -3362,7 +3397,7 @@ const AdminOrders = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredOrders.map((order, idx) => {
+                {paginatedOrders.map((order, idx) => {
                   const courierInfo = courierByOrderId[order.id];
                   const items = orderItemsByOrderId[order.id] || [];
                   const custStats = order.customer_phone ? customerStatsByPhone[order.customer_phone] : null;
@@ -3646,7 +3681,7 @@ const AdminOrders = () => {
 
             {/* Mobile Card Layout */}
             <div className="md:hidden divide-y divide-border/30">
-              {filteredOrders.map((order, idx) => {
+              {paginatedOrders.map((order, idx) => {
                 const items = orderItemsByOrderId[order.id] || [];
                 const custStats = order.customer_phone ? customerStatsByPhone[order.customer_phone] : null;
                 const courierInfo = courierByOrderId[order.id];
@@ -3744,6 +3779,29 @@ const AdminOrders = () => {
               })}
             </div>
           </Card>
+          {/* Pagination Controls - Bottom */}
+          <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
+            <p className="text-muted-foreground">
+              Showing {((currentPage - 1) * perPage) + 1} to {Math.min(currentPage * perPage, filteredOrders.length)} of {filteredOrders.length} entries
+            </p>
+            <div className="flex items-center gap-1">
+              <Button variant="outline" size="sm" className="h-8 rounded-lg" disabled={currentPage <= 1} onClick={() => setCurrentPage(p => p - 1)}>Previous</Button>
+              {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                let page: number;
+                if (totalPages <= 5) page = i + 1;
+                else if (currentPage <= 3) page = i + 1;
+                else if (currentPage >= totalPages - 2) page = totalPages - 4 + i;
+                else page = currentPage - 2 + i;
+                return (
+                  <Button key={page} variant={currentPage === page ? "default" : "outline"} size="sm" className="h-8 w-8 rounded-lg p-0" onClick={() => setCurrentPage(page)}>
+                    {page}
+                  </Button>
+                );
+              })}
+              <Button variant="outline" size="sm" className="h-8 rounded-lg" disabled={currentPage >= totalPages} onClick={() => setCurrentPage(p => p + 1)}>Next</Button>
+            </div>
+          </div>
+          </>
         )}
         {/* Order Detail Dialog */}
         <OrderDetailDialog
