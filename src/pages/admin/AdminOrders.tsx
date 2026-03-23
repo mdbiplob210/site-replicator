@@ -3779,6 +3779,29 @@ const AdminOrders = () => {
               })}
             </div>
           </Card>
+          {/* Pagination Controls - Bottom */}
+          <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
+            <p className="text-muted-foreground">
+              Showing {((currentPage - 1) * perPage) + 1} to {Math.min(currentPage * perPage, filteredOrders.length)} of {filteredOrders.length} entries
+            </p>
+            <div className="flex items-center gap-1">
+              <Button variant="outline" size="sm" className="h-8 rounded-lg" disabled={currentPage <= 1} onClick={() => setCurrentPage(p => p - 1)}>Previous</Button>
+              {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                let page: number;
+                if (totalPages <= 5) page = i + 1;
+                else if (currentPage <= 3) page = i + 1;
+                else if (currentPage >= totalPages - 2) page = totalPages - 4 + i;
+                else page = currentPage - 2 + i;
+                return (
+                  <Button key={page} variant={currentPage === page ? "default" : "outline"} size="sm" className="h-8 w-8 rounded-lg p-0" onClick={() => setCurrentPage(page)}>
+                    {page}
+                  </Button>
+                );
+              })}
+              <Button variant="outline" size="sm" className="h-8 rounded-lg" disabled={currentPage >= totalPages} onClick={() => setCurrentPage(p => p + 1)}>Next</Button>
+            </div>
+          </div>
+          </>
         )}
         {/* Order Detail Dialog */}
         <OrderDetailDialog
