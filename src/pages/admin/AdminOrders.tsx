@@ -2565,7 +2565,7 @@ const AdminOrders = () => {
           <div className="relative flex-1 min-w-0">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search..."
+              placeholder="অর্ডার নম্বর / ফোন নম্বর দিয়ে সার্চ করুন..."
               className="pl-10 border-0 bg-transparent shadow-none focus-visible:ring-0 text-sm h-9"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
