@@ -252,14 +252,21 @@ export function generateStandardMemo(d: MemoData): string {
     ? `<img src="${d.siteLogo}" alt="${d.siteName}" class="shop-logo" />`
     : `<div class="shop-name">${d.siteName}</div>`;
 
-  const itemRows = d.items.map(it => `
-    <tr>
-      <td>${it.product_name}</td>
-      <td style="text-align:center">${it.product_code || ''}</td>
-      <td style="text-align:center">${it.quantity}</td>
-      <td style="text-align:right">৳${it.total_price}</td>
-    </tr>
-  `).join('');
+  const itemRows = d.items.map((it, index) => {
+    const fallbackPrice = d.items.length === 1
+      ? Number(it.total_price ?? it.unit_price ?? d.order.product_cost ?? (Number(d.order.total_amount || 0) - Number(d.order.delivery_charge || 0) + Number(d.order.discount || 0)) ?? 0)
+      : Number(it.total_price ?? it.unit_price ?? 0);
+    const fallbackQty = Number(it.quantity ?? 1);
+
+    return `
+      <tr>
+        <td>${it.product_name || `Item ${index + 1}`}</td>
+        <td style="text-align:center">${it.product_code || ''}</td>
+        <td style="text-align:center">${fallbackQty}</td>
+        <td style="text-align:right">৳${fallbackPrice}</td>
+      </tr>
+    `;
+  }).join('');
 
   return `
     <div class="memo">
