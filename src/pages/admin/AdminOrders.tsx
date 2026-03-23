@@ -2807,7 +2807,7 @@ const AdminOrders = () => {
                 <SelectValue placeholder="স্ট্যাটাস চেঞ্জ" />
               </SelectTrigger>
               <SelectContent>
-                {Constants.public.Enums.order_status.map((s) => (
+                {Constants.public.Enums.order_status.filter((s) => s !== "in_courier").map((s) => (
                   <SelectItem key={s} value={s}>
                     <div className="flex items-center gap-2">
                       <span className={`h-2 w-2 rounded-full ${getStatusColor(s as OrderStatus)}`} />
