@@ -3348,6 +3348,27 @@ const AdminOrders = () => {
             <p className="text-sm text-muted-foreground/70 mt-1">Try adjusting your filters or create a new order</p>
           </Card>
         ) : (
+          <>
+          {/* Pagination Controls - Top */}
+          <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground">Show</span>
+              <Select value={String(perPage)} onValueChange={(v) => setPerPage(Number(v))}>
+                <SelectTrigger className="w-[80px] h-8 rounded-lg text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {[10, 25, 50, 100, 500, 1000].map(n => (
+                    <SelectItem key={n} value={String(n)}>{n}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <span className="text-muted-foreground">entries</span>
+            </div>
+            <p className="text-muted-foreground">
+              Showing {((currentPage - 1) * perPage) + 1} to {Math.min(currentPage * perPage, filteredOrders.length)} of {filteredOrders.length} entries
+            </p>
+          </div>
           <Card className="border-border/40 overflow-hidden shadow-sm">
             {/* Desktop Table */}
             <div className="hidden md:block overflow-x-auto">
