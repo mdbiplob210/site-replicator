@@ -140,6 +140,7 @@ function GeneralTab() {
     setInstagramUrl(settings["instagram_url"] || "");
     setCustomDomain(settings["custom_domain"] || "");
     setLogoUrl(settings["site_logo"] || "");
+    setFaviconUrl(settings["site_favicon"] || "");
     setMarqueeText(settings["marquee_text"] || "");
     setFooterDescription(settings["footer_description"] || "");
     setFooterQuickLinks(settings["footer_quick_links"] || "");
