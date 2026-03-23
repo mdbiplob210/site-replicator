@@ -1858,6 +1858,21 @@ const AdminOrders = () => {
                   ? Math.max(0, previewItem.total_price + previewDeliveryCharge - previewDiscount)
                   : (isSanePrice(rawTotalAmount) || rawTotalAmount === 0 ? rawTotalAmount : 0);
 
+                const isRepeatCustomer = (() => {
+                  if (!existingOrderFingerprints) return false;
+                  if (io.client_ip && existingOrderFingerprints.ips.has(io.client_ip)) return true;
+                  if (io.customer_phone) {
+                    const cleanPhone = io.customer_phone.replace(/\D/g, "");
+                    if (cleanPhone && existingOrderFingerprints.phones.has(cleanPhone)) return true;
+                  }
+                  return false;
+                })();
+
+                const isLive = liveVisitors.some((v: any) =>
+                  (io.client_ip && v.client_ip === io.client_ip) ||
+                  (io.customer_phone && v.customer_phone && v.customer_phone.replace(/\D/g, "") === io.customer_phone.replace(/\D/g, ""))
+                );
+
                 return (
                   <IncompleteOrderCard
                     key={io.id}
@@ -1868,6 +1883,8 @@ const AdminOrders = () => {
                     canDeleteOrders={canDeleteOrders}
                     previewItem={previewItem}
                     previewTotalAmount={previewTotalAmount}
+                    isRepeatCustomer={isRepeatCustomer}
+                    isLive={isLive}
                   />
                 );
               })}
