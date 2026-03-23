@@ -1131,3 +1131,121 @@ function DataResetTab() {
     </div>
   );
 }
+
+
+/* ===================== Email Tab ===================== */
+function EmailTab() {
+  const { data: settings = {}, isLoading } = useSiteSettings();
+  const updateSetting = useUpdateSiteSetting();
+  const [smtpHost, setSmtpHost] = useState("");
+  const [smtpPort, setSmtpPort] = useState("587");
+  const [smtpUser, setSmtpUser] = useState("");
+  const [smtpPass, setSmtpPass] = useState("");
+  const [senderEmail, setSenderEmail] = useState("");
+  const [senderName, setSenderName] = useState("");
+  const [emailEnabled, setEmailEnabled] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  if (!loaded && !isLoading && settings) {
+    setSmtpHost(settings["smtp_host"] || "");
+    setSmtpPort(settings["smtp_port"] || "587");
+    setSmtpUser(settings["smtp_user"] || "");
+    setSmtpPass(settings["smtp_pass"] || "");
+    setSenderEmail(settings["sender_email"] || "");
+    setSenderName(settings["sender_name"] || "");
+    setEmailEnabled(settings["email_enabled"] === "true");
+    setLoaded(true);
+  }
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await Promise.all([
+        updateSetting.mutateAsync({ key: "smtp_host", value: smtpHost }),
+        updateSetting.mutateAsync({ key: "smtp_port", value: smtpPort }),
+        updateSetting.mutateAsync({ key: "smtp_user", value: smtpUser }),
+        updateSetting.mutateAsync({ key: "smtp_pass", value: smtpPass }),
+        updateSetting.mutateAsync({ key: "sender_email", value: senderEmail }),
+        updateSetting.mutateAsync({ key: "sender_name", value: senderName }),
+        updateSetting.mutateAsync({ key: "email_enabled", value: emailEnabled ? "true" : "false" }),
+      ]);
+      toast.success("Email settings saved!");
+    } catch (err: any) {
+      toast.error(err.message || "Save failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="rounded-2xl border border-border bg-card p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <Mail className="h-5 w-5" /> Email Configuration
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            SMTP সেটিংস কনফিগার করুন। এটি পাসওয়ার্ড রিসেট ও নোটিফিকেশন ইমেইলের জন্য ব্যবহৃত হবে।
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Email সক্রিয়</span>
+          <Switch checked={emailEnabled} onCheckedChange={setEmailEnabled} />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground">Sender Name</label>
+          <Input placeholder="Quick Shop BD" value={senderName} onChange={(e) => setSenderName(e.target.value)} />
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground">Sender Email</label>
+          <Input type="email" placeholder="noreply@yourdomain.com" value={senderEmail} onChange={(e) => setSenderEmail(e.target.value)} />
+        </div>
+      </div>
+
+      <div className="border-t border-border pt-4">
+        <h3 className="text-sm font-semibold text-foreground mb-3">SMTP Settings</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">SMTP Host</label>
+            <Input placeholder="smtp.gmail.com" value={smtpHost} onChange={(e) => setSmtpHost(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">SMTP Port</label>
+            <Input placeholder="587" value={smtpPort} onChange={(e) => setSmtpPort(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">SMTP Username / Email</label>
+            <Input placeholder="your-email@gmail.com" value={smtpUser} onChange={(e) => setSmtpUser(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">SMTP Password / App Password</label>
+            <Input type="password" placeholder="••••••••••••" value={smtpPass} onChange={(e) => setSmtpPass(e.target.value)} />
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-xl bg-secondary/50 p-4 space-y-2">
+        <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+          <Info className="h-4 w-4" /> Gmail ব্যবহার করতে চাইলে
+        </h4>
+        <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
+          <li>SMTP Host: <code className="bg-secondary px-1 rounded">smtp.gmail.com</code></li>
+          <li>SMTP Port: <code className="bg-secondary px-1 rounded">587</code></li>
+          <li>Username: আপনার Gmail ঠিকানা</li>
+          <li>Password: Google Account → Security → App Passwords থেকে একটি App Password তৈরি করুন</li>
+          <li>2-Step Verification চালু থাকা আবশ্যক</li>
+        </ul>
+      </div>
+
+      <div className="flex justify-end">
+        <Button onClick={handleSave} disabled={saving} className="gap-2">
+          <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save Email Settings"}
+        </Button>
+      </div>
+    </div>
+  );
+}
