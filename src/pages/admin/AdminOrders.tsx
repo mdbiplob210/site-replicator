@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useEmployeeAssignedOrderIds } from "@/hooks/useEmployeeOrders";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Calendar as CalendarWidget } from "@/components/ui/calendar";
@@ -464,7 +465,8 @@ const AdminOrders = () => {
   const [selectedCityId, setSelectedCityId] = useState<string | null>(null);
   const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null);
   const [selectedAreaId, setSelectedAreaId] = useState<string | null>(null);
-  const { user, session, loading: authLoading } = useAuth();
+  const { user, session, loading: authLoading, isAdmin } = useAuth();
+  const { data: assignedOrderIds } = useEmployeeAssignedOrderIds();
   const isDeletedTab = activeTab === "Deleted";
   const statusFilter = isDeletedTab ? null : getStatusFromTab(activeTab);
   const queryClient = useQueryClient();
@@ -893,6 +895,8 @@ const AdminOrders = () => {
   // Filtered orders by search + advanced filters
   const filteredOrders = useMemo(() => {
     return orders.filter((o) => {
+      // Employee restriction: only show assigned orders
+      if (!isAdmin && assignedOrderIds instanceof Set && !assignedOrderIds.has(o.id)) return false;
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         if (!(o.customer_name.toLowerCase().includes(q) || o.order_number.toLowerCase().includes(q) || (o.customer_phone && o.customer_phone.toLowerCase().includes(q)))) return false;
@@ -964,7 +968,7 @@ const AdminOrders = () => {
       }
       return true;
     });
-  }, [orders, searchQuery, filterSource, filterPhone, filterAmountMin, filterAmountMax, filterDeviceType, filterAddress, filterDistrict, filterThana, filterZone, filterPaymentStatus, filterCourierProvider, filterCourierStatus, filterStatus, filterProductSearch, filterProductIds, filterCategory, filterCourierCharged, filterNotes, filterUrl, filterOrderTag, filterSalesType, courierByOrderId, orderItemsByOrderId, allProducts, cancelReasonFilter, activeTab]);
+  }, [orders, searchQuery, filterSource, filterPhone, filterAmountMin, filterAmountMax, filterDeviceType, filterAddress, filterDistrict, filterThana, filterZone, filterPaymentStatus, filterCourierProvider, filterCourierStatus, filterStatus, filterProductSearch, filterProductIds, filterCategory, filterCourierCharged, filterNotes, filterUrl, filterOrderTag, filterSalesType, courierByOrderId, orderItemsByOrderId, allProducts, cancelReasonFilter, activeTab, isAdmin, assignedOrderIds]);
 
   const activeFilterCount = [filterSource, filterPhone, filterAmountMin, filterAmountMax, filterAddress, filterStatus, filterNotes, filterUrl, filterOrderTag].filter(Boolean).length
     + (filterProductIds.length > 0 ? 1 : (filterProductSearch ? 1 : 0))

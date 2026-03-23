@@ -81,7 +81,7 @@ export function AdminSidebar() {
   const filteredMainMenu = mainMenuItems.filter((item) => {
     if (item.title === "Dashboard") return canSee("view_dashboard");
     if (item.title === "Orders") return canSee("view_orders");
-    if (item.title === "Products") return canSee("view_products");
+    if (item.title === "Products" || item.title === "Inventory") return canSee("view_products");
     if (item.title === "Website") return canSee("manage_website");
     if (item.title === "Invoices") return canSee("view_finance");
     if (item.title === "Reports") return canSee("view_reports");
