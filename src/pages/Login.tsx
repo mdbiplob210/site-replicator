@@ -239,11 +239,70 @@ const Login = () => {
             <h1 className="text-xl sm:text-2xl font-bold" style={{ color: "#fff" }}>QUICK SHOP BD</h1>
             <p className="mt-1 flex items-center justify-center gap-1 text-xs sm:text-sm" style={{ color: "rgba(78,205,196,0.8)" }}>
               <Star className="h-3 w-3" />
-              {isSignUp ? "Create a new account" : "Welcome back"}
+              {forgotMode ? "Reset your password" : isSignUp ? "Create a new account" : "Welcome back"}
               <Star className="h-3 w-3" />
             </p>
           </div>
 
+          {forgotMode ? (
+            resetSent ? (
+              <div className="text-center py-4">
+                <p className="text-sm mb-3" style={{ color: "rgba(78,205,196,0.9)" }}>
+                  ✅ পাসওয়ার্ড রিসেট লিংক আপনার ইমেইলে পাঠানো হয়েছে। ইমেইল চেক করুন।
+                </p>
+                <button
+                  onClick={() => { setForgotMode(false); setResetSent(false); }}
+                  className="text-sm font-medium hover:underline"
+                  style={{ color: "#4ECDC4" }}
+                >
+                  ← Back to Login
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleForgotPassword} className="space-y-3 sm:space-y-4">
+                <div>
+                  <Input
+                    type="email"
+                    placeholder="📧 Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="border-0 text-sm font-bold"
+                    style={{
+                      background: "rgba(255,255,255,0.08)",
+                      color: "#000",
+                      borderBottom: "2px solid rgba(78,205,196,0.3)",
+                      borderRadius: "12px",
+                    }}
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  className="w-full border-0 text-base font-bold"
+                  disabled={loading}
+                  style={{
+                    background: "linear-gradient(135deg, #4ECDC4, #45B7D1, #96CEB4)",
+                    color: "#0a0a1e",
+                    borderRadius: "12px",
+                    boxShadow: "0 0 20px rgba(78,205,196,0.3)",
+                  }}
+                >
+                  {loading ? "Sending..." : "Send Reset Link"}
+                </Button>
+                <p className="text-center">
+                  <button
+                    type="button"
+                    onClick={() => setForgotMode(false)}
+                    className="text-sm font-medium hover:underline"
+                    style={{ color: "#4ECDC4" }}
+                  >
+                    ← Back to Login
+                  </button>
+                </p>
+              </form>
+            )
+          ) : (
+          <>
           <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
             {isSignUp && (
               <div>
