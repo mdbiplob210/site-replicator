@@ -2680,17 +2680,7 @@ const AdminOrders = () => {
           </div>
         </div>
 
-        {/* In Courier button for Confirmed tab */}
-        {activeTab === "Confirmed" && (
-          <div className="flex items-center gap-2">
-            <Button size="sm" className="gap-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white shadow-sm" onClick={handleBulkInCourier}>
-              <Truck className="h-4 w-4" /> In Courier-এ পাঠান
-            </Button>
-            <span className="text-xs text-muted-foreground">
-              (কুরিয়ার সিলেক্ট করা {filteredOrders.filter(o => o.status === "confirmed" && courierByOrderId[o.id]).length}টি অর্ডার)
-            </span>
-          </div>
-        )}
+        {/* In Courier button removed — only via courier API */}
 
         {/* Search & Filters */}
         <Card className="p-2 sm:p-3 border-border/40 flex items-center gap-2 sm:gap-3 flex-wrap shadow-sm">
