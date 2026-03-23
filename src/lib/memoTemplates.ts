@@ -78,35 +78,35 @@ const COMMON_BASE = `
 
 // Template 1: Premium Dark (existing improved)
 const STYLE_1 = `${COMMON_BASE}
-  .memo { max-width: 400px; margin: auto; background: #fff; border-radius: 12px; overflow: hidden; border: 1.5px solid #e2e8f0; }
-  .memo-header { background: linear-gradient(135deg, #0f172a, #1e293b, #334155); color: #fff; padding: 16px 18px; position: relative; overflow: hidden; }
-  .memo-header::after { content: ''; position: absolute; top: -30px; right: -30px; width: 80px; height: 80px; border-radius: 50%; background: rgba(251,191,36,0.15); }
-  .shop-name { font-size: 16px; font-weight: 800; letter-spacing: 1.5px; }
-  .shop-logo { height: 30px; width: auto; }
-  .order-num { font-size: 18px; font-weight: 900; color: #fbbf24; }
-  .order-date { font-size: 10px; color: #94a3b8; }
-  .courier-section { background: linear-gradient(135deg, #ecfdf5, #f0fdf4); border-bottom: 1px solid #bbf7d0; padding: 10px 18px; }
-  .courier-badge { background: linear-gradient(135deg, #059669, #10b981); color: white; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; }
-  .courier-status { font-size: 9px; font-weight: 700; text-transform: uppercase; color: #059669; background: #d1fae5; padding: 2px 8px; border-radius: 10px; }
-  .tracking-box { background: #fff; border: 1.5px dashed #a7f3d0; border-radius: 8px; padding: 8px 14px; text-align: center; margin-top: 8px; }
-  .tracking-label { font-size: 8px; color: #6b7280; text-transform: uppercase; letter-spacing: 2px; }
-  .tracking-id { font-size: 16px; font-weight: 900; letter-spacing: 3px; color: #0f172a; }
-  .section { padding: 10px 18px; border-bottom: 1px solid #f1f5f9; }
-  .section-title { font-size: 9px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px; }
-  .info-grid { display: grid; grid-template-columns: 70px 1fr; gap: 3px 8px; }
-  .info-label { font-size: 10px; font-weight: 600; color: #64748b; }
-  .info-value { font-size: 11px; font-weight: 500; color: #1e293b; }
-  .phone-num { font-family: monospace; font-weight: 700; color: #2563eb; font-size: 12px; }
+  .memo { max-width: 400px; margin: auto; background: #fff; border-radius: 8px; overflow: hidden; border: 1.5px solid #e2e8f0; }
+  .memo-header { background: linear-gradient(135deg, #0f172a, #1e293b, #334155); color: #fff; padding: 8px 12px; position: relative; overflow: hidden; }
+  .memo-header::after { content: ''; position: absolute; top: -30px; right: -30px; width: 60px; height: 60px; border-radius: 50%; background: rgba(251,191,36,0.15); }
+  .shop-name { font-size: 13px; font-weight: 800; letter-spacing: 1px; }
+  .shop-logo { height: 22px; width: auto; }
+  .order-num { font-size: 15px; font-weight: 900; color: #fbbf24; }
+  .order-date { font-size: 9px; color: #94a3b8; }
+  .courier-section { background: linear-gradient(135deg, #ecfdf5, #f0fdf4); border-bottom: 1px solid #bbf7d0; padding: 6px 12px; }
+  .courier-badge { background: linear-gradient(135deg, #059669, #10b981); color: white; padding: 2px 8px; border-radius: 20px; font-size: 9px; font-weight: 700; }
+  .courier-status { font-size: 8px; font-weight: 700; text-transform: uppercase; color: #059669; background: #d1fae5; padding: 1px 6px; border-radius: 10px; }
+  .tracking-box { background: #fff; border: 1.5px dashed #a7f3d0; border-radius: 6px; padding: 4px 10px; text-align: center; margin-top: 4px; }
+  .tracking-label { font-size: 7px; color: #6b7280; text-transform: uppercase; letter-spacing: 2px; }
+  .tracking-id { font-size: 13px; font-weight: 900; letter-spacing: 2px; color: #0f172a; }
+  .section { padding: 6px 12px; border-bottom: 1px solid #f1f5f9; }
+  .section-title { font-size: 8px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 3px; }
+  .info-grid { display: grid; grid-template-columns: 55px 1fr; gap: 2px 6px; }
+  .info-label { font-size: 9px; font-weight: 600; color: #64748b; }
+  .info-value { font-size: 10px; font-weight: 500; color: #1e293b; }
+  .phone-num { font-family: monospace; font-weight: 700; color: #2563eb; font-size: 10px; }
   .items-table th { color: #94a3b8; border-bottom: 2px solid #e2e8f0; background: #f8fafc; }
   .items-table td { border-bottom: 1px solid #f1f5f9; }
-  .totals-section { padding: 8px 18px; background: #fafbfc; }
-  .total-row { display: flex; justify-content: space-between; padding: 2px 0; font-size: 11px; color: #475569; }
+  .totals-section { padding: 4px 12px; background: #fafbfc; }
+  .total-row { display: flex; justify-content: space-between; padding: 1px 0; font-size: 10px; color: #475569; }
   .total-row.discount { color: #ef4444; }
-  .total-row.grand-total { font-size: 15px; font-weight: 900; color: #0f172a; margin-top: 4px; padding-top: 6px; border-top: 2px solid #1e293b; }
-  .courier-note { background: linear-gradient(135deg, #fef3c7, #fffbeb); border-left: 4px solid #f59e0b; padding: 8px 14px; margin: 6px 14px; border-radius: 0 6px 6px 0; font-size: 11px; color: #92400e; }
-  .staff-note { padding: 6px 18px; font-size: 10px; color: #64748b; background: #f8fafc; }
-  .memo-footer { text-align: center; padding: 10px 18px; font-size: 9px; color: #94a3b8; border-top: 1px solid #f1f5f9; background: #fafbfc; }
-  .memo-footer .thank-you { font-weight: 700; color: #64748b; font-size: 10px; }
+  .total-row.grand-total { font-size: 13px; font-weight: 900; color: #0f172a; margin-top: 2px; padding-top: 3px; border-top: 2px solid #1e293b; }
+  .courier-note { background: linear-gradient(135deg, #fef3c7, #fffbeb); border-left: 3px solid #f59e0b; padding: 4px 10px; margin: 4px 10px; border-radius: 0 4px 4px 0; font-size: 9px; color: #92400e; }
+  .staff-note { padding: 3px 12px; font-size: 9px; color: #64748b; background: #f8fafc; }
+  .memo-footer { text-align: center; padding: 5px 12px; font-size: 8px; color: #94a3b8; border-top: 1px solid #f1f5f9; background: #fafbfc; }
+  .memo-footer .thank-you { font-weight: 700; color: #64748b; font-size: 9px; }
 `;
 
 // Template 2: Clean Professional (blue)
