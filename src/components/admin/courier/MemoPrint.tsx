@@ -38,10 +38,12 @@ export function MemoPrint({ order, courierOrder, courierProvider, orderItems }: 
     const printWindow = window.open("", "_blank");
     if (!printWindow) return;
 
+    const favicon = siteLogo || document.querySelector('link[rel="icon"]')?.getAttribute('href') || '';
     printWindow.document.write(`
       <!DOCTYPE html>
       <html><head>
         <title>Memo - ${order.order_number}</title>
+        ${favicon ? `<link rel="icon" href="${favicon}">` : ''}
         <link href="https://fonts.googleapis.com/css2?family=Libre+Barcode+39&display=swap" rel="stylesheet">
         <style>${style}</style>
       </head><body>${memoHtml}</body></html>

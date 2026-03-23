@@ -90,10 +90,12 @@ export function useBulkMemoPrint({ orders, courierByOrderId, orderItemsByOrderId
       bodyContent = pages.join('');
     }
 
+    const favicon = siteLogo || document.querySelector('link[rel="icon"]')?.getAttribute('href') || '';
     printWindow.document.write(`
       <!DOCTYPE html>
       <html><head>
         <title>Memo Print - ${orders.length} Orders</title>
+        ${favicon ? `<link rel="icon" href="${favicon}">` : ''}
         <link href="https://fonts.googleapis.com/css2?family=Libre+Barcode+39&display=swap" rel="stylesheet">
         <style>${style}${isPOS ? '' : BULK_PAGE_STYLES}</style>
       </head><body>${bodyContent}</body></html>
