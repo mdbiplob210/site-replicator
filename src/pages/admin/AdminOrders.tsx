@@ -56,7 +56,13 @@ import { useSiteSettings } from "@/hooks/useSiteSettings";
 import * as XLSX from "@datalens-tech/xlsx";
 import { toast } from "sonner";
 import { getDisplayImage } from "@/lib/imageUtils";
-import { extractPathaoLocationHints, resolvePathaoLocationMatch } from "@/lib/pathaoLocationMatching";
+import {
+  extractPathaoLocationHints,
+  PATHAO_DISTRICT_OPTIONS,
+  PATHAO_THANA_OPTIONS,
+  PATHAO_ZONE_OPTIONS,
+  resolvePathaoLocationMatch,
+} from "@/lib/pathaoLocationMatching";
 
 const statusTabs = [
   { label: "All Orders", color: "bg-primary", icon: ShoppingCart },
@@ -2989,7 +2995,7 @@ const AdminOrders = () => {
                     <SelectTrigger className="rounded-lg h-7 text-xs"><SelectValue placeholder="All" /></SelectTrigger>
                     <SelectContent className="max-h-60">
                       <SelectItem value="all">All Districts</SelectItem>
-                      {bdDistrictList.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                      {PATHAO_DISTRICT_OPTIONS.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
@@ -2999,7 +3005,7 @@ const AdminOrders = () => {
                     <SelectTrigger className="rounded-lg h-7 text-xs"><SelectValue placeholder="All" /></SelectTrigger>
                     <SelectContent className="max-h-60">
                       <SelectItem value="all">All Thanas</SelectItem>
-                      {bdThanaList.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                      {PATHAO_THANA_OPTIONS.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
@@ -3009,7 +3015,7 @@ const AdminOrders = () => {
                     <SelectTrigger className="rounded-lg h-7 text-xs"><SelectValue placeholder="All" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Zones</SelectItem>
-                      {bdZoneList.map((z) => <SelectItem key={z} value={z}>{z}</SelectItem>)}
+                      {PATHAO_ZONE_OPTIONS.map((z) => <SelectItem key={z} value={z}>{z}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>

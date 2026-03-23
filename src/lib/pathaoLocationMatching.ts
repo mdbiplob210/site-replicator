@@ -1,6 +1,6 @@
 export type PathaoLocationItem = { id: string | number; name: string };
 
-const BD_DISTRICT_LIST = [
+export const PATHAO_DISTRICT_OPTIONS = [
   "Dhaka", "Chittagong", "Chattogram", "Rajshahi", "Khulna", "Barishal", "Barisal", "Sylhet", "Rangpur", "Mymensingh",
   "Comilla", "Cumilla", "Gazipur", "Narayanganj", "Bogra", "Bogura", "Cox's Bazar", "Coxs Bazar", "Feni", "Tangail",
   "Jessore", "Jashore", "Brahmanbaria", "Narsingdi", "Manikganj", "Munshiganj", "Madaripur", "Gopalganj", "Faridpur",
@@ -11,7 +11,13 @@ const BD_DISTRICT_LIST = [
   "Meherpur", "Chuadanga", "Jhenaidah", "Bandarban", "Rangamati", "Khagrachari", "Keraniganj", "Savar", "Tongi",
 ];
 
-const BD_THANA_LIST = [
+export const PATHAO_THANA_OPTIONS = [
+export const PATHAO_ZONE_OPTIONS = [
+  "Dhaka Metro", "Dhaka Sub", "Chittagong Metro", "Chittagong Sub",
+  "Rajshahi Metro", "Khulna Metro", "Sylhet Metro", "Rangpur Metro",
+  "Barisal Metro", "Mymensingh Metro", "Outside Metro",
+];
+
   "Mirpur", "Uttara", "Gulshan", "Dhanmondi", "Mohammadpur", "Motijheel", "Tejgaon", "Badda", "Rampura", "Khilgaon",
   "Banani", "Cantonment", "Lalbagh", "Demra", "Jatrabari", "Kadamtali", "Shyampur", "Sutrapur", "Wari", "Hazaribagh",
   "Kamrangirchar", "Panchlaish", "Halishahar", "Bayezid", "Double Mooring", "Pahartali", "Bakalia", "Chandgaon",
@@ -196,11 +202,11 @@ export const extractPathaoLocationHints = (address: string) => {
     return { cityHints: [] as string[], zoneHints: [] as string[] };
   }
 
-  const cityHints = BD_DISTRICT_LIST.filter((district) =>
+  const cityHints = PATHAO_DISTRICT_OPTIONS.filter((district) =>
     normalizedAddress.includes(normalizePathaoLocationName(district)),
   );
 
-  const zoneHints = BD_THANA_LIST.filter((thana) => {
+  const zoneHints = PATHAO_THANA_OPTIONS.filter((thana) => {
     const normalizedThana = normalizePathaoLocationName(thana);
     return !AMBIGUOUS_ZONE_HINTS.has(normalizedThana) && normalizedAddress.includes(normalizedThana);
   });

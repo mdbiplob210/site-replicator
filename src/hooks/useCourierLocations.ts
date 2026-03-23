@@ -82,7 +82,6 @@ export function useCourierCities(providerId: string | null) {
   const { session, loading } = useAuth();
 
   return useQuery({
-    queryKey: getCourierLocationQueryKey(providerId, "cities"),
     queryKey: getCourierLocationQueryKey(providerId, "cities", null, null, Boolean(session?.access_token)),
     queryFn: () => fetchCourierLocations(session!.access_token, providerId!, "cities"),
     enabled: !!providerId && !!session?.access_token && !loading,
