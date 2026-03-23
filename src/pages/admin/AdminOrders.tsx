@@ -1431,6 +1431,13 @@ const AdminOrders = () => {
     const provider = courierProviders?.find((p: any) => p.id === courierId);
     const hasApiConfig = provider?.api_configs && Array.isArray(provider.api_configs) && provider.api_configs.length > 0 && (provider.api_configs[0] as any)?.api_key;
     
+    if (!hasApiConfig) {
+      toast.error("এই কুরিয়ারের API কনফিগার করা হয়নি! API ছাড়া In Courier-এ পাঠানো যাবে না।");
+      setBulkCourierSubmitting(false);
+      setBulkCourierProgress({ done: 0, total: 0 });
+      return;
+    }
+    
     if (hasApiConfig) {
       try {
         const { data: session } = await supabase.auth.getSession();
