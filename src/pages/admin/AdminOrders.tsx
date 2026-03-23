@@ -4284,53 +4284,64 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
         queryClient.invalidateQueries({ queryKey: ["courier-order-detail", orderId] });
       }
 
-      // If status is changing to in_courier and there's a courier provider, call courier API
+      // If status is changing to in_courier, require courier provider and API
       const isGoingToCourier = editStatus === "in_courier" && order.status !== "in_courier";
       const courierProviderId = editCourierId || existingCourierOrder?.courier_provider_id;
+      
+      if (isGoingToCourier && !courierProviderId) {
+        toast.error("কুরিয়ার সিলেক্ট করা হয়নি! প্রথমে কুরিয়ার প্রোভাইডার সিলেক্ট করুন।");
+        delete changes.status;
+        setIsSaving(false);
+        return;
+      }
+      
       if (isGoingToCourier && courierProviderId) {
         const provider = editCourierProviders?.find((p: any) => p.id === courierProviderId);
         const hasApiConfig = provider?.api_configs && Array.isArray(provider.api_configs) && provider.api_configs.length > 0 && (provider.api_configs[0] as any)?.api_key;
         
-        if (hasApiConfig) {
-          try {
-            const { data: session } = await supabase.auth.getSession();
-            const token = session?.session?.access_token;
-            const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-            const apikey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+        if (!hasApiConfig) {
+          toast.error("এই কুরিয়ারের API কনফিগার করা হয়নি! API ছাড়া In Courier-এ পাঠানো যাবে না।");
+          delete changes.status;
+          setIsSaving(false);
+          return;
+        }
+        
+        try {
+          const { data: session } = await supabase.auth.getSession();
+          const token = session?.session?.access_token;
+          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+          const apikey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-            const resp = await fetch(`${supabaseUrl}/functions/v1/courier-submit`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "apikey": apikey,
-                "Authorization": `Bearer ${token}`,
-              },
-              body: JSON.stringify({
-                action: "submit-order",
-                provider_id: courierProviderId,
-                order_id: orderId,
-                city_id: editCourierCityId ? Number(editCourierCityId) : undefined,
-                zone_id: editCourierZoneId ? Number(editCourierZoneId) : undefined,
-                area_id: editCourierAreaId ? Number(editCourierAreaId) : undefined,
-              }),
-            });
-            const result = await resp.json();
-            
-            if (result.success) {
-              // API handled status change and courier_orders insert — remove from changes
-              delete changes.status;
-              queryClient.invalidateQueries({ queryKey: ["courier-orders-filter"] });
-              queryClient.invalidateQueries({ queryKey: ["courier-order-detail", orderId] });
-              toast.success(`কুরিয়ারে সাবমিট হয়েছে! Consignment: ${result.consignment_id || "N/A"}`);
-            } else {
-              toast.error(`কুরিয়ার API ত্রুটি: ${result.error || "Unknown error"}`);
-              // Don't change status to in_courier if API failed
-              delete changes.status;
-            }
-          } catch (apiErr: any) {
-            toast.error(`কুরিয়ার সাবমিট ব্যর্থ: ${apiErr.message}`);
+          const resp = await fetch(`${supabaseUrl}/functions/v1/courier-submit`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "apikey": apikey,
+              "Authorization": `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              action: "submit-order",
+              provider_id: courierProviderId,
+              order_id: orderId,
+              city_id: editCourierCityId ? Number(editCourierCityId) : undefined,
+              zone_id: editCourierZoneId ? Number(editCourierZoneId) : undefined,
+              area_id: editCourierAreaId ? Number(editCourierAreaId) : undefined,
+            }),
+          });
+          const result = await resp.json();
+          
+          if (result.success) {
+            delete changes.status;
+            queryClient.invalidateQueries({ queryKey: ["courier-orders-filter"] });
+            queryClient.invalidateQueries({ queryKey: ["courier-order-detail", orderId] });
+            toast.success(`কুরিয়ারে সাবমিট হয়েছে! Consignment: ${result.consignment_id || "N/A"}`);
+          } else {
+            toast.error(`কুরিয়ার API ত্রুটি: ${result.error || "Unknown error"}`);
             delete changes.status;
           }
+        } catch (apiErr: any) {
+          toast.error(`কুরিয়ার সাবমিট ব্যর্থ: ${apiErr.message}`);
+          delete changes.status;
         }
       }
 
