@@ -12,7 +12,8 @@ const getCourierLocationQueryKey = (
   action: CourierLocationAction,
   cityId?: string | number | null,
   zoneId?: string | number | null,
-) => ["courier-location", providerId, action, cityId ?? null, zoneId ?? null] as const;
+  hasAccessToken?: boolean,
+) => ["courier-location", providerId, action, cityId ?? null, zoneId ?? null, Boolean(hasAccessToken)] as const;
 
 async function fetchCourierLocations(
   accessToken: string,
@@ -82,6 +83,7 @@ export function useCourierCities(providerId: string | null) {
 
   return useQuery({
     queryKey: getCourierLocationQueryKey(providerId, "cities"),
+    queryKey: getCourierLocationQueryKey(providerId, "cities", null, null, Boolean(session?.access_token)),
     queryFn: () => fetchCourierLocations(session!.access_token, providerId!, "cities"),
     enabled: !!providerId && !!session?.access_token && !loading,
     staleTime: LOCATION_STALE_TIME,
@@ -94,7 +96,7 @@ export function useCourierZones(providerId: string | null, cityId: string | numb
   const { session, loading } = useAuth();
 
   return useQuery({
-    queryKey: getCourierLocationQueryKey(providerId, "zones", cityId),
+    queryKey: getCourierLocationQueryKey(providerId, "zones", cityId, null, Boolean(session?.access_token)),
     queryFn: () => fetchCourierLocations(session!.access_token, providerId!, "zones", cityId!),
     enabled: !!providerId && !!cityId && !!session?.access_token && !loading,
     staleTime: LOCATION_STALE_TIME,
@@ -107,7 +109,7 @@ export function useCourierAreas(providerId: string | null, zoneId: string | numb
   const { session, loading } = useAuth();
 
   return useQuery({
-    queryKey: getCourierLocationQueryKey(providerId, "areas", null, zoneId),
+    queryKey: getCourierLocationQueryKey(providerId, "areas", null, zoneId, Boolean(session?.access_token)),
     queryFn: () => fetchCourierLocations(session!.access_token, providerId!, "areas", undefined, zoneId!),
     enabled: !!providerId && !!zoneId && !!session?.access_token && !loading,
     staleTime: LOCATION_STALE_TIME,

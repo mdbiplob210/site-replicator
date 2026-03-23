@@ -1,80 +1,15 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Truck, MapPin, X, CheckCircle2, AlertCircle } from "lucide-react";
-import { useCourierCities, useCourierZones } from "@/hooks/useCourierLocations";
+import { useAuth } from "@/contexts/AuthContext";
+import { prefetchCourierLocations, useCourierCities, useCourierZones } from "@/hooks/useCourierLocations";
+import { extractPathaoLocationHints, resolvePathaoLocationMatch, type PathaoLocationItem } from "@/lib/pathaoLocationMatching";
 import { toast } from "sonner";
-
-// Location matching helpers
-const normalizeLocationName = (name: string) =>
-  name.toLowerCase().replace(/[''`]/g, "").replace(/[-_]/g, " ").replace(/\s+/g, " ").trim();
-
-const toPhoneticKey = (text: string) =>
-  normalizeLocationName(text).replace(/[aeiou]/g, "").replace(/\s/g, "");
-
-const bdDistrictList = [
-  "Dhaka","Chittagong","Chattogram","Rajshahi","Khulna","Barishal","Barisal","Sylhet","Rangpur","Mymensingh",
-  "Comilla","Cumilla","Gazipur","Narayanganj","Bogra","Bogura","Cox's Bazar","Coxs Bazar","Feni","Tangail",
-  "Jessore","Jashore","Brahmanbaria","Narsingdi","Manikganj","Munshiganj","Madaripur","Gopalganj","Faridpur",
-  "Shariatpur","Rajbari","Kishoreganj","Netrokona","Sherpur","Jamalpur","Dinajpur","Nilphamari","Kurigram",
-  "Lalmonirhat","Gaibandha","Thakurgaon","Panchagarh","Chapainawabganj","Naogaon","Natore","Nawabganj",
-  "Pabna","Sirajganj","Joypurhat","Habiganj","Sunamganj","Moulvibazar","Noakhali","Lakshmipur","Chandpur",
-  "Pirojpur","Jhalokathi","Jhalokati","Bhola","Patuakhali","Barguna","Satkhira","Narail","Magura","Kushtia",
-  "Meherpur","Chuadanga","Jhenaidah","Bandarban","Rangamati","Khagrachari","Keraniganj","Savar","Tongi",
-];
-
-const bdThanaList = [
-  "Sadar","Mirpur","Uttara","Gulshan","Dhanmondi","Mohammadpur","Motijheel","Tejgaon","Badda","Rampura",
-  "Khilgaon","Banani","Cantonment","Lalbagh","Kotwali","Demra","Jatrabari","Kadamtali","Shyampur","Sutrapur",
-  "Wari","Hazaribagh","Kamrangirchar","Panchlaish","Halishahar","Bayezid","Double Mooring","Pahartali",
-  "Bondor","Bakalia","Chandgaon","Fatullah","Siddhirganj","Sonargaon","Rupganj","Araihazar",
-  "Savar","Keraniganj","Dohar","Nawabganj","Dhamrai","Tongi","Gazipur Sadar","Kaliakair","Kaliganj",
-  "Kapasia","Sreepur","Ghatail","Kalihati","Madhupur","Mirzapur","Nagarpur","Sakhipur","Basail","Delduar",
-  "Hemayetpur","Ashulia","Fatullah Bazar","Keraniganj Sadar","Ukhia","Ramu","Teknaf","Chakaria",
-];
-
-const getLocationMatchScore = (address: string, candidate: string): number => {
-  const na = normalizeLocationName(address);
-  const nc = normalizeLocationName(candidate);
-  if (!na || !nc) return 0;
-  if (na.includes(nc)) return 100 + nc.length;
-  const at = na.split(" ").filter(Boolean);
-  const ct = nc.split(" ").filter((t) => t.length > 1);
-  const hits = ct.filter((c) => at.some((a) => a === c || a.includes(c) || c.includes(a))).length;
-  if (hits > 0) return 72 + hits * 12 + nc.length;
-  const ak = toPhoneticKey(address), ck = toPhoneticKey(candidate);
-  if (ck.length >= 3 && ak.includes(ck)) return 88 + ck.length;
-  return 0;
-};
-
-const findBestMatch = (address: string, locations: Array<{ id: string | number; name: string }>) => {
-  let best: { id: string | number; name: string } | null = null, bestScore = 0;
-  for (const loc of locations) { const s = getLocationMatchScore(address, loc.name); if (s > bestScore) { bestScore = s; best = loc; } }
-  return bestScore >= 78 ? best : null;
-};
-
-const extractHints = (address: string) => {
-  const n = normalizeLocationName(address);
-  return {
-    cityHints: bdDistrictList.filter((d) => n.includes(normalizeLocationName(d))),
-    zoneHints: bdThanaList.filter((t) => n.includes(normalizeLocationName(t))),
-  };
-};
-
-const findByHints = (locations: Array<{ id: string | number; name: string }>, hints: string[]) => {
-  const nh = [...new Set(hints.map(normalizeLocationName).filter(Boolean))];
-  for (const hint of nh) {
-    const m = locations.find((l) => { const nl = normalizeLocationName(l.name); return nl === hint || nl.includes(hint) || hint.includes(nl); });
-    if (m) return m;
-  }
-  return null;
-};
-
-const resolveMatch = (address: string, locations: Array<{ id: string | number; name: string }>, hints: string[]) =>
-  findByHints(locations, hints) ?? findBestMatch(address, locations);
 
 export interface BulkOrderEntry {
   id: string;
@@ -124,7 +59,7 @@ function OrderRowLocationSelector({
   order, cities, citiesLoading, providerId, state, onChange,
 }: {
   order: BulkOrderEntry;
-  cities: Array<{ id: string | number; name: string }>;
+  cities: PathaoLocationItem[];
   citiesLoading: boolean;
   providerId: string;
   state: OrderLocationState;
@@ -135,11 +70,16 @@ function OrderRowLocationSelector({
   );
 
   useEffect(() => {
+    if (state.zoneId && !zonesLoading && zones.length > 0 && !zones.some((zone: any) => String(zone.id) === state.zoneId)) {
+      onChange({ zoneId: "", zoneName: "", areaId: "" });
+      return;
+    }
+
     if (!state.cityId || zonesLoading || zones.length === 0 || state.zoneId) return;
-    const { zoneHints } = extractHints(order.customer_address);
-    const matched = resolveMatch(order.customer_address, zones as any[], zoneHints);
+    const { zoneHints } = extractPathaoLocationHints(order.customer_address);
+    const matched = resolvePathaoLocationMatch(order.customer_address, zones as PathaoLocationItem[], zoneHints);
     if (matched) onChange({ zoneId: String(matched.id), zoneName: matched.name });
-  }, [state.cityId, zones, zonesLoading]);
+  }, [onChange, order.customer_address, state.cityId, state.zoneId, zones, zonesLoading]);
 
   return (
     <>
@@ -171,6 +111,8 @@ function OrderRowLocationSelector({
 
 export function PathaoBulkSubmitPreview({ open, onOpenChange, orders, providerId, providerName, onSubmit, isSubmitting, progress, submitResults = [] }: Props) {
   const isPathao = needsLocation(providerName);
+  const queryClient = useQueryClient();
+  const { session } = useAuth();
   const { data: cities = [], isLoading: citiesLoading } = useCourierCities(open && isPathao ? providerId : null);
   const [orderStates, setOrderStates] = useState<Record<string, OrderLocationState>>({});
 
@@ -192,8 +134,8 @@ export function PathaoBulkSubmitPreview({ open, onOpenChange, orders, providerId
 
       let cityId = "", cityName = "";
       if (isPathao) {
-        const { cityHints } = extractHints(order.customer_address);
-        const matched = resolveMatch(order.customer_address, cities as any[], cityHints);
+        const { cityHints } = extractPathaoLocationHints(order.customer_address);
+        const matched = resolvePathaoLocationMatch(order.customer_address, cities as PathaoLocationItem[], cityHints);
         if (matched) { cityId = String(matched.id); cityName = matched.name; }
       }
 
@@ -206,6 +148,20 @@ export function PathaoBulkSubmitPreview({ open, onOpenChange, orders, providerId
     }
     setOrderStates(newStates);
   }, [open, cities, orders, isPathao]);
+
+  useEffect(() => {
+    if (!open || !isPathao || !providerId || !session?.access_token) return;
+
+    const cityIds = Array.from(new Set(
+      Object.values(orderStates)
+        .map((state) => state.cityId)
+        .filter(Boolean),
+    ));
+
+    cityIds.forEach((cityId) => {
+      void prefetchCourierLocations(queryClient, session.access_token, providerId, "zones", cityId);
+    });
+  }, [isPathao, open, orderStates, providerId, queryClient, session?.access_token]);
 
   useEffect(() => {
     if (!open) setOrderStates({});
