@@ -116,6 +116,10 @@ interface Props {
   submitResults?: SubmitResultEntry[];
 }
 
+const PATHAO_SLUGS = ["pathao"];
+const needsLocation = (providerName: string) =>
+  PATHAO_SLUGS.some((s) => providerName.toLowerCase().includes(s));
+
 function OrderRowLocationSelector({
   order, cities, citiesLoading, providerId, state, onChange,
 }: {
@@ -139,7 +143,6 @@ function OrderRowLocationSelector({
 
   return (
     <>
-      {/* City */}
       <Select value={state.cityId} onValueChange={(v) => {
         const city = cities.find((c) => String(c.id) === v);
         onChange({ cityId: v, cityName: city?.name || "", zoneId: "", zoneName: "", areaId: "" });
@@ -151,7 +154,6 @@ function OrderRowLocationSelector({
           {cities.map((c) => <SelectItem key={String(c.id)} value={String(c.id)} className="text-xs">{c.name}</SelectItem>)}
         </SelectContent>
       </Select>
-      {/* Zone */}
       <Select value={state.zoneId} onValueChange={(v) => {
         const zone = zones.find((z: any) => String(z.id) === v);
         onChange({ zoneId: v, zoneName: (zone as any)?.name || "", areaId: "" });
@@ -168,35 +170,43 @@ function OrderRowLocationSelector({
 }
 
 export function PathaoBulkSubmitPreview({ open, onOpenChange, orders, providerId, providerName, onSubmit, isSubmitting, progress, submitResults = [] }: Props) {
-  const { data: cities = [], isLoading: citiesLoading } = useCourierCities(open ? providerId : null);
+  const isPathao = needsLocation(providerName);
+  const { data: cities = [], isLoading: citiesLoading } = useCourierCities(open && isPathao ? providerId : null);
   const [orderStates, setOrderStates] = useState<Record<string, OrderLocationState>>({});
 
-  // Build results map
   const resultsMap = useMemo(() => {
     const map: Record<string, SubmitResultEntry> = {};
     for (const r of submitResults) map[r.orderId] = r;
     return map;
   }, [submitResults]);
 
+  // Initialize order states
   useEffect(() => {
-    if (!open || cities.length === 0) return;
+    if (!open) return;
+    // For non-Pathao, initialize immediately; for Pathao, wait for cities
+    if (isPathao && cities.length === 0) return;
+
     const newStates: Record<string, OrderLocationState> = {};
     for (const order of orders) {
-      if (orderStates[order.id]?.cityId) { newStates[order.id] = orderStates[order.id]; continue; }
-      const { cityHints } = extractHints(order.customer_address);
-      const matched = resolveMatch(order.customer_address, cities as any[], cityHints);
+      if (orderStates[order.id]?.weight) { newStates[order.id] = orderStates[order.id]; continue; }
+
+      let cityId = "", cityName = "";
+      if (isPathao) {
+        const { cityHints } = extractHints(order.customer_address);
+        const matched = resolveMatch(order.customer_address, cities as any[], cityHints);
+        if (matched) { cityId = String(matched.id); cityName = matched.name; }
+      }
+
       newStates[order.id] = {
-        cityId: matched ? String(matched.id) : "",
-        zoneId: "", areaId: "",
+        cityId, zoneId: "", areaId: "",
         weight: "0.2",
         note: order.courier_note || order.notes || "",
-        cityName: matched?.name || "", zoneName: "",
+        cityName, zoneName: "",
       };
     }
     setOrderStates(newStates);
-  }, [open, cities, orders]);
+  }, [open, cities, orders, isPathao]);
 
-  // Reset states when dialog closes
   useEffect(() => {
     if (!open) setOrderStates({});
   }, [open]);
@@ -205,9 +215,14 @@ export function PathaoBulkSubmitPreview({ open, onOpenChange, orders, providerId
     setOrderStates((prev) => ({ ...prev, [orderId]: { ...prev[orderId], ...updates } }));
   }, []);
 
+  // For Pathao: ready = has city+zone. For others: always ready once state exists
   const readyCount = useMemo(() =>
-    orders.filter((o) => orderStates[o.id]?.cityId && orderStates[o.id]?.zoneId).length,
-    [orders, orderStates]
+    orders.filter((o) => {
+      const s = orderStates[o.id];
+      if (!s) return false;
+      return isPathao ? !!(s.cityId && s.zoneId) : true;
+    }).length,
+    [orders, orderStates, isPathao]
   );
 
   const successCount = submitResults.filter((r) => r.success).length;
@@ -215,18 +230,27 @@ export function PathaoBulkSubmitPreview({ open, onOpenChange, orders, providerId
 
   const handleSubmit = () => {
     const readyOrders = orders
-      .filter((o) => orderStates[o.id]?.cityId && orderStates[o.id]?.zoneId)
+      .filter((o) => {
+        const s = orderStates[o.id];
+        if (!s) return false;
+        return isPathao ? !!(s.cityId && s.zoneId) : true;
+      })
       .map((o) => ({
         orderId: o.id,
-        cityId: orderStates[o.id].cityId,
-        zoneId: orderStates[o.id].zoneId,
-        areaId: orderStates[o.id].areaId,
+        cityId: orderStates[o.id].cityId || "",
+        zoneId: orderStates[o.id].zoneId || "",
+        areaId: orderStates[o.id].areaId || "",
         weight: parseFloat(orderStates[o.id].weight) || 0.2,
         note: orderStates[o.id].note,
       }));
-    if (readyOrders.length === 0) { toast.error("কোনো অর্ডারের Zone সিলেক্ট করা হয়নি!"); return; }
+    if (readyOrders.length === 0) { toast.error("কোনো অর্ডার Ready নেই!"); return; }
     onSubmit(readyOrders);
   };
+
+  // Grid columns change based on whether location is needed
+  const gridCols = isPathao
+    ? "grid-cols-[30px_50px_minmax(80px,1fr)_85px_minmax(80px,1fr)_minmax(70px,1fr)_minmax(70px,1fr)_55px_minmax(80px,1fr)_50px_minmax(90px,1fr)]"
+    : "grid-cols-[30px_50px_minmax(100px,1fr)_90px_minmax(100px,1.5fr)_60px_minmax(100px,1fr)_50px_minmax(90px,1fr)]";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -247,14 +271,14 @@ export function PathaoBulkSubmitPreview({ open, onOpenChange, orders, providerId
         <ScrollArea className="max-h-[calc(90vh-140px)]">
           <div className="px-2 py-2">
             {/* Header row */}
-            <div className="grid grid-cols-[30px_50px_minmax(80px,1fr)_85px_minmax(80px,1fr)_minmax(70px,1fr)_minmax(70px,1fr)_55px_minmax(80px,1fr)_50px_minmax(90px,1fr)] gap-1 items-center py-2 border-b bg-primary text-primary-foreground rounded-t-lg px-2">
+            <div className={`grid ${gridCols} gap-1 items-center py-2 border-b bg-primary text-primary-foreground rounded-t-lg px-2`}>
               <span className="text-[8px] font-bold">SL</span>
               <span className="text-[8px] font-bold">ID</span>
               <span className="text-[8px] font-bold">Name</span>
               <span className="text-[8px] font-bold">Phone</span>
               <span className="text-[8px] font-bold">Address</span>
-              <span className="text-[8px] font-bold">City</span>
-              <span className="text-[8px] font-bold">Zone</span>
+              {isPathao && <span className="text-[8px] font-bold">City</span>}
+              {isPathao && <span className="text-[8px] font-bold">Zone</span>}
               <span className="text-[8px] font-bold text-center">৳</span>
               <span className="text-[8px] font-bold">Note</span>
               <span className="text-[8px] font-bold text-center">Wt</span>
@@ -270,7 +294,7 @@ export function PathaoBulkSubmitPreview({ open, onOpenChange, orders, providerId
               return (
                 <div
                   key={order.id}
-                  className={`grid grid-cols-[30px_50px_minmax(80px,1fr)_85px_minmax(80px,1fr)_minmax(70px,1fr)_minmax(70px,1fr)_55px_minmax(80px,1fr)_50px_minmax(90px,1fr)] gap-1 items-center py-1.5 border-b border-border/20 px-2 ${
+                  className={`grid ${gridCols} gap-1 items-center py-1.5 border-b border-border/20 px-2 ${
                     result?.success ? "bg-emerald-50/50 dark:bg-emerald-950/20" : result && !result.success ? "bg-destructive/5" : "hover:bg-muted/20"
                   }`}
                 >
@@ -280,27 +304,29 @@ export function PathaoBulkSubmitPreview({ open, onOpenChange, orders, providerId
                   <span className="text-[10px] text-muted-foreground font-mono">{order.customer_phone}</span>
                   <span className="text-[10px] text-muted-foreground truncate" title={order.customer_address}>{order.customer_address}</span>
                   
-                  {/* City & Zone selectors */}
-                  {state && !result && (
-                    <OrderRowLocationSelector
-                      order={order}
-                      cities={cities as any[]}
-                      citiesLoading={citiesLoading}
-                      providerId={providerId}
-                      state={state}
-                      onChange={(updates) => updateOrderState(order.id, updates)}
-                    />
-                  )}
-                  {result && (
+                  {/* City & Zone selectors (Pathao only) */}
+                  {isPathao && (
                     <>
-                      <span className="text-[10px] text-muted-foreground truncate">{state?.cityName}</span>
-                      <span className="text-[10px] text-muted-foreground truncate">{state?.zoneName}</span>
-                    </>
-                  )}
-                  {!state && !result && (
-                    <>
-                      <span className="text-[10px] text-muted-foreground">—</span>
-                      <span className="text-[10px] text-muted-foreground">—</span>
+                      {state && !result ? (
+                        <OrderRowLocationSelector
+                          order={order}
+                          cities={cities as any[]}
+                          citiesLoading={citiesLoading}
+                          providerId={providerId}
+                          state={state}
+                          onChange={(updates) => updateOrderState(order.id, updates)}
+                        />
+                      ) : result ? (
+                        <>
+                          <span className="text-[10px] text-muted-foreground truncate">{state?.cityName}</span>
+                          <span className="text-[10px] text-muted-foreground truncate">{state?.zoneName}</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-[10px] text-muted-foreground">—</span>
+                          <span className="text-[10px] text-muted-foreground">—</span>
+                        </>
+                      )}
                     </>
                   )}
 
@@ -345,10 +371,14 @@ export function PathaoBulkSubmitPreview({ open, onOpenChange, orders, providerId
                           <AlertCircle className="h-2.5 w-2.5 mr-0.5" /> ব্যর্থ
                         </Badge>
                       )
-                    ) : state?.cityId && state?.zoneId ? (
-                      <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                    ) : isPathao ? (
+                      state?.cityId && state?.zoneId ? (
+                        <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                      ) : (
+                        <Badge variant="outline" className="text-[8px] text-destructive border-destructive/30 px-1 py-0">Zone নেই</Badge>
+                      )
                     ) : (
-                      <Badge variant="outline" className="text-[8px] text-destructive border-destructive/30 px-1 py-0">Zone নেই</Badge>
+                      <CheckCircle2 className="h-4 w-4 text-emerald-500" />
                     )}
                   </div>
                 </div>
@@ -363,7 +393,7 @@ export function PathaoBulkSubmitPreview({ open, onOpenChange, orders, providerId
             <MapPin className="h-3 w-3 inline mr-1" />
             {hasResults
               ? `${successCount}/${submitResults.length} সাকসেসফুলি সাবমিট হয়েছে`
-              : `${readyCount}/${orders.length} অর্ডারের Location সেট আছে`
+              : `${readyCount}/${orders.length} অর্ডার Ready`
             }
           </div>
           <div className="flex gap-2">
