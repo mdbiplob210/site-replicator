@@ -264,6 +264,7 @@ const AdminOrders = () => {
   const canPrintMemo = userRole === "admin" || hasPrintMemoPermission;
   const canTransferOrders = userRole === "admin" || hasTransferPermission;
   const canDeleteOrders = userRole === "admin" || hasDeletePermission;
+  const isEmployee = userRole !== "admin";
   // Fetch user's display name from profile
   const { data: userDisplayName } = useQuery({
     queryKey: ["user-profile-name", user?.id],
