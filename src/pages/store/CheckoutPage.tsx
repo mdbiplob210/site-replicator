@@ -243,7 +243,7 @@ const CheckoutPage = () => {
         customer_name: form.name,
         customer_phone: form.phone,
         customer_address: form.address,
-        notes: form.notes || null,
+        notes: null,
         total_amount: total,
         product_cost: item.price * item.qty,
         delivery_charge: deliveryCharge,
