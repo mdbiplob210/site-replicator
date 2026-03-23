@@ -159,7 +159,7 @@ async function submitToPathao(supabase: any, config: any, provider: any, body: a
 
   const storeId = config.store_id || "";
   const items = order.order_items || [];
-  const totalWeight = Math.max(items.reduce((sum: number, i: any) => sum + (i.quantity || 1) * 0.5, 0), 0.5);
+  const totalWeight = body.weight || Math.max(items.reduce((sum: number, i: any) => sum + (i.quantity || 1) * 0.5, 0), 0.5);
 
   const pathaoPayload = {
     store_id: storeId,
