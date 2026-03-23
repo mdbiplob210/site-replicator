@@ -3283,16 +3283,18 @@ const AdminOrders = () => {
                         }}>
                           <PopoverTrigger asChild>
                             {order.notes ? (
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <button className="h-5 w-5 rounded flex items-center justify-center bg-primary/10 hover:bg-primary/20 transition-colors text-primary" title="">
-                                    <MessageSquare className="h-3 w-3" />
-                                  </button>
-                                </TooltipTrigger>
-                                <TooltipContent side="top" className="max-w-[200px] text-xs whitespace-pre-wrap">
-                                  {order.notes}
-                                </TooltipContent>
-                              </Tooltip>
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <button className="h-5 w-5 rounded flex items-center justify-center bg-primary/10 hover:bg-primary/20 transition-colors text-primary">
+                                      <MessageSquare className="h-3 w-3" />
+                                    </button>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top" className="max-w-[200px] text-xs whitespace-pre-wrap">
+                                    {order.notes}
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
                             ) : (
                               <button className="h-5 w-5 rounded flex items-center justify-center hover:bg-primary/10 transition-colors text-muted-foreground/40 hover:text-primary" title="নোট যোগ করুন">
                                 <Plus className="h-3 w-3" />
