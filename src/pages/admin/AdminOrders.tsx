@@ -3726,7 +3726,7 @@ const AdminOrders = () => {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            {(() => { const employeeStatuses = ["processing", "confirmed", "on_hold", "hand_delivery", "cancelled"] as const; const adminStatuses = [...["processing", "confirmed", "in_courier", "on_hold", "hand_delivery", "cancelled"] as const, ...(order.status === "pending_return" ? ["returned" as const] : []), ...(order.status === "in_courier" ? ["pending_return" as const] : [])]; return (isEmployee ? employeeStatuses : adminStatuses).map((s) => (
+                            {(() => { const employeeStatuses = ["processing", "confirmed", "on_hold", "hand_delivery", "cancelled"] as const; const adminStatuses = [...["processing", "confirmed", "on_hold", "hand_delivery", "cancelled"] as const, ...(order.status === "pending_return" ? ["returned" as const] : []), ...(order.status === "in_courier" ? ["pending_return" as const] : [])]; return (isEmployee ? employeeStatuses : adminStatuses).map((s) => (
                               <SelectItem key={s} value={s}>
                                 <div className="flex items-center gap-2">
                                   <span className={`h-2 w-2 rounded-full ${getStatusColor(s as OrderStatus)}`} />
