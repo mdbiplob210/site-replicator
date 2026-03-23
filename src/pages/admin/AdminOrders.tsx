@@ -1793,16 +1793,34 @@ const AdminOrders = () => {
             </Card>
           ) : (
             <div className="space-y-3">
-              {incompleteOrders.map((io) => (
-                <IncompleteOrderCard
-                  key={io.id}
-                  io={io}
-                  activeIncompleteTab={activeIncompleteTab}
-                  onConvert={openConvertAsNewOrder}
-                  deleteIncomplete={deleteIncomplete}
-                  canDeleteOrders={canDeleteOrders}
-                />
-              ))}
+              {incompleteOrders.map((io) => {
+                const previewItem = buildIncompleteOrderItem(io);
+                const previewDeliveryCharge = (() => {
+                  const value = normalizeNumberValue(io.delivery_charge);
+                  return isSanePrice(value) ? value : 0;
+                })();
+                const previewDiscount = (() => {
+                  const value = normalizeNumberValue(io.discount);
+                  return isSanePrice(value) || value === 0 ? value : 0;
+                })();
+                const rawTotalAmount = normalizeNumberValue(io.total_amount);
+                const previewTotalAmount = previewItem
+                  ? Math.max(0, previewItem.total_price + previewDeliveryCharge - previewDiscount)
+                  : (isSanePrice(rawTotalAmount) || rawTotalAmount === 0 ? rawTotalAmount : 0);
+
+                return (
+                  <IncompleteOrderCard
+                    key={io.id}
+                    io={io}
+                    activeIncompleteTab={activeIncompleteTab}
+                    onConvert={openConvertAsNewOrder}
+                    deleteIncomplete={deleteIncomplete}
+                    canDeleteOrders={canDeleteOrders}
+                    previewItem={previewItem}
+                    previewTotalAmount={previewTotalAmount}
+                  />
+                );
+              })}
             </div>
           )}
         </div>
