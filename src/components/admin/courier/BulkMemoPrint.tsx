@@ -23,35 +23,33 @@ interface BulkMemoPrintProps {
 
 // Bulk print styles for A4 (3 per page grid)
 const BULK_PAGE_STYLES = `
-  @page { size: A4; margin: 0; }
+  @page { size: A4; margin: 5mm 8mm; }
   html, body { margin: 0; padding: 0; width: 210mm; }
   .page-container {
     display: flex;
     flex-direction: column;
-    width: 210mm;
-    height: 297mm;
+    width: 100%;
+    height: 287mm;
     page-break-after: always;
     overflow: hidden;
+    gap: 4mm;
   }
   .page-container:last-child { page-break-after: auto; }
   .page-container > * {
     flex: 1 1 0;
     width: 100%;
     overflow: hidden;
-    border-bottom: 1px dashed #ccc;
   }
-  .page-container > *:last-child { border-bottom: none; }
   .page-container .memo {
     max-width: 100% !important;
     width: 100% !important;
     margin: 0 !important;
-    border-radius: 0 !important;
-    border-left: none !important;
-    border-right: none !important;
-    border-top: none !important;
+    border-radius: 6px !important;
     height: 100%;
     display: flex;
     flex-direction: column;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
   }
 `;
 
