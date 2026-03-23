@@ -2581,13 +2581,13 @@ const AdminOrders = () => {
                   <div className="space-y-2">
                     <Label className="text-sm font-semibold flex items-center gap-1.5"><Activity className="h-4 w-4 text-primary" /> অর্ডার স্ট্যাটাস</Label>
                     <div className="grid grid-cols-4 gap-2">
-                      {[
+                      {(isEmployee ? [
                         { value: "processing", label: "New Order", color: "bg-blue-500", icon: Clock },
                         { value: "confirmed", label: "Confirmed", color: "bg-emerald-600", icon: CheckCircle2 },
-                        { value: "in_courier", label: "In Courier", color: "bg-violet-500", icon: Truck },
                         { value: "on_hold", label: "Hold", color: "bg-yellow-500", icon: PauseCircle },
                         { value: "hand_delivery", label: "Hand Delivery", color: "bg-cyan-500", icon: Hand },
                         { value: "cancelled", label: "Cancelled", color: "bg-red-500", icon: XCircle },
+                      ] : [
                       ].map((s) => (
                         <button
                           key={s.value}
