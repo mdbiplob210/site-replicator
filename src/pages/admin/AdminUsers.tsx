@@ -480,10 +480,8 @@ const AdminUsers = () => {
                           const presence = getPresenceStatus(user.user_id);
                           const emp = employees.find(e => e.user_id === user.user_id);
                           const panelActive = emp?.panel?.is_active || false;
-                          const pendingCount = (() => {
-                            // We don't have a direct count here, show panel status
-                            return emp?.panel ? "active" : null;
-                          })();
+                          const panelStat = panelStats.find((p: any) => p.user_id === user.user_id);
+                          const pendingCount = panelStat?.pending_orders ?? 0;
 
                           const getRoleName = () => {
                             if (user.roles.includes("admin")) return "Admin";
