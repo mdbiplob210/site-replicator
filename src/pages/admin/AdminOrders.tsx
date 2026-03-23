@@ -667,11 +667,13 @@ const AdminOrders = () => {
   // Filtered orders by search + advanced filters
   const filteredOrders = useMemo(() => {
     return orders.filter((o) => {
-      // Employee restriction: only show assigned orders
-      if (!isAdmin && assignedOrderIds instanceof Set && !assignedOrderIds.has(o.id)) return false;
-      if (searchQuery) {
+      // Employee restriction: only show assigned orders UNLESS actively searching
+      const isSearching = !!searchQuery.trim();
+      if (!isAdmin && assignedOrderIds instanceof Set && !assignedOrderIds.has(o.id) && !isSearching) return false;
+      if (isSearching) {
         const q = searchQuery.toLowerCase();
-        if (!(o.customer_name.toLowerCase().includes(q) || o.order_number.toLowerCase().includes(q) || (o.customer_phone && o.customer_phone.toLowerCase().includes(q)))) return false;
+        const matchesSearch = o.customer_name.toLowerCase().includes(q) || o.order_number.toLowerCase().includes(q) || (o.customer_phone && o.customer_phone.toLowerCase().includes(q));
+        if (!matchesSearch) return false;
       }
       if (filterSource && !(o.source || "Panel").toLowerCase().includes(filterSource.toLowerCase())) return false;
       if (filterPhone && !(o.customer_phone && o.customer_phone.includes(filterPhone))) return false;
@@ -2563,7 +2565,7 @@ const AdminOrders = () => {
           <div className="relative flex-1 min-w-0">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search..."
+              placeholder="অর্ডার নম্বর / ফোন নম্বর দিয়ে সার্চ করুন..."
               className="pl-10 border-0 bg-transparent shadow-none focus-visible:ring-0 text-sm h-9"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
