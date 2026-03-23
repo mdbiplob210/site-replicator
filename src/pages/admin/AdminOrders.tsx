@@ -263,6 +263,15 @@ const AdminOrders = () => {
   const canPrintMemo = userRole === "admin" || hasPrintMemoPermission;
   const canTransferOrders = userRole === "admin" || hasTransferPermission;
   const canDeleteOrders = userRole === "admin" || hasDeletePermission;
+  // Fetch user's display name from profile
+  const { data: userDisplayName } = useQuery({
+    queryKey: ["user-profile-name", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("full_name").eq("user_id", user!.id).limit(1).maybeSingle();
+      return data?.full_name || user?.email || "System";
+    },
+    enabled: !!user?.id,
+  });
   const { data: orders = [], isLoading } = useOrders(statusFilter, orderDateFilter, customDateFrom, customDateTo, isDeletedTab);
   const { data: counts = {} } = useOrderCounts(orderDateFilter, customDateFrom, customDateTo, assignedOrderIds);
   const createOrder = useCreateOrder();
