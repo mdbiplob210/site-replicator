@@ -387,13 +387,27 @@ const Login = () => {
             </Button>
           </form>
 
+          {!isSignUp && (
+            <p className="mt-2 text-right">
+              <button
+                type="button"
+                onClick={() => setForgotMode(true)}
+                className="text-xs font-medium hover:underline"
+                style={{ color: "rgba(78,205,196,0.7)" }}
+              >
+                Forgot Password?
+              </button>
+            </p>
+          )}
 
-          <p className="mt-5 text-center text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>
+          <p className="mt-3 text-center text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>
             {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
             <button onClick={() => setIsSignUp(!isSignUp)} className="font-medium hover:underline" style={{ color: "#4ECDC4" }}>
               {isSignUp ? "Sign In" : "Register"}
             </button>
           </p>
+          </>
+          )}
 
           <p className="mt-4 text-center text-[10px]" style={{ color: "rgba(255,255,255,0.25)" }}>
             © 2026 QUICK SHOP BD — Secure & Encrypted
