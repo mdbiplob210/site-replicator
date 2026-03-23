@@ -1531,6 +1531,10 @@ const AdminOrders = () => {
     setBulkCourierId("");
     setBulkCourierSubmitting(false);
     setBulkCourierProgress({ done: 0, total: 0 });
+    // Navigate to In Courier tab after successful submit
+    if (successCount > 0) {
+      setActiveTab("In Courier");
+    }
   };
 
   // All users for bulk transfer
