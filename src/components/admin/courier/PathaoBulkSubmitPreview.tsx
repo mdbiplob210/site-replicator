@@ -366,7 +366,7 @@ export function PathaoBulkSubmitPreview({ open, onOpenChange, orders, providerId
                             </span>
                           )}
                         </>
-                        <>
+                      ) : (
                           <Badge variant="destructive" className="text-[8px] px-1 py-0 h-4">
                             <AlertCircle className="h-2.5 w-2.5 mr-0.5" /> ব্যর্থ
                           </Badge>
