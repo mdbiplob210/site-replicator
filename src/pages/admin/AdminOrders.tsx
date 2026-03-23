@@ -807,6 +807,16 @@ const AdminOrders = () => {
     + [filterDeviceType, filterPaymentStatus, filterCourierProvider, filterCourierStatus, filterCategory, filterCourierCharged, filterSalesType, filterDistrict, filterThana, filterZone].filter(v => v !== "all").length
     + (orderDateFilter !== "all" ? 1 : 0);
 
+  // Reset page when filters change
+  useEffect(() => { setCurrentPage(1); }, [activeTab, searchQuery, orderDateFilter, filterSource, filterPhone, filterAmountMin, filterAmountMax, filterDeviceType, filterAddress, filterPaymentStatus, filterCourierProvider, filterCourierStatus, filterProductIds, filterCategory, filterCourierCharged, filterStatus, filterDistrict, filterThana, filterZone, perPage]);
+
+  // Paginated orders
+  const totalPages = Math.max(1, Math.ceil(filteredOrders.length / perPage));
+  const paginatedOrders = useMemo(() => {
+    const start = (currentPage - 1) * perPage;
+    return filteredOrders.slice(start, start + perPage);
+  }, [filteredOrders, currentPage, perPage]);
+
   // Site settings for shop name
   const { data: siteSettings } = useSiteSettings();
   const shopName = siteSettings?.site_name || "STORE";
