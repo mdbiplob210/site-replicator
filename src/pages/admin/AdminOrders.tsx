@@ -721,7 +721,7 @@ const AdminOrders = () => {
       while (true) {
         const { data, error } = await supabase
           .from("order_items")
-          .select("order_id, product_name, product_code, product_id")
+          .select("order_id, product_name, product_code, product_id, quantity, unit_price, total_price")
           .range(from, from + pageSize - 1);
         if (error) throw error;
         if (!data || data.length === 0) break;
