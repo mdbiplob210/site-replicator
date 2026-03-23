@@ -328,6 +328,9 @@ const AdminOrders = () => {
         queryClient.invalidateQueries({ queryKey: ["order-counts"] });
         queryClient.invalidateQueries({ queryKey: ["next-order-number"] });
       })
+      .on("postgres_changes", { event: "*", schema: "public", table: "order_items" }, () => {
+        queryClient.invalidateQueries({ queryKey: ["all-order-items-filter"] });
+      })
       .on("postgres_changes", { event: "*", schema: "public", table: "incomplete_orders" }, () => {
         queryClient.invalidateQueries({ queryKey: ["incomplete-orders"] });
         queryClient.invalidateQueries({ queryKey: ["incomplete-order-counts"] });
@@ -487,26 +490,26 @@ const AdminOrders = () => {
       return data;
     },
   });
+  const orderIds = useMemo(() => orders.map((o: any) => o.id), [orders]);
   const { data: allOrderItems = [] } = useQuery({
-    queryKey: ["all-order-items-filter"],
+    queryKey: ["all-order-items-filter", orderIds],
     queryFn: async () => {
-      // Fetch all order items with pagination to bypass 1000 row limit
+      if (orderIds.length === 0) return [];
+      // Fetch items only for currently visible orders in batches of 200 IDs
       let allItems: any[] = [];
-      let from = 0;
-      const pageSize = 1000;
-      while (true) {
+      const batchSize = 200;
+      for (let i = 0; i < orderIds.length; i += batchSize) {
+        const batch = orderIds.slice(i, i + batchSize);
         const { data, error } = await supabase
           .from("order_items")
           .select("order_id, product_name, product_code, product_id, quantity, unit_price, total_price")
-          .range(from, from + pageSize - 1);
+          .in("order_id", batch);
         if (error) throw error;
-        if (!data || data.length === 0) break;
-        allItems = allItems.concat(data);
-        if (data.length < pageSize) break;
-        from += pageSize;
+        if (data) allItems = allItems.concat(data);
       }
       return allItems;
     },
+    staleTime: 15_000,
   });
 
   // Order assignments for employee column
