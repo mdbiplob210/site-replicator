@@ -68,11 +68,11 @@ export function generatePOSMemo(d: MemoData): string {
 // ─── TEMPLATE STYLES ──────────────────────────────────────────
 const COMMON_BASE = `
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Segoe UI', 'Noto Sans Bengali', sans-serif; font-size: 12px; color: #1a1a2e; }
-  .barcode { font-family: 'Libre Barcode 39', monospace; font-size: 36px; line-height: 1; }
+  body { font-family: 'Segoe UI', 'Noto Sans Bengali', sans-serif; font-size: 11px; color: #1a1a2e; }
+  .barcode { font-family: 'Libre Barcode 39', monospace; font-size: 32px; line-height: 1; }
   .items-table { width: 100%; border-collapse: collapse; }
-  .items-table th { font-size: 9px; font-weight: 700; padding: 5px 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .items-table td { padding: 5px 8px; font-size: 11px; }
+  .items-table th { font-size: 8px; font-weight: 700; padding: 3px 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .items-table td { padding: 3px 6px; font-size: 10px; }
   @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
 `;
 
