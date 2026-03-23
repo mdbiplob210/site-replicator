@@ -3849,6 +3849,10 @@ const AdminOrders = () => {
           onOpenChange={(open) => {
             setPathaoBulkPreviewOpen(open);
             if (!open) {
+              // Navigate to In Courier tab when closing after results
+              if (pathaoBulkResults.some(r => r.success)) {
+                setActiveTab("In Courier");
+              }
               setPathaoBulkOrders([]);
               setPathaoBulkCourierId("");
               setPathaoBulkResults([]);
