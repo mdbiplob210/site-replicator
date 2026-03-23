@@ -109,7 +109,9 @@ function GeneralTab() {
   const [customDomain, setCustomDomain] = useState("");
   const [loaded, setLoaded] = useState(false);
   const [logoUrl, setLogoUrl] = useState("");
+  const [faviconUrl, setFaviconUrl] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [faviconUploading, setFaviconUploading] = useState(false);
   // New fields
   const [marqueeText, setMarqueeText] = useState("");
   const [footerDescription, setFooterDescription] = useState("");
