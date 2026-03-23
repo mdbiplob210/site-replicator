@@ -1237,6 +1237,11 @@ const AdminOrders = () => {
   // Bulk status change
   const handleBulkStatusChange = (newStatus: string) => {
     if (selectedOrderIds.size === 0) return;
+    if (newStatus === "in_courier") {
+      toast.error("In Courier স্ট্যাটাস শুধুমাত্র কুরিয়ার API-এর মাধ্যমে সম্ভব!");
+      setBulkStatusValue("");
+      return;
+    }
     if (newStatus === "cancelled") {
       // For cancel, apply directly without reason dialog for bulk
       selectedOrderIds.forEach(id => {
