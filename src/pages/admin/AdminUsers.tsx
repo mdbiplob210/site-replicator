@@ -166,6 +166,7 @@ const AdminUsers = () => {
 
   // Rules tab
   const { data: employees = [], isLoading: employeesLoading } = useEmployees();
+  const { data: panelStats = [] } = usePanelStats();
   const togglePermission = useTogglePermission();
   const togglePanel = useTogglePanel();
   const [expandedUser, setExpandedUser] = useState<string | null>(null);
