@@ -1797,6 +1797,7 @@ const AdminOrders = () => {
                   activeIncompleteTab={activeIncompleteTab}
                   onConvert={openConvertAsNewOrder}
                   deleteIncomplete={deleteIncomplete}
+                  canDeleteOrders={canDeleteOrders}
                 />
               ))}
             </div>
