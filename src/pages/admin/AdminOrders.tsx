@@ -45,6 +45,7 @@ import { CourierSettingsView } from "@/components/admin/courier/CourierSettingsV
 import { CourierSuccessRate } from "@/components/admin/courier/CourierSuccessRate";
 import { CourierHistoryBadge } from "@/components/admin/courier/CourierHistoryBadge";
 import { FakeOrderDetection } from "@/components/admin/fraud/FakeOrderDetection";
+import { PathaoBulkSubmitPreview } from "@/components/admin/courier/PathaoBulkSubmitPreview";
 import { useBulkMemoPrint } from "@/components/admin/courier/BulkMemoPrint";
 import { useCourierCities, useCourierZones, useCourierAreas, prefetchCourierLocations } from "@/hooks/useCourierLocations";
 import { ApiKeysView } from "@/components/admin/api/ApiKeysView";
@@ -1437,19 +1438,130 @@ const AdminOrders = () => {
   const [bulkCourierSubmitting, setBulkCourierSubmitting] = useState(false);
   const [bulkCourierProgress, setBulkCourierProgress] = useState({ done: 0, total: 0 });
   
+  // Pathao bulk submit preview
+  const [pathaoBulkPreviewOpen, setPathaoBulkPreviewOpen] = useState(false);
+  const [pathaoBulkCourierId, setPathaoBulkCourierId] = useState("");
+  const [pathaoBulkOrders, setPathaoBulkOrders] = useState<import("@/components/admin/courier/PathaoBulkSubmitPreview").BulkOrderEntry[]>([]);
+  
   const handleBulkCourierSubmit = async (courierId: string) => {
     if (selectedOrderIds.size === 0 || !courierId) return;
     const total = selectedOrderIds.size;
+    
+    // Check if this is Pathao — open preview dialog instead of immediate submit
+    const provider = courierProviders?.find((p: any) => p.id === courierId);
+    if (provider?.slug === "pathao") {
+      const selectedOrders = orders.filter((o: any) => selectedOrderIds.has(o.id)).map((o: any) => ({
+        id: o.id,
+        order_number: o.order_number,
+        customer_name: o.customer_name,
+        customer_phone: o.customer_phone || "",
+        customer_address: o.customer_address || "",
+        total_amount: o.total_amount || 0,
+        notes: o.notes || "",
+        courier_note: o.courier_note || "",
+      }));
+      setPathaoBulkOrders(selectedOrders);
+      setPathaoBulkCourierId(courierId);
+      setPathaoBulkPreviewOpen(true);
+      setBulkCourierId("");
+      return;
+    }
+    
     if (!confirm(`${total}টি অর্ডার কুরিয়ারে সাবমিট করবেন? স্ট্যাটাস "In Courier" হয়ে যাবে।`)) {
       setBulkCourierId("");
       return;
     }
+    await executeBulkCourierSubmit(courierId, Array.from(selectedOrderIds));
+  };
+  
+  // Pathao bulk submit with locations
+  const handlePathaoBulkSubmitWithLocations = async (ordersWithLocations: Array<{ orderId: string; cityId: string; zoneId: string; areaId: string; weight: number; note: string }>) => {
+    const courierId = pathaoBulkCourierId;
+    if (!courierId || ordersWithLocations.length === 0) return;
+    
     setBulkCourierSubmitting(true);
+    const total = ordersWithLocations.length;
     setBulkCourierProgress({ done: 0, total });
     let successCount = 0;
     let failCount = 0;
     
-    // Try API-based bulk submit first
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const apikey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      
+      for (const orderLoc of ordersWithLocations) {
+        try {
+          const resp = await fetch(`${supabaseUrl}/functions/v1/courier-submit`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "apikey": apikey,
+              "Authorization": `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              action: "submit-order",
+              provider_id: courierId,
+              order_id: orderLoc.orderId,
+              city_id: Number(orderLoc.cityId) || 1,
+              zone_id: Number(orderLoc.zoneId) || 1,
+              area_id: orderLoc.areaId ? Number(orderLoc.areaId) : undefined,
+            }),
+          });
+          const result = await resp.json();
+          if (result.success) {
+            successCount++;
+            logActivity(orderLoc.orderId, "status_changed", "status", "", "In Courier", `Pathao API সাবমিট (City: ${orderLoc.cityId}, Zone: ${orderLoc.zoneId})`);
+          } else {
+            failCount++;
+          }
+        } catch {
+          failCount++;
+        }
+        setBulkCourierProgress(prev => ({ ...prev, done: prev.done + 1 }));
+      }
+    } catch {
+      for (const orderLoc of ordersWithLocations) {
+        try {
+          await supabase.from("courier_orders").upsert({
+            order_id: orderLoc.orderId,
+            courier_provider_id: courierId,
+            courier_status: "submitted",
+          } as any, { onConflict: "order_id" });
+          await supabase.from("orders").update({ status: "in_courier" as any }).eq("id", orderLoc.orderId);
+          logActivity(orderLoc.orderId, "status_changed", "status", "", "In Courier", "Pathao বাল্ক সাবমিট (ম্যানুয়াল)");
+          successCount++;
+        } catch { failCount++; }
+        setBulkCourierProgress(prev => ({ ...prev, done: prev.done + 1 }));
+      }
+    }
+    
+    queryClient.invalidateQueries({ queryKey: ["orders"] });
+    queryClient.invalidateQueries({ queryKey: ["order-counts"] });
+    queryClient.invalidateQueries({ queryKey: ["courier-orders-filter"] });
+    
+    if (failCount > 0) {
+      toast.warning(`${successCount}টি সাবমিট হয়েছে, ${failCount}টি ব্যর্থ হয়েছে`);
+    } else {
+      toast.success(`${successCount}টি অর্ডার Pathao-তে সাবমিট হয়েছে!`);
+    }
+    setSelectedOrderIds(new Set());
+    setBulkCourierId("");
+    setBulkCourierSubmitting(false);
+    setBulkCourierProgress({ done: 0, total: 0 });
+    setPathaoBulkPreviewOpen(false);
+    setPathaoBulkOrders([]);
+    setPathaoBulkCourierId("");
+  };
+  
+  const executeBulkCourierSubmit = async (courierId: string, orderIds: string[]) => {
+    setBulkCourierSubmitting(true);
+    const total = orderIds.length;
+    setBulkCourierProgress({ done: 0, total });
+    let successCount = 0;
+    let failCount = 0;
+    
     const provider = courierProviders?.find((p: any) => p.id === courierId);
     const hasApiConfig = provider?.api_configs && Array.isArray(provider.api_configs) && provider.api_configs.length > 0 && (provider.api_configs[0] as any)?.api_key;
     
@@ -1470,7 +1582,7 @@ const AdminOrders = () => {
           body: JSON.stringify({
             action: "bulk-submit",
             provider_id: courierId,
-            order_ids: Array.from(selectedOrderIds),
+            order_ids: orderIds,
           }),
         });
         const result = await resp.json();
@@ -1487,11 +1599,10 @@ const AdminOrders = () => {
           }
         }
       } catch {
-        // Fallback to manual if API fails
         failCount = 0;
         successCount = 0;
         setBulkCourierProgress({ done: 0, total });
-        for (const orderId of selectedOrderIds) {
+        for (const orderId of orderIds) {
           try {
             const { error: courierError } = await supabase.from("courier_orders").upsert({
               order_id: orderId,
@@ -1510,8 +1621,7 @@ const AdminOrders = () => {
         }
       }
     } else {
-      // No API config - manual DB-only submission
-      for (const orderId of selectedOrderIds) {
+      for (const orderId of orderIds) {
         try {
           const { error: courierError } = await supabase.from("courier_orders").upsert({
             order_id: orderId,
@@ -3847,6 +3957,18 @@ const AdminOrders = () => {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Pathao Bulk Submit Preview */}
+        <PathaoBulkSubmitPreview
+          open={pathaoBulkPreviewOpen}
+          onOpenChange={setPathaoBulkPreviewOpen}
+          orders={pathaoBulkOrders}
+          providerId={pathaoBulkCourierId}
+          providerName="Pathao"
+          onSubmit={handlePathaoBulkSubmitWithLocations}
+          isSubmitting={bulkCourierSubmitting}
+          progress={bulkCourierProgress}
+        />
       </div>
     </AdminLayout>
   );
