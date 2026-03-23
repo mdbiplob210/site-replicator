@@ -1427,7 +1427,10 @@ const AdminOrders = () => {
     setBulkCourierId("");
     setBulkCourierSubmitting(false);
     setBulkCourierProgress({ done: 0, total: 0 });
-    // Keep dialog open to show results — user will close manually
+    // Navigate to In Courier tab after successful submit
+    if (successCount > 0) {
+      setActiveTab("In Courier");
+    }
   };
   
   const executeBulkCourierSubmit = async (courierId: string, orderIds: string[]) => {
