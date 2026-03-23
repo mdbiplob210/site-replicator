@@ -464,18 +464,22 @@ const Template1Classic = () => {
         </div>
       </footer>
 
-      {showDiscountBanner && (
-        <ExitDiscountBanner onAccept={handleAcceptDiscount} onReject={handleRejectDiscount} />
-      )}
+      <Suspense fallback={null}>
+        {showDiscountBanner && (
+          <ExitDiscountBanner onAccept={handleAcceptDiscount} onReject={handleRejectDiscount} />
+        )}
 
-      {/* Popup Checkout */}
-      <PopupCheckout
-        item={checkoutItem}
-        open={checkoutOpen}
-        onClose={() => setCheckoutOpen(false)}
-        discount={appliedDiscount}
-        onExitIntent={handleExitIntent}
-      />
+        {/* Popup Checkout */}
+        {checkoutOpen && (
+          <PopupCheckout
+            item={checkoutItem}
+            open={checkoutOpen}
+            onClose={() => setCheckoutOpen(false)}
+            discount={appliedDiscount}
+            onExitIntent={handleExitIntent}
+          />
+        )}
+      </Suspense>
 
     </div>
   );
