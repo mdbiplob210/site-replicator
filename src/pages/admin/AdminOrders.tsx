@@ -895,6 +895,8 @@ const AdminOrders = () => {
   // Filtered orders by search + advanced filters
   const filteredOrders = useMemo(() => {
     return orders.filter((o) => {
+      // Employee restriction: only show assigned orders
+      if (!isAdmin && assignedOrderIds instanceof Set && !assignedOrderIds.has(o.id)) return false;
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         if (!(o.customer_name.toLowerCase().includes(q) || o.order_number.toLowerCase().includes(q) || (o.customer_phone && o.customer_phone.toLowerCase().includes(q)))) return false;
