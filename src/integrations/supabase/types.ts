@@ -2374,6 +2374,14 @@ export type Database = {
       }
     }
     Functions: {
+      bulk_transfer_orders: {
+        Args: {
+          _assigned_by?: string
+          _order_ids: string[]
+          _target_user_id: string
+        }
+        Returns: number
+      }
       generate_order_number: { Args: never; Returns: string }
       has_permission: {
         Args: {
