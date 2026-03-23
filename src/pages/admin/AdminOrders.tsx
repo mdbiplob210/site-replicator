@@ -328,6 +328,9 @@ const AdminOrders = () => {
         queryClient.invalidateQueries({ queryKey: ["order-counts"] });
         queryClient.invalidateQueries({ queryKey: ["next-order-number"] });
       })
+      .on("postgres_changes", { event: "*", schema: "public", table: "order_items" }, () => {
+        queryClient.invalidateQueries({ queryKey: ["all-order-items-filter"] });
+      })
       .on("postgres_changes", { event: "*", schema: "public", table: "incomplete_orders" }, () => {
         queryClient.invalidateQueries({ queryKey: ["incomplete-orders"] });
         queryClient.invalidateQueries({ queryKey: ["incomplete-order-counts"] });
