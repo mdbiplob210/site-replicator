@@ -4207,6 +4207,10 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
 
   const handleStatusChange = async (newStatus: string) => {
     if (!orderId || !order || newStatus === order.status) return;
+    if (newStatus === "in_courier") {
+      toast.error("In Courier স্ট্যাটাস শুধুমাত্র কুরিয়ার API-এর মাধ্যমে সম্ভব!");
+      return;
+    }
     if (newStatus === "cancelled") {
       setDetailCancelReason("");
       setDetailCancelCustom("");
