@@ -5132,8 +5132,8 @@ function CourierStatusModal({
   );
 }
 
-function IncompleteOrderCard({ io, activeIncompleteTab, onConvert, deleteIncomplete }: {
-  io: any; activeIncompleteTab: string; onConvert: (io: any) => void; deleteIncomplete: any;
+function IncompleteOrderCard({ io, activeIncompleteTab, onConvert, deleteIncomplete, canDeleteOrders }: {
+  io: any; activeIncompleteTab: string; onConvert: (io: any) => void; deleteIncomplete: any; canDeleteOrders: boolean;
 }) {
   const [noteInput, setNoteInput] = useState("");
   const [isSavingNote, setIsSavingNote] = useState(false);
