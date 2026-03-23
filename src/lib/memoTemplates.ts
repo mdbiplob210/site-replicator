@@ -143,98 +143,98 @@ const STYLE_2 = `${COMMON_BASE}
 
 // Template 3: Modern Gradient (purple/pink)
 const STYLE_3 = `${COMMON_BASE}
-  .memo { max-width: 400px; margin: auto; background: #fff; border-radius: 16px; overflow: hidden; border: 1.5px solid #e9d5ff; }
-  .memo-header { background: linear-gradient(135deg, #7c3aed, #db2777); color: #fff; padding: 18px 20px; }
-  .shop-name { font-size: 16px; font-weight: 800; }
-  .shop-logo { height: 30px; width: auto; }
-  .order-num { font-size: 18px; font-weight: 900; color: #fde68a; }
-  .order-date { font-size: 10px; color: #f0abfc; }
-  .courier-section { background: linear-gradient(135deg, #faf5ff, #fdf2f8); border-bottom: 1px solid #e9d5ff; padding: 10px 18px; }
-  .courier-badge { background: linear-gradient(135deg, #7c3aed, #db2777); color: white; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; }
-  .courier-status { font-size: 9px; font-weight: 700; color: #7c3aed; background: #ede9fe; padding: 2px 8px; border-radius: 10px; }
-  .tracking-box { background: #fff; border: 1.5px dashed #d8b4fe; border-radius: 12px; padding: 8px 14px; text-align: center; margin-top: 8px; }
-  .tracking-label { font-size: 8px; color: #6b7280; text-transform: uppercase; letter-spacing: 2px; }
-  .tracking-id { font-size: 16px; font-weight: 900; letter-spacing: 3px; color: #581c87; }
-  .section { padding: 10px 18px; border-bottom: 1px solid #faf5ff; }
-  .section-title { font-size: 9px; font-weight: 700; color: #a855f7; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px; }
-  .info-grid { display: grid; grid-template-columns: 70px 1fr; gap: 3px 8px; }
-  .info-label { font-size: 10px; font-weight: 600; color: #7c3aed; }
-  .info-value { font-size: 11px; font-weight: 500; color: #1e293b; }
-  .phone-num { font-family: monospace; font-weight: 700; color: #7c3aed; font-size: 12px; }
+  .memo { max-width: 400px; margin: auto; background: #fff; border-radius: 10px; overflow: hidden; border: 1.5px solid #e9d5ff; }
+  .memo-header { background: linear-gradient(135deg, #7c3aed, #db2777); color: #fff; padding: 8px 12px; }
+  .shop-name { font-size: 13px; font-weight: 800; }
+  .shop-logo { height: 22px; width: auto; }
+  .order-num { font-size: 15px; font-weight: 900; color: #fde68a; }
+  .order-date { font-size: 9px; color: #f0abfc; }
+  .courier-section { background: linear-gradient(135deg, #faf5ff, #fdf2f8); border-bottom: 1px solid #e9d5ff; padding: 6px 12px; }
+  .courier-badge { background: linear-gradient(135deg, #7c3aed, #db2777); color: white; padding: 2px 8px; border-radius: 20px; font-size: 9px; font-weight: 700; }
+  .courier-status { font-size: 8px; font-weight: 700; color: #7c3aed; background: #ede9fe; padding: 1px 6px; border-radius: 10px; }
+  .tracking-box { background: #fff; border: 1.5px dashed #d8b4fe; border-radius: 8px; padding: 4px 10px; text-align: center; margin-top: 4px; }
+  .tracking-label { font-size: 7px; color: #6b7280; text-transform: uppercase; letter-spacing: 2px; }
+  .tracking-id { font-size: 13px; font-weight: 900; letter-spacing: 2px; color: #581c87; }
+  .section { padding: 6px 12px; border-bottom: 1px solid #faf5ff; }
+  .section-title { font-size: 8px; font-weight: 700; color: #a855f7; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 3px; }
+  .info-grid { display: grid; grid-template-columns: 55px 1fr; gap: 2px 6px; }
+  .info-label { font-size: 9px; font-weight: 600; color: #7c3aed; }
+  .info-value { font-size: 10px; font-weight: 500; color: #1e293b; }
+  .phone-num { font-family: monospace; font-weight: 700; color: #7c3aed; font-size: 10px; }
   .items-table th { color: #a855f7; border-bottom: 2px solid #e9d5ff; background: #faf5ff; }
   .items-table td { border-bottom: 1px solid #faf5ff; }
-  .totals-section { padding: 8px 18px; background: #faf5ff; }
-  .total-row { display: flex; justify-content: space-between; padding: 2px 0; font-size: 11px; color: #475569; }
+  .totals-section { padding: 4px 12px; background: #faf5ff; }
+  .total-row { display: flex; justify-content: space-between; padding: 1px 0; font-size: 10px; color: #475569; }
   .total-row.discount { color: #ef4444; }
-  .total-row.grand-total { font-size: 15px; font-weight: 900; color: #7c3aed; margin-top: 4px; padding-top: 6px; border-top: 2px solid #7c3aed; }
-  .courier-note { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 8px 14px; margin: 6px 14px; border-radius: 0 6px 6px 0; font-size: 11px; color: #92400e; }
-  .staff-note { padding: 6px 18px; font-size: 10px; color: #64748b; background: #faf5ff; }
-  .memo-footer { text-align: center; padding: 10px 18px; font-size: 9px; color: #a855f7; border-top: 1px solid #e9d5ff; background: #faf5ff; }
-  .memo-footer .thank-you { font-weight: 700; color: #7c3aed; font-size: 10px; }
+  .total-row.grand-total { font-size: 13px; font-weight: 900; color: #7c3aed; margin-top: 2px; padding-top: 3px; border-top: 2px solid #7c3aed; }
+  .courier-note { background: #fef3c7; border-left: 3px solid #f59e0b; padding: 4px 10px; margin: 4px 10px; border-radius: 0 4px 4px 0; font-size: 9px; color: #92400e; }
+  .staff-note { padding: 3px 12px; font-size: 9px; color: #64748b; background: #faf5ff; }
+  .memo-footer { text-align: center; padding: 5px 12px; font-size: 8px; color: #a855f7; border-top: 1px solid #e9d5ff; background: #faf5ff; }
+  .memo-footer .thank-you { font-weight: 700; color: #7c3aed; font-size: 9px; }
 `;
 
 // Template 4: Eco Minimal (green)
 const STYLE_4 = `${COMMON_BASE}
-  .memo { max-width: 400px; margin: auto; background: #fff; border-radius: 10px; overflow: hidden; border: 1.5px solid #bbf7d0; }
-  .memo-header { background: linear-gradient(135deg, #059669, #047857); color: #fff; padding: 16px 18px; }
-  .shop-name { font-size: 16px; font-weight: 800; }
-  .shop-logo { height: 30px; width: auto; }
-  .order-num { font-size: 18px; font-weight: 900; color: #a7f3d0; }
-  .order-date { font-size: 10px; color: #6ee7b7; }
-  .courier-section { background: #ecfdf5; border-bottom: 1px solid #bbf7d0; padding: 10px 18px; }
-  .courier-badge { background: #047857; color: white; padding: 3px 10px; border-radius: 6px; font-size: 10px; font-weight: 700; }
-  .courier-status { font-size: 9px; font-weight: 700; color: #047857; background: #d1fae5; padding: 2px 8px; border-radius: 6px; }
-  .tracking-box { background: #fff; border: 1px solid #bbf7d0; border-radius: 6px; padding: 8px 14px; text-align: center; margin-top: 8px; }
-  .tracking-label { font-size: 8px; color: #6b7280; text-transform: uppercase; letter-spacing: 2px; }
-  .tracking-id { font-size: 16px; font-weight: 900; letter-spacing: 3px; color: #064e3b; }
-  .section { padding: 10px 18px; border-bottom: 1px solid #f0fdf4; }
-  .section-title { font-size: 9px; font-weight: 700; color: #059669; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px; }
-  .info-grid { display: grid; grid-template-columns: 70px 1fr; gap: 3px 8px; }
-  .info-label { font-size: 10px; font-weight: 600; color: #047857; }
-  .info-value { font-size: 11px; font-weight: 500; color: #1e293b; }
-  .phone-num { font-family: monospace; font-weight: 700; color: #059669; font-size: 12px; }
+  .memo { max-width: 400px; margin: auto; background: #fff; border-radius: 8px; overflow: hidden; border: 1.5px solid #bbf7d0; }
+  .memo-header { background: linear-gradient(135deg, #059669, #047857); color: #fff; padding: 8px 12px; }
+  .shop-name { font-size: 13px; font-weight: 800; }
+  .shop-logo { height: 22px; width: auto; }
+  .order-num { font-size: 15px; font-weight: 900; color: #a7f3d0; }
+  .order-date { font-size: 9px; color: #6ee7b7; }
+  .courier-section { background: #ecfdf5; border-bottom: 1px solid #bbf7d0; padding: 6px 12px; }
+  .courier-badge { background: #047857; color: white; padding: 2px 8px; border-radius: 6px; font-size: 9px; font-weight: 700; }
+  .courier-status { font-size: 8px; font-weight: 700; color: #047857; background: #d1fae5; padding: 1px 6px; border-radius: 6px; }
+  .tracking-box { background: #fff; border: 1px solid #bbf7d0; border-radius: 4px; padding: 4px 10px; text-align: center; margin-top: 4px; }
+  .tracking-label { font-size: 7px; color: #6b7280; text-transform: uppercase; letter-spacing: 2px; }
+  .tracking-id { font-size: 13px; font-weight: 900; letter-spacing: 2px; color: #064e3b; }
+  .section { padding: 6px 12px; border-bottom: 1px solid #f0fdf4; }
+  .section-title { font-size: 8px; font-weight: 700; color: #059669; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 3px; }
+  .info-grid { display: grid; grid-template-columns: 55px 1fr; gap: 2px 6px; }
+  .info-label { font-size: 9px; font-weight: 600; color: #047857; }
+  .info-value { font-size: 10px; font-weight: 500; color: #1e293b; }
+  .phone-num { font-family: monospace; font-weight: 700; color: #059669; font-size: 10px; }
   .items-table th { color: #059669; border-bottom: 2px solid #bbf7d0; background: #ecfdf5; }
   .items-table td { border-bottom: 1px solid #f0fdf4; }
-  .totals-section { padding: 8px 18px; background: #f0fdf4; }
-  .total-row { display: flex; justify-content: space-between; padding: 2px 0; font-size: 11px; color: #475569; }
+  .totals-section { padding: 4px 12px; background: #f0fdf4; }
+  .total-row { display: flex; justify-content: space-between; padding: 1px 0; font-size: 10px; color: #475569; }
   .total-row.discount { color: #ef4444; }
-  .total-row.grand-total { font-size: 15px; font-weight: 900; color: #047857; margin-top: 4px; padding-top: 6px; border-top: 2px solid #059669; }
-  .courier-note { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 8px 14px; margin: 6px 14px; border-radius: 0 6px 6px 0; font-size: 11px; color: #92400e; }
-  .staff-note { padding: 6px 18px; font-size: 10px; color: #64748b; background: #f0fdf4; }
-  .memo-footer { text-align: center; padding: 10px 18px; font-size: 9px; color: #059669; border-top: 1px solid #bbf7d0; background: #ecfdf5; }
-  .memo-footer .thank-you { font-weight: 700; color: #047857; font-size: 10px; }
+  .total-row.grand-total { font-size: 13px; font-weight: 900; color: #047857; margin-top: 2px; padding-top: 3px; border-top: 2px solid #059669; }
+  .courier-note { background: #fef3c7; border-left: 3px solid #f59e0b; padding: 4px 10px; margin: 4px 10px; border-radius: 0 4px 4px 0; font-size: 9px; color: #92400e; }
+  .staff-note { padding: 3px 12px; font-size: 9px; color: #64748b; background: #f0fdf4; }
+  .memo-footer { text-align: center; padding: 5px 12px; font-size: 8px; color: #059669; border-top: 1px solid #bbf7d0; background: #ecfdf5; }
+  .memo-footer .thank-you { font-weight: 700; color: #047857; font-size: 9px; }
 `;
 
 // Template 5: Bold Corporate (black/red)
 const STYLE_5 = `${COMMON_BASE}
   .memo { max-width: 400px; margin: auto; background: #fff; border-radius: 4px; overflow: hidden; border: 2px solid #1a1a1a; }
-  .memo-header { background: #0a0a0a; color: #fff; padding: 16px 18px; }
-  .shop-name { font-size: 16px; font-weight: 900; text-transform: uppercase; letter-spacing: 3px; }
-  .shop-logo { height: 30px; width: auto; }
-  .order-num { font-size: 18px; font-weight: 900; color: #ef4444; }
-  .order-date { font-size: 10px; color: #737373; }
-  .courier-section { background: #fafafa; border-bottom: 2px solid #e5e5e5; padding: 10px 18px; }
-  .courier-badge { background: #ef4444; color: white; padding: 3px 10px; border-radius: 2px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
-  .courier-status { font-size: 9px; font-weight: 700; text-transform: uppercase; color: #0a0a0a; background: #e5e5e5; padding: 2px 8px; border-radius: 2px; }
-  .tracking-box { background: #fff; border: 2px solid #e5e5e5; border-radius: 4px; padding: 8px 14px; text-align: center; margin-top: 8px; }
-  .tracking-label { font-size: 8px; color: #737373; text-transform: uppercase; letter-spacing: 2px; }
-  .tracking-id { font-size: 16px; font-weight: 900; letter-spacing: 3px; color: #0a0a0a; }
-  .section { padding: 10px 18px; border-bottom: 1px solid #f5f5f5; }
-  .section-title { font-size: 9px; font-weight: 900; color: #ef4444; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 6px; }
-  .info-grid { display: grid; grid-template-columns: 70px 1fr; gap: 3px 8px; }
-  .info-label { font-size: 10px; font-weight: 700; color: #525252; text-transform: uppercase; }
-  .info-value { font-size: 11px; font-weight: 500; color: #0a0a0a; }
-  .phone-num { font-family: monospace; font-weight: 900; color: #0a0a0a; font-size: 12px; }
+  .memo-header { background: #0a0a0a; color: #fff; padding: 8px 12px; }
+  .shop-name { font-size: 13px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; }
+  .shop-logo { height: 22px; width: auto; }
+  .order-num { font-size: 15px; font-weight: 900; color: #ef4444; }
+  .order-date { font-size: 9px; color: #737373; }
+  .courier-section { background: #fafafa; border-bottom: 2px solid #e5e5e5; padding: 6px 12px; }
+  .courier-badge { background: #ef4444; color: white; padding: 2px 8px; border-radius: 2px; font-size: 9px; font-weight: 700; text-transform: uppercase; }
+  .courier-status { font-size: 8px; font-weight: 700; text-transform: uppercase; color: #0a0a0a; background: #e5e5e5; padding: 1px 6px; border-radius: 2px; }
+  .tracking-box { background: #fff; border: 2px solid #e5e5e5; border-radius: 4px; padding: 4px 10px; text-align: center; margin-top: 4px; }
+  .tracking-label { font-size: 7px; color: #737373; text-transform: uppercase; letter-spacing: 2px; }
+  .tracking-id { font-size: 13px; font-weight: 900; letter-spacing: 2px; color: #0a0a0a; }
+  .section { padding: 6px 12px; border-bottom: 1px solid #f5f5f5; }
+  .section-title { font-size: 8px; font-weight: 900; color: #ef4444; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 3px; }
+  .info-grid { display: grid; grid-template-columns: 55px 1fr; gap: 2px 6px; }
+  .info-label { font-size: 9px; font-weight: 700; color: #525252; text-transform: uppercase; }
+  .info-value { font-size: 10px; font-weight: 500; color: #0a0a0a; }
+  .phone-num { font-family: monospace; font-weight: 900; color: #0a0a0a; font-size: 10px; }
   .items-table th { color: #737373; border-bottom: 2px solid #0a0a0a; background: #fafafa; text-transform: uppercase; }
   .items-table td { border-bottom: 1px solid #f5f5f5; }
-  .totals-section { padding: 8px 18px; background: #fafafa; }
-  .total-row { display: flex; justify-content: space-between; padding: 2px 0; font-size: 11px; color: #525252; }
+  .totals-section { padding: 4px 12px; background: #fafafa; }
+  .total-row { display: flex; justify-content: space-between; padding: 1px 0; font-size: 10px; color: #525252; }
   .total-row.discount { color: #ef4444; }
-  .total-row.grand-total { font-size: 15px; font-weight: 900; color: #0a0a0a; margin-top: 4px; padding-top: 6px; border-top: 3px solid #0a0a0a; }
-  .courier-note { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 8px 14px; margin: 6px 14px; font-size: 11px; color: #92400e; }
-  .staff-note { padding: 6px 18px; font-size: 10px; color: #525252; background: #fafafa; }
-  .memo-footer { text-align: center; padding: 10px 18px; font-size: 9px; color: #737373; border-top: 2px solid #0a0a0a; background: #fafafa; }
-  .memo-footer .thank-you { font-weight: 900; color: #0a0a0a; font-size: 10px; text-transform: uppercase; }
+  .total-row.grand-total { font-size: 13px; font-weight: 900; color: #0a0a0a; margin-top: 2px; padding-top: 3px; border-top: 3px solid #0a0a0a; }
+  .courier-note { background: #fef3c7; border-left: 3px solid #f59e0b; padding: 4px 10px; margin: 4px 10px; font-size: 9px; color: #92400e; }
+  .staff-note { padding: 3px 12px; font-size: 9px; color: #525252; background: #fafafa; }
+  .memo-footer { text-align: center; padding: 5px 12px; font-size: 8px; color: #737373; border-top: 2px solid #0a0a0a; background: #fafafa; }
+  .memo-footer .thank-you { font-weight: 900; color: #0a0a0a; font-size: 9px; text-transform: uppercase; }
 `;
 
 export const TEMPLATE_STYLES: Record<string, string> = {
