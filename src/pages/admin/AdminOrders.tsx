@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -139,6 +140,14 @@ const AdminOrders = () => {
   const [newOrderOpen, setNewOrderOpen] = useState(false);
   const [convertingIncompleteId, setConvertingIncompleteId] = useState<string | null>(null);
   const [detailOrderId, setDetailOrderId] = useState<string | null>(null);
+  const location = useLocation();
+
+  // Reset detail view when sidebar nav is clicked (same route re-navigation)
+  useEffect(() => {
+    if (location.state?._refresh) {
+      setDetailOrderId(null);
+    }
+  }, [location.state]);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [selectedOrderIds, setSelectedOrderIds] = useState<Set<string>>(new Set());
   const [productSearchFocused, setProductSearchFocused] = useState(false);
