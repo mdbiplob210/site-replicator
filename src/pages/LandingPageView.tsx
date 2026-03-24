@@ -1447,14 +1447,14 @@ if (!window._LP_VID) { window._LP_VID = 'v_' + Math.random().toString(36).substr
     return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${allScripts}</head><body>${cleanHtml}</body></html>`;
   };
 
-  // Write directly to the document so FB pixel fires in the top-level window
-  // (not inside an iframe which blocks cookies and pixel detection)
   useEffect(() => {
     if (!page) return;
-    const html = buildFullHtml();
-    document.open();
-    document.write(html);
-    document.close();
+
+    const renderKey = `${page.id}:${page.updated_at}`;
+    if (renderedPageRef.current === renderKey) return;
+    renderedPageRef.current = renderKey;
+
+    renderLandingDocument(buildFullHtml());
   }, [page]);
 
   if (isLoading) {
