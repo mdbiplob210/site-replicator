@@ -384,7 +384,6 @@ export function PathaoBulkSubmitPreview({ open, onOpenChange, orders, providerId
             )}
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+    </div>
   );
 }
