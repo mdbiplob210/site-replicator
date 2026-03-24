@@ -1,10 +1,11 @@
+import { prefetchCriticalData } from "./lib/prefetch";
+
+// Start fetching critical data BEFORE React even loads
+prefetchCriticalData();
+
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
-import { prefetchCriticalData } from "./lib/prefetch";
-
-// Start fetching critical data — deferred slightly to let React render first
-setTimeout(prefetchCriticalData, 50);
 
 // Register service worker (deferred well past TTI)
 if ('serviceWorker' in navigator) {

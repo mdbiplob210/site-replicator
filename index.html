@@ -20,17 +20,14 @@
     <link rel="preconnect" href="https://hogejkqzynixmjwodkoi.supabase.co" crossorigin />
     <link rel="dns-prefetch" href="https://images.unsplash.com" />
     <link rel="preconnect" href="https://images.unsplash.com" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
     <!-- Default favicon -->
     <link rel="icon" href="/placeholder.svg" type="image/svg+xml" />
 
     <!-- Preload critical module -->
     <link rel="modulepreload" href="/src/main.tsx" />
-
-    <!-- Non-render-blocking font loading via media swap -->
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" />
-    <link rel="stylesheet" media="print" onload="this.media='all'" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" />
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" /></noscript>
 
     <!-- Inline critical CSS -->
     <style>
@@ -49,5 +46,9 @@
       <div class="page-loader" aria-label="Loading"><div class="spinner" role="status" aria-label="Loading"></div></div>
     </div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+    (function(){var l=document.createElement('link');l.rel='stylesheet';l.href='https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap';document.head.appendChild(l)})();
+    </script>
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" /></noscript>
   </body>
 </html>
