@@ -75,7 +75,7 @@ export function getOptimizedImageUrl(
  */
 export function getResponsiveSrcSet(
   url: string | null | undefined,
-  widths: number[] = [200, 400, 640]
+  widths: number[] = [200, 400]
 ): string {
   if (!url) return "";
 
@@ -83,7 +83,9 @@ export function getResponsiveSrcSet(
     url.includes("/storage/v1/object/public/") ||
     url.includes("/storage/v1/object/sign/");
 
-  if (!isSupabaseStorage) return "";
+  const isUnsplash = url.includes("images.unsplash.com");
+
+  if (!isSupabaseStorage && !isUnsplash) return "";
 
   return widths
     .map((w) => `${getOptimizedImageUrl(url, { width: w })} ${w}w`)
