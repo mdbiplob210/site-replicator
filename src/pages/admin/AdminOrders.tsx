@@ -3952,7 +3952,7 @@ const AdminOrders = () => {
 
 export default AdminOrders;
 
-function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null; order: any; onClose: () => void }) {
+function OrderDetailPage({ orderId, order, onClose }: { orderId: string | null; order: any; onClose: () => void }) {
   const { data: items = [], isLoading } = useOrderItems(orderId);
   const { data: allProducts = [] } = usePublicProducts();
   const { user, isAdmin, userRoles, session } = useAuth();
