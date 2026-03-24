@@ -2624,7 +2624,7 @@ const AdminOrders = () => {
                       ] : [
                         { value: "processing", label: "New Order", color: "bg-blue-500", icon: Clock },
                         { value: "confirmed", label: "Confirmed", color: "bg-emerald-600", icon: CheckCircle2 },
-                        { value: "in_courier", label: "In Courier", color: "bg-violet-500", icon: Truck },
+                        { value: "in_courier", label: "In Courier", color: "bg-indigo-600", icon: Truck },
                         { value: "on_hold", label: "Hold", color: "bg-yellow-500", icon: PauseCircle },
                         { value: "hand_delivery", label: "Hand Delivery", color: "bg-cyan-500", icon: Hand },
                         { value: "cancelled", label: "Cancelled", color: "bg-red-500", icon: XCircle },
@@ -3533,7 +3533,7 @@ const AdminOrders = () => {
                     <TableCell className="px-2 py-2 text-center" onClick={(e) => e.stopPropagation()}>
                       <Select value={order.status} onValueChange={(value) => handleStatusChange(order.id, value, order.status)}>
                         <SelectTrigger className="w-[130px] h-8 rounded-full text-xs border-0 px-3 font-semibold mx-auto"
-                          style={{ backgroundColor: order.status === 'processing' ? '#3b82f6' : order.status === 'confirmed' ? '#059669' : order.status === 'inquiry' ? '#d97706' : order.status === 'cancelled' ? '#ef4444' : order.status === 'delivered' ? '#10b981' : order.status === 'in_courier' ? '#8b5cf6' : order.status === 'on_hold' ? '#eab308' : order.status === 'returned' ? '#f97316' : order.status === 'pending_return' ? '#f97316' : order.status === 'hand_delivery' ? '#06b6d4' : order.status === 'ship_later' ? '#14b8a6' : '#6b7280', color: 'white' }}>
+                          style={{ backgroundColor: order.status === 'processing' ? '#3b82f6' : order.status === 'confirmed' ? '#059669' : order.status === 'inquiry' ? '#d97706' : order.status === 'cancelled' ? '#ef4444' : order.status === 'delivered' ? '#10b981' : order.status === 'in_courier' ? '#4f46e5' : order.status === 'on_hold' ? '#eab308' : order.status === 'returned' ? '#f97316' : order.status === 'pending_return' ? '#f97316' : order.status === 'hand_delivery' ? '#06b6d4' : order.status === 'ship_later' ? '#14b8a6' : '#6b7280', color: 'white' }}>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -3755,7 +3755,7 @@ const AdminOrders = () => {
                       <div onClick={(e) => e.stopPropagation()}>
                         <Select value={order.status} onValueChange={(value) => handleStatusChange(order.id, value, order.status)}>
                           <SelectTrigger className="w-[105px] h-7 rounded-full text-[10px] border-0 px-2 font-semibold"
-                            style={{ backgroundColor: order.status === 'processing' ? '#3b82f6' : order.status === 'confirmed' ? '#059669' : order.status === 'cancelled' ? '#ef4444' : order.status === 'delivered' ? '#10b981' : order.status === 'in_courier' ? '#8b5cf6' : order.status === 'on_hold' ? '#eab308' : order.status === 'returned' ? '#f97316' : '#6b7280', color: 'white' }}>
+                            style={{ backgroundColor: order.status === 'processing' ? '#3b82f6' : order.status === 'confirmed' ? '#059669' : order.status === 'cancelled' ? '#ef4444' : order.status === 'delivered' ? '#10b981' : order.status === 'in_courier' ? '#4f46e5' : order.status === 'on_hold' ? '#eab308' : order.status === 'returned' ? '#f97316' : '#6b7280', color: 'white' }}>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
