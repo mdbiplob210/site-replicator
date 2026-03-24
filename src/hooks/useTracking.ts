@@ -396,11 +396,15 @@ export function useTracking() {
       if (clarityId) loadClarity(clarityId);
     };
 
-    if ('requestIdleCallback' in window) {
-      (window as any).requestIdleCallback(loadScripts, { timeout: 3000 });
-    } else {
-      setTimeout(loadScripts, 1500);
-    }
+    // Defer tracking scripts aggressively to improve TTI
+    // Only load after page is fully interactive (8s minimum)
+    setTimeout(() => {
+      if ('requestIdleCallback' in window) {
+        (window as any).requestIdleCallback(loadScripts, { timeout: 4000 });
+      } else {
+        loadScripts();
+      }
+    }, 8000);
 
     // Save UTM params
     const utms = getUtmParams();
