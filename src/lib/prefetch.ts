@@ -42,8 +42,27 @@ async function fetchAndCache(key: string, url: string) {
     if (!res.ok) return;
     const data = await res.json();
     prefetchCache[key] = { data, ts: Date.now() };
+
+    // Preload first product images for LCP optimization
+    if (key === "public-products" && Array.isArray(data)) {
+      preloadProductImages(data.slice(0, 4));
+    }
   } catch {
     // Silent fail - React Query will fetch as fallback
+  }
+}
+
+/** Inject <link rel="preload"> for first visible product images to reduce LCP delay */
+function preloadProductImages(products: any[]) {
+  for (const p of products) {
+    const imgUrl = p?.main_image_url || (p?.additional_images?.[0]);
+    if (imgUrl && typeof imgUrl === "string" && /^https?:\/\//i.test(imgUrl)) {
+      const link = document.createElement("link");
+      link.rel = "preload";
+      link.as = "image";
+      link.href = imgUrl;
+      document.head.appendChild(link);
+    }
   }
 }
 

@@ -438,7 +438,7 @@ const Template1Classic = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
             <div className="col-span-2 md:col-span-1">
               {siteLogo ? (
-                <img src={siteLogo} alt={siteName} className="h-8 w-auto object-contain mb-2" />
+                <img src={siteLogo} alt={siteName} className="h-8 w-auto object-contain mb-2" width={122} height={32} />
               ) : (
                 <span className="text-lg font-black text-green-400">{siteName}</span>
               )}
