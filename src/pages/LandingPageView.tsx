@@ -1405,7 +1405,10 @@ if (!window._LP_VID) { window._LP_VID = 'v_' + Math.random().toString(36).substr
     if (renderedPageRef.current === renderKey) return;
     renderedPageRef.current = renderKey;
 
-    renderLandingDocument(buildFullHtml());
+    const fullHtml = buildFullHtml();
+    document.open();
+    document.write(fullHtml);
+    document.close();
   }, [page]);
 
   if (isLoading) {
