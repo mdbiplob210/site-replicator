@@ -28,6 +28,9 @@ export default defineConfig(({ mode }) => ({
     cssCodeSplit: true,
     minify: "esbuild",
     cssMinify: true,
+    modulePreload: {
+      polyfill: false, // Modern browsers support it natively
+    },
     rollupOptions: {
       output: {
         manualChunks: {
@@ -39,6 +42,7 @@ export default defineConfig(({ mode }) => ({
           "vendor-supabase": ["@supabase/supabase-js"],
           "vendor-date": ["date-fns"],
           "vendor-xlsx": ["@datalens-tech/xlsx"],
+          "vendor-analytics": ["@vercel/analytics", "@vercel/speed-insights"],
         },
       },
     },
