@@ -33,8 +33,8 @@ export function WebsiteEventTracker() {
       } catch {}
     };
 
-    // Defer first heartbeat to not block main thread
-    const timeoutId = setTimeout(sendHeartbeat, 5000);
+    // Defer first heartbeat well past TTI to not block main thread
+    const timeoutId = setTimeout(sendHeartbeat, 15000);
     heartbeatRef.current = setInterval(sendHeartbeat, 30000);
 
     return () => {
