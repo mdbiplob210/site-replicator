@@ -232,10 +232,17 @@ const CheckoutPage = () => {
 
       const total = item.price * item.qty;
       
-      // Create the order
       // Detect IP and device
       const clientIp = await getClientIp();
       const { deviceInfo } = parseDeviceInfo();
+
+      // ═══ Fraud Protection Check ═══
+      const fraudResult = await checkFraudProtection(form.phone, clientIp, deviceInfo);
+      if (fraudResult.blocked) {
+        toast.error(fraudResult.message);
+        setSubmitting(false);
+        return;
+      }
 
       // order_number is auto-assigned by DB trigger
       const { data: orderData, error } = await supabase.from("orders").insert({

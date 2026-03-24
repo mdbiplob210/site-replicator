@@ -245,6 +245,14 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
       const clientIp = await getClientIp();
       const { deviceInfo } = parseDeviceInfo();
 
+      // ═══ Fraud Protection Check ═══
+      const fraudResult = await checkFraudProtection(form.phone, clientIp, deviceInfo);
+      if (fraudResult.blocked) {
+        toast.error(fraudResult.message);
+        setSubmitting(false);
+        return;
+      }
+
       // order_number is auto-assigned by DB trigger
       const { data: insertedOrder, error } = await supabase.from("orders").insert({
         id: orderId,
