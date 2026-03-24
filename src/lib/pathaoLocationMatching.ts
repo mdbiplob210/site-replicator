@@ -629,9 +629,16 @@ export const findPathaoLocationByHints = (
       const normalizedLocation = normalizePathaoLocationName(location.name);
       let score = 0;
 
-      if (normalizedLocation === hint) score = 220;
-      else if (normalizedLocation.startsWith(`${hint} `) || normalizedLocation.endsWith(` ${hint}`)) score = 190;
-      else if (normalizedLocation.includes(hint) || hint.includes(normalizedLocation)) score = 160;
+      // Exact match - highest priority
+      if (normalizedLocation === hint) score = 250;
+      // Location starts or ends with hint as a word
+      else if (normalizedLocation === hint || 
+               new RegExp(`(?:^|\\s)${escapeRegExp(hint)}(?:\\s|$)`).test(normalizedLocation)) score = 220;
+      // Hint starts or ends with location as a word  
+      else if (new RegExp(`(?:^|\\s)${escapeRegExp(normalizedLocation)}(?:\\s|$)`).test(hint)) score = 200;
+      // Contains match - lower priority, requires longer strings to avoid false positives
+      else if (hint.length >= 4 && normalizedLocation.includes(hint)) score = 160;
+      else if (normalizedLocation.length >= 4 && hint.includes(normalizedLocation)) score = 140;
 
       if (score > bestScore) {
         bestScore = score;
