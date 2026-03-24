@@ -50,6 +50,7 @@ export const ROLE_DISPLAY_NAMES: Record<AppRole, string> = {
   user: "Employee",
   accounting: "Accounting",
   ad_analytics: "Ad Analytics",
+  delivery_rider: "Delivery Rider",
 };
 
 // Check if current route needs auth - public store pages don't
