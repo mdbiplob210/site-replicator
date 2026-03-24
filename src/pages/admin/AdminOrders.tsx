@@ -3393,16 +3393,16 @@ const AdminOrders = () => {
                       }}
                     />
                   </TableHead>
-                  <TableHead className="font-semibold text-xs text-muted-foreground px-3 py-2.5 uppercase tracking-wider">Order</TableHead>
-                  <TableHead className="font-semibold text-xs text-muted-foreground px-3 py-2.5 uppercase tracking-wider">Customer</TableHead>
-                  <TableHead className="font-semibold text-xs text-muted-foreground px-3 py-2.5 uppercase tracking-wider text-center">Products</TableHead>
-                  <TableHead className="font-semibold text-xs text-muted-foreground px-3 py-2.5 uppercase tracking-wider text-center">Amount</TableHead>
-                  <TableHead className="font-semibold text-xs text-muted-foreground px-3 py-2.5 uppercase tracking-wider text-center">History</TableHead>
-                  <TableHead className="font-semibold text-xs text-muted-foreground px-3 py-2.5 uppercase tracking-wider text-center">Status</TableHead>
-                  <TableHead className="font-semibold text-xs text-muted-foreground px-3 py-2.5 uppercase tracking-wider text-center">Courier</TableHead>
+                  <TableHead className="font-bold text-sm text-muted-foreground px-2 py-2 uppercase tracking-wider">Order</TableHead>
+                  <TableHead className="font-bold text-sm text-muted-foreground px-2 py-2 uppercase tracking-wider">Customer</TableHead>
+                  <TableHead className="font-bold text-sm text-muted-foreground px-2 py-2 uppercase tracking-wider text-center">Products</TableHead>
+                  <TableHead className="font-bold text-sm text-muted-foreground px-2 py-2 uppercase tracking-wider text-center">Amount</TableHead>
+                  <TableHead className="font-bold text-sm text-muted-foreground px-2 py-2 uppercase tracking-wider text-center">History</TableHead>
+                  <TableHead className="font-bold text-sm text-muted-foreground px-2 py-2 uppercase tracking-wider text-center">Status</TableHead>
+                  <TableHead className="font-bold text-sm text-muted-foreground px-2 py-2 uppercase tracking-wider text-center">Courier</TableHead>
                   
-                  <TableHead className="font-semibold text-xs text-muted-foreground px-3 py-2.5 uppercase tracking-wider text-center">Source</TableHead>
-                  <TableHead className="font-semibold text-xs text-muted-foreground px-3 py-2.5 uppercase tracking-wider text-right">Actions</TableHead>
+                  <TableHead className="font-bold text-sm text-muted-foreground px-2 py-2 uppercase tracking-wider text-center">Source</TableHead>
+                  <TableHead className="font-bold text-sm text-muted-foreground px-2 py-2 uppercase tracking-wider text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
