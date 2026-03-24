@@ -49,6 +49,7 @@ interface Props {
   isSubmitting: boolean;
   progress: { done: number; total: number };
   submitResults?: SubmitResultEntry[];
+  fullPage?: boolean;
 }
 
 const PATHAO_SLUGS = ["pathao"];
