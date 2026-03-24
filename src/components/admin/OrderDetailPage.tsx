@@ -1015,7 +1015,7 @@ export function OrderDetailPage({ orderId, order, onClose }: { orderId: string |
                 {[
                   { value: "processing", label: "New Order", color: "bg-blue-500", icon: Clock },
                   { value: "confirmed", label: "Confirmed", color: "bg-emerald-600", icon: CheckCircle2 },
-                  /* in_courier removed — only via courier API */
+                  // in_courier status is set only via courier API
                   { value: "on_hold", label: "Hold", color: "bg-yellow-500", icon: PauseCircle },
                   { value: "hand_delivery", label: "Hand Delivery", color: "bg-cyan-500", icon: Hand },
                   { value: "cancelled", label: "Cancelled", color: "bg-red-500", icon: XCircle },
