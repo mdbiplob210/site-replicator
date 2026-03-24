@@ -400,7 +400,7 @@ const Template1Classic = () => {
             })}
           </div>
         )}
-      </section>
+      </main>
 
       {/* Contact floating buttons - WhatsApp & Phone */}
       {floatingContactsEnabled && (whatsappNumber || phoneNumber) && (
