@@ -68,7 +68,7 @@ export const landingPhoneValidationScript = `
     var placeholder = (el.getAttribute('placeholder') || '').toLowerCase();
     var autocomplete = (el.getAttribute('autocomplete') || '').toLowerCase();
     var inputmode = (el.getAttribute('inputmode') || '').toLowerCase();
-    return type === 'tel' || type === 'number' || inputmode === 'tel' || autocomplete === 'tel' || /customer_phone|phone|mobile|customer_mobile|contact_number/.test(name) || /phone|mobile/.test(id) || /phone|mobile|মোবাইল|ফোন/.test(placeholder);
+    return type === 'tel' || inputmode === 'tel' || autocomplete === 'tel' || /customer_phone|phone|mobile|customer_mobile|contact_number/.test(name) || /phone|mobile/.test(id) || /phone|mobile|মোবাইল|ফোন/.test(placeholder);
   }
 
   function patchInlineHandler(input) {

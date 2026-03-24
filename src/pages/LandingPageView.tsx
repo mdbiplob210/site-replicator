@@ -1058,11 +1058,9 @@ ttq.page();
     if (!form) return;
     if (form.dataset.lpSubmitLocked === '1' || _submitting) {
       e.preventDefault();
-      e.stopImmediatePropagation();
       return;
     }
     e.preventDefault();
-    e.stopImmediatePropagation();
     _submitting = true;
     form.dataset.lpSubmitLocked = '1';
 
@@ -1140,7 +1138,7 @@ ttq.page();
       delete form.dataset.lpSubmitLocked;
       if (btn) { btn.disabled = false; btn.textContent = btnOrigText || 'অর্ডার করুন'; }
     });
-  }, true);
+  });
 })();
 </script>`;
 
