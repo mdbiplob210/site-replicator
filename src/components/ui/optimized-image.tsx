@@ -62,7 +62,6 @@ export function OptimizedImage({
         <div className="absolute inset-0 bg-muted animate-pulse" />
       )}
       <img
-        ref={imgRef}
         src={effectiveSrc}
         srcSet={effectiveSrcSet || undefined}
         sizes={effectiveSrcSet ? sizes : undefined}
