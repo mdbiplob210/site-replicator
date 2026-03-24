@@ -119,10 +119,9 @@ window._lpTrack = {
     if (ud.city) payload.user_ct = ud.city;
     if (ud.email) payload.user_email = ud.email;
     try {
-      var blob = new Blob([JSON.stringify(payload)], {type: 'application/json'});
-      navigator.sendBeacon(CAPI_URL + '?apikey=' + ANON, blob);
+      fetch(CAPI_URL, {method:'POST', headers:{'Content-Type':'application/json','apikey':ANON}, body:JSON.stringify(payload), keepalive:true, credentials:'omit'}).catch(function(){});
     } catch(e) {
-      fetch(CAPI_URL, {method:'POST', headers:{'Content-Type':'application/json','apikey':ANON}, body:JSON.stringify(payload)}).catch(function(){});
+      try { var blob = new Blob([JSON.stringify(payload)], {type: 'text/plain'}); navigator.sendBeacon(CAPI_URL + '?apikey=' + ANON, blob); } catch(e2) {}
     }
   }
 };
