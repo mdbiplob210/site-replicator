@@ -30,6 +30,7 @@ import { CourierSuccessRate } from "@/components/admin/courier/CourierSuccessRat
 import { useCourierCities, useCourierZones, useCourierAreas, prefetchCourierLocations } from "@/hooks/useCourierLocations";
 import { extractPathaoLocationHints, resolvePathaoLocationMatch } from "@/lib/pathaoLocationMatching";
 import { toast } from "sonner";
+import { MemoPrint } from "@/components/admin/courier/MemoPrint";
 
 const CANCEL_REASONS = [
   "কাস্টমার ফোন রিসিভ করছে না",
@@ -634,7 +635,7 @@ export function OrderDetailPage({ orderId, order, onClose }: { orderId: string |
         <button onClick={onClose} className="p-2 rounded-xl hover:bg-secondary/80 transition-all">
           <ArrowLeft className="h-5 w-5 text-foreground" />
         </button>
-        <div className="flex items-center gap-3">
+        <div className="flex-1 flex items-center gap-3">
           <div className="p-2.5 rounded-xl bg-primary/10">
             <ShoppingCart className="h-5 w-5 text-primary" />
           </div>
@@ -649,6 +650,15 @@ export function OrderDetailPage({ orderId, order, onClose }: { orderId: string |
             </p>
           </div>
         </div>
+        {/* Memo Print Button */}
+        {order && (
+          <MemoPrint
+            order={order}
+            courierOrder={existingCourierOrder}
+            courierProvider={editCourierProviders.find((p: any) => p.id === existingCourierOrder?.courier_provider_id) as any || null}
+            orderItems={items}
+          />
+        )}
       </div>
 
       {order && (
