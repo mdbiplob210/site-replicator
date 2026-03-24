@@ -1058,11 +1058,9 @@ ttq.page();
     if (!form) return;
     if (form.dataset.lpSubmitLocked === '1' || _submitting) {
       e.preventDefault();
-      e.stopImmediatePropagation();
       return;
     }
     e.preventDefault();
-    e.stopImmediatePropagation();
     _submitting = true;
     form.dataset.lpSubmitLocked = '1';
 
