@@ -1181,15 +1181,32 @@ export function OrderDetailPage({ orderId, order, onClose }: { orderId: string |
 
             {/* Activity Log */}
             {activityLogs.length > 0 && (
-              <ActivityLogSection
-                activityLogs={activityLogs}
-                logFilterUser={logFilterUser}
-                setLogFilterUser={setLogFilterUser}
-                logFilterAction={logFilterAction}
-                setLogFilterAction={setLogFilterAction}
-                logFilterDate={logFilterDate}
-                setLogFilterDate={setLogFilterDate}
-              />
+              <div>
+                <h4 className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                  <Clock className="h-3.5 w-3.5 text-primary" /> Activity Log
+                  <Badge variant="secondary" className="text-[9px] ml-1">{activityLogs.length}</Badge>
+                </h4>
+                <div className="max-h-40 overflow-y-auto space-y-1">
+                  {activityLogs.map((log: any) => (
+                    <div key={log.id} className="flex items-start gap-2 p-2 rounded-lg bg-secondary/20 border border-border/20 text-xs">
+                      <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <History className="h-3 w-3 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-foreground">
+                          <span className="font-semibold">{log.user_name || "System"}</span>{" "}
+                          {log.action === "created" && "অর্ডার তৈরি করেছে"}
+                          {log.action === "status_changed" && <span>স্ট্যাটাস: {log.old_value} → {log.new_value}</span>}
+                          {log.action === "field_edited" && <span>{log.field_name} পরিবর্তন করেছে</span>}
+                          {log.action === "note_added" && "নোট যোগ করেছে"}
+                        </p>
+                        {log.details && <p className="text-muted-foreground mt-0.5">{log.details}</p>}
+                        <p className="text-muted-foreground/60 mt-0.5">{format(new Date(log.created_at), "dd MMM yyyy, hh:mm a")}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
 
             {/* Meta */}
