@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="bn">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -21,29 +21,34 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-    <!-- Default favicon - will be replaced dynamically by useDynamicMeta -->
+    <!-- Default favicon -->
     <link rel="icon" href="/placeholder.svg" type="image/svg+xml" />
 
-    <!-- Non-blocking font loading - combined into single request with font-display swap -->
+    <!-- Preload critical font files directly for faster FCP -->
+    <link rel="preload" href="https://fonts.gstatic.com/s/hindsiliguri/v12/ijwOs5juQtsqH_sGPnI1ZVaUHk80efVa.woff2" as="font" type="font/woff2" crossorigin />
+
+    <!-- Non-blocking font loading -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" /></noscript>
 
     <!-- Preload critical module -->
     <link rel="modulepreload" href="/src/main.tsx" />
 
-    <!-- Inline critical CSS to avoid FOUC -->
+    <!-- Inline critical CSS -->
     <style>
-      body{margin:0;font-family:Inter,'Hind Siliguri',system-ui,sans-serif}
+      *,*::before,*::after{box-sizing:border-box}
+      body{margin:0;font-family:Inter,'Hind Siliguri',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
       #root{min-height:100vh}
-      .page-loader{display:flex;align-items:center;justify-content:center;min-height:100vh}
-      .page-loader .spinner{width:32px;height:32px;border:4px solid #e5e7eb;border-top-color:#3b82f6;border-radius:50%;animation:spin .6s linear infinite}
+      .page-loader{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f9fafb}
+      .page-loader .spinner{width:32px;height:32px;border:3px solid #e5e7eb;border-top-color:#16a34a;border-radius:50%;animation:spin .5s linear infinite}
       @keyframes spin{to{transform:rotate(360deg)}}
+      img,video{max-width:100%;height:auto}
     </style>
   </head>
 
   <body>
     <div id="root">
-      <!-- Immediate loading indicator before JS loads -->
-      <div class="page-loader"><div class="spinner"></div></div>
+      <div class="page-loader" aria-label="Loading"><div class="spinner" role="status" aria-label="Loading"></div></div>
     </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
