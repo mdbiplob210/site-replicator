@@ -41,7 +41,14 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    const body = await req.json();
+    const contentType = req.headers.get("content-type") || "";
+    let body: any;
+    if (contentType.includes("application/json")) {
+      body = await req.json();
+    } else {
+      const text = await req.text();
+      body = JSON.parse(text);
+    }
     const {
       pixel_id,
       event_name,
