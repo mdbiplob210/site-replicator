@@ -88,7 +88,7 @@ export const getStatusColor = (status: OrderStatus): string => {
     cancelled: "bg-red-500",
     on_hold: "bg-yellow-500",
     ship_later: "bg-teal-500",
-    in_courier: "bg-violet-500",
+    in_courier: "bg-indigo-600 text-white",
     delivered: "bg-emerald-500",
     returned: "bg-red-400",
     pending_return: "bg-orange-500",
