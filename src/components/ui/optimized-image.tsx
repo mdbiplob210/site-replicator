@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, ImgHTMLAttributes } from "react";
+import { useState, useEffect, ImgHTMLAttributes } from "react";
 import { getOptimizedImageUrl, getResponsiveSrcSet } from "@/lib/imageOptimizer";
 import { cn } from "@/lib/utils";
 
