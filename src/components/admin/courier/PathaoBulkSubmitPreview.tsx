@@ -9,10 +9,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { prefetchCourierLocations, useCourierCities, useCourierZones } from "@/hooks/useCourierLocations";
 import { extractPathaoLocationHints, resolvePathaoLocationMatch, type PathaoLocationItem } from "@/lib/pathaoLocationMatching";
 import { toast } from "sonner";
-import { useAuth } from "@/contexts/AuthContext";
-import { prefetchCourierLocations, useCourierCities, useCourierZones } from "@/hooks/useCourierLocations";
-import { extractPathaoLocationHints, resolvePathaoLocationMatch, type PathaoLocationItem } from "@/lib/pathaoLocationMatching";
-import { toast } from "sonner";
 
 export interface BulkOrderEntry {
   id: string;
