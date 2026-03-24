@@ -1587,6 +1587,12 @@ const AdminOrders = () => {
     setCourierNote("");
     setSelectedOrderSource("Failed Order");
     setNewOrderStatus("processing");
+    setNewOrderCancelReason("");
+    setNewOrderCancelCustom("");
+    setSelectedCourierId(null);
+    setSelectedCityId(null);
+    setSelectedZoneId(null);
+    setSelectedAreaId(null);
     setProductCost(resolvedProductCost);
     setTotalAmount(resolvedTotalAmount);
 
