@@ -3459,8 +3459,8 @@ const AdminOrders = () => {
                       )}
                     </TableCell>
                     {/* CUSTOMER: name, phone with call/copy/whatsapp, address */}
-                    <TableCell className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
-                      <p className="font-semibold text-foreground text-sm cursor-pointer" onClick={() => setDetailOrderId(order.id)}>{order.customer_name}</p>
+                    <TableCell className="px-2 py-2" onClick={(e) => e.stopPropagation()}>
+                      <p className="font-semibold text-foreground text-base cursor-pointer" onClick={() => setDetailOrderId(order.id)}>{order.customer_name}</p>
                       {order.customer_phone && (
                         <div className="flex items-center gap-1 mt-0.5">
                           <span className="text-xs font-mono text-primary font-semibold">{order.customer_phone}</span>
