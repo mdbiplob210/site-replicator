@@ -3414,7 +3414,7 @@ const AdminOrders = () => {
                   return (
                   <TableRow key={order.id} className={cn("hover:bg-primary/5 cursor-pointer group border-l-[3px] transition-colors", idx % 2 === 0 ? "bg-background border-l-primary/40" : "bg-muted/20 border-l-transparent", selectedOrderIds.has(order.id) && "bg-primary/10 border-l-primary")} onClick={() => setDetailOrderId(order.id)}>
                     {/* Checkbox */}
-                    <TableCell className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
+                    <TableCell className="px-2 py-2" onClick={(e) => e.stopPropagation()}>
                       <Checkbox checked={selectedOrderIds.has(order.id)} onCheckedChange={(checked) => {
                         const newSet = new Set(selectedOrderIds);
                         if (checked) newSet.add(order.id); else newSet.delete(order.id);
