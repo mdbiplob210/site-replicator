@@ -60,7 +60,7 @@ export function getOptimizedImageUrl(
  */
 export function getResponsiveSrcSet(
   url: string | null | undefined,
-  widths: number[] = [320, 640, 960, 1280]
+  widths: number[] = [200, 400, 640]
 ): string {
   if (!url) return "";
 
