@@ -1316,8 +1316,8 @@ if (!window._LP_VID) { window._LP_VID = 'v_' + Math.random().toString(36).substr
       panel.style.display = collapsed ? 'none' : 'block';
     });
 
-    addLog('system', 'Debug panel initialized for "' + SLUG + '"', 'info');
-    addLog('system', 'Slug: ${page.slug} | VID: ' + VID, 'info');
+    addLog('system', 'Debug panel initialized for "${page.slug}"', 'info');
+    addLog('system', 'Slug: ${page.slug} | VID: ' + (window._LP_VID || ''), 'info');
 
     // Detect form presence
     setTimeout(function() {
