@@ -1138,7 +1138,7 @@ ttq.page();
       delete form.dataset.lpSubmitLocked;
       if (btn) { btn.disabled = false; btn.textContent = btnOrigText || 'অর্ডার করুন'; }
     });
-  }, true);
+  });
 })();
 </script>`;
 
