@@ -93,6 +93,7 @@ export function AdminSidebar() {
     if (item.title === "Reviews") return canSee("manage_settings");
     if (item.title === "Analytics") return canSee("view_analytics");
     if (item.title === "WhatsApp") return canSee("manage_whatsapp");
+    if (item.title === "Delivery Riders") return canSee("manage_delivery_assignments");
     return isAdmin;
   });
 
