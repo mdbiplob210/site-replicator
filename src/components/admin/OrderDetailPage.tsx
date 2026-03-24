@@ -1188,7 +1188,6 @@ export function OrderDetailPage({ orderId, order, onClose }: { orderId: string |
             </div>
           </div>
         )}
-      </div>
     </div>
   );
 }
