@@ -2436,6 +2436,7 @@ export type Database = {
         | "manager"
         | "accounting"
         | "ad_analytics"
+        | "delivery_rider"
       employee_permission:
         | "view_orders"
         | "edit_orders"
@@ -2468,6 +2469,8 @@ export type Database = {
         | "print_memo"
         | "transfer_orders"
         | "manage_whatsapp"
+        | "view_delivery_assignments"
+        | "manage_delivery_assignments"
       order_status:
         | "processing"
         | "confirmed"
@@ -2614,6 +2617,7 @@ export const Constants = {
         "manager",
         "accounting",
         "ad_analytics",
+        "delivery_rider",
       ],
       employee_permission: [
         "view_orders",
@@ -2647,6 +2651,8 @@ export const Constants = {
         "print_memo",
         "transfer_orders",
         "manage_whatsapp",
+        "view_delivery_assignments",
+        "manage_delivery_assignments",
       ],
       order_status: [
         "processing",
