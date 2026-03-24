@@ -16,7 +16,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
-  Plus, Calendar, AlertCircle, Truck,
+  Plus, Calendar, AlertCircle, Truck, Search, MessageSquare,
   Printer, ChevronDown, Users,
   Trash2, Copy, X, ShoppingCart, ArrowLeft, Clock, CheckCircle2,
   PauseCircle, XCircle, Smartphone,
@@ -26,7 +26,20 @@ import {
 import { useOrderItems, getStatusLabel, getStatusColor } from "@/hooks/useOrders";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
 import { CourierHistoryBadge } from "@/components/admin/courier/CourierHistoryBadge";
+import { CourierSuccessRate } from "@/components/admin/courier/CourierSuccessRate";
+import { useCourierCities, useCourierZones, useCourierAreas, prefetchCourierLocations } from "@/hooks/useCourierLocations";
+import { extractPathaoLocationHints, resolvePathaoLocationMatch } from "@/lib/pathaoLocationMatching";
 import { toast } from "sonner";
+
+const CANCEL_REASONS = [
+  "কাস্টমার ফোন রিসিভ করছে না",
+  "কাস্টমার অর্ডার ক্যান্সেল করেছে",
+  "ডুপ্লিকেট অর্ডার",
+  "ভুল তথ্য দিয়ে অর্ডার করেছে",
+  "ডেলিভারি এরিয়ার বাইরে",
+  "প্রোডাক্ট স্টক নেই",
+  "ফেক অর্ডার",
+];
 
 export function OrderDetailPage({ orderId, order, onClose }: { orderId: string | null; order: any; onClose: () => void }) {
   const { data: items = [], isLoading } = useOrderItems(orderId);
@@ -1015,7 +1028,7 @@ export function OrderDetailPage({ orderId, order, onClose }: { orderId: string |
                 {[
                   { value: "processing", label: "New Order", color: "bg-blue-500", icon: Clock },
                   { value: "confirmed", label: "Confirmed", color: "bg-emerald-600", icon: CheckCircle2 },
-                  /* in_courier removed — only via courier API */
+                  // in_courier status is set only via courier API
                   { value: "on_hold", label: "Hold", color: "bg-yellow-500", icon: PauseCircle },
                   { value: "hand_delivery", label: "Hand Delivery", color: "bg-cyan-500", icon: Hand },
                   { value: "cancelled", label: "Cancelled", color: "bg-red-500", icon: XCircle },
@@ -1168,15 +1181,32 @@ export function OrderDetailPage({ orderId, order, onClose }: { orderId: string |
 
             {/* Activity Log */}
             {activityLogs.length > 0 && (
-              <ActivityLogSection
-                activityLogs={activityLogs}
-                logFilterUser={logFilterUser}
-                setLogFilterUser={setLogFilterUser}
-                logFilterAction={logFilterAction}
-                setLogFilterAction={setLogFilterAction}
-                logFilterDate={logFilterDate}
-                setLogFilterDate={setLogFilterDate}
-              />
+              <div>
+                <h4 className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                  <Clock className="h-3.5 w-3.5 text-primary" /> Activity Log
+                  <Badge variant="secondary" className="text-[9px] ml-1">{activityLogs.length}</Badge>
+                </h4>
+                <div className="max-h-40 overflow-y-auto space-y-1">
+                  {activityLogs.map((log: any) => (
+                    <div key={log.id} className="flex items-start gap-2 p-2 rounded-lg bg-secondary/20 border border-border/20 text-xs">
+                      <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <History className="h-3 w-3 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-foreground">
+                          <span className="font-semibold">{log.user_name || "System"}</span>{" "}
+                          {log.action === "created" && "অর্ডার তৈরি করেছে"}
+                          {log.action === "status_changed" && <span>স্ট্যাটাস: {log.old_value} → {log.new_value}</span>}
+                          {log.action === "field_edited" && <span>{log.field_name} পরিবর্তন করেছে</span>}
+                          {log.action === "note_added" && "নোট যোগ করেছে"}
+                        </p>
+                        {log.details && <p className="text-muted-foreground mt-0.5">{log.details}</p>}
+                        <p className="text-muted-foreground/60 mt-0.5">{format(new Date(log.created_at), "dd MMM yyyy, hh:mm a")}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
 
             {/* Meta */}
@@ -1188,7 +1218,6 @@ export function OrderDetailPage({ orderId, order, onClose }: { orderId: string |
             </div>
           </div>
         )}
-      </div>
     </div>
   );
 }
