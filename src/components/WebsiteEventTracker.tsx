@@ -10,7 +10,7 @@ export function WebsiteEventTracker() {
   const lastPath = useRef<string | null>(null);
   const heartbeatRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Heartbeat for live visitor tracking
+  // Heartbeat for live visitor tracking - deferred to not block FCP
   useEffect(() => {
     if (location.pathname.startsWith("/admin") || location.pathname.startsWith("/login")) return;
 
@@ -20,23 +20,25 @@ export function WebsiteEventTracker() {
         const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
         if (!projectId || !anonKey) return;
         const url = `https://${projectId}.supabase.co/functions/v1/visitor-heartbeat`;
-        let vid = localStorage.getItem("wa_visitor_id") || "";
-        fetch(url, {
+        const vid = localStorage.getItem("wa_visitor_id") || "";
+        navigator.sendBeacon?.(url, JSON.stringify({
+          visitor_id: vid,
+          page_slug: location.pathname,
+        })) || fetch(url, {
           method: "POST",
           headers: { "Content-Type": "application/json", apikey: anonKey },
-          body: JSON.stringify({
-            visitor_id: vid,
-            page_slug: location.pathname,
-          }),
+          body: JSON.stringify({ visitor_id: vid, page_slug: location.pathname }),
           keepalive: true,
         }).catch(() => {});
       } catch {}
     };
 
-    sendHeartbeat();
+    // Defer first heartbeat to not block main thread
+    const timeoutId = setTimeout(sendHeartbeat, 5000);
     heartbeatRef.current = setInterval(sendHeartbeat, 30000);
 
     return () => {
+      clearTimeout(timeoutId);
       if (heartbeatRef.current) clearInterval(heartbeatRef.current);
     };
   }, [location.pathname]);
