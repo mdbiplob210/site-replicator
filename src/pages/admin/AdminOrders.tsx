@@ -3539,7 +3539,7 @@ const AdminOrders = () => {
                       )}
                     </TableCell>
                     {/* COURIER: logo + name */}
-                    <TableCell className="px-3 py-3 text-center" onClick={(e) => e.stopPropagation()}>
+                    <TableCell className="px-2 py-2 text-center" onClick={(e) => e.stopPropagation()}>
                       {courierInfo ? (
                         <div className="flex flex-col items-center gap-0.5">
                           <div className="flex items-center gap-1.5">
