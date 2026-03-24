@@ -40,26 +40,17 @@ export function OptimizedImage({
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
   const [useOriginalSrc, setUseOriginalSrc] = useState(false);
-  const imgRef = useRef<HTMLImageElement>(null);
 
   const optimizedSrc = getOptimizedImageUrl(src, { width, height, quality });
   const srcSet = getResponsiveSrcSet(src);
   const effectiveSrc = useOriginalSrc ? (src || "") : optimizedSrc;
   const effectiveSrcSet = useOriginalSrc ? "" : srcSet;
 
-  // Check if image is already cached
-  const checkIfCached = useCallback(() => {
-    if (imgRef.current?.complete && imgRef.current?.naturalWidth > 0) {
-      setLoaded(true);
-    }
-  }, []);
-
   useEffect(() => {
     setLoaded(false);
     setError(false);
     setUseOriginalSrc(false);
-    requestAnimationFrame(() => checkIfCached());
-  }, [src, checkIfCached]);
+  }, [src]);
 
   if (!src || !isValidImageUrl(src) || error) {
     return fallback ? <>{fallback}</> : null;
