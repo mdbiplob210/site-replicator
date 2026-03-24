@@ -3393,16 +3393,16 @@ const AdminOrders = () => {
                       }}
                     />
                   </TableHead>
-                  <TableHead className="font-semibold text-xs text-muted-foreground px-3 py-2.5 uppercase tracking-wider">Order</TableHead>
-                  <TableHead className="font-semibold text-xs text-muted-foreground px-3 py-2.5 uppercase tracking-wider">Customer</TableHead>
-                  <TableHead className="font-semibold text-xs text-muted-foreground px-3 py-2.5 uppercase tracking-wider text-center">Products</TableHead>
-                  <TableHead className="font-semibold text-xs text-muted-foreground px-3 py-2.5 uppercase tracking-wider text-center">Amount</TableHead>
-                  <TableHead className="font-semibold text-xs text-muted-foreground px-3 py-2.5 uppercase tracking-wider text-center">History</TableHead>
-                  <TableHead className="font-semibold text-xs text-muted-foreground px-3 py-2.5 uppercase tracking-wider text-center">Status</TableHead>
-                  <TableHead className="font-semibold text-xs text-muted-foreground px-3 py-2.5 uppercase tracking-wider text-center">Courier</TableHead>
+                  <TableHead className="font-bold text-sm text-muted-foreground px-2 py-2 uppercase tracking-wider">Order</TableHead>
+                  <TableHead className="font-bold text-sm text-muted-foreground px-2 py-2 uppercase tracking-wider">Customer</TableHead>
+                  <TableHead className="font-bold text-sm text-muted-foreground px-2 py-2 uppercase tracking-wider text-center">Products</TableHead>
+                  <TableHead className="font-bold text-sm text-muted-foreground px-2 py-2 uppercase tracking-wider text-center">Amount</TableHead>
+                  <TableHead className="font-bold text-sm text-muted-foreground px-2 py-2 uppercase tracking-wider text-center">History</TableHead>
+                  <TableHead className="font-bold text-sm text-muted-foreground px-2 py-2 uppercase tracking-wider text-center">Status</TableHead>
+                  <TableHead className="font-bold text-sm text-muted-foreground px-2 py-2 uppercase tracking-wider text-center">Courier</TableHead>
                   
-                  <TableHead className="font-semibold text-xs text-muted-foreground px-3 py-2.5 uppercase tracking-wider text-center">Source</TableHead>
-                  <TableHead className="font-semibold text-xs text-muted-foreground px-3 py-2.5 uppercase tracking-wider text-right">Actions</TableHead>
+                  <TableHead className="font-bold text-sm text-muted-foreground px-2 py-2 uppercase tracking-wider text-center">Source</TableHead>
+                  <TableHead className="font-bold text-sm text-muted-foreground px-2 py-2 uppercase tracking-wider text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -3414,7 +3414,7 @@ const AdminOrders = () => {
                   return (
                   <TableRow key={order.id} className={cn("hover:bg-primary/5 cursor-pointer group border-l-[3px] transition-colors", idx % 2 === 0 ? "bg-background border-l-primary/40" : "bg-muted/20 border-l-transparent", selectedOrderIds.has(order.id) && "bg-primary/10 border-l-primary")} onClick={() => setDetailOrderId(order.id)}>
                     {/* Checkbox */}
-                    <TableCell className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
+                    <TableCell className="px-2 py-2" onClick={(e) => e.stopPropagation()}>
                       <Checkbox checked={selectedOrderIds.has(order.id)} onCheckedChange={(checked) => {
                         const newSet = new Set(selectedOrderIds);
                         if (checked) newSet.add(order.id); else newSet.delete(order.id);
@@ -3422,9 +3422,9 @@ const AdminOrders = () => {
                       }} />
                     </TableCell>
                     {/* ORDER: number, date, time */}
-                    <TableCell className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center gap-1.5">
-                        <p className="font-bold text-primary text-sm cursor-pointer" onClick={() => setDetailOrderId(order.id)}>#{order.order_number.replace(/^ORD-0*/, '')}</p>
+                    <TableCell className="px-2 py-2" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center gap-1">
+                        <p className="font-bold text-primary text-base cursor-pointer" onClick={() => setDetailOrderId(order.id)}>#{order.order_number.replace(/^ORD-0*/, '')}</p>
                         {(order as any).memo_printed && (
                           <span className="inline-flex items-center justify-center h-4 w-4 rounded-full bg-emerald-500/20 text-emerald-600" title="মেমো প্রিন্টেড">
                             <Printer className="h-2.5 w-2.5" />
@@ -3459,8 +3459,8 @@ const AdminOrders = () => {
                       )}
                     </TableCell>
                     {/* CUSTOMER: name, phone with call/copy/whatsapp, address */}
-                    <TableCell className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
-                      <p className="font-semibold text-foreground text-sm cursor-pointer" onClick={() => setDetailOrderId(order.id)}>{order.customer_name}</p>
+                    <TableCell className="px-2 py-2" onClick={(e) => e.stopPropagation()}>
+                      <p className="font-semibold text-foreground text-base cursor-pointer" onClick={() => setDetailOrderId(order.id)}>{order.customer_name}</p>
                       {order.customer_phone && (
                         <div className="flex items-center gap-1 mt-0.5">
                           <span className="text-xs font-mono text-primary font-semibold">{order.customer_phone}</span>
@@ -3480,7 +3480,7 @@ const AdminOrders = () => {
                       )}
                     </TableCell>
                     {/* PRODUCTS: show item image + name */}
-                    <TableCell className="px-3 py-3">
+                    <TableCell className="px-2 py-2">
                       {items.length > 0 ? (
                         <div className="space-y-1 max-w-[180px]">
                           {items.slice(0, 2).map((item: any, i: number) => {
@@ -3507,15 +3507,15 @@ const AdminOrders = () => {
                       )}
                     </TableCell>
                     {/* AMOUNT */}
-                    <TableCell className="px-3 py-3 text-center">
+                    <TableCell className="px-2 py-2 text-center">
                       <span className="text-base font-bold text-foreground">৳{Number(order.total_amount).toLocaleString()}</span>
                     </TableCell>
                     {/* COURIER HISTORY: BDCourier external data */}
-                    <TableCell className="px-3 py-3 text-center">
+                    <TableCell className="px-2 py-2 text-center">
                       {courierCacheReady ? <CourierHistoryBadge phone={order.customer_phone} /> : <Loader2 className="h-3 w-3 animate-spin text-muted-foreground mx-auto" />}
                     </TableCell>
                     {/* STATUS */}
-                    <TableCell className="px-3 py-3 text-center" onClick={(e) => e.stopPropagation()}>
+                    <TableCell className="px-2 py-2 text-center" onClick={(e) => e.stopPropagation()}>
                       <Select value={order.status} onValueChange={(value) => handleStatusChange(order.id, value, order.status)}>
                         <SelectTrigger className="w-[130px] h-8 rounded-full text-xs border-0 px-3 font-semibold mx-auto"
                           style={{ backgroundColor: order.status === 'processing' ? '#3b82f6' : order.status === 'confirmed' ? '#059669' : order.status === 'inquiry' ? '#d97706' : order.status === 'cancelled' ? '#ef4444' : order.status === 'delivered' ? '#10b981' : order.status === 'in_courier' ? '#8b5cf6' : order.status === 'on_hold' ? '#eab308' : order.status === 'returned' ? '#f97316' : order.status === 'pending_return' ? '#f97316' : order.status === 'hand_delivery' ? '#06b6d4' : order.status === 'ship_later' ? '#14b8a6' : '#6b7280', color: 'white' }}>
@@ -3539,7 +3539,7 @@ const AdminOrders = () => {
                       )}
                     </TableCell>
                     {/* COURIER: logo + name */}
-                    <TableCell className="px-3 py-3 text-center" onClick={(e) => e.stopPropagation()}>
+                    <TableCell className="px-2 py-2 text-center" onClick={(e) => e.stopPropagation()}>
                       {courierInfo ? (
                         <div className="flex flex-col items-center gap-0.5">
                           <div className="flex items-center gap-1.5">
@@ -3559,7 +3559,7 @@ const AdminOrders = () => {
                       )}
                     </TableCell>
                     {/* SOURCE */}
-                    <TableCell className="px-3 py-3 text-center">
+                    <TableCell className="px-2 py-2 text-center">
                       {order.source ? (
                         <Badge variant="secondary" className="text-[10px] font-medium">
                           <Globe className="h-2.5 w-2.5 mr-1" />
