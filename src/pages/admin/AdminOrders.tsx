@@ -4595,9 +4595,9 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                 <div className="h-6 w-6 rounded-lg bg-violet-500/10 flex items-center justify-center"><Truck className="h-3.5 w-3.5 text-violet-500" /></div>
                 কুরিয়ার সিলেক্ট
               </h3>
-              <Select value={editCourierId || ""} onValueChange={(v) => {
-                const nextCourierId = v || null;
-                const nextCourier = editCourierProviders.find((cp: any) => cp.id === nextCourierId);
+              <Select value={editCourierId || "none"} onValueChange={(v) => {
+                const nextCourierId = v === "none" ? null : v;
+                const nextCourier = nextCourierId ? editCourierProviders.find((cp: any) => cp.id === nextCourierId) : null;
                 setEditCourierId(nextCourierId);
                 setEditCourierCityId(null);
                 setEditCourierZoneId(null);
@@ -4610,6 +4610,9 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
                   <SelectValue placeholder="কুরিয়ার সিলেক্ট করুন" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="none">
+                    <span className="text-muted-foreground">কুরিয়ার সিলেক্ট করুন</span>
+                  </SelectItem>
                   {editCourierProviders.map((cp: any) => (
                     <SelectItem key={cp.id} value={cp.id}>
                       <div className="flex items-center gap-2">
