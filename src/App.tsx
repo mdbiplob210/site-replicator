@@ -167,6 +167,8 @@ const App = () => {
             <Route path="/admin/backup" element={<Admin requiredPermissions={["manage_backup"]}><AdminBackup /></Admin>} />
             <Route path="/admin/profile" element={<Admin><AdminProfile /></Admin>} />
             <Route path="/admin/whatsapp" element={<Admin requiredPermissions={["manage_whatsapp"]}><AdminWhatsApp /></Admin>} />
+            <Route path="/admin/rider" element={<Admin requiredPermissions={["view_delivery_assignments"]}><RiderDashboard /></Admin>} />
+            <Route path="/admin/delivery-riders" element={<Admin requiredPermissions={["manage_delivery_assignments"]}><AdminRiderManagement /></Admin>} />
             <Route path="/admin/support" element={P("Support", "Customer support", ["manage_settings"])} />
             <Route path="/admin/coming-soon" element={<Admin requiredPermissions={["manage_settings"]}><AdminComingSoon /></Admin>} />
             <Route path="/admin/plan" element={P("Plan", "Subscription management", ["manage_settings"])} />
