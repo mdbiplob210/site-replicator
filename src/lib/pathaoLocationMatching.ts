@@ -661,12 +661,13 @@ export const findBestPathaoLocationMatch = (
   const best = scoredMatches[0];
   const secondBest = scoredMatches[1];
 
-  // Require minimum score of 100 (was 78) to avoid weak partial matches
-  if (!best || best.score < 100) return null;
+  // Minimum score 85 to filter out truly weak matches
+  if (!best || best.score < 85) return null;
 
-  // Require a strong lead of at least 15 points (was 8) to avoid ambiguous picks
-  const hasStrongLead = !secondBest || best.score - secondBest.score >= 15;
-  const hasHighConfidence = best.score >= 145;
+  // If top two are very close (within 10 points), it's ambiguous — skip auto-select
+  const hasStrongLead = !secondBest || best.score - secondBest.score >= 10;
+  // High confidence means word-boundary or context match
+  const hasHighConfidence = best.score >= 140;
 
   return hasStrongLead || hasHighConfidence ? best.location : null;
 };
