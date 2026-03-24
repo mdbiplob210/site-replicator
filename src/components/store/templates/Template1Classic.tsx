@@ -313,14 +313,14 @@ const Template1Classic = () => {
                 <div key={p.id} className="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                   {/* Image */}
                   <Link to={`/product/${(p as any).slug || p.id}`} className="block relative">
-                    <div className="aspect-square overflow-hidden bg-gray-50" style={{ containIntrinsicSize: '336px 336px', contentVisibility: isAboveFold ? 'visible' : 'auto' }}>
+                    <div className="aspect-square overflow-hidden bg-gray-50" style={{ containIntrinsicSize: '200px 200px', contentVisibility: isAboveFold ? 'visible' : 'auto' }}>
                       <OptimizedImage 
                         src={imageSrc} 
                         alt={p.name || ''} 
-                        width={336} 
-                        height={336}
-                        quality={70} 
-                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                        width={200} 
+                        height={200}
+                        quality={65} 
+                        sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 25vw"
                         eager={isAboveFold}
                         className="w-full h-full object-cover"
                         fallback={

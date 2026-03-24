@@ -41,9 +41,9 @@ const BannerCarousel = () => {
           <OptimizedImage
             src={banner.image_url}
             alt={`Promotional banner ${current + 1} of ${banners.length}`}
-            width={800}
-            height={250}
-            quality={75}
+            width={720}
+            height={225}
+            quality={65}
             sizes="100vw"
             eager={current === 0}
             className="w-full h-full object-cover"
