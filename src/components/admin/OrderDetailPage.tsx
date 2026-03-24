@@ -16,7 +16,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
-  Plus, Calendar, AlertCircle, Truck,
+  Plus, Calendar, AlertCircle, Truck, Search, MessageSquare,
   Printer, ChevronDown, Users,
   Trash2, Copy, X, ShoppingCart, ArrowLeft, Clock, CheckCircle2,
   PauseCircle, XCircle, Smartphone,
@@ -26,7 +26,20 @@ import {
 import { useOrderItems, getStatusLabel, getStatusColor } from "@/hooks/useOrders";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
 import { CourierHistoryBadge } from "@/components/admin/courier/CourierHistoryBadge";
+import { CourierSuccessRate } from "@/components/admin/courier/CourierSuccessRate";
+import { useCourierCities, useCourierZones, useCourierAreas, prefetchCourierLocations } from "@/hooks/useCourierLocations";
+import { extractPathaoLocationHints, resolvePathaoLocationMatch } from "@/lib/pathaoLocationMatching";
 import { toast } from "sonner";
+
+const CANCEL_REASONS = [
+  "কাস্টমার ফোন রিসিভ করছে না",
+  "কাস্টমার অর্ডার ক্যান্সেল করেছে",
+  "ডুপ্লিকেট অর্ডার",
+  "ভুল তথ্য দিয়ে অর্ডার করেছে",
+  "ডেলিভারি এরিয়ার বাইরে",
+  "প্রোডাক্ট স্টক নেই",
+  "ফেক অর্ডার",
+];
 
 export function OrderDetailPage({ orderId, order, onClose }: { orderId: string | null; order: any; onClose: () => void }) {
   const { data: items = [], isLoading } = useOrderItems(orderId);
