@@ -3559,7 +3559,7 @@ const AdminOrders = () => {
                       )}
                     </TableCell>
                     {/* SOURCE */}
-                    <TableCell className="px-3 py-3 text-center">
+                    <TableCell className="px-2 py-2 text-center">
                       {order.source ? (
                         <Badge variant="secondary" className="text-[10px] font-medium">
                           <Globe className="h-2.5 w-2.5 mr-1" />
