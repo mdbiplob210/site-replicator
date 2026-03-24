@@ -5246,8 +5246,8 @@ function OrderDetailPage({ orderId, order, onClose }: { orderId: string | null; 
             </div>
           </div>
         )}
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 }
 
