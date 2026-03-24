@@ -30,6 +30,7 @@ import { CourierSuccessRate } from "@/components/admin/courier/CourierSuccessRat
 import { useCourierCities, useCourierZones, useCourierAreas, prefetchCourierLocations } from "@/hooks/useCourierLocations";
 import { extractPathaoLocationHints, resolvePathaoLocationMatch } from "@/lib/pathaoLocationMatching";
 import { toast } from "sonner";
+import { MemoPrint } from "@/components/admin/courier/MemoPrint";
 
 const CANCEL_REASONS = [
   "কাস্টমার ফোন রিসিভ করছে না",
