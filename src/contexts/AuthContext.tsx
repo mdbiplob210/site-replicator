@@ -15,7 +15,8 @@ export type PermissionKey =
   | "manage_courier" | "print_memo" | "transfer_orders"
   | "manage_whatsapp"
   | "manage_users" | "create_users" | "create_admin_users" | "create_moderator_users" | "create_basic_users"
-  | "manage_settings" | "manage_automation" | "manage_backup";
+  | "manage_settings" | "manage_automation" | "manage_backup"
+  | "view_delivery_assignments" | "manage_delivery_assignments";
 
 interface AuthContextType {
   session: Session | null;
