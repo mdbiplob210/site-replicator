@@ -379,6 +379,62 @@ export type Database = {
         }
         Relationships: []
       }
+      delivery_assignments: {
+        Row: {
+          assigned_at: string
+          assigned_by: string | null
+          collected_amount: number
+          commission_amount: number
+          created_at: string
+          delivered_at: string | null
+          id: string
+          order_id: string
+          return_reason: string | null
+          returned_at: string | null
+          rider_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by?: string | null
+          collected_amount?: number
+          commission_amount?: number
+          created_at?: string
+          delivered_at?: string | null
+          id?: string
+          order_id: string
+          return_reason?: string | null
+          returned_at?: string | null
+          rider_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string | null
+          collected_amount?: number
+          commission_amount?: number
+          created_at?: string
+          delivered_at?: string | null
+          id?: string
+          order_id?: string
+          return_reason?: string | null
+          returned_at?: string | null
+          rider_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_assignments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employee_panels: {
         Row: {
           created_at: string
@@ -1718,6 +1774,24 @@ export type Database = {
           id?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      rider_settings: {
+        Row: {
+          commission_per_delivery: number
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          commission_per_delivery?: number
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          commission_per_delivery?: number
+          id?: string
+          updated_at?: string
         }
         Relationships: []
       }
