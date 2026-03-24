@@ -208,21 +208,26 @@ export function PathaoBulkSubmitPreview({ open, onOpenChange, orders, providerId
     ? "grid-cols-[30px_50px_minmax(80px,1fr)_85px_minmax(80px,1fr)_minmax(70px,1fr)_minmax(70px,1fr)_55px_minmax(80px,1fr)_50px_minmax(90px,1fr)]"
     : "grid-cols-[30px_50px_minmax(100px,1fr)_90px_minmax(100px,1.5fr)_60px_minmax(100px,1fr)_50px_minmax(90px,1fr)]";
 
+  if (!open) return null;
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] w-full max-h-[90vh] p-0">
-        <DialogHeader className="px-4 pt-4 pb-2 border-b">
-          <DialogTitle className="flex items-center gap-2 text-base flex-wrap">
-            <Truck className="h-5 w-5" />
-            Send to {providerName}
-            <Badge variant="secondary">{orders.length} অর্ডার</Badge>
-            {hasResults ? (
-              <Badge className="bg-emerald-600 text-white">{successCount}/{submitResults.length} সাকসেসফুল</Badge>
-            ) : (
-              <Badge className="bg-emerald-600 text-white">{readyCount} Ready</Badge>
-            )}
-          </DialogTitle>
-        </DialogHeader>
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <button onClick={() => onOpenChange(false)} className="p-2 rounded-xl hover:bg-secondary/80 transition-all">
+          <ArrowLeft className="h-5 w-5 text-foreground" />
+        </button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Truck className="h-5 w-5 text-primary" />
+          <h1 className="text-lg font-bold text-foreground">Send to {providerName}</h1>
+          <Badge variant="secondary">{orders.length} অর্ডার</Badge>
+          {hasResults ? (
+            <Badge className="bg-emerald-600 text-white">{successCount}/{submitResults.length} সাকসেসফুল</Badge>
+          ) : (
+            <Badge className="bg-emerald-600 text-white">{readyCount} Ready</Badge>
+          )}
+        </div>
+      </div>
 
         <ScrollArea className="max-h-[calc(90vh-140px)]">
           <div className="px-2 py-2">
