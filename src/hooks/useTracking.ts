@@ -902,9 +902,154 @@ export function useTracking() {
         search_term: searchTerm,
       });
     }
+
+    // CAPI for Search
+    if (fbPixelId) {
+      sendCAPIEvent({
+        pixelId: fbPixelId,
+        eventName: "Search",
+        eventId,
+        customData: {
+          search_string: searchTerm,
+        },
+      });
+    }
   }, [fbPixelId, tiktokPixelId, gtmId]);
 
-  // Custom event
+  const trackAddToWishlist = useCallback((product: {
+    id: string; name: string; price: number;
+    productCode?: string; category?: string;
+  }) => {
+    const eventId = generateEventId("aw");
+    const contentId = product.productCode || product.id;
+
+    if (fbPixelId && window.fbq) {
+      window.fbq("track", "AddToWishlist", {
+        content_name: product.name,
+        content_ids: [contentId],
+        content_type: "product",
+        content_category: product.category || "",
+        value: product.price,
+        currency: "BDT",
+      }, { eventID: eventId });
+    }
+
+    if (tiktokPixelId && window.ttq) {
+      window.ttq.track("AddToWishlist", {
+        content_id: contentId,
+        content_name: product.name,
+        value: product.price,
+        currency: "BDT",
+      });
+    }
+
+    if (fbPixelId) {
+      sendCAPIEvent({
+        pixelId: fbPixelId,
+        eventName: "AddToWishlist",
+        eventId,
+        customData: {
+          content_name: product.name,
+          content_ids: [contentId],
+          content_type: "product",
+          content_category: product.category || "",
+          value: product.price,
+          currency: "BDT",
+        },
+      });
+    }
+  }, [fbPixelId, tiktokPixelId]);
+
+  const trackFindLocation = useCallback((data?: Record<string, any>) => {
+    const eventId = generateEventId("fl");
+    if (fbPixelId && window.fbq) {
+      window.fbq("track", "FindLocation", data || {}, { eventID: eventId });
+    }
+    if (fbPixelId) {
+      sendCAPIEvent({ pixelId: fbPixelId, eventName: "FindLocation", eventId, customData: data || {} });
+    }
+  }, [fbPixelId]);
+
+  const trackSchedule = useCallback((data?: Record<string, any>) => {
+    const eventId = generateEventId("sc");
+    if (fbPixelId && window.fbq) {
+      window.fbq("track", "Schedule", data || {}, { eventID: eventId });
+    }
+    if (fbPixelId) {
+      sendCAPIEvent({ pixelId: fbPixelId, eventName: "Schedule", eventId, customData: data || {} });
+    }
+  }, [fbPixelId]);
+
+  const trackCustomizeProduct = useCallback((product?: { name?: string; id?: string; value?: number }) => {
+    const eventId = generateEventId("cp");
+    const params: Record<string, any> = {};
+    if (product?.name) params.content_name = product.name;
+    if (product?.id) params.content_ids = [product.id];
+    if (product?.value) { params.value = product.value; params.currency = "BDT"; }
+    params.content_type = "product";
+
+    if (fbPixelId && window.fbq) {
+      window.fbq("track", "CustomizeProduct", params, { eventID: eventId });
+    }
+    if (fbPixelId) {
+      sendCAPIEvent({ pixelId: fbPixelId, eventName: "CustomizeProduct", eventId, customData: params });
+    }
+  }, [fbPixelId]);
+
+  const trackSubscribe = useCallback((params?: { value?: number; currency?: string; predictedLtv?: number }) => {
+    const eventId = generateEventId("sub");
+    const data: Record<string, any> = {
+      value: params?.value || 0,
+      currency: params?.currency || "BDT",
+    };
+    if (params?.predictedLtv) data.predicted_ltv = params.predictedLtv;
+
+    if (fbPixelId && window.fbq) {
+      window.fbq("track", "Subscribe", data, { eventID: eventId });
+    }
+    if (fbPixelId) {
+      sendCAPIEvent({ pixelId: fbPixelId, eventName: "Subscribe", eventId, customData: data });
+    }
+  }, [fbPixelId]);
+
+  const trackStartTrial = useCallback((params?: { value?: number; currency?: string; predictedLtv?: number }) => {
+    const eventId = generateEventId("st");
+    const data: Record<string, any> = {
+      value: params?.value || 0,
+      currency: params?.currency || "BDT",
+    };
+    if (params?.predictedLtv) data.predicted_ltv = params.predictedLtv;
+
+    if (fbPixelId && window.fbq) {
+      window.fbq("track", "StartTrial", data, { eventID: eventId });
+    }
+    if (fbPixelId) {
+      sendCAPIEvent({ pixelId: fbPixelId, eventName: "StartTrial", eventId, customData: data });
+    }
+  }, [fbPixelId]);
+
+  const trackSubmitApplication = useCallback((data?: Record<string, any>) => {
+    const eventId = generateEventId("sa");
+    if (fbPixelId && window.fbq) {
+      window.fbq("track", "SubmitApplication", data || {}, { eventID: eventId });
+    }
+    if (fbPixelId) {
+      sendCAPIEvent({ pixelId: fbPixelId, eventName: "SubmitApplication", eventId, customData: data || {} });
+    }
+  }, [fbPixelId]);
+
+  const trackDonate = useCallback((params?: { value?: number; currency?: string }) => {
+    const eventId = generateEventId("dn");
+    const data = { value: params?.value || 0, currency: params?.currency || "BDT" };
+    if (fbPixelId && window.fbq) {
+      window.fbq("track", "Donate", data, { eventID: eventId });
+    }
+    if (fbPixelId) {
+      sendCAPIEvent({ pixelId: fbPixelId, eventName: "Donate", eventId, customData: data });
+    }
+  }, [fbPixelId]);
+
+  // Custom event with CAPI support
   const trackCustomEvent = useCallback((eventName: string, data?: Record<string, any>) => {
     const eventId = generateEventId("ce");
 
@@ -914,6 +1059,16 @@ export function useTracking() {
 
     if (gtmId && window.dataLayer) {
       window.dataLayer.push({ event: eventName, ...data });
+    }
+
+    // Send custom events to CAPI too for better signal
+    if (fbPixelId) {
+      sendCAPIEvent({
+        pixelId: fbPixelId,
+        eventName: eventName,
+        eventId,
+        customData: data || {},
+      });
     }
   }, [fbPixelId, gtmId]);
 
