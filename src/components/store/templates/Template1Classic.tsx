@@ -134,82 +134,85 @@ const Template1Classic = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Top announcement bar */}
-      <div className="bg-gradient-to-r from-green-600 to-green-700 text-white text-center h-[34px] sm:h-[32px] flex items-center justify-center text-[11px] sm:text-sm font-medium overflow-hidden">
+      <div className="bg-gradient-to-r from-green-600 to-green-700 text-white text-center h-[34px] sm:h-[32px] flex items-center justify-center text-[11px] sm:text-sm font-medium overflow-hidden" role="marquee" aria-label="Announcements">
         <div className="animate-marquee whitespace-nowrap inline-block">
           {marqueeText} Hotline: {phoneNumber || "01XXXXXXXXX"} &nbsp;&nbsp;&nbsp;
           {marqueeText} Hotline: {phoneNumber || "01XXXXXXXXX"}
         </div>
       </div>
 
-
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2 sm:gap-3">
           {/* Mobile menu button */}
-          <button onClick={() => setMobileMenu(!mobileMenu)} className="lg:hidden p-2 -ml-1 rounded-lg active:bg-gray-100 transition">
+          <button onClick={() => setMobileMenu(!mobileMenu)} aria-label={mobileMenu ? "Close menu" : "Open menu"} aria-expanded={mobileMenu} className="lg:hidden p-2 -ml-1 rounded-lg active:bg-gray-100 transition">
             {mobileMenu ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
 
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 flex-shrink-0">
+          <Link to="/" className="flex items-center gap-2 flex-shrink-0" aria-label={`${siteName} - Home`}>
             {siteLogo ? (
-              <img src={siteLogo} alt={siteName} className="h-7 sm:h-10 w-auto object-contain" />
+              <img src={siteLogo} alt={siteName} className="h-7 sm:h-10 w-auto object-contain" width={120} height={40} />
             ) : (
               <span className="text-lg sm:text-2xl font-black text-green-600">{siteName}</span>
             )}
           </Link>
 
           {/* Desktop Search */}
-          <div className="hidden lg:flex flex-1 max-w-md mx-4">
+          <div className="hidden lg:flex flex-1 max-w-md mx-4" role="search">
             <div className="relative w-full">
+              <label htmlFor="desktop-search" className="sr-only">Search products</label>
               <input
-                type="text"
+                id="desktop-search"
+                type="search"
                 placeholder="Search products..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full h-10 pl-4 pr-10 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-500"
+                className="w-full h-10 pl-4 pr-10 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100"
               />
-              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" aria-hidden="true" />
             </div>
           </div>
 
           {/* Right actions */}
           <div className="flex items-center gap-1 sm:gap-2">
-            <button onClick={() => setShowSearch(!showSearch)} className="lg:hidden p-2 rounded-lg active:bg-gray-100 transition">
-              <Search className="h-5 w-5 text-gray-600" />
+            <button onClick={() => setShowSearch(!showSearch)} aria-label="Toggle search" className="lg:hidden p-2 rounded-lg active:bg-gray-100 transition">
+              <Search className="h-5 w-5 text-gray-600" aria-hidden="true" />
             </button>
-            <Link to="/checkout" className="p-2 rounded-lg active:bg-gray-100 transition relative">
-              <ShoppingCart className="h-5 w-5 text-gray-600" />
-              <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-green-600 text-[10px] font-bold text-white flex items-center justify-center">0</span>
+            <Link to="/checkout" className="p-2 rounded-lg active:bg-gray-100 transition relative" aria-label="Shopping cart">
+              <ShoppingCart className="h-5 w-5 text-gray-600" aria-hidden="true" />
+              <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-green-600 text-[10px] font-bold text-white flex items-center justify-center" aria-hidden="true">0</span>
             </Link>
           </div>
         </div>
 
         {/* Mobile Search */}
         {showSearch && (
-          <div className="lg:hidden px-3 pb-3">
+          <div className="lg:hidden px-3 pb-3" role="search">
             <div className="relative">
+              <label htmlFor="mobile-search" className="sr-only">Search products</label>
               <input
-                type="text"
+                id="mobile-search"
+                type="search"
                 placeholder="Search products..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 className="w-full h-11 pl-4 pr-10 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100"
                 autoFocus
               />
-              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" aria-hidden="true" />
             </div>
           </div>
         )}
 
         {/* Mobile Menu */}
         {mobileMenu && (
-          <div className="lg:hidden border-t bg-white px-4 py-2 space-y-0.5">
+          <nav className="lg:hidden border-t bg-white px-4 py-2 space-y-0.5" aria-label="Categories">
             <button onClick={() => { setSelectedCategory(null); setMobileMenu(false); }} className="block w-full text-left py-2.5 px-3 text-sm font-medium hover:text-green-600 hover:bg-green-50 rounded-lg transition">All Products</button>
             {categories.map(c => (
               <button key={c.id} onClick={() => { setSelectedCategory(c.id); setMobileMenu(false); }} className="block w-full text-left py-2.5 px-3 text-sm hover:text-green-600 hover:bg-green-50 rounded-lg transition">{c.name}</button>
             ))}
-          </div>
+          </nav>
         )}
       </header>
 
@@ -254,11 +257,11 @@ const Template1Classic = () => {
           ].map(b => (
             <div key={b.label} className="flex items-center gap-2.5">
               <div className="h-9 w-9 sm:h-8 sm:w-8 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
-                <b.icon className="h-4 w-4 text-green-600" />
+                <b.icon className="h-4 w-4 text-green-600" aria-hidden="true" />
               </div>
               <div>
                 <p className="text-xs font-bold text-gray-800 leading-tight">{b.label}</p>
-                <p className="text-[10px] text-gray-400 leading-tight">{b.sub}</p>
+                <p className="text-[10px] text-gray-500 leading-tight">{b.sub}</p>
               </div>
             </div>
           ))}
@@ -272,7 +275,7 @@ const Template1Classic = () => {
             <h2 className="text-base sm:text-xl font-bold text-gray-800">
              {selectedCategory ? categories.find(c => c.id === selectedCategory)?.name : "You might also like these products"}
             </h2>
-            <p className="text-[11px] sm:text-xs text-gray-400 mt-0.5">We have more products you might want to check out</p>
+            <p className="text-[11px] sm:text-xs text-gray-500 mt-0.5">We have more products you might want to check out</p>
           </div>
           {selectedCategory && (
             <button onClick={() => setSelectedCategory(null)} className="flex items-center gap-1 text-green-600 text-sm font-semibold hover:underline">
@@ -283,7 +286,7 @@ const Template1Classic = () => {
       </div>
 
       {/* Products Grid */}
-      <section className="max-w-7xl mx-auto px-2 sm:px-4 pb-20 sm:pb-16">
+      <main className="max-w-7xl mx-auto px-2 sm:px-4 pb-20 sm:pb-16" role="main">
         {isLoading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
             {[...Array(8)].map((_, i) => (
@@ -351,11 +354,11 @@ const Template1Classic = () => {
                     </Link>
 
                     {/* Rating */}
-                    <div className="flex items-center gap-0.5 mt-1">
+                    <div className="flex items-center gap-0.5 mt-1" aria-label="Rating: 4 out of 5 stars">
                       {[...Array(5)].map((_, i) => (
-                        <Star key={i} className={`h-2.5 w-2.5 sm:h-3 sm:w-3 ${i < 4 ? "fill-amber-400 text-amber-400" : "fill-amber-200 text-amber-200"}`} />
+                        <Star key={i} className={`h-2.5 w-2.5 sm:h-3 sm:w-3 ${i < 4 ? "fill-amber-400 text-amber-400" : "fill-amber-200 text-amber-200"}`} aria-hidden="true" />
                       ))}
-                      <span className="text-[9px] sm:text-[10px] text-gray-400 ml-0.5">(0)</span>
+                      <span className="text-[9px] sm:text-[10px] text-gray-500 ml-0.5">(0)</span>
                     </div>
 
                     {/* Price & Stock */}
@@ -397,29 +400,31 @@ const Template1Classic = () => {
             })}
           </div>
         )}
-      </section>
+      </main>
 
       {/* Contact floating buttons - WhatsApp & Phone */}
       {floatingContactsEnabled && (whatsappNumber || phoneNumber) && (
-        <div className="fixed bottom-20 right-3 sm:right-4 z-40 flex flex-col gap-2.5">
+        <div className="fixed bottom-20 right-3 sm:right-4 z-40 flex flex-col gap-2.5" role="complementary" aria-label="Contact options">
           {floatingWhatsappEnabled && whatsappNumber && (
             <a
               href={`https://wa.me/${whatsappNumber}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-13 h-13 sm:w-12 sm:h-12 rounded-full bg-green-500 text-white flex items-center justify-center shadow-lg hover:bg-green-600 active:scale-95 transition"
+              aria-label="Chat on WhatsApp"
+              className="rounded-full bg-green-500 text-white flex items-center justify-center shadow-lg hover:bg-green-600 active:scale-95 transition"
               style={{ width: 52, height: 52 }}
             >
-              <MessageCircle className="h-5 w-5 sm:h-5 sm:w-5" />
+              <MessageCircle className="h-5 w-5" aria-hidden="true" />
             </a>
           )}
           {floatingCallEnabled && phoneNumber && (
             <a
               href={`tel:${phoneNumber}`}
-              className="w-13 h-13 sm:w-12 sm:h-12 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-lg hover:bg-blue-600 active:scale-95 transition"
+              aria-label={`Call ${phoneNumber}`}
+              className="rounded-full bg-blue-500 text-white flex items-center justify-center shadow-lg hover:bg-blue-600 active:scale-95 transition"
               style={{ width: 52, height: 52 }}
             >
-              <Phone className="h-5 w-5 sm:h-5 sm:w-5" />
+              <Phone className="h-5 w-5" aria-hidden="true" />
             </a>
           )}
         </div>

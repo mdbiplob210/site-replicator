@@ -1,6 +1,4 @@
 import { lazy, Suspense } from "react";
-import { Analytics } from "@vercel/analytics/react";
-import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -14,6 +12,14 @@ import { useDynamicMeta } from "@/hooks/useDynamicMeta";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 const DynamicMetaProvider = () => { useDynamicMeta(); return null; };
+
+// Lazy load Vercel analytics (non-critical, don't block FCP)
+const VercelAnalytics = lazy(() =>
+  import("@vercel/analytics/react").then(m => ({ default: m.Analytics }))
+);
+const VercelSpeedInsights = lazy(() =>
+  import("@vercel/speed-insights/react").then(m => ({ default: m.SpeedInsights }))
+);
 
 // StorePage also lazy-loaded now for better code splitting
 const StorePage = lazy(() => import("./pages/store/StorePage"));
@@ -73,7 +79,7 @@ const AdminRiderManagement = lazy(() => import("./pages/admin/AdminRiderManageme
 
 // Minimal loading fallback
 const PageLoader = () => (
-  <div className="flex items-center justify-center min-h-screen">
+  <div className="flex items-center justify-center min-h-screen" role="status" aria-label="Loading page">
     <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
   </div>
 );
@@ -81,12 +87,12 @@ const PageLoader = () => (
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes - reduce refetches
-      gcTime: 15 * 60 * 1000, // 15 minutes garbage collection
-      refetchOnWindowFocus: false, // Don't refetch on tab switch
-      refetchOnReconnect: false, // Don't refetch on reconnect
-      retry: 1, // Only 1 retry on failure
-      networkMode: "offlineFirst", // Use cache first
+      staleTime: 5 * 60 * 1000,
+      gcTime: 15 * 60 * 1000,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      retry: 1,
+      networkMode: "offlineFirst",
     },
   },
 });
@@ -106,7 +112,6 @@ const Admin = ({ children, requiredPermissions }: { children: React.ReactNode; r
 );
 
 const App = () => {
-  // Import and use dynamic meta hook at app level
   return (
   <ErrorBoundary>
   <QueryClientProvider client={queryClient}>
@@ -180,8 +185,11 @@ const App = () => {
       </BrowserRouter>
     </AuthProvider>
   </QueryClientProvider>
-  <Analytics />
-  <SpeedInsights />
+  {/* Defer Vercel analytics to not block main thread */}
+  <Suspense fallback={null}>
+    <VercelAnalytics />
+    <VercelSpeedInsights />
+  </Suspense>
   </ErrorBoundary>
 );
 };
