@@ -3422,9 +3422,9 @@ const AdminOrders = () => {
                       }} />
                     </TableCell>
                     {/* ORDER: number, date, time */}
-                    <TableCell className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center gap-1.5">
-                        <p className="font-bold text-primary text-sm cursor-pointer" onClick={() => setDetailOrderId(order.id)}>#{order.order_number.replace(/^ORD-0*/, '')}</p>
+                    <TableCell className="px-2 py-2" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center gap-1">
+                        <p className="font-bold text-primary text-base cursor-pointer" onClick={() => setDetailOrderId(order.id)}>#{order.order_number.replace(/^ORD-0*/, '')}</p>
                         {(order as any).memo_printed && (
                           <span className="inline-flex items-center justify-center h-4 w-4 rounded-full bg-emerald-500/20 text-emerald-600" title="মেমো প্রিন্টেড">
                             <Printer className="h-2.5 w-2.5" />
