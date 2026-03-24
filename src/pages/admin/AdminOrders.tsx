@@ -1747,6 +1747,20 @@ const AdminOrders = () => {
     enabled: !!searchedPhone && searchedPhone.length >= 6,
   });
 
+  // ═══ Order Detail Full Page View ═══
+  if (detailOrderId) {
+    const detailOrder = filteredOrders.find((o) => o.id === detailOrderId) || null;
+    return (
+      <AdminLayout>
+        <OrderDetailPage
+          orderId={detailOrderId}
+          order={detailOrder}
+          onClose={() => setDetailOrderId(null)}
+        />
+      </AdminLayout>
+    );
+  }
+
   if (currentView === "api") {
     return (
       <AdminLayout>
