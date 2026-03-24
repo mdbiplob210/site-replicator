@@ -257,11 +257,11 @@ const Template1Classic = () => {
           ].map(b => (
             <div key={b.label} className="flex items-center gap-2.5">
               <div className="h-9 w-9 sm:h-8 sm:w-8 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
-                <b.icon className="h-4 w-4 text-green-600" />
+                <b.icon className="h-4 w-4 text-green-600" aria-hidden="true" />
               </div>
               <div>
                 <p className="text-xs font-bold text-gray-800 leading-tight">{b.label}</p>
-                <p className="text-[10px] text-gray-400 leading-tight">{b.sub}</p>
+                <p className="text-[10px] text-gray-500 leading-tight">{b.sub}</p>
               </div>
             </div>
           ))}
