@@ -13,6 +13,7 @@ import { useTracking, setFBUserData } from "@/hooks/useTracking";
 import { trackWebsiteEvent } from "@/hooks/useWebsiteAnalytics";
 import { OptimizedImage } from "@/components/ui/optimized-image";
 import { getClientIp, parseDeviceInfo } from "@/lib/deviceDetect";
+import { checkFraudProtection } from "@/lib/fraudCheck";
 import { sanitizePhoneInput, isValidBDPhone } from "@/lib/phoneUtils";
 
 interface CheckoutItem {
@@ -232,10 +233,17 @@ const CheckoutPage = () => {
 
       const total = item.price * item.qty;
       
-      // Create the order
       // Detect IP and device
       const clientIp = await getClientIp();
       const { deviceInfo } = parseDeviceInfo();
+
+      // ═══ Fraud Protection Check ═══
+      const fraudResult = await checkFraudProtection(form.phone, clientIp, deviceInfo);
+      if (fraudResult.blocked) {
+        toast.error(fraudResult.message);
+        setSubmitting(false);
+        return;
+      }
 
       // order_number is auto-assigned by DB trigger
       const { data: orderData, error } = await supabase.from("orders").insert({

@@ -13,6 +13,7 @@ import { getDisplayImage } from "@/lib/imageUtils";
 import { getClientIp, parseDeviceInfo } from "@/lib/deviceDetect";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { sanitizePhoneInput, isValidBDPhone } from "@/lib/phoneUtils";
+import { checkFraudProtection } from "@/lib/fraudCheck";
 import { CouponInput } from "@/components/store/CouponInput";
 
 interface CheckoutItem {
@@ -244,6 +245,14 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
 
       const clientIp = await getClientIp();
       const { deviceInfo } = parseDeviceInfo();
+
+      // ═══ Fraud Protection Check ═══
+      const fraudResult = await checkFraudProtection(form.phone, clientIp, deviceInfo);
+      if (fraudResult.blocked) {
+        toast.error(fraudResult.message);
+        setSubmitting(false);
+        return;
+      }
 
       // order_number is auto-assigned by DB trigger
       const { data: insertedOrder, error } = await supabase.from("orders").insert({
