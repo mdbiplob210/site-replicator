@@ -3840,12 +3840,7 @@ const AdminOrders = () => {
           </div>
           </>
         )}
-        {/* Order Detail Dialog */}
-        <OrderDetailDialog
-          orderId={detailOrderId}
-          order={filteredOrders.find((o) => o.id === detailOrderId) || null}
-          onClose={() => setDetailOrderId(null)}
-        />
+        {/* Order detail is now a full page view, rendered via conditional return above */}
 
         {/* Cancel Reason Dialog */}
         <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
