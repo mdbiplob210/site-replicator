@@ -1747,6 +1747,20 @@ const AdminOrders = () => {
     enabled: !!searchedPhone && searchedPhone.length >= 6,
   });
 
+  // ═══ Order Detail Full Page View ═══
+  if (detailOrderId) {
+    const detailOrder = filteredOrders.find((o) => o.id === detailOrderId) || null;
+    return (
+      <AdminLayout>
+        <OrderDetailPage
+          orderId={detailOrderId}
+          order={detailOrder}
+          onClose={() => setDetailOrderId(null)}
+        />
+      </AdminLayout>
+    );
+  }
+
   if (currentView === "api") {
     return (
       <AdminLayout>
@@ -3826,12 +3840,7 @@ const AdminOrders = () => {
           </div>
           </>
         )}
-        {/* Order Detail Dialog */}
-        <OrderDetailDialog
-          orderId={detailOrderId}
-          order={filteredOrders.find((o) => o.id === detailOrderId) || null}
-          onClose={() => setDetailOrderId(null)}
-        />
+        {/* Order detail is now a full page view, rendered via conditional return above */}
 
         {/* Cancel Reason Dialog */}
         <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
@@ -3943,7 +3952,7 @@ const AdminOrders = () => {
 
 export default AdminOrders;
 
-function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null; order: any; onClose: () => void }) {
+function OrderDetailPage({ orderId, order, onClose }: { orderId: string | null; order: any; onClose: () => void }) {
   const { data: items = [], isLoading } = useOrderItems(orderId);
   const { data: allProducts = [] } = usePublicProducts();
   const { user, isAdmin, userRoles, session } = useAuth();
@@ -4530,36 +4539,48 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
   };
 
   return (
-    <Dialog open={!!orderId} onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl" onInteractOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-lg">
-            <div className="p-2 rounded-xl bg-primary/10"><ShoppingCart className="h-5 w-5 text-primary" /></div>
-            Order Details
-            {order && <Badge variant="secondary" className="ml-2 text-xs">{order.order_number}</Badge>}
-            {order && <Badge className={cn("ml-1 text-[10px]", getStatusColor(order.status))}>{getStatusLabel(order.status)}</Badge>}
-          </DialogTitle>
-        </DialogHeader>
+    <div className="space-y-6">
+      {/* Back button + Header */}
+      <div className="flex items-center gap-3">
+        <button onClick={onClose} className="p-2 rounded-xl hover:bg-secondary/80 transition-all">
+          <ArrowLeft className="h-5 w-5 text-foreground" />
+        </button>
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-primary/10">
+            <ShoppingCart className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-foreground tracking-tight flex items-center gap-2">
+              Order Details
+              {order && <Badge variant="secondary" className="text-xs">{order.order_number}</Badge>}
+              {order && <Badge className={cn("text-[10px]", getStatusColor(order.status))}>{getStatusLabel(order.status)}</Badge>}
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              {order ? `${order.customer_name} — ৳${Number(order.total_amount).toLocaleString()}` : "Loading..."}
+            </p>
+          </div>
+        </div>
+      </div>
 
-        {order && (
-          <div className="space-y-6">
-            {/* Customer Info - Editable */}
-            <div className="p-4 rounded-2xl bg-secondary/20 border border-border/40 space-y-4">
-              <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                <div className="h-6 w-6 rounded-lg bg-primary/10 flex items-center justify-center"><Phone className="h-3.5 w-3.5 text-primary" /></div>
-                কাস্টমার তথ্য
-              </h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground">কাস্টমারের নাম</Label>
-                  <Input className="rounded-xl h-10 text-sm" value={editName} onChange={(e) => setEditName(e.target.value)} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground">ফোন নম্বর</Label>
-                  <Input className="rounded-xl h-10 text-sm" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} />
-                </div>
+      {order && (
+        <div className="max-w-3xl space-y-6">
+          {/* Customer Info - Editable */}
+          <div className="p-4 rounded-2xl bg-secondary/20 border border-border/40 space-y-4">
+            <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+              <div className="h-6 w-6 rounded-lg bg-primary/10 flex items-center justify-center"><Phone className="h-3.5 w-3.5 text-primary" /></div>
+              কাস্টমার তথ্য
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-muted-foreground">কাস্টমারের নাম</Label>
+                <Input className="rounded-xl h-10 text-sm" value={editName} onChange={(e) => setEditName(e.target.value)} />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-muted-foreground">ফোন নম্বর</Label>
+                <Input className="rounded-xl h-10 text-sm" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} />
               </div>
             </div>
+          </div>
 
             {/* Courier Success Rate - auto loads */}
             <CourierSuccessRate phone={editPhone} />
@@ -5225,8 +5246,8 @@ function OrderDetailDialog({ orderId, order, onClose }: { orderId: string | null
             </div>
           </div>
         )}
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 }
 
