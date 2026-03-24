@@ -13,6 +13,7 @@ import { useTracking, setFBUserData } from "@/hooks/useTracking";
 import { trackWebsiteEvent } from "@/hooks/useWebsiteAnalytics";
 import { OptimizedImage } from "@/components/ui/optimized-image";
 import { getClientIp, parseDeviceInfo } from "@/lib/deviceDetect";
+import { checkFraudProtection } from "@/lib/fraudCheck";
 import { sanitizePhoneInput, isValidBDPhone } from "@/lib/phoneUtils";
 
 interface CheckoutItem {
