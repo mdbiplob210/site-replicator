@@ -3507,7 +3507,7 @@ const AdminOrders = () => {
                       )}
                     </TableCell>
                     {/* AMOUNT */}
-                    <TableCell className="px-3 py-3 text-center">
+                    <TableCell className="px-2 py-2 text-center">
                       <span className="text-base font-bold text-foreground">৳{Number(order.total_amount).toLocaleString()}</span>
                     </TableCell>
                     {/* COURIER HISTORY: BDCourier external data */}
