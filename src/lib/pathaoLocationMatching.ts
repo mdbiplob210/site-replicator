@@ -496,9 +496,14 @@ export const getPathaoLocationMatchScore = (address: string, candidate: string) 
 
   let score = 0;
 
-  // Exact substring match
-  if (normalizedAddress.includes(normalizedCandidate)) {
-    score = Math.max(score, 120 + normalizedCandidate.length);
+  // Word-boundary aware matching - check if candidate appears as whole word(s) in address
+  const candidateRegex = new RegExp(`(?:^|\\s|,)${escapeRegExp(normalizedCandidate)}(?:\\s|,|$)`);
+  if (candidateRegex.test(` ${normalizedAddress} `)) {
+    score = Math.max(score, 150 + normalizedCandidate.length);
+  }
+  // Exact substring match (weaker than word-boundary)
+  else if (normalizedAddress.includes(normalizedCandidate)) {
+    score = Math.max(score, 110 + normalizedCandidate.length);
   }
 
   const addressTokens = normalizedAddress.split(" ").filter(Boolean);
@@ -506,17 +511,22 @@ export const getPathaoLocationMatchScore = (address: string, candidate: string) 
     .split(" ")
     .filter((token) => token.length > 1 && !LOCATION_GENERIC_WORDS.has(token));
 
+  // Require minimum 3 chars for partial token matching to avoid false positives
   const tokenHits = candidateTokens.filter((candidateToken) =>
     addressTokens.some(
       (addressToken) =>
         addressToken === candidateToken ||
-        addressToken.includes(candidateToken) ||
-        candidateToken.includes(addressToken),
+        (candidateToken.length >= 3 && addressToken.length >= 3 && (
+          addressToken.startsWith(candidateToken) ||
+          candidateToken.startsWith(addressToken)
+        )),
     ),
   ).length;
 
-  if (tokenHits > 0) {
-    score = Math.max(score, 72 + tokenHits * 12 + normalizedCandidate.length);
+  // Only count if ALL candidate tokens matched (full match) or most did
+  const matchRatio = candidateTokens.length > 0 ? tokenHits / candidateTokens.length : 0;
+  if (tokenHits > 0 && matchRatio >= 0.5) {
+    score = Math.max(score, 72 + tokenHits * 12 + normalizedCandidate.length + (matchRatio >= 1 ? 20 : 0));
   }
 
   // Context-aware matching (e.g., "district rajshahi", "thana mirpur")
@@ -537,10 +547,10 @@ export const getPathaoLocationMatchScore = (address: string, candidate: string) 
     score = Math.max(score, 144 + normalizedCandidate.length);
   }
 
-  // Phonetic matching
+  // Phonetic matching - only if candidate key is long enough to be meaningful
   const addressKey = toPhoneticKey(address);
   const candidateKey = toPhoneticKey(candidate);
-  if (candidateKey.length >= 3 && addressKey.includes(candidateKey)) {
+  if (candidateKey.length >= 4 && addressKey.includes(candidateKey)) {
     score = Math.max(score, 88 + candidateKey.length);
   }
 
