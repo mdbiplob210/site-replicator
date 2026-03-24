@@ -17,19 +17,33 @@
 
     <!-- DNS prefetch & preconnect for critical origins -->
     <link rel="dns-prefetch" href="https://hogejkqzynixmjwodkoi.supabase.co" />
-    <link rel="preconnect" href="https://hogejkqzynixmjwodkoi.supabase.co" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://hogejkqzynixmjwodkoi.supabase.co" crossorigin />
+    <link rel="dns-prefetch" href="https://images.unsplash.com" />
+    <link rel="preconnect" href="https://images.unsplash.com" />
 
     <!-- Default favicon -->
     <link rel="icon" href="/placeholder.svg" type="image/svg+xml" />
 
-    <!-- Non-render-blocking font loading using media="print" trick -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'" />
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" /></noscript>
-
     <!-- Preload critical module -->
     <link rel="modulepreload" href="/src/main.tsx" />
+
+    <!-- Load fonts via JS to avoid render-blocking entirely -->
+    <script>
+      (function(){
+        if(typeof requestIdleCallback==='function'){
+          requestIdleCallback(function(){loadFonts()},{timeout:2000});
+        }else{
+          setTimeout(loadFonts,100);
+        }
+        function loadFonts(){
+          var l=document.createElement('link');
+          l.rel='stylesheet';
+          l.href='https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap';
+          document.head.appendChild(l);
+        }
+      })();
+    </script>
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" /></noscript>
 
     <!-- Inline critical CSS -->
     <style>
