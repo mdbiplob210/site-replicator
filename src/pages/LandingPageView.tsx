@@ -296,7 +296,7 @@ ttq.page();
 
     // TikTok Pixel
     if (typeof ttq !== 'undefined' && ttq.track) {
-      var ttMap = {Purchase:'CompletePayment',AddToCart:'AddToCart',Lead:'SubmitForm',InitiateCheckout:'InitiateCheckout',ViewContent:'ViewContent',CompleteRegistration:'CompleteRegistration',Contact:'Contact',Search:'Search',AddPaymentInfo:'AddPaymentInfo'};
+      var ttMap = {Purchase:'CompletePayment',AddToCart:'AddToCart',Lead:'SubmitForm',InitiateCheckout:'InitiateCheckout',ViewContent:'ViewContent',CompleteRegistration:'CompleteRegistration',Contact:'Contact',Search:'Search',AddPaymentInfo:'AddPaymentInfo',AddToWishlist:'AddToWishlist',Subscribe:'Subscribe',FindLocation:'FindLocation',Schedule:'Schedule',CustomizeProduct:'CustomizeProduct',StartTrial:'StartTrial',SubmitApplication:'SubmitApplication',Donate:'Donate'};
       var ttEvent = ttMap[event] || event;
       var ttParams = {value: value, currency: currency, content_type: contentType};
       if (contentName) ttParams.content_name = contentName;
@@ -350,7 +350,7 @@ ttq.page();
       window._lpTrack.sendServerEvent(eventName, Object.assign({event_id: eventId}, params));
     }
     if (typeof ttq !== 'undefined' && ttq.track) {
-      var ttMap = {Purchase:'CompletePayment',AddToCart:'AddToCart',Lead:'SubmitForm',InitiateCheckout:'InitiateCheckout',ViewContent:'ViewContent',Contact:'Contact',Search:'Search',AddPaymentInfo:'AddPaymentInfo',CompleteRegistration:'CompleteRegistration'};
+      var ttMap = {Purchase:'CompletePayment',AddToCart:'AddToCart',Lead:'SubmitForm',InitiateCheckout:'InitiateCheckout',ViewContent:'ViewContent',Contact:'Contact',Search:'Search',AddPaymentInfo:'AddPaymentInfo',CompleteRegistration:'CompleteRegistration',AddToWishlist:'AddToWishlist',Subscribe:'Subscribe',FindLocation:'FindLocation',Schedule:'Schedule',CustomizeProduct:'CustomizeProduct',StartTrial:'StartTrial',SubmitApplication:'SubmitApplication',Donate:'Donate'};
       ttq.track(ttMap[eventName] || eventName, {value:value,currency:currency,content_name:contentName});
     }
     if (typeof dataLayer !== 'undefined') {
