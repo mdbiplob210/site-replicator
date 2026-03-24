@@ -3480,7 +3480,7 @@ const AdminOrders = () => {
                       )}
                     </TableCell>
                     {/* PRODUCTS: show item image + name */}
-                    <TableCell className="px-3 py-3">
+                    <TableCell className="px-2 py-2">
                       {items.length > 0 ? (
                         <div className="space-y-1 max-w-[180px]">
                           {items.slice(0, 2).map((item: any, i: number) => {
