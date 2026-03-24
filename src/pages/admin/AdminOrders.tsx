@@ -3961,29 +3961,6 @@ const AdminOrders = () => {
           </DialogContent>
         </Dialog>
 
-        {/* Pathao Bulk Submit Preview */}
-        <PathaoBulkSubmitPreview
-          open={pathaoBulkPreviewOpen}
-          onOpenChange={(open) => {
-            setPathaoBulkPreviewOpen(open);
-            if (!open) {
-              // Navigate to In Courier tab when closing after results
-              if (pathaoBulkResults.some(r => r.success)) {
-                setActiveTab("In Courier");
-              }
-              setPathaoBulkOrders([]);
-              setPathaoBulkCourierId("");
-              setPathaoBulkResults([]);
-            }
-          }}
-          orders={pathaoBulkOrders}
-          providerId={pathaoBulkCourierId}
-          providerName={courierProviders?.find((p: any) => p.id === pathaoBulkCourierId)?.name || "Courier"}
-          onSubmit={handlePathaoBulkSubmitWithLocations}
-          isSubmitting={bulkCourierSubmitting}
-          progress={bulkCourierProgress}
-          submitResults={pathaoBulkResults}
-        />
       </div>
     </AdminLayout>
   );
