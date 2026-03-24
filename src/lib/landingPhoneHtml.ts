@@ -56,7 +56,7 @@ export const landingPhoneValidationScript = `
   }
 
   function isValidPhone(phone) {
-    var cleaned = (phone || '').replace(/^\+?880/, '0').replace(/[^0-9]/g, '');
+    var cleaned = (phone || '').replace(/^\\+?880/, '0').replace(/[^0-9]/g, '');
     return /^\d{11,15}$/.test(cleaned);
   }
 
