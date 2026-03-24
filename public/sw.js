@@ -1,22 +1,14 @@
 // Service Worker for caching static assets and API responses
-const CACHE_NAME = 'store-cache-v1';
-const API_CACHE_NAME = 'api-cache-v1';
-
-// Static assets to pre-cache
-const STATIC_ASSETS = [
-  '/',
-];
+const CACHE_NAME = 'store-cache-v2';
+const API_CACHE_NAME = 'api-cache-v2';
+const STATIC_CACHE_NAME = 'static-cache-v2';
 
 // API URL patterns to cache
 const API_CACHE_PATTERNS = [
   '/rest/v1/site_settings',
   '/rest/v1/products_public',
   '/rest/v1/banners',
-  '/storage/v1/',
 ];
-
-const API_CACHE_TTL = 60 * 1000; // 1 minute for API responses
-const IMAGE_CACHE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days for images
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
@@ -26,7 +18,7 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(
-        keys.filter((k) => k !== CACHE_NAME && k !== API_CACHE_NAME).map((k) => caches.delete(k))
+        keys.filter((k) => k !== CACHE_NAME && k !== API_CACHE_NAME && k !== STATIC_CACHE_NAME).map((k) => caches.delete(k))
       )
     ).then(() => self.clients.claim())
   );
@@ -38,7 +30,25 @@ self.addEventListener('fetch', (event) => {
   // Only handle GET requests
   if (event.request.method !== 'GET') return;
 
-  // Cache images from Supabase storage with stale-while-revalidate
+  // Cache hashed static assets (JS/CSS) with cache-first strategy — they have content hashes so are immutable
+  if (url.origin === self.location.origin && url.pathname.startsWith('/assets/')) {
+    event.respondWith(
+      caches.open(STATIC_CACHE_NAME).then((cache) =>
+        cache.match(event.request).then((cached) => {
+          if (cached) return cached;
+          return fetch(event.request).then((response) => {
+            if (response.ok) {
+              cache.put(event.request, response.clone());
+            }
+            return response;
+          });
+        })
+      )
+    );
+    return;
+  }
+
+  // Cache images from Supabase storage with cache-first + background revalidation
   if (url.pathname.includes('/storage/v1/')) {
     event.respondWith(
       caches.open(CACHE_NAME).then((cache) =>
@@ -57,7 +67,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Cache API responses (site_settings, products, banners) - network first with cache fallback
+  // Cache API responses - network first with cache fallback
   const isApiRequest = API_CACHE_PATTERNS.some((p) => url.pathname.includes(p) || url.href.includes(p));
   if (isApiRequest) {
     event.respondWith(
