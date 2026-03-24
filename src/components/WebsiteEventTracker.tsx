@@ -33,8 +33,8 @@ export function WebsiteEventTracker() {
       } catch {}
     };
 
-    // Defer first heartbeat to not block main thread
-    const timeoutId = setTimeout(sendHeartbeat, 5000);
+    // Defer first heartbeat well past TTI to not block main thread
+    const timeoutId = setTimeout(sendHeartbeat, 15000);
     heartbeatRef.current = setInterval(sendHeartbeat, 30000);
 
     return () => {
@@ -49,7 +49,7 @@ export function WebsiteEventTracker() {
 
     if (location.pathname !== lastPath.current) {
       lastPath.current = location.pathname;
-      const schedule = window.requestIdleCallback || ((cb: () => void) => setTimeout(cb, 3000));
+      const schedule = window.requestIdleCallback || ((cb: () => void) => setTimeout(cb, 8000));
       schedule(() => {
         import("@/hooks/useWebsiteAnalytics").then(({ trackWebsiteEvent }) => {
           trackWebsiteEvent({

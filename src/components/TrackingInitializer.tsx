@@ -19,8 +19,8 @@ export function TrackingInitializer() {
     // Fire if path changed
     if (location.pathname !== lastTrackedPath.current) {
       lastTrackedPath.current = location.pathname;
-      // Use requestIdleCallback to defer non-critical tracking
-      const schedule = window.requestIdleCallback || ((cb: () => void) => setTimeout(cb, 100));
+      // Defer tracking until well after TTI
+      const schedule = window.requestIdleCallback || ((cb: () => void) => setTimeout(cb, 5000));
       schedule(() => trackPageView(document.title));
     }
   }, [isReady, location.pathname, trackPageView]);

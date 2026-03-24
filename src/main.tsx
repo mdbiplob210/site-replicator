@@ -3,13 +3,15 @@ import App from "./App.tsx";
 import "./index.css";
 import { prefetchCriticalData } from "./lib/prefetch";
 
-// Start fetching critical data — non-blocking, runs in parallel with React hydration
-prefetchCriticalData();
+// Start fetching critical data — deferred slightly to let React render first
+setTimeout(prefetchCriticalData, 50);
 
-// Register service worker (deferred to after load)
+// Register service worker (deferred well past TTI)
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {});
+    setTimeout(() => {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }, 10000);
   }, { once: true });
 }
 
