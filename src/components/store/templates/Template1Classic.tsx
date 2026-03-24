@@ -286,7 +286,7 @@ const Template1Classic = () => {
       </div>
 
       {/* Products Grid */}
-      <section className="max-w-7xl mx-auto px-2 sm:px-4 pb-20 sm:pb-16">
+      <main className="max-w-7xl mx-auto px-2 sm:px-4 pb-20 sm:pb-16" role="main">
         {isLoading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
             {[...Array(8)].map((_, i) => (
