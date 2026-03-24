@@ -57,6 +57,7 @@ import { useSiteSettings } from "@/hooks/useSiteSettings";
 import * as XLSX from "@datalens-tech/xlsx";
 import { toast } from "sonner";
 import { getDisplayImage } from "@/lib/imageUtils";
+import { OrderDetailPage } from "@/components/admin/OrderDetailPage";
 import {
   extractPathaoLocationHints,
   PATHAO_DISTRICT_OPTIONS,
