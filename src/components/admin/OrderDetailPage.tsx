@@ -655,7 +655,7 @@ export function OrderDetailPage({ orderId, order, onClose }: { orderId: string |
           <MemoPrint
             order={order}
             courierOrder={existingCourierOrder}
-            courierProvider={editCourierProviders.find((p: any) => p.id === existingCourierOrder?.courier_provider_id) || null}
+            courierProvider={editCourierProviders.find((p: any) => p.id === existingCourierOrder?.courier_provider_id) as any || null}
             orderItems={items}
           />
         )}
