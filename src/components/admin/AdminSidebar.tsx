@@ -53,6 +53,7 @@ const mainMenuItems = [
   { title: "Tasks", url: "/admin/tasks", icon: ListChecks },
   { title: "Analytics", url: "/admin/analytics", icon: BarChart3, hasSubmenu: true },
   { title: "WhatsApp", url: "/admin/whatsapp", icon: MessageSquare },
+  { title: "Delivery Riders", url: "/admin/delivery-riders", icon: Truck },
 ];
 
 const bottomMenuItems = [
