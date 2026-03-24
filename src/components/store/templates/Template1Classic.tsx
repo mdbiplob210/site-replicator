@@ -354,11 +354,11 @@ const Template1Classic = () => {
                     </Link>
 
                     {/* Rating */}
-                    <div className="flex items-center gap-0.5 mt-1">
+                    <div className="flex items-center gap-0.5 mt-1" aria-label="Rating: 4 out of 5 stars">
                       {[...Array(5)].map((_, i) => (
-                        <Star key={i} className={`h-2.5 w-2.5 sm:h-3 sm:w-3 ${i < 4 ? "fill-amber-400 text-amber-400" : "fill-amber-200 text-amber-200"}`} />
+                        <Star key={i} className={`h-2.5 w-2.5 sm:h-3 sm:w-3 ${i < 4 ? "fill-amber-400 text-amber-400" : "fill-amber-200 text-amber-200"}`} aria-hidden="true" />
                       ))}
-                      <span className="text-[9px] sm:text-[10px] text-gray-400 ml-0.5">(0)</span>
+                      <span className="text-[9px] sm:text-[10px] text-gray-500 ml-0.5">(0)</span>
                     </div>
 
                     {/* Price & Stock */}
