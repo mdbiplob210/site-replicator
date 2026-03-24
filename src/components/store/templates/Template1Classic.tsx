@@ -275,7 +275,7 @@ const Template1Classic = () => {
             <h2 className="text-base sm:text-xl font-bold text-gray-800">
              {selectedCategory ? categories.find(c => c.id === selectedCategory)?.name : "You might also like these products"}
             </h2>
-            <p className="text-[11px] sm:text-xs text-gray-400 mt-0.5">We have more products you might want to check out</p>
+            <p className="text-[11px] sm:text-xs text-gray-500 mt-0.5">We have more products you might want to check out</p>
           </div>
           {selectedCategory && (
             <button onClick={() => setSelectedCategory(null)} className="flex items-center gap-1 text-green-600 text-sm font-semibold hover:underline">
