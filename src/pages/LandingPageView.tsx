@@ -11,10 +11,59 @@ function escapeHtml(str: string): string {
 export default function LandingPageView() {
   const { slug } = useParams<{ slug: string }>();
   const { data: page, isLoading, error } = useLandingPageBySlug(slug || "");
-  const containerRef = useRef<HTMLDivElement>(null);
+  const renderedPageRef = useRef<string | null>(null);
 
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
   const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '';
+
+  const syncAttributes = (target: Element, source: Element) => {
+    Array.from(target.attributes).forEach((attr) => target.removeAttribute(attr.name));
+    Array.from(source.attributes).forEach((attr) => target.setAttribute(attr.name, attr.value));
+  };
+
+  const renderLandingDocument = (html: string) => {
+    const parser = new DOMParser();
+    const parsed = parser.parseFromString(html, "text/html");
+
+    const scripts = Array.from(parsed.querySelectorAll("script")).map((script) => ({
+      target: script.parentElement?.tagName.toLowerCase() === "head" ? "head" : "body",
+      attrs: Array.from(script.attributes).map((attr) => ({ name: attr.name, value: attr.value })),
+      content: script.textContent ?? "",
+    }));
+
+    parsed.querySelectorAll("script").forEach((script) => script.remove());
+
+    syncAttributes(document.documentElement, parsed.documentElement);
+    syncAttributes(document.body, parsed.body);
+
+    const headNodes = Array.from(parsed.head.childNodes).map((node) => document.importNode(node, true));
+    const bodyNodes = Array.from(parsed.body.childNodes).map((node) => document.importNode(node, true));
+
+    document.head.replaceChildren(...headNodes);
+    document.body.replaceChildren(...bodyNodes);
+
+    scripts.forEach(({ target, attrs, content }) => {
+      const scriptEl = document.createElement("script");
+      const hasAsync = attrs.some((attr) => attr.name === "async");
+      const hasDefer = attrs.some((attr) => attr.name === "defer");
+
+      if (!hasAsync && !hasDefer) {
+        scriptEl.async = false;
+      }
+
+      attrs.forEach((attr) => scriptEl.setAttribute(attr.name, attr.value));
+      if (content) {
+        scriptEl.textContent = content;
+      }
+
+      (target === "head" ? document.head : document.body).appendChild(scriptEl);
+    });
+
+    queueMicrotask(() => {
+      document.dispatchEvent(new Event("DOMContentLoaded", { bubbles: true, cancelable: true }));
+      window.dispatchEvent(new Event("load"));
+    });
+  };
 
   const buildFullHtml = () => {
     if (!page) return '<!DOCTYPE html><html><body></body></html>';
