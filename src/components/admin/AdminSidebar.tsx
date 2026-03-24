@@ -4,7 +4,7 @@ import {
   Lightbulb, ListChecks, BarChart3, Megaphone, Zap, Database,
   Users, HeadphonesIcon, Sparkles, CreditCard, LogOut, ChevronDown,
   Layout, ShoppingBag, Gift, Grid3X3, Heart, Layers, CreditCard as PaymentIcon,
-  File, Settings, PieChart, UserCog, MessageSquare, Printer, Boxes, Star
+  File, Settings, PieChart, UserCog, MessageSquare, Printer, Boxes, Star, Truck
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -53,6 +53,7 @@ const mainMenuItems = [
   { title: "Tasks", url: "/admin/tasks", icon: ListChecks },
   { title: "Analytics", url: "/admin/analytics", icon: BarChart3, hasSubmenu: true },
   { title: "WhatsApp", url: "/admin/whatsapp", icon: MessageSquare },
+  { title: "Delivery Riders", url: "/admin/delivery-riders", icon: Truck },
 ];
 
 const bottomMenuItems = [
@@ -92,6 +93,7 @@ export function AdminSidebar() {
     if (item.title === "Reviews") return canSee("manage_settings");
     if (item.title === "Analytics") return canSee("view_analytics");
     if (item.title === "WhatsApp") return canSee("manage_whatsapp");
+    if (item.title === "Delivery Riders") return canSee("manage_delivery_assignments");
     return isAdmin;
   });
 

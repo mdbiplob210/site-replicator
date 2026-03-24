@@ -17,6 +17,7 @@ const DEFAULT_ADMIN_ROUTES: Array<{ permission: PermissionKey; route: string }> 
   { permission: "manage_settings", route: "/admin/settings" },
   { permission: "manage_automation", route: "/admin/automation" },
   { permission: "manage_backup", route: "/admin/backup" },
+  { permission: "view_delivery_assignments", route: "/admin/rider" },
 ];
 
 interface DefaultAdminRouteOptions {

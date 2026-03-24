@@ -51,6 +51,10 @@ export const ALL_PERMISSIONS = [
   { key: "manage_settings", label: "Manage Settings", group: "System", description: "Can change site settings" },
   { key: "manage_automation", label: "Manage Automation", group: "System", description: "Can create/modify automation rules" },
   { key: "manage_backup", label: "Manage Backup", group: "System", description: "Can backup and restore data" },
+
+  // Delivery
+  { key: "view_delivery_assignments", label: "View Deliveries", group: "Delivery", description: "Can view assigned delivery orders" },
+  { key: "manage_delivery_assignments", label: "Manage Deliveries", group: "Delivery", description: "Can assign riders and manage deliveries" },
 ] as const;
 
 export type PermissionKey = typeof ALL_PERMISSIONS[number]["key"];

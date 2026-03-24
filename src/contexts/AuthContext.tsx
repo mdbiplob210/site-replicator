@@ -3,7 +3,7 @@ import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { trackLoginActivity } from "@/hooks/useUserTracking";
 
-export type AppRole = "admin" | "moderator" | "manager" | "user" | "accounting" | "ad_analytics";
+export type AppRole = "admin" | "moderator" | "manager" | "user" | "accounting" | "ad_analytics" | "delivery_rider";
 
 export type PermissionKey =
   | "view_orders" | "create_orders" | "edit_orders" | "delete_orders" | "change_order_status"
@@ -15,7 +15,8 @@ export type PermissionKey =
   | "manage_courier" | "print_memo" | "transfer_orders"
   | "manage_whatsapp"
   | "manage_users" | "create_users" | "create_admin_users" | "create_moderator_users" | "create_basic_users"
-  | "manage_settings" | "manage_automation" | "manage_backup";
+  | "manage_settings" | "manage_automation" | "manage_backup"
+  | "view_delivery_assignments" | "manage_delivery_assignments";
 
 interface AuthContextType {
   session: Session | null;
@@ -49,6 +50,7 @@ export const ROLE_DISPLAY_NAMES: Record<AppRole, string> = {
   user: "Employee",
   accounting: "Accounting",
   ad_analytics: "Ad Analytics",
+  delivery_rider: "Delivery Rider",
 };
 
 // Check if current route needs auth - public store pages don't
