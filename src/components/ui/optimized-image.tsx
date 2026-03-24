@@ -42,7 +42,9 @@ export function OptimizedImage({
   const [useOriginalSrc, setUseOriginalSrc] = useState(false);
 
   const optimizedSrc = getOptimizedImageUrl(src, { width, height, quality });
-  const srcSet = getResponsiveSrcSet(src);
+  // Generate srcSet widths based on requested width for better responsive delivery
+  const srcSetWidths = width ? [Math.round(width * 0.5), width, Math.min(width * 2, 1200)] : undefined;
+  const srcSet = getResponsiveSrcSet(src, srcSetWidths);
   const effectiveSrc = useOriginalSrc ? (src || "") : optimizedSrc;
   const effectiveSrcSet = useOriginalSrc ? "" : srcSet;
 

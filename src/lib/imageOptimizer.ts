@@ -14,8 +14,8 @@ interface ImageTransformOptions {
 }
 
 /**
- * Returns an optimized URL if the image is hosted on Supabase Storage.
- * For external URLs, returns the original URL unchanged.
+ * Returns an optimized URL if the image is hosted on Supabase Storage or Unsplash.
+ * For other external URLs, returns the original URL unchanged.
  */
 export function getOptimizedImageUrl(
   url: string | null | undefined,
@@ -30,6 +30,21 @@ export function getOptimizedImageUrl(
     format = "webp",
     resize = "cover",
   } = options;
+
+  // Handle Unsplash URLs - rewrite w/h/q params
+  if (url.includes("images.unsplash.com") && width) {
+    try {
+      const u = new URL(url);
+      u.searchParams.set("w", String(width));
+      if (height) u.searchParams.set("h", String(height));
+      u.searchParams.set("q", String(quality));
+      u.searchParams.set("auto", "format");
+      u.searchParams.set("fit", "crop");
+      return u.toString();
+    } catch {
+      return url;
+    }
+  }
 
   // Only transform Supabase Storage URLs
   const isSupabaseStorage =
@@ -60,7 +75,7 @@ export function getOptimizedImageUrl(
  */
 export function getResponsiveSrcSet(
   url: string | null | undefined,
-  widths: number[] = [200, 400, 640]
+  widths: number[] = [200, 400]
 ): string {
   if (!url) return "";
 
@@ -68,7 +83,9 @@ export function getResponsiveSrcSet(
     url.includes("/storage/v1/object/public/") ||
     url.includes("/storage/v1/object/sign/");
 
-  if (!isSupabaseStorage) return "";
+  const isUnsplash = url.includes("images.unsplash.com");
+
+  if (!isSupabaseStorage && !isUnsplash) return "";
 
   return widths
     .map((w) => `${getOptimizedImageUrl(url, { width: w })} ${w}w`)
