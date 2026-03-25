@@ -1,4 +1,4 @@
-import { ReactNode, useState, useEffect, useRef, lazy, Suspense, useCallback } from "react";
+import { ReactNode, useState, useEffect, useRef, lazy, Suspense, useMemo } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "./AdminSidebar";
 import {
@@ -8,13 +8,13 @@ import {
   Globe, Settings, Zap, Database, Check, CheckCheck, Send, X, ArrowLeft
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useUserPresence } from "@/hooks/useUserTracking";
 import { useTheme } from "@/hooks/useTheme";
+import { useNotifications } from "@/hooks/useNotifications";
+import { useInternalMessages, useAllUsers } from "@/hooks/useInternalMessages";
 import { useAuth } from "@/contexts/AuthContext";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { format } from "date-fns";
-
-// Lazy-load heavy non-critical features - only loaded when user interacts
-const DesignPreviewPanel = lazy(() => import("./DesignPreviewPanel").then(m => ({ default: m.DesignPreviewPanel })));
 
 const searchPages = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
@@ -46,30 +46,12 @@ export function AdminLayout({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // Defer loading heavy hooks until user actually opens them
-  const [heavyLoaded, setHeavyLoaded] = useState(false);
-  const notificationsModule = useRef<any>(null);
-  const messagesModule = useRef<any>(null);
-  const presenceModule = useRef<any>(null);
-
-  // Load heavy hooks lazily on first interaction or after idle
-  useEffect(() => {
-    const loadHeavy = async () => {
-      if (heavyLoaded) return;
-      const [notifMod, msgMod, presenceMod] = await Promise.all([
-        import("@/hooks/useNotifications"),
-        import("@/hooks/useInternalMessages"),
-        import("@/hooks/useUserTracking"),
-      ]);
-      notificationsModule.current = notifMod;
-      messagesModule.current = msgMod;
-      presenceModule.current = presenceMod;
-      setHeavyLoaded(true);
-    };
-    // Load after 2s idle or on first interaction
-    const timer = setTimeout(loadHeavy, 2000);
-    return () => clearTimeout(timer);
-  }, [heavyLoaded]);
+  // Hooks
+  useUserPresence();
+  const { theme, toggle: toggleTheme } = useTheme();
+  const { notifications, unreadCount, markAsRead, markAllRead } = useNotifications();
+  const { conversations, messages, totalUnread, sendMessage } = useInternalMessages(activeChatUser || undefined);
+  const { data: allUsers } = useAllUsers();
 
   // ⌘K shortcut
   useEffect(() => {
@@ -98,9 +80,9 @@ export function AdminLayout({ children }: { children: ReactNode }) {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const filtered = searchPages.filter((p) =>
+  const filtered = useMemo(() => searchPages.filter((p) =>
     p.title.toLowerCase().includes(query.toLowerCase())
-  );
+  ), [query]);
 
   const goTo = (url: string) => {
     navigate(url);
@@ -114,7 +96,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
   };
 
   const getUserName = (userId: string) => {
-    const u = allUsers?.find((p) => p.user_id === userId);
+    const u = allUsers?.find((p: any) => p.user_id === userId);
     return u?.full_name || "Unknown User";
   };
 
@@ -243,7 +225,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
                           </div>
                           <ScrollArea className="flex-1">
                             {/* Show all users to start conversation */}
-                            {allUsers?.filter((u) => u.user_id !== user?.id).map((u) => {
+                            {allUsers?.filter((u: any) => u.user_id !== user?.id).map((u: any) => {
                               const conv = conversations.find((c: any) => c.partnerId === u.user_id);
                               return (
                                 <button
@@ -275,7 +257,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
                                 </button>
                               );
                             })}
-                            {(!allUsers || allUsers.filter((u) => u.user_id !== user?.id).length === 0) && (
+                            {(!allUsers || allUsers.filter((u: any) => u.user_id !== user?.id).length === 0) && (
                               <p className="text-sm text-muted-foreground text-center py-8">কোনো ইউজার নেই</p>
                             )}
                           </ScrollArea>
