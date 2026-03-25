@@ -1,7 +1,6 @@
-import { ReactNode, useState, useEffect, useRef } from "react";
+import { ReactNode, useState, useEffect, useRef, lazy, Suspense, useMemo } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "./AdminSidebar";
-import { DesignPreviewPanel } from "./DesignPreviewPanel";
 import {
   Search, Sun, Moon, ExternalLink, Bell, MessageSquare,
   LayoutDashboard, BarChart3, Wallet, Package, ShoppingCart,
@@ -81,9 +80,9 @@ export function AdminLayout({ children }: { children: ReactNode }) {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const filtered = searchPages.filter((p) =>
+  const filtered = useMemo(() => searchPages.filter((p) =>
     p.title.toLowerCase().includes(query.toLowerCase())
-  );
+  ), [query]);
 
   const goTo = (url: string) => {
     navigate(url);
@@ -97,7 +96,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
   };
 
   const getUserName = (userId: string) => {
-    const u = allUsers?.find((p) => p.user_id === userId);
+    const u = allUsers?.find((p: any) => p.user_id === userId);
     return u?.full_name || "Unknown User";
   };
 
@@ -226,7 +225,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
                           </div>
                           <ScrollArea className="flex-1">
                             {/* Show all users to start conversation */}
-                            {allUsers?.filter((u) => u.user_id !== user?.id).map((u) => {
+                            {allUsers?.filter((u: any) => u.user_id !== user?.id).map((u: any) => {
                               const conv = conversations.find((c: any) => c.partnerId === u.user_id);
                               return (
                                 <button
@@ -258,7 +257,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
                                 </button>
                               );
                             })}
-                            {(!allUsers || allUsers.filter((u) => u.user_id !== user?.id).length === 0) && (
+                            {(!allUsers || allUsers.filter((u: any) => u.user_id !== user?.id).length === 0) && (
                               <p className="text-sm text-muted-foreground text-center py-8">কোনো ইউজার নেই</p>
                             )}
                           </ScrollArea>
