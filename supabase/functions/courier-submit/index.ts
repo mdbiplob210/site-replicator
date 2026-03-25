@@ -192,7 +192,15 @@ async function submitToPathao(supabase: any, config: any, provider: any, body: a
   const data = await resp.json();
 
   if (!resp.ok) {
-    return { success: false, error: data?.message || `Pathao API error [${resp.status}]`, api_response: data };
+    // Pathao returns field-level errors in data.errors object
+    let errorMsg = data?.message || `Pathao API error [${resp.status}]`;
+    if (data?.errors && typeof data.errors === "object") {
+      const fieldErrors = Object.entries(data.errors)
+        .map(([field, msgs]: [string, any]) => `${field}: ${Array.isArray(msgs) ? msgs.join(", ") : msgs}`)
+        .join("; ");
+      if (fieldErrors) errorMsg = fieldErrors;
+    }
+    return { success: false, error: errorMsg, api_response: data };
   }
 
   const consignmentId = data?.data?.consignment_id || data?.consignment_id || "";
