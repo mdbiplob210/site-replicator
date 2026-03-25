@@ -1394,7 +1394,7 @@ if (!window._LP_VID) { window._LP_VID = 'v_' + Math.random().toString(36).substr
 ${page.tiktok_pixel_id ? '<link rel="dns-prefetch" href="https://analytics.tiktok.com" />' : ''}
 ${page.gtm_id ? '<link rel="dns-prefetch" href="https://www.googletagmanager.com" />' : ''}
 `;
-    const headScripts = resourceHints + globalsScript + trackingScripts;
+    const headScripts = resourceHints + globalsScript + richTrackingHelper + trackingScripts;
 
     // ALL other scripts deferred to body end — massive FCP improvement
     const bodyScripts = richTrackingHelper + conversionScript + orderScript + phoneValidationScript + tierPricePatchScript + analyticsScript + partialTrackingScript + autocompleteScript + exitIntentScript + debugPanelScript + heartbeatScript;
