@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useLandingPageBySlug } from "@/hooks/useLandingPages";
 import { useLayoutEffect, useRef } from "react";
-import { sanitizeHtmlScripts } from "@/lib/htmlSanitizer";
+import { sanitizeHtmlScripts, optimizeLandingImages } from "@/lib/htmlSanitizer";
 import { landingPhoneValidationScript, normalizeLandingPhoneHtml } from "@/lib/landingPhoneHtml";
 
 function escapeHtml(str: string): string {
@@ -1356,7 +1356,7 @@ if (!window._LP_VID) { window._LP_VID = 'v_' + Math.random().toString(36).substr
 </script>
 `;
 
-    // Heartbeat script for live visitor tracking
+    // Heartbeat script for live visitor tracking — DEFERRED to not block render
     const heartbeatScript = `
 <script>
 (function(){
@@ -1379,21 +1379,34 @@ if (!window._LP_VID) { window._LP_VID = 'v_' + Math.random().toString(36).substr
       });
     } catch(e) {}
   }
-  sendHB();
+  // Defer first heartbeat by 10s to not block initial render
+  setTimeout(sendHB, 10000);
   setInterval(sendHB, 30000);
 })();
 </script>
 `;
 
-    const allScripts = globalsScript + richTrackingHelper + trackingScripts + conversionScript + analyticsScript + partialTrackingScript + phoneValidationScript + orderScript + autocompleteScript + exitIntentScript + debugPanelScript + tierPricePatchScript + heartbeatScript;
+    // CRITICAL scripts go in <head>: globals, tracking helper, pixel init, conversion handlers, order submission
+    const headScripts = globalsScript + richTrackingHelper + trackingScripts + conversionScript + orderScript + phoneValidationScript + tierPricePatchScript;
 
-    const cleanHtml = normalizeLandingPhoneHtml(sanitizeHtmlScripts(page.html_content));
+    // DEFERRED scripts go before </body>: analytics, partial tracking, heartbeat, exit popup, debug, autocomplete
+    const bodyScripts = analyticsScript + partialTrackingScript + autocompleteScript + exitIntentScript + debugPanelScript + heartbeatScript;
 
-    if (cleanHtml.includes("</head>")) {
-      return cleanHtml.replace("</head>", `${allScripts}</head>`);
+    let cleanHtml = normalizeLandingPhoneHtml(sanitizeHtmlScripts(page.html_content));
+    cleanHtml = optimizeLandingImages(cleanHtml);
+
+    // Inject head scripts into </head> and body scripts before </body>
+    if (cleanHtml.includes("</head>") && cleanHtml.includes("</body>")) {
+      return cleanHtml
+        .replace("</head>", `${headScripts}</head>`)
+        .replace("</body>", `${bodyScripts}</body>`);
     }
 
-    return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${allScripts}</head><body>${cleanHtml}</body></html>`;
+    if (cleanHtml.includes("</head>")) {
+      return cleanHtml.replace("</head>", `${headScripts}</head>`) + bodyScripts;
+    }
+
+    return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${headScripts}</head><body>${cleanHtml}${bodyScripts}</body></html>`;
   };
 
   useLayoutEffect(() => {

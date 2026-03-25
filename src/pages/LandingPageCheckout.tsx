@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useLandingPageBySlug } from "@/hooks/useLandingPages";
 import { useRef } from "react";
-import { sanitizeHtmlScripts } from "@/lib/htmlSanitizer";
+import { sanitizeHtmlScripts, optimizeLandingImages } from "@/lib/htmlSanitizer";
 import { landingPhoneValidationScript, normalizeLandingPhoneHtml } from "@/lib/landingPhoneHtml";
 
 export default function LandingPageCheckout() {
@@ -570,15 +570,24 @@ ttq.track('InitiateCheckout');
 </script>
 `;
 
-    const allScripts = richTrackingHelper + trackingScripts + partialTrackingScript + phoneValidationScript + orderScript + autocompleteScript + tierPricePatchScript;
+    // Critical scripts in head, deferred in body
+    const headScripts = richTrackingHelper + trackingScripts + phoneValidationScript + orderScript + tierPricePatchScript;
+    const bodyScripts = partialTrackingScript + autocompleteScript;
 
-    const cleanHtml = normalizeLandingPhoneHtml(sanitizeHtmlScripts(page.checkout_html!));
+    let cleanHtml = normalizeLandingPhoneHtml(sanitizeHtmlScripts(page.checkout_html!));
+    cleanHtml = optimizeLandingImages(cleanHtml);
 
-    if (cleanHtml.includes("</head>")) {
-      return cleanHtml.replace("</head>", `${allScripts}</head>`);
+    if (cleanHtml.includes("</head>") && cleanHtml.includes("</body>")) {
+      return cleanHtml
+        .replace("</head>", `${headScripts}</head>`)
+        .replace("</body>", `${bodyScripts}</body>`);
     }
 
-    return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${allScripts}</head><body>${cleanHtml}</body></html>`;
+    if (cleanHtml.includes("</head>")) {
+      return cleanHtml.replace("</head>", `${headScripts}</head>`) + bodyScripts;
+    }
+
+    return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${headScripts}</head><body>${cleanHtml}${bodyScripts}</body></html>`;
   };
 
   return (
