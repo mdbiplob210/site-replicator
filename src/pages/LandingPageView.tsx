@@ -425,11 +425,15 @@ ttq.page();
         }
         fireOnce('auto_lead', function() {
           var form = e.target.closest('[data-checkout-form], form, #checkoutForm, #orderForm, .checkout-form, .order-form');
-          var pName = form ? (form.getAttribute('data-product-name') || document.title) : document.title;
-          var pPrice = form ? parseFloat(form.getAttribute('data-unit-price') || '0') : 0;
-          fireStandardEvent('Lead', {
-            value: pPrice, currency: 'BDT', content_name: pName
-          });
+          if (form) {
+            var pd = getCurrentProductData(form);
+            fireStandardEvent('Lead', {
+              value: pd.total, currency: 'BDT', content_name: pd.name,
+              content_ids: pd.code ? [pd.code] : [], num_items: pd.qty
+            });
+          } else {
+            fireStandardEvent('Lead', { value: 0, currency: 'BDT', content_name: document.title });
+          }
         });
       }
     }, true);
@@ -441,10 +445,14 @@ ttq.page();
       if (!isAddress || !(e.target.value || '').trim()) return;
       fireOnce('auto_addpaymentinfo', function() {
         var form = e.target.closest('[data-checkout-form], form, #checkoutForm, #orderForm, .checkout-form, .order-form');
-        var pPrice = form ? parseFloat(form.getAttribute('data-unit-price') || '0') : 0;
-        fireStandardEvent('AddPaymentInfo', {
-          value: pPrice, currency: 'BDT'
-        });
+        if (form) {
+          var pd = getCurrentProductData(form);
+          fireStandardEvent('AddPaymentInfo', {
+            value: pd.total, currency: 'BDT', content_name: pd.name, num_items: pd.qty
+          });
+        } else {
+          fireStandardEvent('AddPaymentInfo', { value: 0, currency: 'BDT' });
+        }
       });
     }, true);
 
