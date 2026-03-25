@@ -463,8 +463,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
 
   const handleClose = () => {
     if (!orderSubmitted.current) {
-      saveAbandonedOrder();
-      // Always trigger exit intent if available (parent controls max discount logic)
+      liveSaveIncomplete();
       if (onExitIntent) {
         onExitIntent();
         return;
