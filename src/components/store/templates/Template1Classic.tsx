@@ -1,8 +1,8 @@
 import { Link, useNavigate } from "react-router-dom";
-import { ShoppingBag, Search, Star, Truck, ShieldCheck, RotateCcw, ChevronRight, ShoppingCart, Menu, X, Phone, MessageCircle } from "lucide-react";
+import { ShoppingBag, Search, Truck, ShieldCheck, RotateCcw, ChevronRight, ShoppingCart, Menu, X, Phone, MessageCircle, Star } from "lucide-react";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
 import { OptimizedImage } from "@/components/ui/optimized-image";
-import { useState, useMemo, lazy, Suspense } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef, lazy, Suspense } from "react";
 import { useTracking } from "@/hooks/useTracking";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import BannerCarousel from "@/components/store/BannerCarousel";
@@ -10,6 +10,24 @@ import BannerCarousel from "@/components/store/BannerCarousel";
 // Lazy load modal components - not needed for initial render
 const PopupCheckout = lazy(() => import("@/components/store/PopupCheckout").then(m => ({ default: m.PopupCheckout })));
 const ExitDiscountBanner = lazy(() => import("@/components/store/ExitDiscountBanner").then(m => ({ default: m.ExitDiscountBanner })));
+
+// Static star rating - avoids rendering 5 separate SVG icons per product
+const StarRating = ({ rating = 4, count = 0 }: { rating?: number; count?: number }) => (
+  <div className="flex items-center gap-0.5 mt-1" aria-label={`Rating: ${rating} out of 5 stars`}>
+    <div className="flex gap-px">
+      {[0, 1, 2, 3, 4].map(i => (
+        <svg key={i} viewBox="0 0 12 12" className={`h-2.5 w-2.5 sm:h-3 sm:w-3 ${i < rating ? "text-amber-400" : "text-amber-200"}`} fill="currentColor">
+          <path d="M6 .5l1.5 3.1 3.4.5-2.5 2.4.6 3.4L6 8.3 3 9.9l.6-3.4L1.1 4.1l3.4-.5z" />
+        </svg>
+      ))}
+    </div>
+    <span className="text-[9px] sm:text-[10px] text-gray-500 ml-0.5">({count})</span>
+  </div>
+);
+
+// Number of products to show initially on mobile
+const INITIAL_MOBILE_COUNT = 8;
+const LOAD_MORE_COUNT = 8;
 
 const Template1Classic = () => {
   const { data: products = [], isLoading } = usePublicProducts();
@@ -54,17 +72,48 @@ const Template1Classic = () => {
     return filtered;
   }, [products, selectedCategory, searchQuery]);
 
-  const getDiscount = (original: number, selling: number) => {
+  // Progressive loading: show limited products initially, load more on scroll
+  const [visibleCount, setVisibleCount] = useState(INITIAL_MOBILE_COUNT);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  // Reset visible count when filters change
+  useEffect(() => {
+    setVisibleCount(INITIAL_MOBILE_COUNT);
+  }, [selectedCategory, searchQuery]);
+
+  // IntersectionObserver to auto-load more products when scrolling near bottom
+  useEffect(() => {
+    const el = loadMoreRef.current;
+    if (!el || visibleCount >= filteredProducts.length) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisibleCount(prev => Math.min(prev + LOAD_MORE_COUNT, filteredProducts.length));
+        }
+      },
+      { rootMargin: "400px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [visibleCount, filteredProducts.length]);
+
+  const visibleProducts = useMemo(
+    () => filteredProducts.slice(0, visibleCount),
+    [filteredProducts, visibleCount]
+  );
+
+  const getDiscount = useCallback((original: number, selling: number) => {
     if (original <= selling) return 0;
     return Math.round(((original - selling) / original) * 100);
-  };
+  }, []);
 
-  const getDisplayImage = (product: any): string | null => {
+  const getDisplayImage = useCallback((product: any): string | null => {
     const candidates = [product?.main_image_url, ...(product?.additional_images || [])];
     return candidates.find((url: unknown): url is string => (
       typeof url === "string" && /^(https?:\/\/|\/|data:)/i.test(url.trim())
     )) || null;
-  };
+  }, []);
 
   const handleOrder = (product: any) => {
     trackAddToCart({
@@ -289,7 +338,7 @@ const Template1Classic = () => {
       <main className="max-w-7xl mx-auto px-2 sm:px-4 pb-20 sm:pb-16" role="main">
         {isLoading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
-            {[...Array(8)].map((_, i) => (
+            {[...Array(4)].map((_, i) => (
               <div key={i} className="animate-pulse bg-white rounded-xl p-3 h-[280px] sm:h-[340px]">
                 <div className="aspect-square bg-gray-200 rounded-lg" />
                 <div className="mt-3 h-3 bg-gray-200 rounded w-3/4" />
@@ -303,104 +352,101 @@ const Template1Classic = () => {
             <p className="text-gray-400 text-lg">No products found</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
-            {filteredProducts.map((p, idx) => {
-              const discount = getDiscount(p.original_price, p.selling_price);
-              const discountAmount = p.original_price - p.selling_price;
-              const imageSrc = getDisplayImage(p);
-              const isAboveFold = idx < 4;
-              return (
-                <div key={p.id} className="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                  {/* Image */}
-                  <Link to={`/product/${(p as any).slug || p.id}`} className="block relative">
-                    <div className="aspect-square overflow-hidden bg-gray-50" style={{ containIntrinsicSize: '200px 200px', contentVisibility: isAboveFold ? 'visible' : 'auto' }}>
-                      <OptimizedImage 
-                        src={imageSrc} 
-                        alt={p.name || ''} 
-                        width={200} 
-                        height={200}
-                        quality={65} 
-                        sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 25vw"
-                        eager={isAboveFold}
-                        className="w-full h-full object-cover"
-                        fallback={
-                          <div className="w-full h-full flex items-center justify-center">
-                            <ShoppingBag className="h-10 w-10 text-gray-200" />
-                          </div>
-                        }
-                      />
-                    </div>
-                    {/* Discount badge */}
-                    {discount > 0 && (
-                      <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-dashed border-red-400 bg-white flex flex-col items-center justify-center">
-                        <span className="text-red-500 font-bold text-[9px] sm:text-[10px] leading-none">{discountAmount}</span>
-                        <span className="text-red-500 font-bold text-[8px] sm:text-[9px] leading-none">BDT</span>
-                        <span className="text-red-500 font-bold text-[8px] sm:text-[9px] leading-none">OFF</span>
+          <>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
+              {visibleProducts.map((p, idx) => {
+                const discount = getDiscount(p.original_price, p.selling_price);
+                const discountAmount = p.original_price - p.selling_price;
+                const imageSrc = getDisplayImage(p);
+                const isAboveFold = idx < 4;
+                return (
+                  <div key={p.id} className="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                    {/* Image */}
+                    <Link to={`/product/${(p as any).slug || p.id}`} className="block relative">
+                      <div className="aspect-square overflow-hidden bg-gray-50" style={{ containIntrinsicSize: '200px 200px', contentVisibility: isAboveFold ? 'visible' : 'auto' }}>
+                        <OptimizedImage 
+                          src={imageSrc} 
+                          alt={p.name || ''} 
+                          width={200} 
+                          height={200}
+                          quality={65} 
+                          sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 25vw"
+                          eager={isAboveFold}
+                          className="w-full h-full object-cover"
+                          fallback={
+                            <div className="w-full h-full flex items-center justify-center">
+                              <ShoppingBag className="h-10 w-10 text-gray-200" />
+                            </div>
+                          }
+                        />
                       </div>
-                    )}
-                    {/* Free delivery badge */}
-                    {(p as any).free_delivery && (
-                      <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 bg-green-600 text-white text-[8px] sm:text-[9px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full">
-                        🚚 Free Delivery
-                      </div>
-                    )}
-                  </Link>
-
-                  {/* Divider */}
-                  <div className="h-px bg-gray-100 mx-2 sm:mx-3" />
-
-                  {/* Info */}
-                  <div className="p-2 sm:p-3">
-                    <Link to={`/product/${(p as any).slug || p.id}`}>
-                      <h3 className="text-[13px] sm:text-sm font-semibold text-gray-800 truncate hover:text-green-600 transition">{p.name}</h3>
+                      {discount > 0 && (
+                        <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-dashed border-red-400 bg-white flex flex-col items-center justify-center">
+                          <span className="text-red-500 font-bold text-[9px] sm:text-[10px] leading-none">{discountAmount}</span>
+                          <span className="text-red-500 font-bold text-[8px] sm:text-[9px] leading-none">BDT</span>
+                          <span className="text-red-500 font-bold text-[8px] sm:text-[9px] leading-none">OFF</span>
+                        </div>
+                      )}
+                      {(p as any).free_delivery && (
+                        <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 bg-green-600 text-white text-[8px] sm:text-[9px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full">
+                          🚚 Free Delivery
+                        </div>
+                      )}
                     </Link>
 
-                    {/* Rating */}
-                    <div className="flex items-center gap-0.5 mt-1" aria-label="Rating: 4 out of 5 stars">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className={`h-2.5 w-2.5 sm:h-3 sm:w-3 ${i < 4 ? "fill-amber-400 text-amber-400" : "fill-amber-200 text-amber-200"}`} aria-hidden="true" />
-                      ))}
-                      <span className="text-[9px] sm:text-[10px] text-gray-500 ml-0.5">(0)</span>
-                    </div>
+                    <div className="h-px bg-gray-100 mx-2 sm:mx-3" />
 
-                    {/* Price & Stock */}
-                    <div className="flex items-center gap-1.5 sm:gap-2 mt-1.5">
-                      <span className="text-green-600 font-bold text-sm sm:text-base">৳{p.selling_price}</span>
-                      {discount > 0 && (
-                        <span className="text-[10px] sm:text-xs text-gray-400 line-through">৳{p.original_price}</span>
+                    <div className="p-2 sm:p-3">
+                      <Link to={`/product/${(p as any).slug || p.id}`}>
+                        <h3 className="text-[13px] sm:text-sm font-semibold text-gray-800 truncate hover:text-green-600 transition">{p.name}</h3>
+                      </Link>
+
+                      <StarRating />
+
+                      <div className="flex items-center gap-1.5 sm:gap-2 mt-1.5">
+                        <span className="text-green-600 font-bold text-sm sm:text-base">৳{p.selling_price}</span>
+                        {discount > 0 && (
+                          <span className="text-[10px] sm:text-xs text-gray-400 line-through">৳{p.original_price}</span>
+                        )}
+                      </div>
+                      {p.stock_quantity !== undefined && p.stock_quantity <= 0 && !(p as any).allow_out_of_stock_orders && (
+                        <span className="text-[10px] text-red-500 font-semibold">Out of stock</span>
                       )}
                     </div>
-                    {p.stock_quantity !== undefined && p.stock_quantity <= 0 && !(p as any).allow_out_of_stock_orders && (
-                      <span className="text-[10px] text-red-500 font-semibold">Out of stock</span>
-                    )}
-                  </div>
 
-                  {/* Action buttons */}
-                  <div className="px-2 sm:px-3 pb-2 sm:pb-3 space-y-1.5 sm:space-y-2">
-                    {orderBtnEnabled && (
-                    <button
-                      onClick={() => handleOrder(p)}
-                      disabled={p.stock_quantity !== undefined && p.stock_quantity <= 0 && !(p as any).allow_out_of_stock_orders}
-                      className="w-full py-2.5 sm:py-2.5 text-white rounded-lg text-[13px] sm:text-sm font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98]"
-                      style={{ backgroundColor: orderBtnColor }}
-                    >
-                      <ShoppingCart className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> {orderBtnText}
-                    </button>
-                    )}
-                    {cartBtnEnabled && (
-                    <button
-                      onClick={() => navigate(`/product/${(p as any).slug || p.id}`)}
-                      className="w-full py-2 rounded-lg text-[12px] sm:text-sm font-semibold flex items-center justify-center gap-1.5 sm:gap-2 transition border hover:opacity-80 active:scale-[0.98]"
-                      style={{ borderColor: cartBtnColor, color: cartBtnColor }}
-                    >
-                      <ShoppingBag className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> {cartBtnText}
-                    </button>
-                    )}
+                    <div className="px-2 sm:px-3 pb-2 sm:pb-3 space-y-1.5 sm:space-y-2">
+                      {orderBtnEnabled && (
+                      <button
+                        onClick={() => handleOrder(p)}
+                        disabled={p.stock_quantity !== undefined && p.stock_quantity <= 0 && !(p as any).allow_out_of_stock_orders}
+                        className="w-full py-2.5 sm:py-2.5 text-white rounded-lg text-[13px] sm:text-sm font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98]"
+                        style={{ backgroundColor: orderBtnColor }}
+                      >
+                        <ShoppingCart className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> {orderBtnText}
+                      </button>
+                      )}
+                      {cartBtnEnabled && (
+                      <button
+                        onClick={() => navigate(`/product/${(p as any).slug || p.id}`)}
+                        className="w-full py-2 rounded-lg text-[12px] sm:text-sm font-semibold flex items-center justify-center gap-1.5 sm:gap-2 transition border hover:opacity-80 active:scale-[0.98]"
+                        style={{ borderColor: cartBtnColor, color: cartBtnColor }}
+                      >
+                        <ShoppingBag className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> {cartBtnText}
+                      </button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+
+            {/* Invisible sentinel for auto-loading more products */}
+            {visibleCount < filteredProducts.length && (
+              <div ref={loadMoreRef} className="flex justify-center py-6">
+                <div className="w-6 h-6 border-2 border-green-500 border-t-transparent rounded-full animate-spin" />
+              </div>
+            )}
+          </>
         )}
       </main>
 
