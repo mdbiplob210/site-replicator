@@ -119,6 +119,46 @@ Deno.serve(async (req) => {
 });
 
 // ========== PATHAO ==========
+const BENGALI_DIGIT_MAP: Record<string, string> = {
+  "০": "0",
+  "১": "1",
+  "২": "2",
+  "৩": "3",
+  "৪": "4",
+  "৫": "5",
+  "৬": "6",
+  "৭": "7",
+  "৮": "8",
+  "৯": "9",
+};
+
+function sanitizePhoneInput(raw: string): string {
+  let result = "";
+  for (const ch of raw || "") {
+    if (BENGALI_DIGIT_MAP[ch]) {
+      result += BENGALI_DIGIT_MAP[ch];
+    } else if (/[0-9]/.test(ch)) {
+      result += ch;
+    } else if (ch === "+" && result.length === 0) {
+      result += ch;
+    }
+  }
+  return result;
+}
+
+function normalizeBdPhoneForPathao(raw: string | null | undefined): string {
+  const cleaned = sanitizePhoneInput(String(raw || "").trim())
+    .replace(/^00880/, "0")
+    .replace(/^\+880/, "0")
+    .replace(/^880/, "0");
+
+  return cleaned;
+}
+
+function isValidBdPhoneForPathao(phone: string): boolean {
+  return /^01[3-9]\d{8}$/.test(phone);
+}
+
 async function getPathaoToken(config: any): Promise<string> {
   if (config.api_key && config.api_key.length > 50) return config.api_key;
 
@@ -154,6 +194,14 @@ async function submitToPathao(supabase: any, config: any, provider: any, body: a
     order = data;
   }
 
+  const normalizedPhone = normalizeBdPhoneForPathao(order.customer_phone);
+  if (!isValidBdPhoneForPathao(normalizedPhone)) {
+    return {
+      success: false,
+      error: `recipient_phone: Invalid phone number (${String(order.customer_phone || "").trim()})`,
+    };
+  }
+
   const baseUrl = config.base_url || "https://api-hermes.pathao.com";
   const token = await getPathaoToken(config);
 
@@ -165,7 +213,7 @@ async function submitToPathao(supabase: any, config: any, provider: any, body: a
     store_id: storeId,
     merchant_order_id: order.order_number || order.id,
     recipient_name: order.customer_name,
-    recipient_phone: order.customer_phone || "",
+    recipient_phone: normalizedPhone,
     recipient_address: order.customer_address || "",
     recipient_city: body.city_id || 1,
     recipient_zone: body.zone_id || 1,
