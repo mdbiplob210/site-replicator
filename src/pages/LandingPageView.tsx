@@ -129,17 +129,15 @@ window._lpTrack = {
 
     if (page.fb_pixel_id) {
       trackingScripts += `
-<!-- Facebook Pixel with Advanced Matching -->
+<!-- Facebook Pixel with Advanced Matching (async, non-blocking) -->
 <script>
 !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
 var _extId;
 try { _extId = localStorage.getItem('_vid'); } catch(e) {}
 if (!_extId) { _extId = 'v_' + Date.now() + '_' + Math.random().toString(36).substr(2,12); try { localStorage.setItem('_vid', _extId); } catch(e) {} }
 
-// Init with advanced matching - country always BD, external_id for matching
 fbq('init','${page.fb_pixel_id}', { external_id: _extId, country: 'bd' });
 
-// Auto-capture form data for advanced matching (re-init pixel when data available)
 window._fbPixelId = '${page.fb_pixel_id}';
 window._updateFBAdvancedMatching = function(data) {
   if (!data || !window._fbPixelId) return;
@@ -148,7 +146,6 @@ window._updateFBAdvancedMatching = function(data) {
   if (data.name) ud.name = data.name;
   if (data.city) ud.city = data.city;
   if (window._lpTrack) window._lpTrack.setUserData(ud);
-  
   var initParams = { external_id: _extId, country: 'bd' };
   if (ud.phone) {
     var ph = ud.phone.replace(/[^0-9]/g, '');
@@ -164,36 +161,13 @@ window._updateFBAdvancedMatching = function(data) {
   fbq('init', window._fbPixelId, initParams);
 };
 
-// Auto-listen for form field changes to capture user data for highest EMQ
-document.addEventListener('DOMContentLoaded', function() {
-  var PHONE_SEL = 'input[name="customer_phone"],input[name="phone"],input[name="mobile"],input[type="tel"]';
-  var NAME_SEL = 'input[name="customer_name"],input[name="name"],input[name="full_name"]';
-  
-  document.addEventListener('input', function(e) {
-    if (!e.target || !e.target.matches) return;
-    var data = {};
-    if (e.target.matches(PHONE_SEL)) {
-      var val = (e.target.value || '').replace(/[^0-9]/g, '');
-      if (val.length >= 11) data.phone = val;
-    }
-    if (e.target.matches(NAME_SEL)) {
-      var nm = (e.target.value || '').trim();
-      if (nm.length >= 2) data.name = nm;
-    }
-    if (Object.keys(data).length > 0 && window._updateFBAdvancedMatching) {
-      window._updateFBAdvancedMatching(data);
-    }
-  }, true);
-});
-
-// Rich PageView
-var _eid = window._lpTrack ? window._lpTrack.generateEventId() : '';
+// Inline minimal eventId — no dependency on _lpTrack for head PageView
+var _eid = 'eid_' + Math.random().toString(36).substr(2,9) + '_' + Date.now();
 fbq('track','PageView', {}, {eventID: _eid});
+window._lpPageViewEventId = _eid;
 
-// Server-side PageView
-if (window._lpTrack && '${page.fb_pixel_id}') {
-  window._lpTrack.sendServerEvent('PageView', {event_id: _eid});
-}
+// CAPI PageView deferred — fires when _lpTrack loads in body
+// Form field listener also deferred to DOMContentLoaded (body scripts handle it)
 </script>
 <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${page.fb_pixel_id}&ev=PageView&noscript=1"/></noscript>
 `;
