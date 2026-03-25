@@ -38,6 +38,19 @@ export function normalizeLandingPhoneHtml(html: string) {
   return normalized;
 }
 
+/**
+ * Phone validation script for landing pages.
+ * 
+ * KEY FIX: The MutationObserver no longer watches the same attributes it mutates
+ * (maxlength, inputmode, type, pattern, oninput). This prevents the infinite
+ * mutation storm that was freezing pages during document.write().
+ * 
+ * Changes from the old version:
+ * 1. patchPhoneInput() is idempotent — only sets attributes when values differ
+ * 2. MutationObserver only watches childList (new nodes), NOT attributes
+ * 3. Initial patching is deferred to DOMContentLoaded / requestIdleCallback
+ * 4. No patching during document.write() parsing phase
+ */
 export const landingPhoneValidationScript = `
 <script>
 (function(){
@@ -57,7 +70,7 @@ export const landingPhoneValidationScript = `
 
   function isValidPhone(phone) {
     var cleaned = (phone || '').replace(/^\\+?880/, '0').replace(/[^0-9]/g, '');
-    return /^\d{11,15}$/.test(cleaned);
+    return /^\\d{11,15}$/.test(cleaned);
   }
 
   function isPhoneElement(el) {
@@ -75,16 +88,17 @@ export const landingPhoneValidationScript = `
     var inline = input.getAttribute('oninput');
     if (!inline) return;
     var patched = inline
-      .replace(/\.slice\(\s*0\s*,\s*11\s*\)/ig, '.slice(0,15)')
-      .replace(/\.substring\(\s*0\s*,\s*11\s*\)/ig, '.substring(0,15)')
-      .replace(/\.substr\(\s*0\s*,\s*11\s*\)/ig, '.substr(0,15)');
+      .replace(/\\.slice\\(\\s*0\\s*,\\s*11\\s*\\)/ig, '.slice(0,15)')
+      .replace(/\\.substring\\(\\s*0\\s*,\\s*11\\s*\\)/ig, '.substring(0,15)')
+      .replace(/\\.substr\\(\\s*0\\s*,\\s*11\\s*\\)/ig, '.substr(0,15)');
     if (patched !== inline) input.setAttribute('oninput', patched);
   }
 
+  // IDEMPOTENT: only set attributes when values actually differ
   function patchPhoneInput(input) {
     if (!isPhoneElement(input)) return;
-    input.setAttribute('maxlength', '15');
-    input.setAttribute('inputmode', 'tel');
+    if (input.getAttribute('maxlength') !== '15') input.setAttribute('maxlength', '15');
+    if (input.getAttribute('inputmode') !== 'tel') input.setAttribute('inputmode', 'tel');
     if (input.getAttribute('pattern')) input.removeAttribute('pattern');
     if ((input.getAttribute('type') || '').toLowerCase() === 'number') {
       try { input.setAttribute('type', 'tel'); } catch (e) {}
@@ -100,6 +114,7 @@ export const landingPhoneValidationScript = `
     for (var i = 0; i < inputs.length; i++) patchPhoneInput(inputs[i]);
   }
 
+  // Sanitize on input (this is event-driven, not observer-driven)
   document.addEventListener('input', function(e) {
     if (!isPhoneElement(e.target)) return;
     patchPhoneInput(e.target);
@@ -108,6 +123,7 @@ export const landingPhoneValidationScript = `
     if (e.target.value !== sanitized) e.target.value = sanitized;
   }, true);
 
+  // Validate on submit
   document.addEventListener('submit', function(e) {
     var form = e.target && e.target.closest ? e.target.closest('[data-checkout-form], form, #checkoutForm, #orderForm, .checkout-form, .order-form') : null;
     if (!form) return;
@@ -122,28 +138,41 @@ export const landingPhoneValidationScript = `
     }
   }, true);
 
+  // DEFERRED initial patch — wait for DOM to be ready, not during document.write()
   var runPatch = function() {
     patchAll(document);
-    setTimeout(function(){ patchAll(document); }, 200);
-    setTimeout(function(){ patchAll(document); }, 1000);
   };
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', runPatch);
-  else runPatch();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', runPatch);
+  } else {
+    // Schedule after current task to avoid blocking
+    var idle = window.requestIdleCallback || function(cb) { setTimeout(cb, 50); };
+    idle(runPatch);
+  }
 
+  // FIXED: MutationObserver only watches childList (new nodes added),
+  // NOT attributes. This prevents the infinite loop where setAttribute()
+  // triggers the observer which calls patchPhoneInput() which calls
+  // setAttribute() again.
   if (typeof MutationObserver !== 'undefined' && document.documentElement) {
-    new MutationObserver(function(mutations) {
-      for (var i = 0; i < mutations.length; i++) {
-        var mutation = mutations[i];
-        if (mutation.type === 'attributes' && isPhoneElement(mutation.target)) patchPhoneInput(mutation.target);
-        for (var j = 0; j < mutation.addedNodes.length; j++) patchAll(mutation.addedNodes[j]);
-      }
-    }).observe(document.documentElement, {
-      subtree: true,
-      childList: true,
-      attributes: true,
-      attributeFilter: ['type', 'name', 'id', 'placeholder', 'maxlength', 'pattern', 'inputmode', 'oninput']
-    });
+    var startObserver = function() {
+      new MutationObserver(function(mutations) {
+        for (var i = 0; i < mutations.length; i++) {
+          var added = mutations[i].addedNodes;
+          for (var j = 0; j < added.length; j++) patchAll(added[j]);
+        }
+      }).observe(document.documentElement, {
+        subtree: true,
+        childList: true
+        // NO attributes — that was causing the infinite loop
+      });
+    };
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', startObserver);
+    } else {
+      startObserver();
+    }
   }
 })();
 </script>`;
