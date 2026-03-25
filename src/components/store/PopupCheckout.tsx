@@ -48,6 +48,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
   const abandonedSaved = useRef(false);
   const orderSubmitted = useRef(false);
   const initiateTracked = useRef(false);
+  const liveSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { trackInitiateCheckout, trackAddPaymentInfo, trackPurchase, trackAddToCart, trackCustomEvent, trackLead } = useTracking();
   const leadTracked = useRef(false);
