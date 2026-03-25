@@ -2,7 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { ShoppingBag, Search, Star, Truck, ShieldCheck, RotateCcw, ChevronRight, ShoppingCart, Menu, X, Phone, MessageCircle } from "lucide-react";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
 import { OptimizedImage } from "@/components/ui/optimized-image";
-import { useState, useMemo, lazy, Suspense } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef, lazy, Suspense } from "react";
 import { useTracking } from "@/hooks/useTracking";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import BannerCarousel from "@/components/store/BannerCarousel";
@@ -10,6 +10,24 @@ import BannerCarousel from "@/components/store/BannerCarousel";
 // Lazy load modal components - not needed for initial render
 const PopupCheckout = lazy(() => import("@/components/store/PopupCheckout").then(m => ({ default: m.PopupCheckout })));
 const ExitDiscountBanner = lazy(() => import("@/components/store/ExitDiscountBanner").then(m => ({ default: m.ExitDiscountBanner })));
+
+// Static star rating - avoids rendering 5 separate SVG icons per product
+const StarRating = ({ rating = 4, count = 0 }: { rating?: number; count?: number }) => (
+  <div className="flex items-center gap-0.5 mt-1" aria-label={`Rating: ${rating} out of 5 stars`}>
+    <div className="flex gap-px">
+      {[0, 1, 2, 3, 4].map(i => (
+        <svg key={i} viewBox="0 0 12 12" className={`h-2.5 w-2.5 sm:h-3 sm:w-3 ${i < rating ? "text-amber-400" : "text-amber-200"}`} fill="currentColor">
+          <path d="M6 .5l1.5 3.1 3.4.5-2.5 2.4.6 3.4L6 8.3 3 9.9l.6-3.4L1.1 4.1l3.4-.5z" />
+        </svg>
+      ))}
+    </div>
+    <span className="text-[9px] sm:text-[10px] text-gray-500 ml-0.5">({count})</span>
+  </div>
+);
+
+// Number of products to show initially on mobile
+const INITIAL_MOBILE_COUNT = 8;
+const LOAD_MORE_COUNT = 8;
 
 const Template1Classic = () => {
   const { data: products = [], isLoading } = usePublicProducts();
