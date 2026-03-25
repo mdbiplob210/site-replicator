@@ -21,7 +21,6 @@ const routeImportMap: Record<string, () => Promise<any>> = {
   "/admin/analytics": () => import("../pages/admin/AdminAnalytics"),
   "/admin/settings": () => import("../pages/admin/AdminSettings"),
   "/admin/courier": () => import("../pages/admin/AdminCourier"),
-  "/admin/website": () => import("../pages/admin/AdminMainTemplate"),
   "/admin/users": () => import("../pages/admin/AdminUsers"),
   "/admin/reports": () => import("../pages/admin/AdminReports"),
   "/admin/inventory": () => import("../pages/admin/AdminInventory"),
@@ -32,20 +31,33 @@ const routeImportMap: Record<string, () => Promise<any>> = {
   "/admin/meta-ads": () => import("../pages/admin/AdminMetaAds"),
   "/admin/profile": () => import("../pages/admin/AdminProfile"),
   "/admin/whatsapp": () => import("../pages/admin/AdminWhatsApp"),
+  "/admin/planning": () => import("../pages/admin/AdminPlanning"),
+  "/admin/automation": () => import("../pages/admin/AdminAutomation"),
+  "/admin/backup": () => import("../pages/admin/AdminBackup"),
+  "/admin/coming-soon": () => import("../pages/admin/AdminComingSoon"),
+  "/admin/delivery-riders": () => import("../pages/admin/AdminRiderManagement"),
+  "/admin/website": () => import("../pages/admin/AdminMainTemplate"),
   "/admin/website/settings": () => import("../pages/admin/AdminWebsiteSettings"),
   "/admin/website/landing-pages": () => import("../pages/admin/AdminLandingPages"),
   "/admin/website/analytics": () => import("../pages/admin/AdminWebsiteAnalytics"),
+  "/admin/website/landing-pages/analytics": () => import("../pages/admin/AdminLandingPageAnalytics"),
+  "/admin/website/main-template": () => import("../pages/admin/AdminMainTemplate"),
+  "/admin/website/checkout-template": () => import("../pages/admin/AdminCheckoutTemplate"),
+  "/admin/website/product-template": () => import("../pages/admin/AdminProductTemplate"),
+  "/admin/website/category-template": () => import("../pages/admin/AdminCategoryTemplate"),
+  "/admin/website/thank-you": () => import("../pages/admin/AdminThankYouTemplate"),
+  "/admin/website/payment": () => import("../pages/admin/AdminPayment"),
+  "/admin/website/pages": () => import("../pages/admin/AdminPages"),
+  "/admin/website/memo-template": () => import("../pages/admin/AdminMemoTemplate"),
 };
 
 /** Prefetch a route's JS chunk. Call on hover/touchstart for instant navigation. */
 export function prefetchRoute(path: string) {
-  // Normalize path
   const cleanPath = path.split("?")[0].split("#")[0];
 
   if (prefetchedRoutes.has(cleanPath)) return;
   prefetchedRoutes.add(cleanPath);
 
-  // Exact match
   const importFn = routeImportMap[cleanPath];
   if (importFn) {
     importFn().catch(() => {});
@@ -79,7 +91,7 @@ export function initLinkPrefetching() {
     if (!href || href.startsWith("http") || href.startsWith("//") || href.startsWith("mailto:") || href.startsWith("tel:")) return;
 
     // Small delay to avoid prefetching on scroll-through
-    hoverTimer = setTimeout(() => prefetchRoute(href), 65);
+    hoverTimer = setTimeout(() => prefetchRoute(href), 50);
   }
 
   function handlePointerLeave() {

@@ -1,7 +1,6 @@
-import { ReactNode, useState, useEffect, useRef } from "react";
+import { ReactNode, useState, useEffect, useRef, lazy, Suspense, useCallback } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "./AdminSidebar";
-import { DesignPreviewPanel } from "./DesignPreviewPanel";
 import {
   Search, Sun, Moon, ExternalLink, Bell, MessageSquare,
   LayoutDashboard, BarChart3, Wallet, Package, ShoppingCart,
@@ -9,13 +8,13 @@ import {
   Globe, Settings, Zap, Database, Check, CheckCheck, Send, X, ArrowLeft
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useUserPresence } from "@/hooks/useUserTracking";
 import { useTheme } from "@/hooks/useTheme";
-import { useNotifications } from "@/hooks/useNotifications";
-import { useInternalMessages, useAllUsers } from "@/hooks/useInternalMessages";
 import { useAuth } from "@/contexts/AuthContext";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { format } from "date-fns";
+
+// Lazy-load heavy non-critical features - only loaded when user interacts
+const DesignPreviewPanel = lazy(() => import("./DesignPreviewPanel").then(m => ({ default: m.DesignPreviewPanel })));
 
 const searchPages = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
@@ -47,12 +46,30 @@ export function AdminLayout({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // Hooks
-  useUserPresence();
-  const { theme, toggle: toggleTheme } = useTheme();
-  const { notifications, unreadCount, markAsRead, markAllRead } = useNotifications();
-  const { conversations, messages, totalUnread, sendMessage } = useInternalMessages(activeChatUser || undefined);
-  const { data: allUsers } = useAllUsers();
+  // Defer loading heavy hooks until user actually opens them
+  const [heavyLoaded, setHeavyLoaded] = useState(false);
+  const notificationsModule = useRef<any>(null);
+  const messagesModule = useRef<any>(null);
+  const presenceModule = useRef<any>(null);
+
+  // Load heavy hooks lazily on first interaction or after idle
+  useEffect(() => {
+    const loadHeavy = async () => {
+      if (heavyLoaded) return;
+      const [notifMod, msgMod, presenceMod] = await Promise.all([
+        import("@/hooks/useNotifications"),
+        import("@/hooks/useInternalMessages"),
+        import("@/hooks/useUserTracking"),
+      ]);
+      notificationsModule.current = notifMod;
+      messagesModule.current = msgMod;
+      presenceModule.current = presenceMod;
+      setHeavyLoaded(true);
+    };
+    // Load after 2s idle or on first interaction
+    const timer = setTimeout(loadHeavy, 2000);
+    return () => clearTimeout(timer);
+  }, [heavyLoaded]);
 
   // ⌘K shortcut
   useEffect(() => {
