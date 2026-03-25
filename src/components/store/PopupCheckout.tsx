@@ -120,75 +120,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
     }
   }, [open, currentItem, qty, trackInitiateCheckout]);
 
-  // Abandoned order tracking
-  const saveAbandonedOrder = useCallback(async () => {
-    if (orderSubmitted.current || abandonedSaved.current || !formInteracted.current) return;
-    if (!form.phone) return; // Need at least phone
-    if (!currentItem) return;
-    abandonedSaved.current = true;
-    try {
-      // Generate a stable session ID to prevent duplicates
-      let sessionId = sessionStorage.getItem("popup_checkout_session_id");
-      if (!sessionId) {
-        sessionId = `pcs_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-        sessionStorage.setItem("popup_checkout_session_id", sessionId);
-      }
 
-      const phoneVal = form.phone?.trim();
-
-      // Try to find existing incomplete order by session ID (stored in notes)
-      const { data: existingBySession } = await supabase
-        .from("incomplete_orders" as any)
-        .select("id")
-        .eq("block_reason", "abandoned_form")
-        .eq("landing_page_slug", "website-store")
-        .ilike("notes", `%session:${sessionId}%`)
-        .limit(1);
-
-      let existingId = (existingBySession as any)?.[0]?.id;
-
-      // Fallback: try by phone
-      if (!existingId && phoneVal) {
-        const { data: existingByPhone } = await supabase
-          .from("incomplete_orders" as any)
-          .select("id")
-          .eq("customer_phone", phoneVal)
-          .eq("block_reason", "abandoned_form")
-          .eq("status", "processing")
-          .eq("landing_page_slug", "website-store")
-          .limit(1);
-        existingId = (existingByPhone as any)?.[0]?.id;
-      }
-
-      const incompleteData = {
-        customer_name: form.name || "Unknown",
-        customer_phone: form.phone || null,
-        customer_address: form.address || null,
-        product_name: currentItem.name,
-        product_code: currentItem.productCode || null,
-        quantity: qty,
-        unit_price: currentItem.price,
-        total_amount: currentItem.price * qty,
-        notes: `session:${sessionId}` + (form.notes ? ` | ${form.notes}` : ''),
-        block_reason: "abandoned_form",
-        landing_page_slug: "website-store",
-        device_info: /Mobi|Android/i.test(navigator.userAgent) ? "Mobile" : "Desktop",
-        user_agent: navigator.userAgent.substring(0, 200),
-        updated_at: new Date().toISOString(),
-      };
-
-      if (existingId) {
-        await supabase.from("incomplete_orders" as any).update(incompleteData as any).eq("id", existingId);
-      } else {
-        await supabase.from("incomplete_orders" as any).insert({
-          ...incompleteData,
-          delivery_charge: 0,
-          discount: 0,
-          status: "processing",
-        } as any);
-      }
-    } catch {}
-  }, [form, currentItem, qty]);
 
   // Live save incomplete order as customer types (debounced)
   const liveSaveIncomplete = useCallback(async () => {
