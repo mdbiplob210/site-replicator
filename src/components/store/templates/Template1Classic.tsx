@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { ShoppingBag, Search, Star, Truck, ShieldCheck, RotateCcw, ChevronRight, ShoppingCart, Menu, X, Phone, MessageCircle } from "lucide-react";
+import { ShoppingBag, Search, Truck, ShieldCheck, RotateCcw, ChevronRight, ShoppingCart, Menu, X, Phone, MessageCircle, Star } from "lucide-react";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
 import { OptimizedImage } from "@/components/ui/optimized-image";
 import { useState, useMemo, useCallback, useEffect, useRef, lazy, Suspense } from "react";
