@@ -81,27 +81,10 @@ export function optimizeLandingImages(html: string): string {
       }
     }
 
-    // Optimize Supabase Storage URLs to WebP
+    // Keep Supabase Storage URLs as-is (render/image transform not available on all projects)
     const srcMatch = newAttrs.match(/\ssrc\s*=\s*["']([^"']+)["']/i);
     if (srcMatch) {
       const originalSrc = srcMatch[1];
-      
-      // Convert Supabase Storage URLs to WebP via render transform
-      if (originalSrc.includes('/storage/v1/object/public/')) {
-        const webpSrc = originalSrc
-          .replace('/storage/v1/object/public/', '/storage/v1/render/image/public/');
-        const separator = webpSrc.includes('?') ? '&' : '?';
-        const optimizedSrc = `${webpSrc}${separator}format=webp&quality=75`;
-        newAttrs = newAttrs.replace(srcMatch[0], ` src="${optimizedSrc}"`);
-
-        // Add responsive srcset if no srcset already
-        if (!/\ssrcset\s*=/i.test(newAttrs)) {
-          const srcsetEntries = [400, 800].map(w => {
-            return `${webpSrc}${separator}format=webp&quality=75&width=${w}&resize=cover ${w}w`;
-          }).join(', ');
-          newAttrs += ` srcset="${srcsetEntries}" sizes="(max-width: 640px) 100vw, 800px"`;
-        }
-      }
 
       // Optimize Unsplash URLs
       if (originalSrc.includes('images.unsplash.com')) {
