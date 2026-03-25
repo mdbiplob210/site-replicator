@@ -12,7 +12,11 @@ export function WebsiteEventTracker() {
 
   // Heartbeat for live visitor tracking - deferred to not block FCP
   useEffect(() => {
-    if (location.pathname.startsWith("/admin") || location.pathname.startsWith("/login")) return;
+    if (
+      location.pathname.startsWith("/admin") ||
+      location.pathname.startsWith("/login") ||
+      location.pathname.startsWith("/lp/")
+    ) return;
 
     const sendHeartbeat = () => {
       try {

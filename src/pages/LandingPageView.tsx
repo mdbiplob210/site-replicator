@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useLandingPageBySlug } from "@/hooks/useLandingPages";
-import { useEffect, useRef } from "react";
+import { useLayoutEffect, useRef } from "react";
 import { sanitizeHtmlScripts } from "@/lib/htmlSanitizer";
 import { landingPhoneValidationScript, normalizeLandingPhoneHtml } from "@/lib/landingPhoneHtml";
 
@@ -1396,17 +1396,22 @@ if (!window._LP_VID) { window._LP_VID = 'v_' + Math.random().toString(36).substr
     return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${allScripts}</head><body>${cleanHtml}</body></html>`;
   };
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!page) return;
 
     const renderKey = `${page.id}:${page.updated_at}`;
     if (renderedPageRef.current === renderKey) return;
-    renderedPageRef.current = renderKey;
 
-    const fullHtml = buildFullHtml();
-    document.open();
-    document.write(fullHtml);
-    document.close();
+    try {
+      const fullHtml = buildFullHtml();
+      document.open();
+      document.write(fullHtml);
+      document.close();
+      renderedPageRef.current = renderKey;
+    } catch (error) {
+      renderedPageRef.current = null;
+      console.error("Failed to render landing page", error);
+    }
   }, [page]);
 
   if (isLoading) {
