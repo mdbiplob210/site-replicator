@@ -1367,10 +1367,29 @@ if (!window._LP_VID) { window._LP_VID = 'v_' + Math.random().toString(36).substr
 ${page.tiktok_pixel_id ? '<link rel="dns-prefetch" href="https://analytics.tiktok.com" />' : ''}
 ${page.gtm_id ? '<link rel="dns-prefetch" href="https://www.googletagmanager.com" />' : ''}
 `;
-    const headScripts = resourceHints + globalsScript + richTrackingHelper + trackingScripts;
+    const headScripts = resourceHints + globalsScript + trackingScripts;
 
     // ALL other scripts deferred to body end — massive FCP improvement
-    const bodyScripts = deferredPixelScripts + conversionScript + orderScript + phoneValidationScript + tierPricePatchScript + analyticsScript + partialTrackingScript + autocompleteScript + exitIntentScript + debugPanelScript + heartbeatScript;
+    // richTrackingHelper now in body too (CAPI PageView fires from here)
+    const capiPageViewScript = page.fb_pixel_id ? `
+<script>
+// Deferred CAPI PageView — fires after _lpTrack loads
+if (window._lpTrack && window._lpPageViewEventId) {
+  window._lpTrack.sendServerEvent('PageView', {event_id: window._lpPageViewEventId});
+}
+// Deferred form field listener for advanced matching
+var PHONE_SEL = 'input[name="customer_phone"],input[name="phone"],input[name="mobile"],input[type="tel"]';
+var NAME_SEL = 'input[name="customer_name"],input[name="name"],input[name="full_name"]';
+document.addEventListener('input', function(e) {
+  if (!e.target || !e.target.matches) return;
+  var data = {};
+  if (e.target.matches(PHONE_SEL)) { var val = (e.target.value || '').replace(/[^0-9]/g, ''); if (val.length >= 11) data.phone = val; }
+  if (e.target.matches(NAME_SEL)) { var nm = (e.target.value || '').trim(); if (nm.length >= 2) data.name = nm; }
+  if (Object.keys(data).length > 0 && window._updateFBAdvancedMatching) window._updateFBAdvancedMatching(data);
+}, true);
+</script>
+` : '';
+    const bodyScripts = richTrackingHelper + capiPageViewScript + deferredPixelScripts + conversionScript + orderScript + phoneValidationScript + tierPricePatchScript + analyticsScript + partialTrackingScript + autocompleteScript + exitIntentScript + debugPanelScript + heartbeatScript;
 
     let cleanHtml = normalizeLandingPhoneHtml(sanitizeHtmlScripts(page.html_content));
     cleanHtml = optimizeLandingImages(cleanHtml);
