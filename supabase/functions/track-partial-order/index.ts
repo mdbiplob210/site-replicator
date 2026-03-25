@@ -92,7 +92,7 @@ async function cleanupDuplicatePartials(
     supabase
       .from("incomplete_orders")
       .select("id, updated_at, created_at")
-      .eq("block_reason", "abandoned_form"),
+      .eq("block_reason", "abandoned_form")
       .in("status", [...ACTIVE_INCOMPLETE_STATUSES])
   );
 
