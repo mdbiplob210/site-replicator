@@ -1397,7 +1397,7 @@ ${page.gtm_id ? '<link rel="dns-prefetch" href="https://www.googletagmanager.com
     const headScripts = resourceHints + globalsScript + richTrackingHelper + trackingScripts;
 
     // ALL other scripts deferred to body end — massive FCP improvement
-    const bodyScripts = richTrackingHelper + conversionScript + orderScript + phoneValidationScript + tierPricePatchScript + analyticsScript + partialTrackingScript + autocompleteScript + exitIntentScript + debugPanelScript + heartbeatScript;
+    const bodyScripts = conversionScript + orderScript + phoneValidationScript + tierPricePatchScript + analyticsScript + partialTrackingScript + autocompleteScript + exitIntentScript + debugPanelScript + heartbeatScript;
 
     let cleanHtml = normalizeLandingPhoneHtml(sanitizeHtmlScripts(page.html_content));
     cleanHtml = optimizeLandingImages(cleanHtml);
