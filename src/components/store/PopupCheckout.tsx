@@ -48,6 +48,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
   const abandonedSaved = useRef(false);
   const orderSubmitted = useRef(false);
   const initiateTracked = useRef(false);
+  const liveSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { trackInitiateCheckout, trackAddPaymentInfo, trackPurchase, trackAddToCart, trackCustomEvent, trackLead } = useTracking();
   const leadTracked = useRef(false);
@@ -119,14 +120,14 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
     }
   }, [open, currentItem, qty, trackInitiateCheckout]);
 
-  // Abandoned order tracking
-  const saveAbandonedOrder = useCallback(async () => {
-    if (orderSubmitted.current || abandonedSaved.current || !formInteracted.current) return;
-    if (!form.phone) return; // Need at least phone
-    if (!currentItem) return;
-    abandonedSaved.current = true;
+
+
+  // Live save incomplete order as customer types (debounced)
+  const liveSaveIncomplete = useCallback(async () => {
+    if (orderSubmitted.current || !currentItem) return;
+    if (!form.phone && !form.name) return; // Need at least some data
+    
     try {
-      // Generate a stable session ID to prevent duplicates
       let sessionId = sessionStorage.getItem("popup_checkout_session_id");
       if (!sessionId) {
         sessionId = `pcs_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
@@ -135,7 +136,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
 
       const phoneVal = form.phone?.trim();
 
-      // Try to find existing incomplete order by session ID (stored in notes)
+      // Try to find existing incomplete order by session ID
       const { data: existingBySession } = await supabase
         .from("incomplete_orders" as any)
         .select("id")
@@ -189,13 +190,28 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
     } catch {}
   }, [form, currentItem, qty]);
 
+  // Trigger live save on form changes with debounce
+  useEffect(() => {
+    if (!open || orderSubmitted.current) return;
+    if (!formInteracted.current) return;
+    
+    if (liveSaveTimer.current) clearTimeout(liveSaveTimer.current);
+    liveSaveTimer.current = setTimeout(() => {
+      liveSaveIncomplete();
+    }, 1500); // Save 1.5s after last keystroke
+
+    return () => {
+      if (liveSaveTimer.current) clearTimeout(liveSaveTimer.current);
+    };
+  }, [form.name, form.phone, form.address, form.notes, qty, open, liveSaveIncomplete]);
+
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.visibilityState === "hidden" && open) saveAbandonedOrder();
+      if (document.visibilityState === "hidden" && open) liveSaveIncomplete();
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
-  }, [saveAbandonedOrder, open]);
+  }, [liveSaveIncomplete, open]);
 
   const updateForm = (updates: Partial<typeof form>) => {
     formInteracted.current = true;
@@ -289,7 +305,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
       setCompletedOrderNumber(orderNumber);
 
       trackPurchase({
-        value: total,
+        value: currentItem.price * qty,
         orderId: orderNumber,
         contentName: currentItem.name,
         contentId: currentItem.productCode || currentItem.productId,
@@ -379,8 +395,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
 
   const handleClose = () => {
     if (!orderSubmitted.current) {
-      saveAbandonedOrder();
-      // Always trigger exit intent if available (parent controls max discount logic)
+      liveSaveIncomplete();
       if (onExitIntent) {
         onExitIntent();
         return;
