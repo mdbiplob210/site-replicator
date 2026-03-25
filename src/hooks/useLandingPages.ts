@@ -51,6 +51,11 @@ export function useLandingPageBySlug(slug: string) {
       if (error) throw error;
       return data as unknown as LandingPage;
     },
+    initialData: () => {
+      const cached = getPrefetchedData<any[]>(`landing-page:${slug}`);
+      if (cached?.[0]) return cached[0] as LandingPage;
+      return undefined;
+    },
     enabled: !!slug,
     staleTime: 10 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
