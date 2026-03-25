@@ -333,27 +333,29 @@ ttq.page();
   // Expose for template scripts
   window._fireStandardEvent = fireStandardEvent;
 
-  // Auto-fire ViewContent with rich params
+  // Auto-fire ViewContent with rich params (fires even without data-track-view-content)
   document.addEventListener('DOMContentLoaded', function() {
+    if (typeof fbq !== 'function') return;
     var vc = document.querySelector('[data-track-view-content]');
-    if (vc && typeof fbq === 'function') {
-      var eventId = window._lpTrack ? window._lpTrack.generateEventId() : '';
-      var baseParams = window._lpTrack ? window._lpTrack.getBaseParams() : {};
-      var vcParams = {
-        content_name: vc.getAttribute('data-content-name') || document.title,
-        content_ids: vc.getAttribute('data-content-id') ? [vc.getAttribute('data-content-id')] : [],
-        content_type: vc.getAttribute('data-content-type') || 'product',
-        content_category: vc.getAttribute('data-content-category') || '',
-        value: parseFloat(vc.getAttribute('data-content-value') || '0'),
-        currency: vc.getAttribute('data-content-currency') || 'BDT',
-        event_day: baseParams.event_day, event_hour: baseParams.event_hour,
-        event_month: baseParams.event_month, traffic_source: baseParams.traffic_source,
-        landing_page: baseParams.landing_page, page_title: baseParams.page_title,
-        user_role: 'guest', plugin: 'LovableLP'
-      };
+    var eventId = window._lpTrack ? window._lpTrack.generateEventId() : 'eid_' + Math.random().toString(36).substr(2,9) + '_' + Date.now();
+    var baseParams = window._lpTrack ? window._lpTrack.getBaseParams() : {};
+    var vcParams = {
+      content_name: vc ? (vc.getAttribute('data-content-name') || document.title) : document.title,
+      content_ids: vc && vc.getAttribute('data-content-id') ? [vc.getAttribute('data-content-id')] : [],
+      content_type: vc ? (vc.getAttribute('data-content-type') || 'product') : 'product',
+      content_category: vc ? (vc.getAttribute('data-content-category') || '') : '',
+      value: parseFloat(vc ? (vc.getAttribute('data-content-value') || '0') : '0'),
+      currency: vc ? (vc.getAttribute('data-content-currency') || 'BDT') : 'BDT',
+      event_day: baseParams.event_day, event_hour: baseParams.event_hour,
+      event_month: baseParams.event_month, traffic_source: baseParams.traffic_source,
+      landing_page: baseParams.landing_page, page_title: baseParams.page_title,
+      user_role: 'guest', plugin: 'LovableLP'
+    };
+    fireOnce('auto_viewcontent', function() {
       fbq('track', 'ViewContent', vcParams, {eventID: eventId});
       if (window._lpTrack) window._lpTrack.sendServerEvent('ViewContent', {event_id: eventId, ...vcParams});
-    }
+      if (typeof ttq !== 'undefined' && ttq.track) ttq.track('ViewContent', {content_name: vcParams.content_name, value: vcParams.value, currency: vcParams.currency});
+    });
 
     // ── Auto-fire AddToCart when user scrolls to checkout form ──
     var checkoutRoot = document.querySelector('[data-checkout-form], form, #checkoutForm, #orderForm, .checkout-form, .order-form');
