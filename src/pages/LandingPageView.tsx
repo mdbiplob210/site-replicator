@@ -1386,11 +1386,18 @@ if (!window._LP_VID) { window._LP_VID = 'v_' + Math.random().toString(36).substr
 </script>
 `;
 
-    // CRITICAL scripts go in <head>: globals, tracking helper, pixel init, conversion handlers, order submission
-    const headScripts = globalsScript + richTrackingHelper + trackingScripts + conversionScript + orderScript + phoneValidationScript + tierPricePatchScript;
+    // CRITICAL: Only minimal pixel init in <head> for fastest FCP
+    // Everything else deferred to body end to unblock rendering
+    const resourceHints = `
+<link rel="dns-prefetch" href="https://connect.facebook.net" />
+<link rel="preconnect" href="https://connect.facebook.net" crossorigin />
+${page.tiktok_pixel_id ? '<link rel="dns-prefetch" href="https://analytics.tiktok.com" />' : ''}
+${page.gtm_id ? '<link rel="dns-prefetch" href="https://www.googletagmanager.com" />' : ''}
+`;
+    const headScripts = resourceHints + globalsScript + trackingScripts;
 
-    // DEFERRED scripts go before </body>: analytics, partial tracking, heartbeat, exit popup, debug, autocomplete
-    const bodyScripts = analyticsScript + partialTrackingScript + autocompleteScript + exitIntentScript + debugPanelScript + heartbeatScript;
+    // ALL other scripts deferred to body end — massive FCP improvement
+    const bodyScripts = richTrackingHelper + conversionScript + orderScript + phoneValidationScript + tierPricePatchScript + analyticsScript + partialTrackingScript + autocompleteScript + exitIntentScript + debugPanelScript + heartbeatScript;
 
     let cleanHtml = normalizeLandingPhoneHtml(sanitizeHtmlScripts(page.html_content));
     cleanHtml = optimizeLandingImages(cleanHtml);
