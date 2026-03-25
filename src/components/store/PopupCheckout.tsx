@@ -190,13 +190,96 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
     } catch {}
   }, [form, currentItem, qty]);
 
+  // Live save incomplete order as customer types (debounced)
+  const liveSaveIncomplete = useCallback(async () => {
+    if (orderSubmitted.current || !currentItem) return;
+    if (!form.phone && !form.name) return; // Need at least some data
+    
+    try {
+      let sessionId = sessionStorage.getItem("popup_checkout_session_id");
+      if (!sessionId) {
+        sessionId = `pcs_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+        sessionStorage.setItem("popup_checkout_session_id", sessionId);
+      }
+
+      const phoneVal = form.phone?.trim();
+
+      // Try to find existing incomplete order by session ID
+      const { data: existingBySession } = await supabase
+        .from("incomplete_orders" as any)
+        .select("id")
+        .eq("block_reason", "abandoned_form")
+        .eq("landing_page_slug", "website-store")
+        .ilike("notes", `%session:${sessionId}%`)
+        .limit(1);
+
+      let existingId = (existingBySession as any)?.[0]?.id;
+
+      // Fallback: try by phone
+      if (!existingId && phoneVal) {
+        const { data: existingByPhone } = await supabase
+          .from("incomplete_orders" as any)
+          .select("id")
+          .eq("customer_phone", phoneVal)
+          .eq("block_reason", "abandoned_form")
+          .eq("status", "processing")
+          .eq("landing_page_slug", "website-store")
+          .limit(1);
+        existingId = (existingByPhone as any)?.[0]?.id;
+      }
+
+      const incompleteData = {
+        customer_name: form.name || "Unknown",
+        customer_phone: form.phone || null,
+        customer_address: form.address || null,
+        product_name: currentItem.name,
+        product_code: currentItem.productCode || null,
+        quantity: qty,
+        unit_price: currentItem.price,
+        total_amount: currentItem.price * qty,
+        notes: `session:${sessionId}` + (form.notes ? ` | ${form.notes}` : ''),
+        block_reason: "abandoned_form",
+        landing_page_slug: "website-store",
+        device_info: /Mobi|Android/i.test(navigator.userAgent) ? "Mobile" : "Desktop",
+        user_agent: navigator.userAgent.substring(0, 200),
+        updated_at: new Date().toISOString(),
+      };
+
+      if (existingId) {
+        await supabase.from("incomplete_orders" as any).update(incompleteData as any).eq("id", existingId);
+      } else {
+        await supabase.from("incomplete_orders" as any).insert({
+          ...incompleteData,
+          delivery_charge: 0,
+          discount: 0,
+          status: "processing",
+        } as any);
+      }
+    } catch {}
+  }, [form, currentItem, qty]);
+
+  // Trigger live save on form changes with debounce
+  useEffect(() => {
+    if (!open || orderSubmitted.current) return;
+    if (!formInteracted.current) return;
+    
+    if (liveSaveTimer.current) clearTimeout(liveSaveTimer.current);
+    liveSaveTimer.current = setTimeout(() => {
+      liveSaveIncomplete();
+    }, 1500); // Save 1.5s after last keystroke
+
+    return () => {
+      if (liveSaveTimer.current) clearTimeout(liveSaveTimer.current);
+    };
+  }, [form.name, form.phone, form.address, form.notes, qty, open, liveSaveIncomplete]);
+
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.visibilityState === "hidden" && open) saveAbandonedOrder();
+      if (document.visibilityState === "hidden" && open) liveSaveIncomplete();
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
-  }, [saveAbandonedOrder, open]);
+  }, [liveSaveIncomplete, open]);
 
   const updateForm = (updates: Partial<typeof form>) => {
     formInteracted.current = true;
