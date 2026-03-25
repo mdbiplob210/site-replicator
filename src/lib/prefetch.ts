@@ -101,6 +101,18 @@ export function prefetchCriticalData() {
         `select=${PRODUCT_DETAIL_FIELDS}&status=eq.active&slug=eq.${encodeURIComponent(slug)}&limit=1`
       )
     );
+    return;
+  }
+
+  // Landing page: prefetch the landing page data
+  if (path.startsWith("/lp/")) {
+    const slug = path.replace("/lp/", "").split("/")[0];
+    if (slug) {
+      fetchAndCache(
+        `landing-page:${slug}`,
+        restUrl("landing_pages", `select=*&slug=eq.${encodeURIComponent(slug)}&is_active=eq.true&limit=1`)
+      );
+    }
   }
 }
 
