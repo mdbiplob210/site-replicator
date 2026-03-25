@@ -68,7 +68,7 @@ export function generatePOSMemo(d: MemoData): string {
 // ─── TEMPLATE STYLES ──────────────────────────────────────────
 const COMMON_BASE = `
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Segoe UI', 'Noto Sans Bengali', sans-serif; font-size: 14px; line-height: 1.2; color: #1a1a2e; }
+  body { font-family: 'Segoe UI', 'Noto Sans Bengali', sans-serif; font-size: 15px; line-height: 1.2; color: #1a1a2e; background: #ffffff; }
   .barcode { font-family: 'Libre Barcode 39', monospace; font-size: 30px; line-height: 0.95; }
   .items-table { width: 100%; border-collapse: collapse; }
   .items-table th { font-size: 10px; font-weight: 700; padding: 3px 6px; text-transform: uppercase; letter-spacing: 0.45px; }
