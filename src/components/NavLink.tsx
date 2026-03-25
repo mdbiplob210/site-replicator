@@ -1,6 +1,7 @@
 import { NavLink as RouterNavLink, NavLinkProps, useLocation, useNavigate } from "react-router-dom";
 import { forwardRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
+import { prefetchRoute } from "@/lib/routePrefetch";
 
 interface NavLinkCompatProps extends Omit<NavLinkProps, "className"> {
   className?: string;
@@ -16,10 +17,8 @@ const NavLink = forwardRef<HTMLAnchorElement, NavLinkCompatProps>(
     const handleClick = useCallback(
       (e: React.MouseEvent<HTMLAnchorElement>) => {
         const targetPath = typeof to === "string" ? to : to.pathname || "";
-        // If already on this path, force a fresh navigation (resets component state)
         if (location.pathname === targetPath || location.pathname.startsWith(targetPath + "/")) {
           e.preventDefault();
-          // Navigate away briefly then back, to force React Router to re-mount
           navigate(targetPath, { replace: true, state: { _refresh: Date.now() } });
         }
         onClick?.(e);
@@ -27,11 +26,18 @@ const NavLink = forwardRef<HTMLAnchorElement, NavLinkCompatProps>(
       [to, location.pathname, navigate, onClick],
     );
 
+    const handleMouseEnter = useCallback(() => {
+      const targetPath = typeof to === "string" ? to : to.pathname || "";
+      if (targetPath) prefetchRoute(targetPath);
+    }, [to]);
+
     return (
       <RouterNavLink
         ref={ref}
         to={to}
         onClick={handleClick}
+        onMouseEnter={handleMouseEnter}
+        onTouchStart={handleMouseEnter}
         className={({ isActive, isPending }) =>
           cn(className, isActive && activeClassName, isPending && pendingClassName)
         }

@@ -88,11 +88,13 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 5 * 60 * 1000,
-      gcTime: 15 * 60 * 1000,
+      gcTime: 30 * 60 * 1000,
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
       retry: 1,
       networkMode: "offlineFirst",
+      // Reduce suspense waterfall: show stale data instantly while refetching
+      placeholderData: (prev: any) => prev,
     },
   },
 });

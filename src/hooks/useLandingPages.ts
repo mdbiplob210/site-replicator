@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { getPrefetchedData } from "@/lib/prefetch";
 
 export interface LandingPage {
   id: string;
@@ -50,8 +51,14 @@ export function useLandingPageBySlug(slug: string) {
       if (error) throw error;
       return data as unknown as LandingPage;
     },
+    initialData: () => {
+      const cached = getPrefetchedData<any[]>(`landing-page:${slug}`);
+      if (cached?.[0]) return cached[0] as LandingPage;
+      return undefined;
+    },
     enabled: !!slug,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
   });
 }
 

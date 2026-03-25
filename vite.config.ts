@@ -29,7 +29,7 @@ export default defineConfig(({ mode }) => ({
     minify: "esbuild",
     cssMinify: true,
     modulePreload: {
-      polyfill: false, // Modern browsers support it natively
+      polyfill: false,
     },
     rollupOptions: {
       output: {
@@ -48,5 +48,7 @@ export default defineConfig(({ mode }) => ({
     },
     chunkSizeWarningLimit: 600,
     reportCompressedSize: false,
+    // Faster builds
+    sourcemap: false,
   },
 }));
