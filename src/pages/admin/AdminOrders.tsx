@@ -1320,14 +1320,13 @@ const AdminOrders = () => {
   const [pathaoBulkResults, setPathaoBulkResults] = useState<import("@/components/admin/courier/PathaoBulkSubmitPreview").SubmitResultEntry[]>([]);
   
   const handleBulkCourierSubmit = async (courierId: string) => {
-    if (selectedOrderIds.size === 0 || !courierId) return;
-    const total = selectedOrderIds.size;
+    if (!courierId) return;
     
-    // Open preview dialog for Pathao, Steadfast, Redx
+    // Open preview dialog for Pathao, Steadfast, Redx — show ALL filtered orders
     const provider = courierProviders?.find((p: any) => p.id === courierId);
     const previewSlugs = ["pathao", "steadfast", "redx"];
     if (provider && previewSlugs.includes(provider.slug)) {
-      const selectedOrders = orders.filter((o: any) => selectedOrderIds.has(o.id)).map((o: any) => ({
+      const allFilteredOrders = filteredOrders.map((o: any) => ({
         id: o.id,
         order_number: o.order_number,
         customer_name: o.customer_name,
@@ -1337,7 +1336,7 @@ const AdminOrders = () => {
         notes: o.notes || "",
         courier_note: o.courier_note || "",
       }));
-      setPathaoBulkOrders(selectedOrders);
+      setPathaoBulkOrders(allFilteredOrders);
       setPathaoBulkCourierId(courierId);
       setPathaoBulkPreviewOpen(true);
       setBulkCourierId("");
