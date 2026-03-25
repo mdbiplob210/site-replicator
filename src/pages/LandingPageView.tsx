@@ -357,6 +357,23 @@ ttq.page();
       if (typeof ttq !== 'undefined' && ttq.track) ttq.track('ViewContent', {content_name: vcParams.content_name, value: vcParams.value, currency: vcParams.currency});
     });
 
+    // ── Helper: read current dynamic price & qty from form ──
+    function getCurrentProductData(form) {
+      var pName = (form.getAttribute('data-product-name') || document.title || '').substring(0, 150);
+      var pCode = form.getAttribute('data-product-code') || '';
+      // Read unit_price from hidden input first (updated by tier selector), then data attribute
+      var priceInput = form.querySelector('input[name="unit_price"], [data-unit-price]');
+      var pPrice = 0;
+      if (priceInput && priceInput.tagName === 'INPUT') pPrice = parseFloat(priceInput.value || '0');
+      if (!pPrice) pPrice = parseFloat(form.getAttribute('data-unit-price') || '0');
+      // Read quantity from input/select (updated by tier selector), then data attribute
+      var qtyInput = form.querySelector('input[name="quantity"], select[name="quantity"], [data-quantity]');
+      var qty = 1;
+      if (qtyInput && (qtyInput.tagName === 'INPUT' || qtyInput.tagName === 'SELECT')) qty = parseInt(qtyInput.value || '1') || 1;
+      if (qty <= 0) qty = parseInt(form.getAttribute('data-quantity') || '1') || 1;
+      return { name: pName, code: pCode, price: pPrice, qty: qty, total: pPrice * qty };
+    }
+
     // ── Auto-fire AddToCart when user scrolls to checkout form ──
     var checkoutRoot = document.querySelector('[data-checkout-form], form, #checkoutForm, #orderForm, .checkout-form, .order-form');
     if (checkoutRoot) {
@@ -364,13 +381,11 @@ ttq.page();
         entries.forEach(function(entry) {
           if (entry.isIntersecting) {
             fireOnce('auto_addtocart', function() {
-              var pName = checkoutRoot.getAttribute('data-product-name') || document.title || '';
-              var pCode = checkoutRoot.getAttribute('data-product-code') || '';
-              var pPrice = parseFloat(checkoutRoot.getAttribute('data-unit-price') || '0');
+              var pd = getCurrentProductData(checkoutRoot);
               fireStandardEvent('AddToCart', {
-                value: pPrice, currency: 'BDT',
-                content_name: pName, content_ids: pCode ? [pCode] : [],
-                content_type: 'product', num_items: 1
+                value: pd.total, currency: 'BDT',
+                content_name: pd.name, content_ids: pd.code ? [pd.code] : [],
+                content_type: 'product', num_items: pd.qty
               });
             });
             obs.disconnect();
@@ -386,13 +401,11 @@ ttq.page();
       var form = e.target.closest('[data-checkout-form], form, #checkoutForm, #orderForm, .checkout-form, .order-form');
       if (!form) return;
       fireOnce('auto_initiatecheckout', function() {
-        var pName = form.getAttribute('data-product-name') || document.title || '';
-        var pCode = form.getAttribute('data-product-code') || '';
-        var pPrice = parseFloat(form.getAttribute('data-unit-price') || '0');
+        var pd = getCurrentProductData(form);
         fireStandardEvent('InitiateCheckout', {
-          value: pPrice, currency: 'BDT',
-          content_name: pName, content_ids: pCode ? [pCode] : [],
-          content_type: 'product', num_items: 1
+          value: pd.total, currency: 'BDT',
+          content_name: pd.name, content_ids: pd.code ? [pd.code] : [],
+          content_type: 'product', num_items: pd.qty
         });
       });
     }, true);
@@ -412,11 +425,15 @@ ttq.page();
         }
         fireOnce('auto_lead', function() {
           var form = e.target.closest('[data-checkout-form], form, #checkoutForm, #orderForm, .checkout-form, .order-form');
-          var pName = form ? (form.getAttribute('data-product-name') || document.title) : document.title;
-          var pPrice = form ? parseFloat(form.getAttribute('data-unit-price') || '0') : 0;
-          fireStandardEvent('Lead', {
-            value: pPrice, currency: 'BDT', content_name: pName
-          });
+          if (form) {
+            var pd = getCurrentProductData(form);
+            fireStandardEvent('Lead', {
+              value: pd.total, currency: 'BDT', content_name: pd.name,
+              content_ids: pd.code ? [pd.code] : [], num_items: pd.qty
+            });
+          } else {
+            fireStandardEvent('Lead', { value: 0, currency: 'BDT', content_name: document.title });
+          }
         });
       }
     }, true);
@@ -428,10 +445,14 @@ ttq.page();
       if (!isAddress || !(e.target.value || '').trim()) return;
       fireOnce('auto_addpaymentinfo', function() {
         var form = e.target.closest('[data-checkout-form], form, #checkoutForm, #orderForm, .checkout-form, .order-form');
-        var pPrice = form ? parseFloat(form.getAttribute('data-unit-price') || '0') : 0;
-        fireStandardEvent('AddPaymentInfo', {
-          value: pPrice, currency: 'BDT'
-        });
+        if (form) {
+          var pd = getCurrentProductData(form);
+          fireStandardEvent('AddPaymentInfo', {
+            value: pd.total, currency: 'BDT', content_name: pd.name, num_items: pd.qty
+          });
+        } else {
+          fireStandardEvent('AddPaymentInfo', { value: 0, currency: 'BDT' });
+        }
       });
     }, true);
 
