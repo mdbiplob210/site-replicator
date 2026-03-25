@@ -1356,7 +1356,7 @@ if (!window._LP_VID) { window._LP_VID = 'v_' + Math.random().toString(36).substr
 </script>
 `;
 
-    // Heartbeat script for live visitor tracking
+    // Heartbeat script for live visitor tracking — DEFERRED to not block render
     const heartbeatScript = `
 <script>
 (function(){
@@ -1379,7 +1379,8 @@ if (!window._LP_VID) { window._LP_VID = 'v_' + Math.random().toString(36).substr
       });
     } catch(e) {}
   }
-  sendHB();
+  // Defer first heartbeat by 10s to not block initial render
+  setTimeout(sendHB, 10000);
   setInterval(sendHB, 30000);
 })();
 </script>
