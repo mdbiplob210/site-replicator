@@ -1343,6 +1343,8 @@ const AdminOrders = () => {
       return;
     }
     
+    const total = selectedOrderIds.size;
+    if (total === 0) return;
     if (!confirm(`${total}টি অর্ডার কুরিয়ারে সাবমিট করবেন? স্ট্যাটাস "In Courier" হয়ে যাবে।`)) {
       setBulkCourierId("");
       return;
