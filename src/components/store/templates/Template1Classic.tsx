@@ -72,17 +72,48 @@ const Template1Classic = () => {
     return filtered;
   }, [products, selectedCategory, searchQuery]);
 
-  const getDiscount = (original: number, selling: number) => {
+  // Progressive loading: show limited products initially, load more on scroll
+  const [visibleCount, setVisibleCount] = useState(INITIAL_MOBILE_COUNT);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  // Reset visible count when filters change
+  useEffect(() => {
+    setVisibleCount(INITIAL_MOBILE_COUNT);
+  }, [selectedCategory, searchQuery]);
+
+  // IntersectionObserver to auto-load more products when scrolling near bottom
+  useEffect(() => {
+    const el = loadMoreRef.current;
+    if (!el || visibleCount >= filteredProducts.length) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisibleCount(prev => Math.min(prev + LOAD_MORE_COUNT, filteredProducts.length));
+        }
+      },
+      { rootMargin: "400px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [visibleCount, filteredProducts.length]);
+
+  const visibleProducts = useMemo(
+    () => filteredProducts.slice(0, visibleCount),
+    [filteredProducts, visibleCount]
+  );
+
+  const getDiscount = useCallback((original: number, selling: number) => {
     if (original <= selling) return 0;
     return Math.round(((original - selling) / original) * 100);
-  };
+  }, []);
 
-  const getDisplayImage = (product: any): string | null => {
+  const getDisplayImage = useCallback((product: any): string | null => {
     const candidates = [product?.main_image_url, ...(product?.additional_images || [])];
     return candidates.find((url: unknown): url is string => (
       typeof url === "string" && /^(https?:\/\/|\/|data:)/i.test(url.trim())
     )) || null;
-  };
+  }, []);
 
   const handleOrder = (product: any) => {
     trackAddToCart({
