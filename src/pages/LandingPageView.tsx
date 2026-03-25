@@ -19,8 +19,7 @@ export default function LandingPageView() {
   const buildFullHtml = () => {
     if (!page) return '<!DOCTYPE html><html><body></body></html>';
     let trackingScripts = "";
-
-    // Helper script for rich tracking data (PixelYourSite style)
+    let deferredPixelScripts = ""; // TikTok, GTM — not needed for FCP
     const richTrackingHelper = `
 <script>
 // PixelYourSite-style rich tracking helper
