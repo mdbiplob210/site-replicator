@@ -6,6 +6,8 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+const ACTIVE_INCOMPLETE_STATUSES = ["processing", "confirmed", "hold"] as const;
+
 function sanitizeText(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
 }
@@ -38,6 +40,7 @@ async function findExistingPartial(
         .from("incomplete_orders")
         .select("*")
         .eq("block_reason", "abandoned_form")
+        .in("status", [...ACTIVE_INCOMPLETE_STATUSES])
         .ilike("notes", `%${visitorTag}%`)
         .order("updated_at", { ascending: false })
         .limit(1),
@@ -56,6 +59,7 @@ async function findExistingPartial(
         .from("incomplete_orders")
         .select("*")
         .eq("block_reason", "abandoned_form")
+        .in("status", [...ACTIVE_INCOMPLETE_STATUSES])
         .eq("client_ip", clientIp)
         .order("updated_at", { ascending: false })
         .limit(1),
@@ -88,7 +92,8 @@ async function cleanupDuplicatePartials(
     supabase
       .from("incomplete_orders")
       .select("id, updated_at, created_at")
-      .eq("block_reason", "abandoned_form"),
+      .eq("block_reason", "abandoned_form")
+      .in("status", [...ACTIVE_INCOMPLETE_STATUSES])
   );
 
   if (visitorId) {
