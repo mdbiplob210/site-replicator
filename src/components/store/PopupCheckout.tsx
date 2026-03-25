@@ -373,7 +373,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
       setCompletedOrderNumber(orderNumber);
 
       trackPurchase({
-        value: total,
+        value: subtotal,
         orderId: orderNumber,
         contentName: currentItem.name,
         contentId: currentItem.productCode || currentItem.productId,
