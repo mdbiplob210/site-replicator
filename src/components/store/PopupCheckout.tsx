@@ -321,7 +321,7 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
     }
     setSubmitting(true);
     orderSubmitted.current = true;
-    trackAddPaymentInfo({ value: currentItem.price * qty });
+    trackAddPaymentInfo({ value: subtotal });
 
     try {
       const orderId = crypto.randomUUID();
