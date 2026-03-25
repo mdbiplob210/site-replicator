@@ -868,9 +868,11 @@ ttq.page();
   }
 
   function readValue(root, selectors) {
-    var nodes = queryNodes(root, selectors);
-    for (var i = 0; i < nodes.length; i++) {
-      for (var j = 0; j < selectors.length; j++) {
+    // IMPORTANT: iterate selectors first, then find nodes per-selector
+    // This prevents a node matched by [data-product-name] being read with [name="product_name"] selector
+    for (var j = 0; j < selectors.length; j++) {
+      var nodes = queryNodes(root, [selectors[j]]);
+      for (var i = 0; i < nodes.length; i++) {
         var value = readNodeValue(nodes[i], selectors[j]);
         if (value) return value;
       }
