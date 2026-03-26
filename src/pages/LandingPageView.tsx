@@ -1072,17 +1072,147 @@ ttq.page();
     return /^\d{11,15}$/.test(cleaned);
   }
 
+  function toAsciiDigits(value) {
+    var map = {'০':'0','১':'1','২':'2','৩':'3','৪':'4','৫':'5','৬':'6','৭':'7','৮':'8','৯':'9'};
+    var input = String(value || '');
+    var output = '';
+    for (var i = 0; i < input.length; i++) output += map[input.charAt(i)] || input.charAt(i);
+    return output;
+  }
+
+  function sanitizePhone(value) {
+    var input = toAsciiDigits(value);
+    var result = '';
+    for (var i = 0; i < input.length; i++) {
+      var ch = input.charAt(i);
+      if (/[0-9]/.test(ch)) result += ch;
+      else if (ch === '+' && result.length === 0) result += ch;
+    }
+    return result;
+  }
+
+  function getFieldCandidates(form) {
+    if (!form || !form.querySelectorAll) return [];
+    var nodes = form.querySelectorAll('input, textarea, select');
+    var fields = [];
+    for (var i = 0; i < nodes.length; i++) {
+      var el = nodes[i];
+      var type = (el.getAttribute('type') || '').toLowerCase();
+      if (el.disabled) continue;
+      if (type === 'hidden' || type === 'radio' || type === 'checkbox' || type === 'submit' || type === 'button') continue;
+      fields.push(el);
+    }
+    return fields;
+  }
+
+  function getFieldHint(el) {
+    if (!el || !el.getAttribute) return '';
+    var parts = [
+      el.name || '',
+      el.id || '',
+      el.placeholder || '',
+      el.getAttribute('autocomplete') || '',
+      el.getAttribute('aria-label') || '',
+      el.getAttribute('data-label') || '',
+      el.getAttribute('data-name') || '',
+      el.getAttribute('type') || '',
+      el.getAttribute('inputmode') || ''
+    ];
+    var prev = el.previousElementSibling;
+    if (prev) parts.push((prev.textContent || '').trim());
+    var parent = el.parentElement;
+    if (parent) parts.push((parent.textContent || '').trim().substring(0, 160));
+    return parts.join(' ').toLowerCase();
+  }
+
+  function pickField(form, kind) {
+    var fields = getFieldCandidates(form);
+    if (!fields.length) return null;
+
+    var best = null;
+    var bestScore = -999;
+
+    for (var i = 0; i < fields.length; i++) {
+      var field = fields[i];
+      var hint = getFieldHint(field);
+      var type = (field.getAttribute('type') || '').toLowerCase();
+      var inputmode = (field.getAttribute('inputmode') || '').toLowerCase();
+      var autocomplete = (field.getAttribute('autocomplete') || '').toLowerCase();
+      var tag = (field.tagName || '').toUpperCase();
+      var score = 0;
+
+      if (kind === 'phone') {
+        if (/customer_phone|phone|mobile|customer_mobile|contact_number|whatsapp|tel|মোবাইল|ফোন/.test(hint)) score += 40;
+        if (/01x|01\d|\+880|880/.test(hint)) score += 20;
+        if (type === 'tel') score += 18;
+        if (inputmode === 'tel') score += 18;
+        if (autocomplete === 'tel') score += 14;
+        if (sanitizePhone(field.value || field.placeholder || '').length >= 10) score += 10;
+        if (field.maxLength && Number(field.maxLength) >= 10 && Number(field.maxLength) <= 15) score += 6;
+        if (tag === 'INPUT') score += 2;
+        if (i === 1) score += 3;
+      }
+
+      if (kind === 'name') {
+        if (tag === 'TEXTAREA') score -= 40;
+        if (/customer_name|full_name|\bname\b|আপনার নাম|পুরো নাম|নাম/.test(hint)) score += 38;
+        if (/phone|mobile|মোবাইল|ফোন|address|ঠিকানা|textarea/.test(hint)) score -= 30;
+        if (i === 0) score += 4;
+      }
+
+      if (kind === 'address') {
+        if (tag === 'TEXTAREA') score += 25;
+        if (/customer_address|shipping_address|full_address|address|location|ঠিকানা|এলাকা|জেলা|বাসা|রাস্তা|road/.test(hint)) score += 40;
+        if (/phone|mobile|মোবাইল|ফোন|\bname\b|নাম/.test(hint)) score -= 24;
+        if (fields.length >= 3 && i === fields.length - 1) score += 4;
+      }
+
+      if (score > bestScore) {
+        best = field;
+        bestScore = score;
+      }
+    }
+
+    if (best && bestScore > 0) return best;
+
+    if (kind === 'phone') {
+      for (var j = 0; j < fields.length; j++) {
+        if (sanitizePhone(fields[j].placeholder || '').length >= 10) return fields[j];
+      }
+      return fields[1] || fields[0] || null;
+    }
+    if (kind === 'name') return fields[0] || null;
+    if (kind === 'address') {
+      for (var k = 0; k < fields.length; k++) {
+        if ((fields[k].tagName || '').toUpperCase() === 'TEXTAREA') return fields[k];
+      }
+      return fields[fields.length - 1] || null;
+    }
+
+    return null;
+  }
+
   function getCheckoutForm(target) {
     var form = target && target.closest ? target.closest(FORM_SELECTOR) : null;
     if (!form || !form.querySelector) return null;
-    var hasPhone = form.querySelector('input[name="customer_phone"], input[name="phone"], input[type="tel"], input[inputmode="tel"]');
-    var hasName = form.querySelector('input[name="customer_name"], input[name="name"], input[name="full_name"], input[autocomplete="name"]');
+    var hasPhone = !!pickField(form, 'phone');
+    var hasName = !!pickField(form, 'name');
     var hasAnyInputs = form.querySelectorAll('input:not([type="hidden"]), textarea').length >= 2;
     var hasProductHints = form.hasAttribute('data-product-name') || form.hasAttribute('data-product-code') || !!form.querySelector('input[name="product_name"], input[name="product_code"], input[name="unit_price"], input[name="quantity"]');
     return (hasPhone && (hasName || hasProductHints)) || (hasPhone && hasAnyInputs) ? form : null;
   }
 
   function readField(form, names, types, fallbackIndex) {
+    var detectedKind = null;
+    if (names && /phone|mobile|contact_number/.test(names.join(' '))) detectedKind = 'phone';
+    else if (names && /customer_name|full_name|name/.test(names.join(' '))) detectedKind = 'name';
+    else if (names && /address/.test(names.join(' '))) detectedKind = 'address';
+
+    if (detectedKind) {
+      var smartField = pickField(form, detectedKind);
+      if (smartField && (smartField.value || '').trim()) return (smartField.value || '').trim();
+    }
+
     // Try by name first
     for (var i = 0; i < names.length; i++) {
       var el = form.querySelector('[name="' + names[i] + '"]');
@@ -1112,13 +1242,14 @@ ttq.page();
   function submitOrder(form) {
     if (!form || form.dataset.lpSubmitLocked === '1' || _submitting) return;
 
-    var customerPhone = readField(form, ['customer_phone','phone','mobile','customer_mobile','contact_number'], ['input[type="tel"]','input[inputmode="tel"]'], null);
+    var phoneInput = pickField(form, 'phone');
+    var customerPhone = sanitizePhone(readField(form, ['customer_phone','phone','mobile','customer_mobile','contact_number'], ['input[type="tel"]','input[inputmode="tel"]'], null));
     if (!isValidPhone(customerPhone)) {
-      var phoneInput = form.querySelector('input[name="customer_phone"], input[name="phone"], input[type="tel"], input[inputmode="tel"]');
       alert('অনুগ্রহ করে সঠিক মোবাইল নম্বর দিন (কমপক্ষে ১১ সংখ্যা)');
       if (phoneInput) phoneInput.focus();
       return;
     }
+    if (phoneInput && phoneInput.value !== customerPhone) phoneInput.value = customerPhone;
 
     _submitting = true;
     form.dataset.lpSubmitLocked = '1';
@@ -1251,18 +1382,7 @@ ttq.page();
     if (!btn) return;
     var btnText = (btn.textContent || btn.value || '').trim();
     if (!/অর্ডার|order|submit|কনফার্ম|confirm/i.test(btnText)) return;
-    // Find a form container that DIRECTLY contains BOTH the button AND a phone input
-    var form = null;
-    var candidate = btn.parentElement;
-    for (var i = 0; i < 8 && candidate; i++) {
-      if (candidate === document.body || candidate === document.documentElement) break;
-      var phoneInput = candidate.querySelector ? candidate.querySelector('input[type="tel"], input[inputmode="tel"], input[name="customer_phone"], input[name="phone"]') : null;
-      if (phoneInput && candidate.contains(btn) && candidate.contains(phoneInput)) {
-        form = candidate;
-        break;
-      }
-      candidate = candidate.parentElement;
-    }
+    var form = getCheckoutForm(btn);
     if (!form) return;
     e.preventDefault();
     e.stopImmediatePropagation();
