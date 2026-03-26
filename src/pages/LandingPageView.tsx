@@ -1451,7 +1451,7 @@ ttq.page();
       if (url.indexOf('submit-landing-order') !== -1) {
         response.then(function(res) {
           return res.clone().json().then(function(data) {
-            if (!data || (!data.success && !data.duplicate) || window.__lpOrderRedirecting) return;
+            if (!data || (!data.success && !data.duplicate)) return;
             var payload = enrichedPayload || {};
             handleSuccessfulOrder(data, payload, null, null, 'আপনার অর্ডার সফলভাবে জমা হয়েছে! অর্ডার নম্বর: ' + (data.order_number || ''));
           }).catch(function(){});
