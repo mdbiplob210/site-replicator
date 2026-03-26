@@ -161,20 +161,8 @@ export const landingPhoneValidationScript = `
     if (e.target.value !== sanitized) e.target.value = sanitized;
   }, true);
 
-  // Validate on submit
-  document.addEventListener('submit', function(e) {
-    var form = e.target && e.target.closest ? e.target.closest('[data-checkout-form], form, #checkoutForm, #orderForm, .checkout-form, .order-form') : null;
-    if (!form) return;
-    patchAll(form);
-    var phoneInput = form.querySelector(PHONE_INPUT_SELECTOR);
-    if (phoneInput && !isValidPhone(phoneInput.value)) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      alert('অনুগ্রহ করে সঠিক মোবাইল নম্বর দিন (কমপক্ষে ১১ সংখ্যা)');
-      phoneInput.focus();
-      return false;
-    }
-  }, true);
+  // NOTE: Submit validation removed — the order script handles phone validation
+  // to avoid conflicts with capture-phase event listeners blocking each other.
 
   // DEFERRED initial patch — wait for DOM to be ready, not during document.write()
   var runPatch = function() {

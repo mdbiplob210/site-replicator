@@ -1258,6 +1258,9 @@ ttq.page();
       if (/[0-9]/.test(ch)) result += ch;
       else if (ch === '+' && result.length === 0) result += ch;
     }
+    // Normalize: if 10 digits starting with 1, prepend 0
+    var digitsOnly = result.replace(/^\+/, '');
+    if (/^[1-9]\d{9}$/.test(digitsOnly)) result = '0' + digitsOnly;
     return result;
   }
 
