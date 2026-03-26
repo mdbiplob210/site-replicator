@@ -4,13 +4,6 @@ import { CheckCircle2, ArrowLeft, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLandingPageBySlug } from "@/hooks/useLandingPages";
 
-declare global {
-  interface Window {
-    fbq?: (...args: any[]) => void;
-    _fbq?: unknown;
-  }
-}
-
 function getCookie(name: string) {
   const match = document.cookie.match(new RegExp(`(^|; )${name}=([^;]*)`));
   return match ? decodeURIComponent(match[2]) : "";
@@ -26,8 +19,10 @@ function getFbc() {
 
 function ensureFacebookPixel(pixelId: string) {
   return new Promise<void>((resolve) => {
-    if (typeof window.fbq === "function") {
-      window.fbq("init", pixelId);
+    const win = window as any;
+
+    if (typeof win.fbq === "function") {
+      win.fbq("init", pixelId);
       resolve();
       return;
     }
@@ -35,7 +30,7 @@ function ensureFacebookPixel(pixelId: string) {
     const existing = document.querySelector<HTMLScriptElement>('script[data-lp-fb-pixel="true"]');
     if (existing) {
       existing.addEventListener("load", () => {
-        if (typeof window.fbq === "function") window.fbq("init", pixelId);
+        if (typeof (window as any).fbq === "function") (window as any).fbq("init", pixelId);
         resolve();
       }, { once: true });
       return;
@@ -60,7 +55,7 @@ function ensureFacebookPixel(pixelId: string) {
       t.src = v;
       t.dataset.lpFbPixel = "true";
       t.onload = () => {
-        if (typeof window.fbq === "function") window.fbq("init", pixelId);
+        if (typeof (window as any).fbq === "function") (window as any).fbq("init", pixelId);
         resolve();
       };
       s = b.getElementsByTagName(e)[0];
@@ -125,7 +120,8 @@ export default function LandingOrderSuccess() {
 
     ensureFacebookPixel(page.fb_pixel_id)
       .then(() => {
-        window.fbq?.("track", "Purchase", payload, { eventID: eventId });
+        const fbq = (window as any).fbq;
+        if (typeof fbq === "function") fbq("track", "Purchase", payload, { eventID: eventId });
       })
       .catch(() => undefined);
 
