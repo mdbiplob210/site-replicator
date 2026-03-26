@@ -324,7 +324,7 @@ const CheckoutPage = () => {
 
       sessionStorage.removeItem("checkout_item");
       toast.success("Order placed successfully! 🎉");
-      navigate("/order-success");
+      navigate(`/order-success?order=${orderNumber}`);
     } catch (err: any) {
       orderSubmitted.current = false;
       toast.error(err.message);
