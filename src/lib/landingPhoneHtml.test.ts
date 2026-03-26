@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizeLandingPhoneHtml } from "@/lib/landingPhoneHtml";
+import { landingPhoneValidationScript, normalizeLandingPhoneHtml } from "@/lib/landingPhoneHtml";
 
 describe("normalizeLandingPhoneHtml", () => {
   it("forces phone inputs to allow up to 15 digits", () => {
@@ -27,5 +27,9 @@ describe("normalizeLandingPhoneHtml", () => {
 
     expect(normalized).toContain('type="tel"');
     expect(normalized).toContain('maxlength="15"');
+  });
+
+  it("uses a document.write-safe country code regex in the runtime validator", () => {
+    expect(landingPhoneValidationScript).toContain("replace(/^[+]?880/, '0')");
   });
 });
