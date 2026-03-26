@@ -199,7 +199,10 @@ Deno.serve(async (req) => {
       if (custom_data.num_items != null && custom_data.num_items !== "") cd.num_items = Number(custom_data.num_items);
       if (custom_data.order_id) cd.order_id = custom_data.order_id;
       if (custom_data.predicted_ltv != null) cd.predicted_ltv = Number(custom_data.predicted_ltv);
-      if (custom_data.delivery_category) cd.delivery_category = custom_data.delivery_category;
+      // FB only accepts: in_store, home_delivery, curbside
+      if (custom_data.delivery_category && ["in_store", "home_delivery", "curbside"].includes(custom_data.delivery_category)) {
+        cd.delivery_category = custom_data.delivery_category;
+      }
 
       const customProps: Record<string, any> = {};
       for (const key of Object.keys(custom_data)) {

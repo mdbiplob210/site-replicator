@@ -1288,7 +1288,7 @@ ttq.page();
       else if (/নারায়ণগঞ্জ|narayanganj/i.test(addr)) detCity = 'narayanganj';
 
       var isInsideDhaka = /ঢাকা|dhaka|mirpur|মিরপুর|uttara|উত্তরা|dhanmondi|ধানমণ্ডি|gulshan|গুলশান|mohammadpur|মোহাম্মদপুর/i.test(addr);
-      var deliveryArea = isInsideDhaka ? 'inside_dhaka' : 'outside_dhaka';
+      var deliveryArea = 'home_delivery';
 
       window._lpTrack.sendServerEvent('Purchase', {
         event_id: eventId,
