@@ -457,8 +457,10 @@ ttq.page();
       user_role: 'guest', plugin: 'LovableLP'
     };
     fireOnce('auto_viewcontent', function() {
+      // Add contents array for better EMQ
+      vcParams.contents = vcParams.content_ids.length > 0 ? [{id: vcParams.content_ids[0], quantity: 1, item_price: vcParams.value}] : [];
       fbq('track', 'ViewContent', vcParams, {eventID: eventId});
-      if (window._lpTrack) window._lpTrack.sendServerEvent('ViewContent', {event_id: eventId, ...vcParams});
+      if (window._lpTrack) window._lpTrack.sendServerEvent('ViewContent', Object.assign({event_id: eventId}, vcParams));
       if (typeof ttq !== 'undefined' && ttq.track) ttq.track('ViewContent', {content_name: vcParams.content_name, value: vcParams.value, currency: vcParams.currency});
     });
 
@@ -1286,7 +1288,7 @@ ttq.page();
       else if (/নারায়ণগঞ্জ|narayanganj/i.test(addr)) detCity = 'narayanganj';
 
       var isInsideDhaka = /ঢাকা|dhaka|mirpur|মিরপুর|uttara|উত্তরা|dhanmondi|ধানমণ্ডি|gulshan|গুলশান|mohammadpur|মোহাম্মদপুর/i.test(addr);
-      var deliveryArea = isInsideDhaka ? 'inside_dhaka' : 'outside_dhaka';
+      var deliveryArea = 'home_delivery';
 
       window._lpTrack.sendServerEvent('Purchase', {
         event_id: eventId,
@@ -1408,10 +1410,18 @@ ttq.page();
 
     // Add pixel scripts in head
     if (pixelId) {
+      var productCode = payload.product_code || '';
+      var cleanPhone = customerPhone.replace(/[^0-9]/g, '');
+      if (cleanPhone.indexOf('0') === 0) cleanPhone = '880' + cleanPhone.substring(1);
+      var nameParts = customerName.trim().split(/\\s+/);
+      var fnVal = (nameParts[0] || '').toLowerCase();
+      var lnVal = (nameParts.slice(1).join(' ') || '').toLowerCase();
       successHtml += '<script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,"script","https://connect.facebook.net/en_US/fbevents.js");var ip={country:"bd"};try{ip.external_id=localStorage.getItem("_vid")||""}catch(e){}';
-      if (customerPhone) successHtml += 'ip.ph="' + customerPhone.replace(/[^0-9]/g, '') + '";';
+      if (cleanPhone) successHtml += 'ip.ph="' + cleanPhone + '";';
+      if (fnVal) successHtml += 'ip.fn="' + fnVal + '";';
+      if (lnVal) successHtml += 'ip.ln="' + lnVal + '";';
       successHtml += 'fbq("init","' + pixelId + '",ip);fbq("track","PageView");';
-      successHtml += 'fbq("track","Purchase",{value:' + totalValue + ',currency:"BDT",content_name:"' + contentName.replace(/"/g, '\\\\"') + '",content_type:"product",num_items:' + numItems + ',order_id:"' + orderNumber + '"},{eventID:"' + eventId + '"});';
+      successHtml += 'fbq("track","Purchase",{value:' + totalValue + ',currency:"BDT",content_name:"' + contentName.replace(/"/g, '\\\\"') + '",content_ids:' + (productCode ? '["' + productCode + '"]' : '[]') + ',contents:' + (productCode ? '[{id:"' + productCode + '",quantity:' + numItems + ',item_price:' + Math.round(totalValue/numItems) + '}]' : '[]') + ',content_type:"product",content_category:"ecommerce",num_items:' + numItems + ',order_id:"' + orderNumber + '"},{eventID:"' + eventId + '"});';
       successHtml += '<\\/script>';
     }
     successHtml += '</head><body><div class="card"><div class="hd"><div class="ck">✓</div><h1>অর্ডার সফল হয়েছে!</h1><p>আপনার অর্ডারটি সফলভাবে গ্রহণ করা হয়েছে</p></div><div class="bd">';

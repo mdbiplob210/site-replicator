@@ -189,15 +189,20 @@ Deno.serve(async (req) => {
     // Custom data
     if (Object.keys(custom_data).length > 0) {
       const cd: Record<string, any> = {};
-      if (custom_data.value) cd.value = custom_data.value;
+      if (custom_data.value != null && custom_data.value !== "") cd.value = Number(custom_data.value);
       if (custom_data.currency) cd.currency = custom_data.currency;
       if (custom_data.content_name) cd.content_name = custom_data.content_name;
       if (custom_data.content_ids && custom_data.content_ids.length > 0) cd.content_ids = custom_data.content_ids;
       if (custom_data.contents && custom_data.contents.length > 0) cd.contents = custom_data.contents;
       if (custom_data.content_type) cd.content_type = custom_data.content_type;
       if (custom_data.content_category) cd.content_category = custom_data.content_category;
-      if (custom_data.num_items) cd.num_items = custom_data.num_items;
+      if (custom_data.num_items != null && custom_data.num_items !== "") cd.num_items = Number(custom_data.num_items);
       if (custom_data.order_id) cd.order_id = custom_data.order_id;
+      if (custom_data.predicted_ltv != null) cd.predicted_ltv = Number(custom_data.predicted_ltv);
+      // FB only accepts: in_store, home_delivery, curbside
+      if (custom_data.delivery_category && ["in_store", "home_delivery", "curbside"].includes(custom_data.delivery_category)) {
+        cd.delivery_category = custom_data.delivery_category;
+      }
 
       const customProps: Record<string, any> = {};
       for (const key of Object.keys(custom_data)) {
@@ -214,7 +219,7 @@ Deno.serve(async (req) => {
 
     // Send to Facebook Conversions API
     const fbResponse = await fetch(
-      `https://graph.facebook.com/v21.0/${resolvedPixelId}/events`,
+      `https://graph.facebook.com/v22.0/${resolvedPixelId}/events`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

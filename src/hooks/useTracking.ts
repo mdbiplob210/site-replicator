@@ -566,8 +566,9 @@ export function useTracking() {
         customData: {
           content_name: product.name,
           content_ids: [contentId],
+          contents: [{ id: contentId, quantity: 1, item_price: product.price }],
           content_type: "product",
-          content_category: product.category || "",
+          content_category: product.category || "ecommerce",
           value: product.price,
           currency: "BDT",
         },
