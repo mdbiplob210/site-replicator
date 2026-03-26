@@ -1432,9 +1432,10 @@ ttq.page();
       if (data.success || data.duplicate) {
         if (window._removePartial) window._removePartial();
         var eventId = payload.event_id || purchaseEventId;
+        var totalValue = (payload.unit_price || 0) * (payload.quantity || 1);
 
         // Purchase event will fire on the success page — no pre-redirect firing
-        console.log('[LP-DEBUG] Order success, redirecting to success page', { eventId: eventId, order: data.order_number });
+        console.log('[LP-DEBUG] Order success, redirecting to success page', { eventId: eventId, order: data.order_number, totalValue: totalValue });
 
         var msg = form.getAttribute('data-success-message') || 'আপনার অর্ডার সফলভাবে জমা হয়েছে! অর্ডার নম্বর: ' + data.order_number;
         var successUrl = buildSuccessUrl(data, payload, form, msg);
