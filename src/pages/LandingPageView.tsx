@@ -131,7 +131,7 @@ window._lpTrack = {
       trackingScripts += `
 <!-- Facebook Pixel with Advanced Matching (async, non-blocking) -->
 <script>
-!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;t.onload=function(){window.__lpFbSdkLoaded=!0;if(typeof window.__lpFlushPendingBrowserPurchases==='function'){setTimeout(window.__lpFlushPendingBrowserPurchases,0)}};t.onerror=function(){console.warn('[FB Pixel] SDK failed to load')};s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
 var _extId;
 try { _extId = localStorage.getItem('_vid'); } catch(e) {}
 if (!_extId) { _extId = 'v_' + Date.now() + '_' + Math.random().toString(36).substr(2,12); try { localStorage.setItem('_vid', _extId); } catch(e) {} }
@@ -139,58 +139,90 @@ if (!_extId) { _extId = 'v_' + Date.now() + '_' + Math.random().toString(36).sub
  fbq('init','${page.fb_pixel_id}', { external_id: _extId, country: 'bd' });
  
  window._fbPixelId = '${page.fb_pixel_id}';
+ window.__lpPersistPendingBrowserPurchases = function(queue) {
+    try { sessionStorage.setItem('_lp_pending_fb_purchases', JSON.stringify(queue || [])); } catch (e) {}
+  };
+  window.__lpLoadPendingBrowserPurchases = function() {
+    try {
+      var raw = sessionStorage.getItem('_lp_pending_fb_purchases');
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      return [];
+    }
+  };
+  window.__lpPendingBrowserPurchases = window.__lpPendingBrowserPurchases || window.__lpLoadPendingBrowserPurchases();
+  window.__lpFiredBrowserPurchases = window.__lpFiredBrowserPurchases || {};
+  window.__lpHasBrowserPurchaseFired = function(eventId) {
+    if (!eventId) return false;
+    if (window.__lpFiredBrowserPurchases[eventId]) return true;
+    try { return sessionStorage.getItem('_lp_fired_fb_purchase:' + eventId) === '1'; } catch (e) { return false; }
+  };
+  window.__lpMarkBrowserPurchaseFired = function(eventId) {
+    if (!eventId) return;
+    window.__lpFiredBrowserPurchases[eventId] = true;
+    try { sessionStorage.setItem('_lp_fired_fb_purchase:' + eventId, '1'); } catch (e) {}
+  };
+  window.__lpQueueBrowserPurchase = function(params, options) {
+    var queue = window.__lpPendingBrowserPurchases || [];
+    var eventId = options && options.eventID ? String(options.eventID) : '';
+    if (eventId && window.__lpHasBrowserPurchaseFired(eventId)) return true;
+    for (var i = 0; i < queue.length; i++) {
+      var queued = queue[i];
+      if (queued && queued.options && String(queued.options.eventID || '') === eventId) return true;
+    }
+    queue.push({ params: params || {}, options: options || {} });
+    window.__lpPendingBrowserPurchases = queue;
+    window.__lpPersistPendingBrowserPurchases(queue);
+    return true;
+  };
+  window.__lpFlushPendingBrowserPurchases = function() {
+    var ref = window.fbq || window._fbq || window.__lpFbqRef;
+    var ready = !!(ref && typeof ref === 'function' && typeof ref.callMethod === 'function');
+    if (!ready) return false;
+    window.__lpFbqRef = ref;
+    var queue = window.__lpPendingBrowserPurchases || [];
+    if (!queue.length) return true;
+    var remaining = [];
+    for (var i = 0; i < queue.length; i++) {
+      var item = queue[i];
+      if (!item) continue;
+      var eventId = item.options && item.options.eventID ? String(item.options.eventID) : '';
+      if (eventId && window.__lpHasBrowserPurchaseFired(eventId)) continue;
+      try {
+        ref('track', 'Purchase', item.params || {}, item.options || {});
+        if (eventId) window.__lpMarkBrowserPurchaseFired(eventId);
+        console.log('[FB Pixel] Purchase event fired via flushed queue', item.params || {}, item.options || {});
+      } catch (err) {
+        remaining.push(item);
+      }
+    }
+    window.__lpPendingBrowserPurchases = remaining;
+    window.__lpPersistPendingBrowserPurchases(remaining);
+    return remaining.length === 0;
+  };
  window.__lpFbqRef = fbq;
  window.__lpIsFbPixelReady = function() {
     var ref = window.fbq || window._fbq || window.__lpFbqRef;
     return !!(ref && typeof ref === 'function' && typeof ref.callMethod === 'function');
   };
-  window.__lpTrackBrowserPurchase = function(params, options, attempt) {
-    var tries = attempt || 0;
-    var ref = window.fbq || window._fbq || window.__lpFbqRef;
-    var ready = !!(ref && typeof ref === 'function' && typeof ref.callMethod === 'function');
-    if (!ready) {
-      if (tries < 20) {
-        setTimeout(function() {
-          window.__lpTrackBrowserPurchase(params, options, tries + 1);
-        }, 300);
-        return false;
-      }
-      try {
-        var qp = new URLSearchParams();
-        qp.set('id', window._fbPixelId || '${page.fb_pixel_id}');
-        qp.set('ev', 'Purchase');
-        qp.set('dl', window.location.href);
-        qp.set('rl', document.referrer || '');
-        qp.set('if', 'false');
-        qp.set('ts', String(Date.now()));
-        if (params && params.value != null) qp.set('cd[value]', String(params.value));
-        if (params && params.currency) qp.set('cd[currency]', String(params.currency));
-        if (params && params.content_name) qp.set('cd[content_name]', String(params.content_name));
-        if (params && params.content_type) qp.set('cd[content_type]', String(params.content_type));
-        if (params && params.order_id) qp.set('cd[order_id]', String(params.order_id));
-        if (options && options.eventID) qp.set('eid', String(options.eventID));
-        (new Image()).src = 'https://www.facebook.com/tr/?' + qp.toString();
-        console.warn('[FB Pixel] Purchase fallback beacon sent after SDK wait timeout');
-        return true;
-      } catch (beaconErr) {
-        console.warn('[FB Pixel] Purchase fallback beacon failed', beaconErr && beaconErr.message ? beaconErr.message : beaconErr);
-        return false;
-      }
+  window.__lpTrackBrowserPurchase = function(params, options) {
+    var eventId = options && options.eventID ? String(options.eventID) : '';
+    if (eventId && window.__lpHasBrowserPurchaseFired(eventId)) return true;
+    window.__lpQueueBrowserPurchase(params, options);
+    if (window.__lpFlushPendingBrowserPurchases()) return true;
+    if (!window.__lpBrowserPurchaseRetryTimer) {
+      var attempts = 0;
+      window.__lpBrowserPurchaseRetryTimer = setInterval(function() {
+        attempts += 1;
+        var drained = window.__lpFlushPendingBrowserPurchases();
+        if (drained || attempts >= 40) {
+          clearInterval(window.__lpBrowserPurchaseRetryTimer);
+          window.__lpBrowserPurchaseRetryTimer = null;
+          if (!drained) console.warn('[FB Pixel] Purchase still queued because SDK is not ready yet');
+        }
+      }, 250);
     }
-    window.__lpFbqRef = ref;
-    try {
-      ref('track', 'Purchase', params || {}, options || {});
-      console.log('[FB Pixel] Purchase event fired via ready SDK track()', params, options);
-      return true;
-    } catch (err) {
-      console.warn('[FB Pixel Purchase] Retry scheduled', err && err.message ? err.message : err);
-      if (tries < 8) {
-        setTimeout(function() {
-          window.__lpTrackBrowserPurchase(params, options, tries + 1);
-        }, 300);
-      }
-      return false;
-    }
+    return true;
   };
 window._updateFBAdvancedMatching = function(data) {
   if (!data || !window._fbPixelId) return;
