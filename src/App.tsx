@@ -12,7 +12,7 @@ import { useDynamicMeta } from "@/hooks/useDynamicMeta";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import LandingPageView from "./pages/LandingPageView";
 import LandingPageCheckout from "./pages/LandingPageCheckout";
-// LandingOrderSuccess removed — Purchase fires in-page popup now
+import LandingOrderSuccess from "./pages/LandingOrderSuccess";
 
 const DynamicMetaProvider = () => { useDynamicMeta(); return null; };
 
@@ -183,7 +183,7 @@ const App = () => {
             <Route path="/admin/plan" element={P("Plan", "Subscription management", ["manage_settings"])} />
             <Route path="/lp/:slug" element={<LandingPageView />} />
             <Route path="/lp/:slug/checkout" element={<LandingPageCheckout />} />
-            {/* Success page removed — Purchase fires in-page popup */}
+            <Route path="/lp/:slug/success" element={<LandingOrderSuccess />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
