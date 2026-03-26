@@ -1157,6 +1157,20 @@ ttq.page();
           if (typeof dataLayer !== 'undefined') {
             dataLayer.push({ event:'conversion_Purchase', value: totalValue, currency:'BDT', content_name: payload.product_name, order_id: data.order_number, num_items: payload.quantity });
           }
+
+          // Server-side Purchase via Conversions API (redundancy with backend)
+          if (window._lpTrack && window._lpTrack.sendServerEvent) {
+            window._lpTrack.sendServerEvent('Purchase', {
+              event_id: eventId,
+              value: totalValue,
+              currency: 'BDT',
+              content_name: payload.product_name,
+              content_ids: payload.product_code ? [payload.product_code] : [],
+              content_type: 'product',
+              num_items: payload.quantity,
+              order_id: data.order_number
+            }, { phone: payload.customer_phone, name: payload.customer_name, order_id: data.order_id || data.order_number });
+          }
         }
 
         var successUrl = form.getAttribute('data-success-url');
@@ -1186,6 +1200,20 @@ ttq.page();
     e.preventDefault();
     e.stopImmediatePropagation();
     submitOrder(form);
+  }, true);
+
+  // Catch clicks on non-submit buttons inside checkout forms (e.g. type="button")
+  document.addEventListener('click', function(e) {
+    if (_submitting) return;
+    var btn = e.target && e.target.closest ? e.target.closest('button') : null;
+    if (!btn || btn.type === 'submit') return;
+    var form = btn.closest ? btn.closest(FORM_SELECTOR) : null;
+    if (!form) return;
+    if (/অর্ডার|order|submit|কনফার্ম|confirm/i.test(btn.textContent || '')) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      submitOrder(form);
+    }
   }, true);
 })();
 </script>`;
