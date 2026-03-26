@@ -3723,12 +3723,19 @@ const AdminOrders = () => {
                         }}>
                           <FileText className="h-3 w-3" />
                         </button>
-                        {/* Delete / Restore */}
+                        {/* Delete / Restore / Permanent Delete */}
                         {canDeleteOrders && (
                         isDeletedTab ? (
-                          <button className="h-6 w-6 rounded-md flex items-center justify-center hover:bg-emerald-500/10 transition-colors text-muted-foreground hover:text-emerald-600" title="Restore" onClick={() => { if (confirm("অর্ডারটি পুনরুদ্ধার করবেন?")) restoreOrder.mutate(order.id); }}>
-                            <RotateCcw className="h-3 w-3" />
-                          </button>
+                          <div className="flex gap-0.5">
+                            <button className="h-6 w-6 rounded-md flex items-center justify-center hover:bg-emerald-500/10 transition-colors text-muted-foreground hover:text-emerald-600" title="Restore" onClick={() => { if (confirm("অর্ডারটি পুনরুদ্ধার করবেন?")) restoreOrder.mutate(order.id); }}>
+                              <RotateCcw className="h-3 w-3" />
+                            </button>
+                            {isSuperAdmin && (
+                              <button className="h-6 w-6 rounded-md flex items-center justify-center hover:bg-red-600/10 transition-colors text-muted-foreground hover:text-red-600" title="স্থায়ী ডিলিট (Database থেকে)" onClick={() => { if (confirm("⚠️ এই অর্ডারটি স্থায়ীভাবে ডাটাবেস থেকে মুছে ফেলা হবে। এটি আর ফেরত আনা যাবে না!\n\nনিশ্চিত?")) hardDeleteOrder.mutate(order.id); }}>
+                                <Trash className="h-3 w-3" />
+                              </button>
+                            )}
+                          </div>
                         ) : (
                           <button className="h-6 w-6 rounded-md flex items-center justify-center hover:bg-destructive/10 transition-colors text-muted-foreground hover:text-destructive" title="Delete" onClick={() => { if (confirm("অর্ডারটি ডিলিট করবেন?")) deleteOrder.mutate(order.id); }}>
                             <Trash2 className="h-3 w-3" />
