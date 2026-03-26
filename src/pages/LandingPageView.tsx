@@ -95,6 +95,23 @@ window._lpTrack = {
     // Merge stored + provided user data
     var ud = Object.assign({}, this.getUserData(), userData || {});
     
+    // Auto-detect city from address for better EMQ
+    var detectedCity = ud.city || '';
+    if (!detectedCity && ud.address) {
+      var addr = (ud.address || '').toLowerCase();
+      if (/ঢাকা|dhaka/i.test(addr)) detectedCity = 'dhaka';
+      else if (/চট্টগ্রাম|chattogram|chittagong/i.test(addr)) detectedCity = 'chittagong';
+      else if (/রাজশাহী|rajshahi/i.test(addr)) detectedCity = 'rajshahi';
+      else if (/খুলনা|khulna/i.test(addr)) detectedCity = 'khulna';
+      else if (/সিলেট|sylhet/i.test(addr)) detectedCity = 'sylhet';
+      else if (/বরিশাল|barishal|barisal/i.test(addr)) detectedCity = 'barishal';
+      else if (/রংপুর|rangpur/i.test(addr)) detectedCity = 'rangpur';
+      else if (/ময়মনসিংহ|mymensingh/i.test(addr)) detectedCity = 'mymensingh';
+      else if (/কুমিল্লা|comilla|cumilla/i.test(addr)) detectedCity = 'cumilla';
+      else if (/গাজীপুর|gazipur/i.test(addr)) detectedCity = 'gazipur';
+      else if (/নারায়ণগঞ্জ|narayanganj/i.test(addr)) detectedCity = 'narayanganj';
+    }
+
     var payload = {
       pixel_id: '${page.fb_pixel_id || ''}',
       event_name: eventName,
@@ -104,7 +121,10 @@ window._lpTrack = {
       fbp: this.getFbp(),
       fbc: this.getFbc(),
       user_external_id: ud.order_id || extId,
-      custom_data: customData,
+      custom_data: Object.assign({}, customData, {
+        content_category: customData.content_category || 'ecommerce',
+        delivery_category: customData.delivery_category || ''
+      }),
       landing_page_slug: '${page.slug || ''}',
       user_country: 'bd'
     };
@@ -115,7 +135,7 @@ window._lpTrack = {
       payload.user_fn = parts[0] || '';
       payload.user_ln = parts.slice(1).join(' ') || '';
     }
-    if (ud.city) payload.user_ct = ud.city;
+    if (detectedCity) { payload.user_ct = detectedCity; payload.user_st = detectedCity; }
     if (ud.email) payload.user_email = ud.email;
     try {
       fetch(CAPI_URL, {method:'POST', headers:{'Content-Type':'application/json','apikey':ANON}, body:JSON.stringify(payload), keepalive:true, credentials:'omit'}).catch(function(){});
@@ -1250,6 +1270,22 @@ ttq.page();
 
     // Server-side CAPI fallback only if backend purchase tracking did not already succeed
     if (window._lpTrack && result && result.purchase_tracked !== true) {
+      // Extract city from address for better EMQ
+      var addr = (payload.customer_address || '').toLowerCase();
+      var detCity = '';
+      if (/ঢাকা|dhaka/i.test(addr)) detCity = 'dhaka';
+      else if (/চট্টগ্রাম|chattogram|chittagong/i.test(addr)) detCity = 'chittagong';
+      else if (/রাজশাহী|rajshahi/i.test(addr)) detCity = 'rajshahi';
+      else if (/খুলনা|khulna/i.test(addr)) detCity = 'khulna';
+      else if (/সিলেট|sylhet/i.test(addr)) detCity = 'sylhet';
+      else if (/বরিশাল|barishal|barisal/i.test(addr)) detCity = 'barishal';
+      else if (/রংপুর|rangpur/i.test(addr)) detCity = 'rangpur';
+      else if (/গাজীপুর|gazipur/i.test(addr)) detCity = 'gazipur';
+      else if (/নারায়ণগঞ্জ|narayanganj/i.test(addr)) detCity = 'narayanganj';
+
+      var isInsideDhaka = /ঢাকা|dhaka|mirpur|মিরপুর|uttara|উত্তরা|dhanmondi|ধানমণ্ডি|gulshan|গুলশান|mohammadpur|মোহাম্মদপুর/i.test(addr);
+      var deliveryArea = isInsideDhaka ? 'inside_dhaka' : 'outside_dhaka';
+
       window._lpTrack.sendServerEvent('Purchase', {
         event_id: eventId,
         value: totalValue,
@@ -1257,11 +1293,17 @@ ttq.page();
         content_name: purchaseParams.content_name,
         content_ids: purchaseParams.content_ids,
         content_type: 'product',
+        content_category: 'ecommerce',
         num_items: purchaseParams.num_items,
-        order_id: String(result.order_number || '')
+        order_id: String(result.order_number || ''),
+        delivery_category: deliveryArea,
+        predicted_ltv: totalValue,
+        status: 'completed'
       }, {
         phone: payload.customer_phone || '',
         name: payload.customer_name || '',
+        address: payload.customer_address || '',
+        city: detCity,
         order_id: String(result.order_id || result.order_number || '')
       });
     }

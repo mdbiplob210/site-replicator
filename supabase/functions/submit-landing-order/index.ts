@@ -682,6 +682,24 @@ Deno.serve(async (req) => {
             const eventTime = Math.floor(Date.now() / 1000);
             const normalizedPhone = normalizeMetaPhone(customerPhone);
             const { firstName, lastName } = splitCustomerName(customer_name);
+            // Extract city from address for better EMQ matching
+            const addressLower = (customer_address || "").toLowerCase();
+            let detectedCity = "";
+            if (/ঢাকা|dhaka/i.test(addressLower)) detectedCity = "dhaka";
+            else if (/চট্টগ্রাম|chattogram|chittagong/i.test(addressLower)) detectedCity = "chittagong";
+            else if (/রাজশাহী|rajshahi/i.test(addressLower)) detectedCity = "rajshahi";
+            else if (/খুলনা|khulna/i.test(addressLower)) detectedCity = "khulna";
+            else if (/সিলেট|sylhet/i.test(addressLower)) detectedCity = "sylhet";
+            else if (/বরিশাল|barishal|barisal/i.test(addressLower)) detectedCity = "barishal";
+            else if (/রংপুর|rangpur/i.test(addressLower)) detectedCity = "rangpur";
+            else if (/ময়মনসিংহ|mymensingh/i.test(addressLower)) detectedCity = "mymensingh";
+            else if (/কুমিল্লা|comilla|cumilla/i.test(addressLower)) detectedCity = "cumilla";
+            else if (/গাজীপুর|gazipur/i.test(addressLower)) detectedCity = "gazipur";
+            else if (/নারায়ণগঞ্জ|narayanganj/i.test(addressLower)) detectedCity = "narayanganj";
+
+            const isInsideDhaka = /ঢাকা|dhaka|mirpur|মিরপুর|uttara|উত্তরা|dhanmondi|ধানমণ্ডি|gulshan|গুলশান|mohammadpur|মোহাম্মদপুর|banani|বনানী|motijheel|মতিঝিল|farmgate|ফার্মগেট/i.test(addressLower);
+            const deliveryArea = isInsideDhaka ? "inside_dhaka" : "outside_dhaka";
+
             const capiEvent = {
               event_name: "Purchase",
               event_time: eventTime,
@@ -697,6 +715,10 @@ Deno.serve(async (req) => {
                 ph: normalizedPhone ? await hashSHA256(normalizedPhone) : undefined,
                 fn: firstName ? await hashSHA256(firstName) : undefined,
                 ln: lastName ? await hashSHA256(lastName) : undefined,
+                ct: detectedCity ? await hashSHA256(detectedCity) : undefined,
+                st: detectedCity ? await hashSHA256(detectedCity) : undefined,
+                country: await hashSHA256("bd"),
+                zp: undefined,
               },
               custom_data: {
                 value: totalProductCost,
@@ -704,8 +726,12 @@ Deno.serve(async (req) => {
                 content_name: product_name || "",
                 content_ids: product_code ? [product_code] : [],
                 content_type: "product",
+                content_category: "ecommerce",
                 num_items: quantity,
                 order_id: orderNumber,
+                delivery_category: deliveryArea,
+                predicted_ltv: totalProductCost,
+                status: "completed",
               },
             };
 

@@ -366,6 +366,7 @@ async function sendCAPIEvent(params: {
       custom_data: {
         ...customData,
         visitor_id: getVisitorId(),
+        content_category: customData.content_category || "ecommerce",
       },
     };
 
@@ -385,9 +386,12 @@ async function sendCAPIEvent(params: {
 
     if (customerEmail) body.user_email = customerEmail;
 
-    // City
+    // City — also send as state for BD (improves EMQ)
     const city = customerCity || storedUD.ct || "";
-    if (city) body.user_ct = city;
+    if (city) {
+      body.user_ct = city;
+      body.user_st = city;
+    }
 
     await supabase.functions.invoke("fb-conversions-api", { body });
   } catch {
@@ -814,10 +818,13 @@ export function useTracking() {
           content_name: params.contentName,
           content_ids: [params.contentId],
           content_type: "product",
+          content_category: "ecommerce",
           value: params.value,
           currency: params.currency || "BDT",
           num_items: params.qty,
           order_id: params.orderId,
+          predicted_ltv: params.value,
+          status: "completed",
         },
       });
     }
