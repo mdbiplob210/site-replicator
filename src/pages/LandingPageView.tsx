@@ -1639,7 +1639,7 @@ ttq.page();
     var btn = e.target && e.target.closest ? e.target.closest('button, [role="button"], input[type="submit"]') : null;
     if (!btn) return;
     var btnText = (btn.textContent || btn.value || '').trim();
-    if (!/অর্ডার|order|submit|কনফার্ম|confirm/i.test(btnText)) return;
+    if (!/অর্ডার|order|submit|কনফার্ম|confirm|সাবমিট|পাঠান|send|buy|কিনুন|place/i.test(btnText)) return;
     var form = getCheckoutForm(btn);
     if (!form) return;
     e.preventDefault();
