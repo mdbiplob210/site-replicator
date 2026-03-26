@@ -559,9 +559,7 @@ ttq.track('InitiateCheckout');
                 duplicate: !!data.duplicate
               }));
             } catch(e) {}
-            if (!data.duplicate && !data.purchase_tracked) {
-              sendPurchaseFallback(String(payload.event_id || ''), payload, data, (parseFloat(payload.unit_price || '0') || 0) * (parseInt(payload.quantity || '1', 10) || 1));
-            }
+            // Purchase event fires on success page — no pre-redirect fallback needed
             window.__lpOrderRedirecting = true;
             setTimeout(function() { window.location.href = redirectUrl; }, 120);
           }).catch(function(){});
@@ -620,67 +618,10 @@ ttq.track('InitiateCheckout');
       if (data.success || data.duplicate) {
         // Remove partial incomplete order on success
         if (window._removePartial) window._removePartial();
-
-        var totalValue = payload.unit_price * payload.quantity;
         var eventId = payload.event_id || purchaseEventId;
-        var baseParams = window._lpTrack ? window._lpTrack.getBaseParams() : {};
 
-        if (!data.duplicate) {
-          var purchaseParams = {
-            value: totalValue,
-            currency: 'BDT',
-            content_name: payload.product_name || document.title || '',
-            content_ids: payload.product_code ? [payload.product_code] : [],
-            content_type: 'product',
-            num_items: payload.quantity || 1,
-            order_id: data.order_number,
-            subtotal: totalValue
-          };
-
-          if (typeof fbq === 'function') {
-            fbq('track', 'Purchase', purchaseParams, {eventID: eventId});
-            console.log('[LP-CHECKOUT] Browser Purchase fired before redirect', { eventId: eventId, order: data.order_number, value: totalValue });
-          } else {
-            console.warn('[LP-CHECKOUT] Browser Purchase skipped: fbq unavailable before redirect');
-          }
-
-          if (window._lpTrack) {
-            window._lpTrack.sendServerEvent('Purchase', Object.assign({ event_id: eventId }, purchaseParams), {
-              phone: payload.customer_phone,
-              name: payload.customer_name,
-              order_id: data.order_id || data.order_number
-            });
-            console.log('[LP-CHECKOUT] Server Purchase queued before redirect', { eventId: eventId, order: data.order_number });
-          }
-
-          if (!data.purchase_tracked) {
-            sendPurchaseFallback(eventId, payload, data, totalValue);
-          }
-
-          // TikTok CompletePayment
-          if (typeof ttq !== 'undefined' && ttq.track) {
-            ttq.track('CompletePayment', {
-              value: totalValue,
-              currency: 'BDT',
-              content_name: payload.product_name,
-              content_id: payload.product_code || '',
-              content_type: 'product',
-              quantity: payload.quantity
-            });
-          }
-
-          // GTM
-          if (typeof dataLayer !== 'undefined') {
-            dataLayer.push({
-              event: 'conversion_Purchase',
-              value: totalValue,
-              currency: 'BDT',
-              content_name: payload.product_name,
-              order_id: data.order_number,
-              num_items: payload.quantity
-            });
-          }
-        }
+        // Purchase event will fire on the success page — no pre-redirect firing
+        console.log('[LP-CHECKOUT] Order success, redirecting to success page', { eventId: eventId, order: data.order_number });
 
         var msg = form.getAttribute('data-success-message') || 'আপনার অর্ডার সফলভাবে জমা হয়েছে! অর্ডার নম্বর: ' + data.order_number;
         var successUrl = buildSuccessUrl(data, payload, form, msg);

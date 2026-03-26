@@ -83,7 +83,8 @@ export default function LandingOrderSuccess() {
 
   const orderNumber = searchParams.get("order") || "";
   const orderId = searchParams.get("oid") || "";
-  const eventId = searchParams.get("eid") || "";
+  const rawEventId = searchParams.get("eid") || "";
+  const eventId = rawEventId || `eid_auto_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   const productName = searchParams.get("product") || page?.title || "";
   const productCode = searchParams.get("code") || "";
   const quantity = Math.max(1, Number(searchParams.get("qty") || 1));
@@ -94,14 +95,18 @@ export default function LandingOrderSuccess() {
     : "আপনার অর্ডার সফলভাবে জমা হয়েছে।");
 
   const persistedState = useMemo(() => {
-    if (!eventId) return null;
+    // Try with raw eventId first, then without
     try {
-      const raw = sessionStorage.getItem(`_lp_purchase_success:${eventId}`);
-      return raw ? JSON.parse(raw) : null;
+      if (rawEventId) {
+        const raw = sessionStorage.getItem(`_lp_purchase_success:${rawEventId}`);
+        if (raw) return JSON.parse(raw);
+      }
+      // Fallback: try to find any recent persisted state
+      return null;
     } catch {
       return null;
     }
-  }, [eventId]);
+  }, [rawEventId]);
 
   const effectiveOrderNumber = orderNumber || persistedState?.order_number || "";
   const effectiveOrderId = orderId || persistedState?.order_id || "";
@@ -118,8 +123,9 @@ export default function LandingOrderSuccess() {
     document.title = effectiveOrderNumber ? `অর্ডার সফল #${effectiveOrderNumber}` : "অর্ডার সফল";
   }, [effectiveOrderNumber]);
 
+  // Fire Purchase event — this is the SINGLE source of truth for Purchase tracking
   useEffect(() => {
-    if (!slug || !eventId || duplicate) return;
+    if (!slug || duplicate) return;
 
     const fireKey = `_lp_purchase_fired:${eventId}`;
     try {
