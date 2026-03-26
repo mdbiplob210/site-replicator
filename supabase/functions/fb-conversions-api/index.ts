@@ -30,6 +30,12 @@ async function getSettingValue(supabaseAdmin: any, key: string, envFallback?: st
   return envFallback || "";
 }
 
+function isInvalidAccessTokenError(result: any): boolean {
+  const errorCode = Number(result?.error?.code || 0);
+  const message = String(result?.error?.message || "");
+  return errorCode === 190 || /invalid oauth access token/i.test(message);
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -197,6 +203,14 @@ Deno.serve(async (req) => {
 
     if (!fbResponse.ok) {
       console.error("[CAPI] Error:", JSON.stringify(fbResult));
+
+      if (isInvalidAccessTokenError(fbResult)) {
+        return new Response(
+          JSON.stringify({ skipped: true, reason: "invalid_access_token" }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       return new Response(
         JSON.stringify({ error: "Failed to send conversion event" }),
         { status: fbResponse.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
