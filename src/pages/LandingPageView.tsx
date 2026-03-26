@@ -1253,6 +1253,58 @@ ttq.page();
     return window.location.origin + '/lp/' + encodeURIComponent(SLUG) + '/success?' + params.toString();
   }
 
+  if (!window.__lpOrderFetchPatched) {
+    window.__lpOrderFetchPatched = true;
+    var _lpOrigFetch = window.fetch;
+    window.fetch = function(input, init) {
+      var url = String(typeof input === 'string' ? input : (input && input.url) || '');
+      var nextInit = init || {};
+      var enrichedPayload = null;
+      if (url.indexOf('submit-landing-order') !== -1 && nextInit && nextInit.body) {
+        try {
+          enrichedPayload = JSON.parse(nextInit.body);
+          if (!enrichedPayload.landing_page_slug) enrichedPayload.landing_page_slug = SLUG;
+          if (!enrichedPayload.event_id) enrichedPayload.event_id = window._lpTrack ? window._lpTrack.generateEventId() : ('eid_' + Math.random().toString(36).substr(2,9) + '_' + Date.now());
+          if (!enrichedPayload.event_url) enrichedPayload.event_url = window.location.href;
+          if (!enrichedPayload.visitor_id) enrichedPayload.visitor_id = VID;
+          if (!enrichedPayload.session_id) {
+            try { enrichedPayload.session_id = sessionStorage.getItem('_lp_sid') || ''; } catch(e) { enrichedPayload.session_id = ''; }
+          }
+          if (!enrichedPayload.device_type) enrichedPayload.device_type = window.innerWidth < 768 ? 'mobile' : window.innerWidth < 1024 ? 'tablet' : 'desktop';
+          if (!enrichedPayload.fbp && window._lpTrack) enrichedPayload.fbp = window._lpTrack.getFbp();
+          if (!enrichedPayload.fbc && window._lpTrack) enrichedPayload.fbc = window._lpTrack.getFbc();
+          nextInit = Object.assign({}, nextInit, {
+            headers: Object.assign({}, nextInit.headers || {}, { apikey: ANON, 'Content-Type': 'application/json' }),
+            body: JSON.stringify(enrichedPayload)
+          });
+        } catch(e) {}
+      }
+      var response = _lpOrigFetch.call(this, input, nextInit);
+      if (url.indexOf('submit-landing-order') !== -1) {
+        response.then(function(res) {
+          return res.clone().json().then(function(data) {
+            if (!data || (!data.success && !data.duplicate) || window.__lpOrderRedirecting) return;
+            var payload = enrichedPayload || {};
+            var msg = 'আপনার অর্ডার সফলভাবে জমা হয়েছে! অর্ডার নম্বর: ' + (data.order_number || '');
+            var redirectUrl = buildSuccessUrl(data, payload, null, msg);
+            try {
+              sessionStorage.setItem('_lp_purchase_success:' + String(payload.event_id || ''), JSON.stringify({
+                customer_name: payload.customer_name || '',
+                customer_phone: payload.customer_phone || '',
+                order_id: data.order_id || '',
+                order_number: data.order_number || '',
+                duplicate: !!data.duplicate
+              }));
+            } catch(e) {}
+            window.__lpOrderRedirecting = true;
+            setTimeout(function() { window.location.href = redirectUrl; }, 120);
+          }).catch(function(){});
+        }).catch(function(){});
+      }
+      return response;
+    };
+  }
+
   function submitOrder(form) {
     if (!form || form.dataset.lpSubmitLocked === '1' || _submitting) return;
 
