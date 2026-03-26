@@ -10,9 +10,10 @@ import { TrackingInitializer } from "./components/TrackingInitializer";
 import { WebsiteEventTracker } from "./components/WebsiteEventTracker";
 import { useDynamicMeta } from "@/hooks/useDynamicMeta";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import LandingPageView from "./pages/LandingPageView";
-import LandingPageCheckout from "./pages/LandingPageCheckout";
-import LandingOrderSuccess from "./pages/LandingOrderSuccess";
+// Landing pages lazy-loaded — they're huge (~3000 lines) and shouldn't block main bundle
+const LandingPageView = lazy(() => import("./pages/LandingPageView"));
+const LandingPageCheckout = lazy(() => import("./pages/LandingPageCheckout"));
+const LandingOrderSuccess = lazy(() => import("./pages/LandingOrderSuccess"));
 
 const DynamicMetaProvider = () => { useDynamicMeta(); return null; };
 
