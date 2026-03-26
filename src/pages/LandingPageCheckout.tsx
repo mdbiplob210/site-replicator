@@ -457,94 +457,61 @@ ttq.track('InitiateCheckout');
   var _submitting = false;
 
   // Purchase event fires exclusively on the success page (/lp/{slug}/success)
-  // No pre-redirect Purchase firing needed — this avoids duplication
+  // ── Purchase event fires in-page via success popup (no redirect) ──
 
-  function getTopWindow() {
-    try {
-      if (window.top && window.top.location && window.top.location.origin === window.location.origin) return window.top;
-    } catch(e) {}
-    try {
-      if (window.parent && window.parent !== window && window.parent.location.origin === window.location.origin) return window.parent;
-    } catch(e) {}
-    return window;
+  function firePurchaseEvent(payload, result) {
+    var eventId = payload.event_id || (window._lpTrack ? window._lpTrack.generateEventId() : ('eid_' + Math.random().toString(36).substr(2,9) + '_' + Date.now()));
+    var totalValue = resolveTotalValue(payload);
+    var purchaseParams = {
+      value: totalValue, currency: 'BDT',
+      content_name: (payload.product_name || document.title || '').substring(0, 150),
+      content_ids: payload.product_code ? [payload.product_code] : [],
+      content_type: 'product',
+      num_items: parseInt(payload.quantity || '1', 10) || 1,
+      order_id: String(result.order_number || ''),
+      subtotal: totalValue
+    };
+    if (typeof fbq === 'function') {
+      fbq('track', 'Purchase', purchaseParams, { eventID: eventId });
+    }
+    if (typeof ttq !== 'undefined' && ttq.track) {
+      ttq.track('CompletePayment', { value: totalValue, currency: 'BDT', content_name: purchaseParams.content_name, quantity: purchaseParams.num_items });
+    }
+    if (typeof dataLayer !== 'undefined') {
+      dataLayer.push({ event: 'conversion_Purchase', value: totalValue, currency: 'BDT', order_id: result.order_number });
+    }
+    if (window._lpTrack) {
+      window._lpTrack.sendServerEvent('Purchase', {
+        event_id: eventId, value: totalValue, currency: 'BDT',
+        content_name: purchaseParams.content_name, content_ids: purchaseParams.content_ids,
+        content_type: 'product', num_items: purchaseParams.num_items,
+        order_id: String(result.order_number || '')
+      }, { phone: payload.customer_phone || '', name: payload.customer_name || '', order_id: String(result.order_id || result.order_number || '') });
+    }
+    console.log('[Purchase] All events fired', { eventId: eventId, value: totalValue, order: result.order_number });
   }
 
-  function getSuccessSelectors() {
-    return [
-      '#successMsg',
-      '[id*="successMsg"]',
-      '[class*="successMsg"]',
-      '[class*="success-msg"]',
-      '[class*="success-popup"]',
-      '[class*="successPopup"]',
-      '[class*="success-modal"]',
-      '[class*="successModal"]',
-      '[class*="confirmation"]',
-      '[class*="confirm-popup"]',
-      '[class*="confirmPopup"]',
-      '[role="dialog"]',
-      '[aria-modal="true"]',
-      '[class*="modal"]',
-      '[class*="popup"]',
-      '[class*="overlay"]',
-      '#checkoutOverlay',
-      '.checkout-overlay'
-    ].join(',');
-  }
-
-  function suppressLegacySuccessUi() {
-    var selectors = getSuccessSelectors();
-    try {
-      var style = document.getElementById('__lp-success-redirect-style');
-      if (!style) {
-        style = document.createElement('style');
-        style.id = '__lp-success-redirect-style';
-        style.textContent = selectors + '{display:none !important;visibility:hidden !important;opacity:0 !important;pointer-events:none !important;}';
-        (document.head || document.documentElement).appendChild(style);
-      }
-    } catch(e) {}
-
-    try {
-      document.querySelectorAll(selectors).forEach(function(el) {
-        el.style.setProperty('display', 'none', 'important');
-        el.style.setProperty('visibility', 'hidden', 'important');
-        el.style.setProperty('opacity', '0', 'important');
-        el.style.setProperty('pointer-events', 'none', 'important');
-      });
-    } catch(e) {}
-
-    try { document.body.style.overflow = ''; } catch(e) {}
-    try { document.documentElement.style.overflow = ''; } catch(e) {}
-  }
-
-  function installLegacySuccessObserver() {
-    if (window.__lpLegacySuccessObserverInstalled) return;
-    window.__lpLegacySuccessObserverInstalled = true;
-
-    var observer = new MutationObserver(function() {
-      if (!window.__lpPendingSuccessUrl || window.__lpSuccessNavigationStarted) return;
-      try {
-        var selectors = getSuccessSelectors();
-        var nodes = document.querySelectorAll(selectors);
-        for (var i = 0; i < nodes.length; i++) {
-          var node = nodes[i];
-          var styles = window.getComputedStyle(node);
-          if (styles.display !== 'none' && styles.visibility !== 'hidden' && styles.opacity !== '0') {
-            navigateToSuccess(window.__lpPendingSuccessUrl);
-            return;
-          }
-        }
-      } catch(e) {}
-    });
-
-    try {
-      observer.observe(document.documentElement || document.body, {
-        subtree: true,
-        childList: true,
-        attributes: true,
-        attributeFilter: ['style', 'class', 'open', 'hidden', 'aria-hidden']
-      });
-    } catch(e) {}
+  function showSuccessPopup(result, payload) {
+    var orderNumber = result.order_number || '';
+    var existingPopup = document.getElementById('__lp-success-popup');
+    if (existingPopup) existingPopup.remove();
+    var overlay = document.createElement('div');
+    overlay.id = '__lp-success-popup';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);';
+    overlay.innerHTML = '<div style="width:90%;max-width:400px;background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 25px 60px rgba(0,0,0,.3);animation:lpSuccessZoom .35s ease">'
+      + '<div style="background:linear-gradient(135deg,#10b981,#059669);padding:28px 24px;text-align:center;">'
+      + '<div style="width:64px;height:64px;margin:0 auto 12px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;">✓</div>'
+      + '<h2 style="color:#fff;font-size:22px;font-weight:800;margin:0;">অর্ডার সফল হয়েছে!</h2></div>'
+      + '<div style="padding:24px;text-align:center;">'
+      + (orderNumber ? '<p style="color:#6b7280;font-size:13px;margin:0 0 4px;">অর্ডার নম্বর</p><p style="font-size:28px;font-weight:900;color:#10b981;margin:0 0 16px;">#' + orderNumber + '</p>' : '')
+      + '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:12px;margin-bottom:20px;"><p style="margin:0;font-size:13px;color:#166534;">📞 আপনার অর্ডারটি কনফার্ম করতে শীঘ্রই কল করা হবে।</p></div>'
+      + '<button id="__lp-success-close" style="width:100%;padding:14px;background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;">ঠিক আছে</button></div></div>';
+    var style = document.createElement('style');
+    style.textContent = '@keyframes lpSuccessZoom{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}';
+    overlay.appendChild(style);
+    document.body.appendChild(overlay);
+    var closeBtn = document.getElementById('__lp-success-close');
+    if (closeBtn) closeBtn.addEventListener('click', function() { overlay.remove(); });
   }
 
   function resolveTotalValue(payload) {
@@ -556,95 +523,16 @@ ttq.track('InitiateCheckout');
     return isFinite(explicitTotal) && explicitTotal >= 0 ? explicitTotal : (unitPrice * qty);
   }
 
-  function persistSuccessState(eventId, payload, result, totalValue) {
-    try {
-      sessionStorage.setItem('_lp_purchase_success:' + String(eventId || ''), JSON.stringify({
-        customer_name: payload.customer_name || '',
-        customer_phone: payload.customer_phone || '',
-        product_name: payload.product_name || '',
-        product_code: payload.product_code || '',
-        quantity: parseInt(payload.quantity || '1', 10) || 1,
-        unit_price: parseFloat(payload.unit_price || '0') || 0,
-        total_value: totalValue,
-        order_id: result.order_id || '',
-        order_number: result.order_number || '',
-        duplicate: !!result.duplicate
-      }));
-    } catch(e) {}
-  }
-
-  function navigateToSuccess(url) {
-    if (!url || window.__lpSuccessNavigationStarted) return;
-    window.__lpSuccessNavigationStarted = true;
-    window.__lpOrderRedirecting = true;
-    window.__lpPendingSuccessUrl = url;
-
-    try { window.alert = function(){}; } catch(e) {}
-    try { window.confirm = function(){ return true; }; } catch(e) {}
-
-    suppressLegacySuccessUi();
-
-    var targetWindow = getTopWindow();
-    var go = function() {
-      suppressLegacySuccessUi();
-      try {
-        targetWindow.location.replace(url);
-        return;
-      } catch(e) {}
-      try {
-        targetWindow.location.href = url;
-        return;
-      } catch(e2) {}
-      window.location.href = url;
-    };
-
-    if (typeof window.requestAnimationFrame === 'function') {
-      window.requestAnimationFrame(go);
-    } else {
-      setTimeout(go, 0);
-    }
-  }
-
   function handleSuccessfulOrder(result, payload, form, btn, successText) {
-    var eventId = payload.event_id || (window._lpTrack ? window._lpTrack.generateEventId() : ('eid_' + Math.random().toString(36).substr(2,9) + '_' + Date.now()));
-    var totalValue = resolveTotalValue(payload);
-    var nextPayload = Object.assign({}, payload, { event_id: eventId, total_value: totalValue });
-    var msg = (form && form.getAttribute && form.getAttribute('data-success-message')) || successText || ('আপনার অর্ডার সফলভাবে জমা হয়েছে! অর্ডার নম্বর: ' + (result.order_number || ''));
-    var successUrl = buildSuccessUrl(result, nextPayload, form, msg);
-
-    persistSuccessState(eventId, nextPayload, result, totalValue);
-
+    firePurchaseEvent(payload, result);
+    showSuccessPopup(result, payload);
     if (btn) {
       btn.disabled = true;
       btn.textContent = '✓ অর্ডার সফল!';
       btn.style.backgroundColor = '#10b981';
     }
-
-    window.__lpPendingSuccessUrl = successUrl;
-    navigateToSuccess(successUrl);
   }
 
-  function buildSuccessUrl(result, payload, form, msg) {
-    var params = new URLSearchParams();
-    var qty = parseInt(payload.quantity || '1', 10);
-    if (!isFinite(qty) || qty < 1) qty = 1;
-    var unitPrice = parseFloat(payload.unit_price || '0');
-    if (!isFinite(unitPrice) || unitPrice < 0) unitPrice = 0;
-    var totalValue = parseFloat(payload.total_value || String(unitPrice * qty));
-    if (!isFinite(totalValue) || totalValue < 0) totalValue = unitPrice * qty;
-    params.set('order', String(result.order_number || ''));
-    params.set('eid', String(payload.event_id || ''));
-    params.set('value', String(totalValue));
-    params.set('qty', String(qty));
-    if (payload.product_name) params.set('product', String(payload.product_name));
-    if (payload.product_code) params.set('code', String(payload.product_code));
-    if (result.order_id) params.set('oid', String(result.order_id));
-    if (msg) params.set('msg', msg);
-    if (result.duplicate) params.set('duplicate', '1');
-    return window.location.origin + '/lp/' + encodeURIComponent(SLUG) + '/success?' + params.toString();
-  }
-
-  installLegacySuccessObserver();
 
   if (!window.__lpOrderFetchPatched) {
     window.__lpOrderFetchPatched = true;
@@ -672,7 +560,7 @@ ttq.track('InitiateCheckout');
       if (url.indexOf('submit-landing-order') !== -1) {
         response.then(function(res) {
           return res.clone().json().then(function(data) {
-            if (!data || (!data.success && !data.duplicate) || window.__lpOrderRedirecting) return;
+            if (!data || (!data.success && !data.duplicate)) return;
             var payload = enrichedPayload || {};
             handleSuccessfulOrder(data, payload, null, null, 'আপনার অর্ডার সফলভাবে জমা হয়েছে! অর্ডার নম্বর: ' + (data.order_number || ''));
           }).catch(function(){});
