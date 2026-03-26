@@ -417,7 +417,7 @@ const CheckoutPage = () => {
   if (checkoutType === "1") {
     return (
       <div className="min-h-screen bg-gray-50">
-        <div className="max-w-2xl mx-auto px-4 py-8">
+        <div className="w-full max-w-4xl mx-auto px-4 lg:px-8 py-8">
           <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm text-gray-500 mb-6 hover:text-gray-900">
             <ArrowLeft className="h-4 w-4" /> Back
           </button>
@@ -439,7 +439,7 @@ const CheckoutPage = () => {
     const steps = ["Your Info", "Delivery", "Confirm"];
     return (
       <div className="min-h-screen bg-gray-950 text-white">
-        <div className="max-w-xl mx-auto px-4 py-8">
+        <div className="w-full max-w-3xl mx-auto px-4 lg:px-8 py-8">
           <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm text-gray-500 mb-6"><ArrowLeft className="h-4 w-4" /> Back</button>
           {/* Step indicator */}
           <div className="flex items-center justify-center gap-2 mb-10">
@@ -520,7 +520,7 @@ const CheckoutPage = () => {
   if (checkoutType === "3") {
     return (
       <div className="min-h-screen bg-stone-50" style={{ fontFamily: "'Georgia', serif" }}>
-        <div className="max-w-5xl mx-auto px-4 py-10">
+        <div className="w-full px-4 lg:px-8 py-10">
           <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm text-stone-400 mb-8"><ArrowLeft className="h-4 w-4" /> Back</button>
           <div className="grid md:grid-cols-2 gap-10">
             <div>
@@ -550,7 +550,7 @@ const CheckoutPage = () => {
   if (checkoutType === "4") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-violet-50">
-        <div className="max-w-lg mx-auto px-4 py-8">
+        <div className="w-full max-w-3xl mx-auto px-4 lg:px-8 py-8">
           <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm text-gray-400 mb-6"><ArrowLeft className="h-4 w-4" /> Back</button>
           <div className="bg-white rounded-3xl shadow-xl border border-rose-100 overflow-hidden">
             <div className="bg-gradient-to-r from-rose-500 to-violet-500 p-6 text-white">
@@ -581,13 +581,13 @@ const CheckoutPage = () => {
   return (
     <div className="min-h-screen bg-zinc-100">
       <div className="bg-zinc-900 text-white py-4">
-        <div className="max-w-3xl mx-auto px-4 flex items-center justify-between">
+        <div className="w-full px-4 lg:px-8 flex items-center justify-between">
           <button onClick={() => navigate(-1)} className="text-sm text-zinc-400 hover:text-white"><ArrowLeft className="h-5 w-5 inline mr-2" />BACK</button>
           <span className="font-black tracking-tighter text-xl">CHECKOUT</span>
           <span className="text-lime-400 font-black">৳{total}</span>
         </div>
       </div>
-      <div className="max-w-3xl mx-auto px-4 py-8">
+      <div className="w-full px-4 lg:px-8 py-8">
         <div className="bg-white p-1 mb-6">
           <div className="flex items-center gap-4 p-4 border-2 border-zinc-900">
             <div className="w-20 h-20 bg-zinc-100 flex-shrink-0">
