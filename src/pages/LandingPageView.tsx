@@ -1339,16 +1339,20 @@ ttq.page();
 
   function isValidPhone(value) {
     var cleaned = sanitizePhone(value).replace(/^[+]?880/, '0').replace(/[^0-9]/g, '');
-    if (/^[1-9]\d{9}$/.test(cleaned)) cleaned = '0' + cleaned;
-    return /^\d{11,15}$/.test(cleaned);
+    if (/^[1-9]\\d{9}$/.test(cleaned)) cleaned = '0' + cleaned;
+    return /^\\d{11,15}$/.test(cleaned);
   }
 
-  function toAsciiDigits(value) {
-    var map = {'০':'0','১':'1','২':'2','৩':'3','৪':'4','৫':'5','৬':'6','৭':'7','৮':'8','৯':'9'};
-    var input = String(value || '');
-    var output = '';
-    for (var i = 0; i < input.length; i++) output += map[input.charAt(i)] || input.charAt(i);
-    return output;
+  function toAsciiDigits(str) {
+    if (!str) return '';
+    var result = '';
+    for (var i = 0; i < str.length; i++) {
+      var code = str.charCodeAt(i);
+      if (code >= 0x09E6 && code <= 0x09EF) { result += String(code - 0x09E6); }
+      else if (code >= 0x0660 && code <= 0x0669) { result += String(code - 0x0660); }
+      else { result += str.charAt(i); }
+    }
+    return result;
   }
 
   function sanitizePhone(value) {
@@ -1359,9 +1363,9 @@ ttq.page();
       if (/[0-9]/.test(ch)) result += ch;
       else if (ch === '+' && result.length === 0) result += ch;
     }
-    var digitsOnly = result.replace(/^\+/, '').replace(/[^0-9]/g, '');
-    if (/^8801\d{8,12}$/.test(digitsOnly)) digitsOnly = '0' + digitsOnly.slice(3);
-    if (/^[1-9]\d{9}$/.test(digitsOnly)) digitsOnly = '0' + digitsOnly;
+    var digitsOnly = result.replace(/^[+]/, '').replace(/[^0-9]/g, '');
+    if (/^8801\\d{8,12}$/.test(digitsOnly)) digitsOnly = '0' + digitsOnly.slice(3);
+    if (/^[1-9]\\d{9}$/.test(digitsOnly)) digitsOnly = '0' + digitsOnly;
     if (digitsOnly.length > 15) digitsOnly = digitsOnly.slice(0, 15);
     return digitsOnly;
   }
