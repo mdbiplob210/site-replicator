@@ -206,6 +206,7 @@ ${gtmId ? `
           currency: purchaseParams.currency,
           content_name: purchaseParams.content_name,
           content_ids: purchaseParams.content_ids,
+          contents: purchaseParams.contents,
           content_type: 'product',
           content_category: 'ecommerce',
           num_items: purchaseParams.num_items,
