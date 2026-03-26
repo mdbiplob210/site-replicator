@@ -737,7 +737,12 @@ export function useTracking() {
     const eventId = generateEventId("pur");
 
     // Prevent duplicate purchase events even in restricted in-app browsers
-    if (!markPurchaseTracked(params.orderId, eventId)) return;
+    if (!markPurchaseTracked(params.orderId, eventId)) {
+      console.log("[Purchase] Skipped duplicate for order:", params.orderId);
+      return;
+    }
+
+    console.log("[Purchase] Firing event", { orderId: params.orderId, value: params.value, eventId });
 
     // Update user data with all available info
     setFBUserData({
