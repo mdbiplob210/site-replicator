@@ -3,7 +3,7 @@ import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { trackLoginActivity } from "@/hooks/useUserTracking";
 
-export type AppRole = "admin" | "moderator" | "manager" | "user" | "accounting" | "ad_analytics" | "delivery_rider";
+export type AppRole = "admin" | "super_admin" | "moderator" | "manager" | "user" | "accounting" | "ad_analytics" | "delivery_rider";
 
 export type PermissionKey =
   | "view_orders" | "create_orders" | "edit_orders" | "delete_orders" | "change_order_status"
