@@ -125,7 +125,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (permissionsError) throw permissionsError;
 
         const roles = (rolesData || []).map((row) => row.role as AppRole);
-        const admin = roles.includes("admin");
+        const admin = roles.includes("admin") || roles.includes("super_admin");
 
         setUserRoles(roles);
         setIsAdmin(admin);
