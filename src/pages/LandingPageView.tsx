@@ -1249,6 +1249,7 @@ ttq.page();
     var form = null;
     var candidate = btn.parentElement;
     for (var i = 0; i < 8 && candidate; i++) {
+      if (candidate === document.body || candidate === document.documentElement) break;
       var phoneInput = candidate.querySelector ? candidate.querySelector('input[type="tel"], input[inputmode="tel"], input[name="customer_phone"], input[name="phone"]') : null;
       if (phoneInput && candidate.contains(btn) && candidate.contains(phoneInput)) {
         form = candidate;
