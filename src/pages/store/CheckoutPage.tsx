@@ -227,7 +227,7 @@ const CheckoutPage = () => {
           productCode: item.productCode || item.productId, customerPhone: form.phone, customerName: form.name,
         }));
         sessionStorage.removeItem("checkout_item");
-        navigate("/order-success");
+        navigate(`/order-success?order=${recentDup[0].order_number}`);
         return;
       }
 
