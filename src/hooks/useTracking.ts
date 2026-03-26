@@ -848,6 +848,7 @@ export function useTracking() {
         customData: {
           content_name: params.contentName,
           content_ids: [params.contentId],
+          contents: [{ id: params.contentId, quantity: params.qty, item_price: params.value / params.qty }],
           content_type: "product",
           content_category: "ecommerce",
           value: params.value,
