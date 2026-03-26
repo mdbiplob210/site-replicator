@@ -205,8 +205,11 @@ ${gtmId ? `
           content_name: purchaseParams.content_name,
           content_ids: purchaseParams.content_ids,
           content_type: 'product',
+          content_category: 'ecommerce',
           num_items: purchaseParams.num_items,
-          order_id: purchaseParams.order_id
+          order_id: purchaseParams.order_id,
+          predicted_ltv: purchaseParams.value,
+          status: 'completed'
         }
       }),
       keepalive: true
