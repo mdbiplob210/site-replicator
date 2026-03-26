@@ -1061,6 +1061,171 @@ ttq.page();
   // Purchase event fires exclusively on the success page (/lp/{slug}/success)
   // No pre-redirect Purchase firing needed — this avoids duplication
 
+  function getTopWindow() {
+    try {
+      if (window.top && window.top.location && window.top.location.origin === window.location.origin) return window.top;
+    } catch(e) {}
+    try {
+      if (window.parent && window.parent !== window && window.parent.location.origin === window.location.origin) return window.parent;
+    } catch(e) {}
+    return window;
+  }
+
+  function getSuccessSelectors() {
+    return [
+      '#successMsg',
+      '[id*="successMsg"]',
+      '[class*="successMsg"]',
+      '[class*="success-msg"]',
+      '[class*="success-popup"]',
+      '[class*="successPopup"]',
+      '[class*="success-modal"]',
+      '[class*="successModal"]',
+      '[class*="confirmation"]',
+      '[class*="confirm-popup"]',
+      '[class*="confirmPopup"]',
+      '[role="dialog"]',
+      '[aria-modal="true"]',
+      '[class*="modal"]',
+      '[class*="popup"]',
+      '[class*="overlay"]',
+      '#checkoutOverlay',
+      '.checkout-overlay'
+    ].join(',');
+  }
+
+  function suppressLegacySuccessUi() {
+    var selectors = getSuccessSelectors();
+    try {
+      var style = document.getElementById('__lp-success-redirect-style');
+      if (!style) {
+        style = document.createElement('style');
+        style.id = '__lp-success-redirect-style';
+        style.textContent = selectors + '{display:none !important;visibility:hidden !important;opacity:0 !important;pointer-events:none !important;}';
+        (document.head || document.documentElement).appendChild(style);
+      }
+    } catch(e) {}
+
+    try {
+      document.querySelectorAll(selectors).forEach(function(el) {
+        el.style.setProperty('display', 'none', 'important');
+        el.style.setProperty('visibility', 'hidden', 'important');
+        el.style.setProperty('opacity', '0', 'important');
+        el.style.setProperty('pointer-events', 'none', 'important');
+      });
+    } catch(e) {}
+
+    try { document.body.style.overflow = ''; } catch(e) {}
+    try { document.documentElement.style.overflow = ''; } catch(e) {}
+  }
+
+  function installLegacySuccessObserver() {
+    if (window.__lpLegacySuccessObserverInstalled) return;
+    window.__lpLegacySuccessObserverInstalled = true;
+
+    var observer = new MutationObserver(function() {
+      if (!window.__lpPendingSuccessUrl || window.__lpSuccessNavigationStarted) return;
+      try {
+        var selectors = getSuccessSelectors();
+        var nodes = document.querySelectorAll(selectors);
+        for (var i = 0; i < nodes.length; i++) {
+          var node = nodes[i];
+          var styles = window.getComputedStyle(node);
+          if (styles.display !== 'none' && styles.visibility !== 'hidden' && styles.opacity !== '0') {
+            navigateToSuccess(window.__lpPendingSuccessUrl);
+            return;
+          }
+        }
+      } catch(e) {}
+    });
+
+    try {
+      observer.observe(document.documentElement || document.body, {
+        subtree: true,
+        childList: true,
+        attributes: true,
+        attributeFilter: ['style', 'class', 'open', 'hidden', 'aria-hidden']
+      });
+    } catch(e) {}
+  }
+
+  function resolveTotalValue(payload) {
+    var qty = parseInt(payload.quantity || '1', 10);
+    if (!isFinite(qty) || qty < 1) qty = 1;
+    var unitPrice = parseFloat(payload.unit_price || '0');
+    if (!isFinite(unitPrice) || unitPrice < 0) unitPrice = 0;
+    var explicitTotal = parseFloat(payload.total_value || '');
+    return isFinite(explicitTotal) && explicitTotal >= 0 ? explicitTotal : (unitPrice * qty);
+  }
+
+  function persistSuccessState(eventId, payload, result, totalValue) {
+    try {
+      sessionStorage.setItem('_lp_purchase_success:' + String(eventId || ''), JSON.stringify({
+        customer_name: payload.customer_name || '',
+        customer_phone: payload.customer_phone || '',
+        product_name: payload.product_name || '',
+        product_code: payload.product_code || '',
+        quantity: parseInt(payload.quantity || '1', 10) || 1,
+        unit_price: parseFloat(payload.unit_price || '0') || 0,
+        total_value: totalValue,
+        order_id: result.order_id || '',
+        order_number: result.order_number || '',
+        duplicate: !!result.duplicate
+      }));
+    } catch(e) {}
+  }
+
+  function navigateToSuccess(url) {
+    if (!url || window.__lpSuccessNavigationStarted) return;
+    window.__lpSuccessNavigationStarted = true;
+    window.__lpOrderRedirecting = true;
+    window.__lpPendingSuccessUrl = url;
+
+    try { window.alert = function(){}; } catch(e) {}
+    try { window.confirm = function(){ return true; }; } catch(e) {}
+
+    suppressLegacySuccessUi();
+
+    var targetWindow = getTopWindow();
+    var go = function() {
+      suppressLegacySuccessUi();
+      try {
+        targetWindow.location.replace(url);
+        return;
+      } catch(e) {}
+      try {
+        targetWindow.location.href = url;
+        return;
+      } catch(e2) {}
+      window.location.href = url;
+    };
+
+    if (typeof window.requestAnimationFrame === 'function') {
+      window.requestAnimationFrame(go);
+    } else {
+      setTimeout(go, 0);
+    }
+  }
+
+  function handleSuccessfulOrder(result, payload, form, btn, successText) {
+    var eventId = payload.event_id || (window._lpTrack ? window._lpTrack.generateEventId() : ('eid_' + Math.random().toString(36).substr(2,9) + '_' + Date.now()));
+    var totalValue = resolveTotalValue(payload);
+    var nextPayload = Object.assign({}, payload, { event_id: eventId, total_value: totalValue });
+    var msg = (form && form.getAttribute && form.getAttribute('data-success-message')) || successText || ('আপনার অর্ডার সফলভাবে জমা হয়েছে! অর্ডার নম্বর: ' + (result.order_number || ''));
+    var successUrl = buildSuccessUrl(result, nextPayload, form, msg);
+
+    persistSuccessState(eventId, nextPayload, result, totalValue);
+
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = '✓ অর্ডার সফল!';
+      btn.style.backgroundColor = '#10b981';
+    }
+
+    window.__lpPendingSuccessUrl = successUrl;
+    navigateToSuccess(successUrl);
+  }
+
   function resetSubmitState(form, btn, btnOrigText) {
     _submitting = false;
     if (form) delete form.dataset.lpSubmitLocked;
@@ -1262,6 +1427,8 @@ ttq.page();
     return window.location.origin + '/lp/' + encodeURIComponent(SLUG) + '/success?' + params.toString();
   }
 
+  installLegacySuccessObserver();
+
   if (!window.__lpOrderFetchPatched) {
     window.__lpOrderFetchPatched = true;
     var _lpOrigFetch = window.fetch;
@@ -1294,32 +1461,7 @@ ttq.page();
           return res.clone().json().then(function(data) {
             if (!data || (!data.success && !data.duplicate) || window.__lpOrderRedirecting) return;
             var payload = enrichedPayload || {};
-            var msg = 'আপনার অর্ডার সফলভাবে জমা হয়েছে! অর্ডার নম্বর: ' + (data.order_number || '');
-            var redirectUrl = buildSuccessUrl(data, payload, null, msg);
-            try {
-              sessionStorage.setItem('_lp_purchase_success:' + String(payload.event_id || ''), JSON.stringify({
-                customer_name: payload.customer_name || '',
-                customer_phone: payload.customer_phone || '',
-                product_name: payload.product_name || '',
-                product_code: payload.product_code || '',
-                quantity: parseInt(payload.quantity || '1', 10) || 1,
-                unit_price: parseFloat(payload.unit_price || '0') || 0,
-                total_value: (parseFloat(payload.unit_price || '0') || 0) * (parseInt(payload.quantity || '1', 10) || 1),
-                order_id: data.order_id || '',
-                order_number: data.order_number || '',
-                duplicate: !!data.duplicate
-              }));
-            } catch(e) {}
-            // Purchase event fires on success page — no pre-redirect fallback needed
-            window.__lpOrderRedirecting = true;
-            // Suppress template's own success popups/alerts
-            window.alert = function(){};
-            // Hide any popup/modal overlays the template might create
-            setTimeout(function() {
-              var overlays = document.querySelectorAll('[class*="modal"],[class*="popup"],[class*="overlay"],[class*="success"],[class*="confirm"],[role="dialog"]');
-              overlays.forEach(function(el) { el.style.display = 'none'; });
-            }, 10);
-            setTimeout(function() { window.location.href = redirectUrl; }, 120);
+            handleSuccessfulOrder(data, payload, null, null, 'আপনার অর্ডার সফলভাবে জমা হয়েছে! অর্ডার নম্বর: ' + (data.order_number || ''));
           }).catch(function(){});
         }).catch(function(){});
       }
@@ -1402,39 +1544,8 @@ ttq.page();
       console.log('[LP-DEBUG] Response data:', JSON.stringify(data));
       if (data.success || data.duplicate) {
         if (window._removePartial) window._removePartial();
-        var eventId = payload.event_id || purchaseEventId;
-        var totalValue = (payload.unit_price || 0) * (payload.quantity || 1);
-
-        // Purchase event will fire on the success page — no pre-redirect firing
-        console.log('[LP-DEBUG] Order success, redirecting to success page', { eventId: eventId, order: data.order_number, totalValue: totalValue });
-
-        var msg = form.getAttribute('data-success-message') || 'আপনার অর্ডার সফলভাবে জমা হয়েছে! অর্ডার নম্বর: ' + data.order_number;
-        var successUrl = buildSuccessUrl(data, payload, form, msg);
-        try {
-          sessionStorage.setItem('_lp_purchase_success:' + eventId, JSON.stringify({
-            customer_name: payload.customer_name,
-            customer_phone: payload.customer_phone,
-            product_name: payload.product_name || '',
-            product_code: payload.product_code || '',
-            quantity: payload.quantity || 1,
-            unit_price: payload.unit_price || 0,
-            total_value: totalValue,
-            order_id: data.order_id || '',
-            order_number: data.order_number || '',
-            duplicate: !!data.duplicate
-          }));
-        } catch(e) {}
-        if (btn) { btn.disabled = true; btn.textContent = '✓ অর্ডার সফল!'; btn.style.backgroundColor = '#10b981'; }
-        window.__lpOrderRedirecting = true;
-        // Suppress any template popups/alerts during redirect
-        window.alert = function(){};
-        setTimeout(function() {
-          var overlays = document.querySelectorAll('[class*="modal"],[class*="popup"],[class*="overlay"],[class*="success"],[class*="confirm"],[role="dialog"]');
-          overlays.forEach(function(el) { el.style.display = 'none'; });
-        }, 10);
-        setTimeout(function() {
-          window.location.href = successUrl;
-        }, 300);
+        console.log('[LP-DEBUG] Order success, redirecting to success page', { eventId: payload.event_id || purchaseEventId, order: data.order_number, totalValue: resolveTotalValue(payload) });
+        handleSuccessfulOrder(data, payload, form, btn, 'আপনার অর্ডার সফলভাবে জমা হয়েছে! অর্ডার নম্বর: ' + data.order_number);
       } else {
         alert(data.error || 'অর্ডার সাবমিট করতে সমস্যা হয়েছে');
         resetSubmitState(form, btn, btnOrigText);
