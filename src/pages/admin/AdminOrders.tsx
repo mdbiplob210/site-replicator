@@ -260,7 +260,7 @@ const AdminOrders = () => {
   const { data: hasTransferPermission = false } = useQuery({
     queryKey: ["has-transfer-orders", user?.id],
     queryFn: async () => {
-      if (userRole === "admin") return true;
+      if (userRole === "admin" || userRole === "super_admin") return true;
       const { data } = await supabase.from("employee_permissions").select("id").eq("user_id", user!.id).eq("permission", "transfer_orders" as any).limit(1);
       return (data && data.length > 0) || false;
     },
