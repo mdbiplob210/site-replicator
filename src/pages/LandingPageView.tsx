@@ -1046,19 +1046,47 @@ ttq.page();
 <script>
 (function(){
   var ORDER_URL = '${supabaseUrl}/functions/v1/submit-landing-order';
+  var ANON = '${anonKey}';
   var SLUG = '${page.slug}';
+  var FORM_SELECTOR = '[data-checkout-form], form, #checkoutForm, #orderForm, .checkout-form, .order-form';
   var VID; try { VID = localStorage.getItem('_lp_vid'); } catch(e) {} VID = VID || '';
   var _submitting = false;
 
-  document.addEventListener('submit', function(e) {
-    if (e.defaultPrevented || e._templateHandled) return;
-    var form = e.target.closest('[data-checkout-form]');
-    if (!form) return;
-    if (form.dataset.lpSubmitLocked === '1' || _submitting) {
-      e.preventDefault();
+  function resetSubmitState(form, btn, btnOrigText) {
+    _submitting = false;
+    if (form) delete form.dataset.lpSubmitLocked;
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = btnOrigText || 'অর্ডার করুন';
+    }
+  }
+
+  function isValidPhone(value) {
+    var cleaned = String(value || '').replace(/^\+?880/, '0').replace(/[^0-9]/g, '');
+    return /^\d{11,15}$/.test(cleaned);
+  }
+
+  function getCheckoutForm(target) {
+    var form = target && target.closest ? target.closest(FORM_SELECTOR) : null;
+    if (!form || !form.querySelector) return null;
+    var hasPhone = form.querySelector('input[name="customer_phone"], input[name="phone"], input[type="tel"]');
+    var hasName = form.querySelector('input[name="customer_name"], input[name="name"], input[name="full_name"]');
+    var hasProductHints = form.hasAttribute('data-product-name') || form.hasAttribute('data-product-code') || !!form.querySelector('input[name="product_name"], input[name="product_code"], input[name="unit_price"], input[name="quantity"]');
+    return hasPhone && (hasName || hasProductHints) ? form : null;
+  }
+
+  function submitOrder(form) {
+    if (!form || form.dataset.lpSubmitLocked === '1' || _submitting) return;
+
+    var formData = new FormData(form);
+    var customerPhone = formData.get('customer_phone') || formData.get('phone') || '';
+    if (!isValidPhone(customerPhone)) {
+      var phoneInput = form.querySelector('input[name="customer_phone"], input[name="phone"], input[type="tel"]');
+      alert('অনুগ্রহ করে সঠিক মোবাইল নম্বর দিন (কমপক্ষে ১১ সংখ্যা)');
+      if (phoneInput) phoneInput.focus();
       return;
     }
-    e.preventDefault();
+
     _submitting = true;
     form.dataset.lpSubmitLocked = '1';
 
@@ -1076,13 +1104,12 @@ ttq.page();
       });
     }
 
-    var formData = new FormData(form);
     var purchaseEventId = window._lpTrack ? window._lpTrack.generateEventId() : 'eid_' + Math.random().toString(36).substr(2,9) + '_' + Date.now();
     var payload = {
-      customer_name: formData.get('customer_name') || '',
-      customer_phone: formData.get('customer_phone') || '',
-      customer_address: formData.get('customer_address') || '',
-      product_name: formData.get('product_name') || form.getAttribute('data-product-name') || '',
+      customer_name: formData.get('customer_name') || formData.get('name') || formData.get('full_name') || '',
+      customer_phone: customerPhone,
+      customer_address: formData.get('customer_address') || formData.get('address') || '',
+      product_name: formData.get('product_name') || form.getAttribute('data-product-name') || document.title || '',
       product_code: formData.get('product_code') || form.getAttribute('data-product-code') || '',
       quantity: parseInt(formData.get('quantity') || form.getAttribute('data-quantity') || '1'),
       unit_price: parseFloat(formData.get('unit_price') || form.getAttribute('data-unit-price') || '0'),
@@ -1099,8 +1126,16 @@ ttq.page();
       fbc: window._lpTrack ? window._lpTrack.getFbc() : ''
     };
 
+    if (window._updateFBAdvancedMatching) {
+      window._updateFBAdvancedMatching({ phone: payload.customer_phone, name: payload.customer_name });
+    }
+
     console.log('[LP-DEBUG] Submitting order to:', ORDER_URL, 'payload:', JSON.stringify(payload));
-    fetch(ORDER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+    fetch(ORDER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': ANON },
+      body: JSON.stringify(payload)
+    })
     .then(function(r) { console.log('[LP-DEBUG] Response status:', r.status); return r.json(); })
     .then(function(data) {
       console.log('[LP-DEBUG] Response data:', JSON.stringify(data));
@@ -1115,9 +1150,6 @@ ttq.page();
           if (typeof fbq === 'function') {
             var pp = { value: totalValue, currency: 'BDT', content_type: 'product', content_name: payload.product_name, content_ids: payload.product_code ? [payload.product_code] : [], num_items: payload.quantity, subtotal: totalValue, event_day: baseParams.event_day||'', event_hour: baseParams.event_hour||'', event_month: baseParams.event_month||'', event_url: baseParams.event_url||window.location.href, landing_page: baseParams.landing_page||window.location.href, page_title: document.title||'', traffic_source: baseParams.traffic_source||'direct', user_role:'guest', plugin:'LovableLP', order_id: data.order_number };
             fbq('track', 'Purchase', pp, {eventID: eventId});
-          }
-          if (window._lpTrack && '${page.fb_pixel_id}') {
-            window._lpTrack.sendServerEvent('Purchase', { event_id: eventId, value: totalValue, currency: 'BDT', content_name: payload.product_name, content_ids: payload.product_code?[payload.product_code]:[], content_type:'product', num_items: payload.quantity, order_id: data.order_number }, { phone: payload.customer_phone, name: payload.customer_name, order_id: data.order_id || data.order_number });
           }
           if (typeof ttq !== 'undefined' && ttq.track) {
             ttq.track('CompletePayment', { value: totalValue, currency: 'BDT', content_name: payload.product_name, content_id: payload.product_code||'', content_type:'product', quantity: payload.quantity });
@@ -1138,19 +1170,23 @@ ttq.page();
         }, 1500);
       } else {
         alert(data.error || 'অর্ডার সাবমিট করতে সমস্যা হয়েছে');
-        _submitting = false;
-        delete form.dataset.lpSubmitLocked;
-        if (btn) { btn.disabled = false; btn.textContent = btnOrigText || 'অর্ডার করুন'; }
+        resetSubmitState(form, btn, btnOrigText);
       }
     })
     .catch(function(err) {
       console.error('[LP-DEBUG] Fetch error:', err.message, err);
       alert('ত্রুটি: ' + err.message);
-      _submitting = false;
-      delete form.dataset.lpSubmitLocked;
-      if (btn) { btn.disabled = false; btn.textContent = btnOrigText || 'অর্ডার করুন'; }
+      resetSubmitState(form, btn, btnOrigText);
     });
-  });
+  }
+
+  document.addEventListener('submit', function(e) {
+    var form = getCheckoutForm(e.target);
+    if (!form) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    submitOrder(form);
+  }, true);
 })();
 </script>`;
 
