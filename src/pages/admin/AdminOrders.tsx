@@ -294,6 +294,7 @@ const AdminOrders = () => {
   const createOrder = useCreateOrder();
   const updateStatus = useUpdateOrderStatus();
   const deleteOrder = useDeleteOrder();
+  const hardDeleteOrder = useHardDeleteOrder();
   const restoreOrder = useRestoreOrder();
   const { data: nextOrderNumber = "1" } = useNextOrderNumber();
   const { data: allProducts = [] } = usePublicProducts();
