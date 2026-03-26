@@ -188,9 +188,9 @@ const App = () => {
             <Route path="/admin/support" element={P("Support", "Customer support", ["manage_settings"])} />
             <Route path="/admin/coming-soon" element={<Admin requiredPermissions={["manage_settings"]}><AdminComingSoon /></Admin>} />
             <Route path="/admin/plan" element={P("Plan", "Subscription management", ["manage_settings"])} />
-            <Route path="/lp/:slug" element={<LandingPageView />} />
-            <Route path="/lp/:slug/checkout" element={<LandingPageCheckout />} />
-            <Route path="/lp/:slug/success" element={<LandingOrderSuccess />} />
+            <Route path="/lp/:slug" element={<LandingMinimal><LandingPageView /></LandingMinimal>} />
+            <Route path="/lp/:slug/checkout" element={<LandingMinimal><LandingPageCheckout /></LandingMinimal>} />
+            <Route path="/lp/:slug/success" element={<LandingMinimal><LandingOrderSuccess /></LandingMinimal>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
