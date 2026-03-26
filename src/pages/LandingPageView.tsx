@@ -1683,7 +1683,7 @@ ttq.page();
         var origClick = btn.onclick;
         btn.onclick = function(e) {
           var btnText = (btn.textContent || btn.value || '').trim();
-          if (/অর্ডার|order|submit|কনফার্ম|confirm/i.test(btnText)) {
+          if (/অর্ডার|order|submit|কনফার্ম|confirm|সাবমিট|পাঠান|send|buy|কিনুন|place/i.test(btnText)) {
             e && e.preventDefault && e.preventDefault();
             e && e.stopImmediatePropagation && e.stopImmediatePropagation();
             var checkout = getCheckoutForm(btn) || getCheckoutForm(form);
