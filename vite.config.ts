@@ -48,7 +48,10 @@ export default defineConfig(({ mode }) => ({
     },
     chunkSizeWarningLimit: 600,
     reportCompressedSize: false,
-    // Faster builds
     sourcemap: false,
+    // Aggressive tree-shaking
+    commonjsOptions: {
+      transformMixedEsModules: true,
+    },
   },
 }));
