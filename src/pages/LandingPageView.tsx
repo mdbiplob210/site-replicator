@@ -1239,6 +1239,72 @@ ttq.page();
     return '';
   }
 
+  function buildSuccessUrl(result, payload, form, msg) {
+    var params = new URLSearchParams();
+    params.set('order', String(result.order_number || ''));
+    params.set('eid', String(payload.event_id || ''));
+    params.set('value', String((payload.unit_price || 0) * (payload.quantity || 1)));
+    params.set('qty', String(payload.quantity || 1));
+    if (payload.product_name) params.set('product', String(payload.product_name));
+    if (payload.product_code) params.set('code', String(payload.product_code));
+    if (result.order_id) params.set('oid', String(result.order_id));
+    if (msg) params.set('msg', msg);
+    if (result.duplicate) params.set('duplicate', '1');
+    return window.location.origin + '/lp/' + encodeURIComponent(SLUG) + '/success?' + params.toString();
+  }
+
+  if (!window.__lpOrderFetchPatched) {
+    window.__lpOrderFetchPatched = true;
+    var _lpOrigFetch = window.fetch;
+    window.fetch = function(input, init) {
+      var url = String(typeof input === 'string' ? input : (input && input.url) || '');
+      var nextInit = init || {};
+      var enrichedPayload = null;
+      if (url.indexOf('submit-landing-order') !== -1 && nextInit && nextInit.body) {
+        try {
+          enrichedPayload = JSON.parse(nextInit.body);
+          if (!enrichedPayload.landing_page_slug) enrichedPayload.landing_page_slug = SLUG;
+          if (!enrichedPayload.event_id) enrichedPayload.event_id = window._lpTrack ? window._lpTrack.generateEventId() : ('eid_' + Math.random().toString(36).substr(2,9) + '_' + Date.now());
+          if (!enrichedPayload.event_url) enrichedPayload.event_url = window.location.href;
+          if (!enrichedPayload.visitor_id) enrichedPayload.visitor_id = VID;
+          if (!enrichedPayload.session_id) {
+            try { enrichedPayload.session_id = sessionStorage.getItem('_lp_sid') || ''; } catch(e) { enrichedPayload.session_id = ''; }
+          }
+          if (!enrichedPayload.device_type) enrichedPayload.device_type = window.innerWidth < 768 ? 'mobile' : window.innerWidth < 1024 ? 'tablet' : 'desktop';
+          if (!enrichedPayload.fbp && window._lpTrack) enrichedPayload.fbp = window._lpTrack.getFbp();
+          if (!enrichedPayload.fbc && window._lpTrack) enrichedPayload.fbc = window._lpTrack.getFbc();
+          nextInit = Object.assign({}, nextInit, {
+            headers: Object.assign({}, nextInit.headers || {}, { apikey: ANON, 'Content-Type': 'application/json' }),
+            body: JSON.stringify(enrichedPayload)
+          });
+        } catch(e) {}
+      }
+      var response = _lpOrigFetch.call(this, input, nextInit);
+      if (url.indexOf('submit-landing-order') !== -1) {
+        response.then(function(res) {
+          return res.clone().json().then(function(data) {
+            if (!data || (!data.success && !data.duplicate) || window.__lpOrderRedirecting) return;
+            var payload = enrichedPayload || {};
+            var msg = 'আপনার অর্ডার সফলভাবে জমা হয়েছে! অর্ডার নম্বর: ' + (data.order_number || '');
+            var redirectUrl = buildSuccessUrl(data, payload, null, msg);
+            try {
+              sessionStorage.setItem('_lp_purchase_success:' + String(payload.event_id || ''), JSON.stringify({
+                customer_name: payload.customer_name || '',
+                customer_phone: payload.customer_phone || '',
+                order_id: data.order_id || '',
+                order_number: data.order_number || '',
+                duplicate: !!data.duplicate
+              }));
+            } catch(e) {}
+            window.__lpOrderRedirecting = true;
+            setTimeout(function() { window.location.href = redirectUrl; }, 120);
+          }).catch(function(){});
+        }).catch(function(){});
+      }
+      return response;
+    };
+  }
+
   function submitOrder(form) {
     if (!form || form.dataset.lpSubmitLocked === '1' || _submitting) return;
 
@@ -1320,41 +1386,29 @@ ttq.page();
 
         console.log('[LP-DEBUG] duplicate:', data.duplicate, 'fbq exists:', typeof fbq === 'function', 'totalValue:', totalValue, 'eventId:', eventId);
         if (!data.duplicate) {
-          if (typeof fbq === 'function') {
-            var pp = { value: totalValue, currency: 'BDT', content_type: 'product', content_name: payload.product_name, content_ids: payload.product_code ? [payload.product_code] : [], num_items: payload.quantity, subtotal: totalValue, event_day: baseParams.event_day||'', event_hour: baseParams.event_hour||'', event_month: baseParams.event_month||'', event_url: baseParams.event_url||window.location.href, landing_page: baseParams.landing_page||window.location.href, page_title: document.title||'', traffic_source: baseParams.traffic_source||'direct', user_role:'guest', plugin:'LovableLP', order_id: data.order_number };
-            fbq('track', 'Purchase', pp, {eventID: eventId});
-          }
           if (typeof ttq !== 'undefined' && ttq.track) {
             ttq.track('CompletePayment', { value: totalValue, currency: 'BDT', content_name: payload.product_name, content_id: payload.product_code||'', content_type:'product', quantity: payload.quantity });
           }
           if (typeof dataLayer !== 'undefined') {
             dataLayer.push({ event:'conversion_Purchase', value: totalValue, currency:'BDT', content_name: payload.product_name, order_id: data.order_number, num_items: payload.quantity });
           }
-
-          // Server-side Purchase via Conversions API (redundancy with backend)
-          if (window._lpTrack && window._lpTrack.sendServerEvent) {
-            window._lpTrack.sendServerEvent('Purchase', {
-              event_id: eventId,
-              value: totalValue,
-              currency: 'BDT',
-              content_name: payload.product_name,
-              content_ids: payload.product_code ? [payload.product_code] : [],
-              content_type: 'product',
-              num_items: payload.quantity,
-              order_id: data.order_number
-            }, { phone: payload.customer_phone, name: payload.customer_name, order_id: data.order_id || data.order_number });
-          }
         }
 
-        var successUrl = form.getAttribute('data-success-url');
         var msg = form.getAttribute('data-success-message') || 'আপনার অর্ডার সফলভাবে জমা হয়েছে! অর্ডার নম্বর: ' + data.order_number;
+        var successUrl = buildSuccessUrl(data, payload, form, msg);
+        try {
+          sessionStorage.setItem('_lp_purchase_success:' + eventId, JSON.stringify({
+            customer_name: payload.customer_name,
+            customer_phone: payload.customer_phone,
+            order_id: data.order_id || '',
+            order_number: data.order_number || '',
+            duplicate: !!data.duplicate
+          }));
+        } catch(e) {}
         if (btn) { btn.disabled = true; btn.textContent = '✓ অর্ডার সফল!'; btn.style.backgroundColor = '#10b981'; }
         setTimeout(function() {
-          if (successUrl) { window.location.href = successUrl; }
-          else {
-            document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:sans-serif;"><div style="text-align:center;padding:40px;"><h1 style="color:#10b981;font-size:48px;">✓</h1><h2 style="margin:16px 0;">অর্ডার সফল!</h2><p>' + msg + '</p></div></div>';
-          }
-        }, 1500);
+          window.location.href = successUrl;
+        }, 300);
       } else {
         alert(data.error || 'অর্ডার সাবমিট করতে সমস্যা হয়েছে');
         resetSubmitState(form, btn, btnOrigText);

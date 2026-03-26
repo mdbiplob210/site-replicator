@@ -130,6 +130,11 @@ Deno.serve(async (req) => {
       fbp,
       fbc,
     } = body;
+    const referer = req.headers.get("referer") || "";
+    const inferredSlug = referer.match(/\/lp\/([^/?#]+)/)?.[1] || null;
+    const landingSlug = landing_page_slug || inferredSlug;
+    const purchaseEventId = event_id || `srv_${Date.now()}`;
+    const purchaseEventUrl = event_url || referer || "";
 
     if (!customer_name || !customer_phone) {
       return new Response(
@@ -238,7 +243,7 @@ Deno.serve(async (req) => {
         customer_name, customer_phone: customerPhone, customer_address: customer_address || null,
         product_name: product_name || null, product_code: product_code || null,
         quantity, unit_price, total_amount: totalAmount, delivery_charge, discount,
-        notes: notes || null, landing_page_slug: landing_page_slug || null,
+         notes: notes || null, landing_page_slug: landingSlug || null,
         client_ip: clientIp, user_agent: userAgent, device_info: deviceInfo,
         block_reason: `স্থায়ীভাবে ব্লক করা নম্বর: ${customerPhone}`,
         status: "processing",
@@ -270,7 +275,7 @@ Deno.serve(async (req) => {
           customer_name, customer_phone: customerPhone, customer_address: customer_address || null,
           product_name: product_name || null, product_code: product_code || null,
           quantity, unit_price, total_amount: totalAmount, delivery_charge, discount,
-          notes: notes || null, landing_page_slug: landing_page_slug || null,
+           notes: notes || null, landing_page_slug: landingSlug || null,
           client_ip: clientIp, user_agent: userAgent, device_info: deviceInfo,
           block_reason: `স্থায়ীভাবে ব্লক করা IP: ${clientIp}`,
           status: "processing", updated_at: new Date().toISOString(),
@@ -334,7 +339,7 @@ Deno.serve(async (req) => {
           customer_name, customer_phone: customerPhone, customer_address: customer_address || null,
           product_name: product_name || null, product_code: product_code || null,
           quantity, unit_price, total_amount: totalAmount, delivery_charge, discount,
-          notes: notes || null, landing_page_slug: landing_page_slug || null,
+           notes: notes || null, landing_page_slug: landingSlug || null,
           client_ip: clientIp, user_agent: userAgent, device_info: deviceInfo,
           block_reason: blockReason, status: "processing", updated_at: new Date().toISOString(),
         };
@@ -367,7 +372,7 @@ Deno.serve(async (req) => {
             customer_name, customer_phone: customerPhone, customer_address: customer_address || null,
             product_name: product_name || null, product_code: product_code || null,
             quantity, unit_price, total_amount: totalAmount, delivery_charge, discount,
-            notes: notes || null, landing_page_slug: landing_page_slug || null,
+             notes: notes || null, landing_page_slug: landingSlug || null,
             client_ip: clientIp, user_agent: userAgent, device_info: deviceInfo,
             block_reason: `ডেলিভারি রেশিও কম (${ratio}% < ${minDeliveryRatio}%)`,
             status: "processing", updated_at: new Date().toISOString(),
@@ -507,21 +512,21 @@ Deno.serve(async (req) => {
         .eq("block_reason", "abandoned_form");
     }
     // By IP + slug
-    if (clientIp !== "unknown" && landing_page_slug) {
+    if (clientIp !== "unknown" && landingSlug) {
       await supabase
         .from("incomplete_orders")
         .delete()
         .eq("client_ip", clientIp)
         .eq("block_reason", "abandoned_form")
-        .eq("landing_page_slug", landing_page_slug);
+        .eq("landing_page_slug", landingSlug);
     }
 
     // ═══ Track landing page conversion & CAPI ═══
-    if (landing_page_slug) {
+    if (landingSlug) {
       const { data: lp } = await supabase
         .from("landing_pages")
         .select("id, fb_pixel_id, fb_access_token")
-        .eq("slug", landing_page_slug)
+        .eq("slug", landingSlug)
         .single();
       if (lp) {
         await supabase.from("landing_page_events").insert({
@@ -545,8 +550,8 @@ Deno.serve(async (req) => {
               event_name: "Purchase",
               event_time: eventTime,
               action_source: "website",
-              event_id: event_id || `srv_${orderNumber}_${Date.now()}`,
-              event_source_url: event_url || `https://${req.headers.get("host") || "site"}/lp/${landing_page_slug}`,
+               event_id: purchaseEventId,
+               event_source_url: purchaseEventUrl || `https://${req.headers.get("host") || "site"}/lp/${landingSlug}`,
               user_data: {
                 client_ip_address: clientIp !== "unknown" ? clientIp : undefined,
                 client_user_agent: userAgent || undefined,
@@ -592,7 +597,7 @@ Deno.serve(async (req) => {
             console.error("[submit-landing-order] CAPI error:", capiErr.message);
           }
         } else {
-          console.warn("[submit-landing-order] CAPI skipped: pixel or access token missing for", landing_page_slug);
+           console.warn("[submit-landing-order] CAPI skipped: pixel or access token missing for", landingSlug);
         }
       }
     }
