@@ -440,15 +440,11 @@ export function useTracking() {
       if (clarityId) loadClarity(clarityId);
     };
 
-    // Defer tracking scripts aggressively to improve TTI
-    // Only load after page is fully interactive (8s minimum)
+    // Load tracking scripts after first paint but not too late
+    // 2s delay balances performance with tracking reliability
     setTimeout(() => {
-      if ('requestIdleCallback' in window) {
-        (window as any).requestIdleCallback(loadScripts, { timeout: 4000 });
-      } else {
-        loadScripts();
-      }
-    }, 8000);
+      loadScripts();
+    }, 2000);
 
     // Save UTM params
     const utms = getUtmParams();
@@ -506,15 +502,31 @@ export function useTracking() {
     const eventId = generateEventId("vc");
     const contentId = product.productCode || product.id;
 
-    if (fbPixelId && window.fbq) {
-      window.fbq("track", "ViewContent", {
-        content_name: product.name,
-        content_ids: [contentId],
-        content_type: "product",
-        content_category: product.category || "",
-        value: product.price,
-        currency: "BDT",
-      }, { eventID: eventId });
+    const vcData = {
+      content_name: product.name,
+      content_ids: [contentId],
+      contents: [{ id: contentId, quantity: 1, item_price: product.price }],
+      content_type: "product",
+      content_category: product.category || "",
+      value: product.price,
+      currency: "BDT",
+    };
+
+    const fireVC = () => {
+      if (window.fbq && typeof window.fbq === "function") {
+        window.fbq("track", "ViewContent", vcData, { eventID: eventId });
+        return true;
+      }
+      return false;
+    };
+
+    if (!fireVC()) {
+      if (fbPixelId) loadFBPixel(fbPixelId);
+      let attempts = 0;
+      const retryTimer = setInterval(() => {
+        attempts++;
+        if (fireVC() || attempts >= 20) clearInterval(retryTimer);
+      }, 300);
     }
 
     if (tiktokPixelId && window.ttq) {
@@ -760,19 +772,38 @@ export function useTracking() {
       orderId: params.orderId,
     });
 
-    if (fbPixelId && window.fbq) {
-      window.fbq("track", "Purchase", {
-        content_name: params.contentName,
-        content_ids: [params.contentId],
-        content_type: "product",
-        value: params.value,
-        currency: params.currency || "BDT",
-        num_items: params.qty,
-        order_id: params.orderId,
-      }, { eventID: eventId });
-      console.log("[Purchase] Browser fbq fired", { eventId, pixelId: fbPixelId });
-    } else {
-      console.warn("[Purchase] Browser fbq NOT available", { fbPixelId, fbqExists: !!window.fbq });
+    const purchaseData = {
+      content_name: params.contentName,
+      content_ids: [params.contentId],
+      contents: [{ id: params.contentId, quantity: params.qty, item_price: params.value / params.qty }],
+      content_type: "product",
+      content_category: "ecommerce",
+      value: params.value,
+      currency: params.currency || "BDT",
+      num_items: params.qty,
+      order_id: params.orderId,
+    };
+
+    const fireBrowserPurchase = () => {
+      if (window.fbq && typeof window.fbq === "function") {
+        window.fbq("track", "Purchase", purchaseData, { eventID: eventId });
+        console.log("[Purchase] Browser fbq fired", { eventId, pixelId: fbPixelId });
+        return true;
+      }
+      return false;
+    };
+
+    if (!fireBrowserPurchase()) {
+      // SDK not ready yet — load it and retry
+      if (fbPixelId) loadFBPixel(fbPixelId);
+      let attempts = 0;
+      const retryTimer = setInterval(() => {
+        attempts++;
+        if (fireBrowserPurchase() || attempts >= 30) {
+          clearInterval(retryTimer);
+          if (attempts >= 30) console.warn("[Purchase] Browser fbq never loaded");
+        }
+      }, 300);
     }
 
     if (tiktokPixelId && window.ttq) {
@@ -817,6 +848,7 @@ export function useTracking() {
         customData: {
           content_name: params.contentName,
           content_ids: [params.contentId],
+          contents: [{ id: params.contentId, quantity: params.qty, item_price: params.value / params.qty }],
           content_type: "product",
           content_category: "ecommerce",
           value: params.value,
