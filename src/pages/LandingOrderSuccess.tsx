@@ -187,7 +187,7 @@ export default function LandingOrderSuccess() {
           <div className="mt-6 space-y-3 rounded-2xl border border-border bg-muted/40 p-4 text-left">
             <div className="flex items-center gap-3 text-sm text-muted-foreground">
               <Package className="h-4 w-4 text-primary" />
-              <span>আপনার পারচেজ ট্র্যাকিং এখন success page থেকে fire হচ্ছে।</span>
+              <span>আপনার অর্ডারটি কনফার্ম করতে শীঘ্রই কল করা হবে।</span>
             </div>
           </div>
 
