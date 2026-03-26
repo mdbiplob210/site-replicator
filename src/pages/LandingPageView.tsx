@@ -1483,7 +1483,7 @@ ttq.page();
         xhr.addEventListener('load', function() {
           try {
             var data = JSON.parse(xhr.responseText);
-            if ((data.success || data.duplicate) && !window.__lpOrderRedirecting) {
+            if ((data.success || data.duplicate)) {
               handleSuccessfulOrder(data, JSON.parse(body), null, null, 'আপনার অর্ডার সফলভাবে জমা হয়েছে! অর্ডার নম্বর: ' + (data.order_number || ''));
             }
           } catch(e) {}
