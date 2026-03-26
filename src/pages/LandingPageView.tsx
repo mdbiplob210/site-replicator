@@ -1547,8 +1547,14 @@ document.addEventListener('input', function(e) {
 ` : '';
     const bodyScripts = landingDeferredScriptLoader + richTrackingHelper + capiPageViewScript + deferredPixelScripts + conversionScript + orderScript + phoneValidationScript + tierPricePatchScript + analyticsScript + partialTrackingScript + autocompleteScript + exitIntentScript + debugPanelScript + heartbeatScript;
 
+    const duplicateMarketingPatterns = [
+      ...(page.fb_pixel_id ? [/connect\.facebook\.net/i] : []),
+      ...(page.tiktok_pixel_id ? [/analytics\.tiktok\.com/i] : []),
+      ...(page.gtm_id ? [/googletagmanager\.com/i, /google-analytics\.com/i, /gtag\/js/i] : []),
+    ];
+
     let cleanHtml = sanitizeHtmlScripts(page.html_content);
-    cleanHtml = deferLandingMarkupScripts(cleanHtml);
+    cleanHtml = deferLandingMarkupScripts(cleanHtml, { disablePatterns: duplicateMarketingPatterns });
     cleanHtml = normalizeLandingPhoneHtml(cleanHtml);
     cleanHtml = optimizeLandingImages(cleanHtml);
     cleanHtml = optimizeLandingEmbeds(cleanHtml);

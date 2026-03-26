@@ -15,6 +15,14 @@ describe("htmlSanitizer", () => {
     expect(deferred).toContain('data-lp-src="https://www.googletagmanager.com/gtm.js?id=GTM-123"');
   });
 
+  it("can remove duplicate marketing scripts when first-party injectors already exist", () => {
+    const html = '<script src="https://connect.facebook.net/en_US/fbevents.js"></script>';
+    const sanitized = deferLandingMarkupScripts(html, { disablePatterns: [/connect\.facebook\.net/i] });
+
+    expect(sanitized).toContain("removed duplicate marketing script");
+    expect(sanitized).not.toContain('type="text/lovable-deferred-script"');
+  });
+
   it("keeps the first image eager and lazy-loads later images", () => {
     const html = '<img src="/hero.jpg"><img src="/gallery.jpg">';
     const optimized = optimizeLandingImages(html);

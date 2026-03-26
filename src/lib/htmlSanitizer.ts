@@ -27,6 +27,10 @@ function shouldDeferScript(src: string) {
   return DEFERRED_SCRIPT_PATTERNS.some((pattern) => pattern.test(src));
 }
 
+function shouldDisableScript(src: string, disablePatterns: RegExp[]) {
+  return disablePatterns.some((pattern) => pattern.test(src));
+}
+
 /**
  * Remove script tags that match blocked patterns from HTML string
  */
@@ -62,10 +66,17 @@ export function sanitizeHtmlScripts(html: string): string {
  * Convert known non-critical third-party script tags inside landing HTML into inert
  * placeholders. They will be restored after first paint by landingDeferredScriptLoader.
  */
-export function deferLandingMarkupScripts(html: string): string {
+export function deferLandingMarkupScripts(
+  html: string,
+  options?: { disablePatterns?: RegExp[] },
+): string {
   if (!html) return html;
+  const disablePatterns = options?.disablePatterns ?? [];
 
   const replaceScript = (_match: string, src: string) => {
+    if (shouldDisableScript(src, disablePatterns)) {
+      return `<!-- removed duplicate marketing script: ${src} -->`;
+    }
     if (!shouldDeferScript(src)) return _match;
     return `<script type="${DEFERRED_SCRIPT_TYPE}" data-lp-src="${src}"></script>`;
   };

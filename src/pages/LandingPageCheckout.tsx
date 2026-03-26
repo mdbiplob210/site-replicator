@@ -657,8 +657,14 @@ ${page.gtm_id ? '<link rel="dns-prefetch" href="https://www.googletagmanager.com
     const headScripts = resourceHints + richTrackingHelper + trackingScripts;
     const bodyScripts = landingDeferredScriptLoader + deferredPixelScripts + phoneValidationScript + orderScript + tierPricePatchScript + partialTrackingScript + autocompleteScript;
 
+    const duplicateMarketingPatterns = [
+      ...(page.fb_pixel_id ? [/connect\.facebook\.net/i] : []),
+      ...(page.tiktok_pixel_id ? [/analytics\.tiktok\.com/i] : []),
+      ...(page.gtm_id ? [/googletagmanager\.com/i, /google-analytics\.com/i, /gtag\/js/i] : []),
+    ];
+
     let cleanHtml = sanitizeHtmlScripts(page.checkout_html!);
-    cleanHtml = deferLandingMarkupScripts(cleanHtml);
+    cleanHtml = deferLandingMarkupScripts(cleanHtml, { disablePatterns: duplicateMarketingPatterns });
     cleanHtml = normalizeLandingPhoneHtml(cleanHtml);
     cleanHtml = optimizeLandingImages(cleanHtml);
     cleanHtml = optimizeLandingEmbeds(cleanHtml);
