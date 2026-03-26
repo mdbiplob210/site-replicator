@@ -1316,17 +1316,15 @@ ttq.page();
   }
 
   function handleSuccessfulOrder(result, payload, form, btn, successText) {
-    // Fire Purchase event immediately (browser + server)
-    firePurchaseEvent(payload, result);
-
-    // Show success popup
-    showSuccessPopup(result, payload);
-
+    // Redirect to success page — Purchase fires there
+    window.__lpOrderRedirecting = true;
+    var successUrl = buildSuccessUrl(result, payload);
     if (btn) {
       btn.disabled = true;
-      btn.textContent = '✓ অর্ডার সফল!';
+      btn.textContent = 'অপেক্ষা করুন...';
       btn.style.backgroundColor = '#10b981';
     }
+    window.location.href = successUrl;
   }
 
   function resetSubmitState(form, btn, btnOrigText) {
