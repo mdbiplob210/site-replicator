@@ -1558,6 +1558,8 @@ ttq.page();
     });
   }
 
+  // === Aggressive form interception ===
+  // 1. Capture-phase listeners (highest priority)
   document.addEventListener('submit', function(e) {
     var form = getCheckoutForm(e.target);
     if (!form) return;
@@ -1566,7 +1568,6 @@ ttq.page();
     submitOrder(form);
   }, true);
 
-  // Catch clicks on order buttons inside checkout forms (any type including default submit)
   document.addEventListener('click', function(e) {
     if (_submitting) return;
     var btn = e.target && e.target.closest ? e.target.closest('button, [role="button"], input[type="submit"]') : null;
@@ -1579,6 +1580,71 @@ ttq.page();
     e.stopImmediatePropagation();
     submitOrder(form);
   }, true);
+
+  // 2. Direct form patching — override submit and button clicks on any checkout form
+  function patchForm(form) {
+    if (!form || form.__lpPatched) return;
+    var detected = getCheckoutForm(form);
+    if (!detected) {
+      // Also try treating ANY form with 2+ inputs as checkout
+      var inputs = form.querySelectorAll('input:not([type="hidden"]), textarea');
+      if (inputs.length < 2) return;
+    }
+    form.__lpPatched = true;
+
+    // Override native submit
+    var origSubmit = form.submit;
+    form.submit = function() {
+      var checkout = getCheckoutForm(form);
+      if (checkout) { submitOrder(checkout); return; }
+      origSubmit.call(form);
+    };
+
+    // Override onsubmit
+    form.onsubmit = function(e) {
+      e && e.preventDefault && e.preventDefault();
+      var checkout = getCheckoutForm(form);
+      if (checkout) { submitOrder(checkout); return false; }
+      return true;
+    };
+
+    // Patch all buttons in form
+    var buttons = form.querySelectorAll('button, [role="button"], input[type="submit"]');
+    for (var i = 0; i < buttons.length; i++) {
+      (function(btn) {
+        if (btn.__lpPatched) return;
+        btn.__lpPatched = true;
+        var origClick = btn.onclick;
+        btn.onclick = function(e) {
+          var btnText = (btn.textContent || btn.value || '').trim();
+          if (/অর্ডার|order|submit|কনফার্ম|confirm/i.test(btnText)) {
+            e && e.preventDefault && e.preventDefault();
+            e && e.stopImmediatePropagation && e.stopImmediatePropagation();
+            var checkout = getCheckoutForm(btn) || getCheckoutForm(form);
+            if (checkout) { submitOrder(checkout); return false; }
+          }
+          if (origClick) return origClick.call(btn, e);
+        };
+      })(buttons[i]);
+    }
+  }
+
+  // 3. MutationObserver — patch forms as they appear
+  function scanAndPatchForms() {
+    var forms = document.querySelectorAll(FORM_SELECTOR);
+    for (var i = 0; i < forms.length; i++) patchForm(forms[i]);
+  }
+
+  scanAndPatchForms();
+
+  if (typeof MutationObserver !== 'undefined') {
+    var formObserver = new MutationObserver(function() { scanAndPatchForms(); });
+    formObserver.observe(document.documentElement || document.body, { subtree: true, childList: true });
+  }
+
+  // 4. Periodic scan fallback for dynamically created popups
+  var _scanInterval = setInterval(function() { scanAndPatchForms(); }, 1000);
+  setTimeout(function() { clearInterval(_scanInterval); }, 60000);
 })();
 </script>`;
 
