@@ -136,9 +136,36 @@ var _extId;
 try { _extId = localStorage.getItem('_vid'); } catch(e) {}
 if (!_extId) { _extId = 'v_' + Date.now() + '_' + Math.random().toString(36).substr(2,12); try { localStorage.setItem('_vid', _extId); } catch(e) {} }
 
-fbq('init','${page.fb_pixel_id}', { external_id: _extId, country: 'bd' });
-
-window._fbPixelId = '${page.fb_pixel_id}';
+ fbq('init','${page.fb_pixel_id}', { external_id: _extId, country: 'bd' });
+ 
+ window._fbPixelId = '${page.fb_pixel_id}';
+ window.__lpFbqRef = fbq;
+ window.__lpTrackBrowserPurchase = function(params, options, attempt) {
+   var tries = attempt || 0;
+   var ref = window.__lpFbqRef || window.fbq || window._fbq;
+   if (typeof ref !== 'function') {
+     if (tries < 12) {
+       setTimeout(function() {
+         window.__lpTrackBrowserPurchase(params, options, tries + 1);
+       }, 250);
+     }
+     return false;
+   }
+   window.__lpFbqRef = ref;
+   try {
+     if (window._fbPixelId) ref('trackSingle', window._fbPixelId, 'Purchase', params || {}, options || {});
+     else ref('track', 'Purchase', params || {}, options || {});
+     return true;
+   } catch (err) {
+     console.warn('[FB Pixel Purchase] Retry scheduled', err && err.message ? err.message : err);
+     if (tries < 3) {
+       setTimeout(function() {
+         window.__lpTrackBrowserPurchase(params, options, tries + 1);
+       }, 250);
+     }
+     return false;
+   }
+ };
 window._updateFBAdvancedMatching = function(data) {
   if (!data || !window._fbPixelId) return;
   var ud = window._lpTrack ? window._lpTrack.getUserData() : {};
@@ -1113,6 +1140,13 @@ ttq.page();
 
   function firePurchaseEvent(payload, result) {
     var eventId = payload.event_id || (window._lpTrack ? window._lpTrack.generateEventId() : ('eid_' + Math.random().toString(36).substr(2,9) + '_' + Date.now()));
+    window.__lpPurchaseEventCache = window.__lpPurchaseEventCache || {};
+    if (window.__lpPurchaseEventCache[eventId]) {
+      console.log('[Purchase] Duplicate popup purchase skipped', { eventId: eventId, order: result && result.order_number ? result.order_number : '' });
+      return;
+    }
+    window.__lpPurchaseEventCache[eventId] = true;
+
     var totalValue = resolveTotalValue(payload);
     var purchaseParams = {
       value: totalValue,
@@ -1126,10 +1160,14 @@ ttq.page();
     };
 
     // Browser pixel Purchase
-    if (typeof fbq === 'function') {
+    var browserPurchaseFired = false;
+    if (typeof window.__lpTrackBrowserPurchase === 'function') {
+      browserPurchaseFired = window.__lpTrackBrowserPurchase(purchaseParams, { eventID: eventId });
+    } else if (typeof fbq === 'function') {
       fbq('track', 'Purchase', purchaseParams, { eventID: eventId });
-      console.log('[Purchase] Browser fbq fired', { eventId: eventId, value: totalValue });
+      browserPurchaseFired = true;
     }
+    console.log('[Purchase] Browser pixel dispatch attempted', { eventId: eventId, value: totalValue, browserPurchaseFired: browserPurchaseFired });
 
     // TikTok pixel Purchase
     if (typeof ttq !== 'undefined' && ttq.track) {
@@ -1141,8 +1179,8 @@ ttq.page();
       dataLayer.push({ event: 'conversion_Purchase', value: totalValue, currency: 'BDT', order_id: result.order_number });
     }
 
-    // Server-side CAPI Purchase
-    if (window._lpTrack) {
+    // Server-side CAPI fallback only if backend purchase tracking did not already succeed
+    if (window._lpTrack && result && result.purchase_tracked !== true) {
       window._lpTrack.sendServerEvent('Purchase', {
         event_id: eventId,
         value: totalValue,
