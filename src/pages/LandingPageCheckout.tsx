@@ -471,8 +471,22 @@ ttq.track('InitiateCheckout');
       order_id: String(result.order_number || ''),
       subtotal: totalValue
     };
-    if (typeof fbq === 'function') {
-      fbq('track', 'Purchase', purchaseParams, { eventID: eventId });
+    var browserFired = false;
+    if (typeof window.__lpTrackBrowserPurchase === 'function') {
+      browserFired = window.__lpTrackBrowserPurchase(purchaseParams, { eventID: eventId });
+    }
+    if (!browserFired && typeof fbq === 'function') {
+      try { fbq('track', 'Purchase', purchaseParams, { eventID: eventId }); browserFired = true; } catch(e) {}
+    }
+    if (!browserFired) {
+      (function retryPx(att) {
+        if (att > 8) return;
+        setTimeout(function() {
+          var ref = window.fbq || window._fbq;
+          if (typeof ref === 'function') { try { ref('track', 'Purchase', purchaseParams, { eventID: eventId }); } catch(e) {} }
+          else retryPx(att + 1);
+        }, 500);
+      })(0);
     }
     if (typeof ttq !== 'undefined' && ttq.track) {
       ttq.track('CompletePayment', { value: totalValue, currency: 'BDT', content_name: purchaseParams.content_name, quantity: purchaseParams.num_items });
