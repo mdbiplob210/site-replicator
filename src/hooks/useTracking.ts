@@ -440,15 +440,11 @@ export function useTracking() {
       if (clarityId) loadClarity(clarityId);
     };
 
-    // Defer tracking scripts aggressively to improve TTI
-    // Only load after page is fully interactive (8s minimum)
+    // Load tracking scripts after first paint but not too late
+    // 2s delay balances performance with tracking reliability
     setTimeout(() => {
-      if ('requestIdleCallback' in window) {
-        (window as any).requestIdleCallback(loadScripts, { timeout: 4000 });
-      } else {
-        loadScripts();
-      }
-    }, 8000);
+      loadScripts();
+    }, 2000);
 
     // Save UTM params
     const utms = getUtmParams();
