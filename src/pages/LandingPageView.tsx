@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useLandingPageBySlug } from "@/hooks/useLandingPages";
 import { useLayoutEffect, useRef } from "react";
-import { sanitizeHtmlScripts, optimizeLandingImages } from "@/lib/htmlSanitizer";
+import { deferLandingMarkupScripts, landingDeferredScriptLoader, optimizeLandingEmbeds, optimizeLandingImages, sanitizeHtmlScripts } from "@/lib/htmlSanitizer";
 import { landingPhoneValidationScript, normalizeLandingPhoneHtml } from "@/lib/landingPhoneHtml";
 
 function escapeHtml(str: string): string {
@@ -496,6 +496,17 @@ ttq.page();
   var _pageStart = Date.now();
   window._lpLastTrackedClickAt = window._lpLastTrackedClickAt || 0;
 
+  function onReady(cb) {
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', cb, { once: true });
+    else cb();
+  }
+
+  function scheduleNonCritical(cb) {
+    var raf = window.requestAnimationFrame || function(fn) { setTimeout(fn, 16); };
+    var idle = window.requestIdleCallback || function(fn) { setTimeout(fn, 120); };
+    onReady(function() { raf(function() { idle(cb); }); });
+  }
+
   // UTM params
   var urlParams = new URLSearchParams(window.location.search);
   var _utm = {
@@ -548,76 +559,71 @@ ttq.page();
     if (sendWithBeacon(body)) return;
     postEvent(body);
   }
-  send('view');
+  scheduleNonCritical(function() {
+    send('view');
 
-  // Track scroll depth
-  var _maxScroll = 0;
-  var _scrollSent = {};
-  window.addEventListener('scroll', function() {
-    var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    var docHeight = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight) - window.innerHeight;
-    if (docHeight <= 0) return;
-    var pct = Math.round((scrollTop / docHeight) * 100);
-    if (pct > _maxScroll) _maxScroll = pct;
-    [25, 50, 75, 100].forEach(function(milestone) {
-      if (pct >= milestone && !_scrollSent[milestone]) {
-        _scrollSent[milestone] = true;
-        send('scroll', 'scroll_' + milestone, { scroll_depth: milestone });
-      }
+    // Track scroll depth
+    var _maxScroll = 0;
+    var _scrollSent = {};
+    window.addEventListener('scroll', function() {
+      var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      var docHeight = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight) - window.innerHeight;
+      if (docHeight <= 0) return;
+      var pct = Math.round((scrollTop / docHeight) * 100);
+      if (pct > _maxScroll) _maxScroll = pct;
+      [25, 50, 75, 100].forEach(function(milestone) {
+        if (pct >= milestone && !_scrollSent[milestone]) {
+          _scrollSent[milestone] = true;
+          send('scroll', 'scroll_' + milestone, { scroll_depth: milestone });
+        }
+      });
+    }, { passive: true });
+
+    function sendExit() {
+      var timeOnPage = Math.round((Date.now() - _pageStart) / 1000);
+      send('exit', null, { scroll_depth: _maxScroll, time_on_page: timeOnPage });
+    }
+
+    document.addEventListener('visibilitychange', function() {
+      if (document.visibilityState === 'hidden') sendExit();
     });
-  }, { passive: true });
 
-  // Track time on page when leaving
-  function sendExit() {
-    var timeOnPage = Math.round((Date.now() - _pageStart) / 1000);
-    send('exit', null, { scroll_depth: _maxScroll, time_on_page: timeOnPage });
-  }
-  document.addEventListener('visibilitychange', function() {
-    if (document.visibilityState === 'hidden') sendExit();
-  });
+    window._lpSend = send;
 
-  // Track funnel events
-  window._lpSend = send;
+    document.addEventListener('click', function(e) {
+      var clickX = (e.pageX / document.documentElement.scrollWidth * 100).toFixed(2);
+      var clickY = (e.pageY / Math.max(document.body.scrollHeight, 1) * 100).toFixed(2);
+      var elTag = e.target.tagName || '';
+      var elText = (e.target.textContent || '').trim().substring(0,30);
+      var clickEl = elTag + (elText ? ':' + elText : '');
+      var pageH = document.body.scrollHeight;
 
-  document.addEventListener('click', function(e) {
-    var clickX = (e.pageX / document.documentElement.scrollWidth * 100).toFixed(2);
-    var clickY = (e.pageY / Math.max(document.body.scrollHeight, 1) * 100).toFixed(2);
-    var elTag = e.target.tagName || '';
-    var elText = (e.target.textContent || '').trim().substring(0,30);
-    var clickEl = elTag + (elText ? ':' + elText : '');
-    var pageH = document.body.scrollHeight;
-
-    var el = e.target.closest('[data-track-event]');
-    if (el) {
-      window._lpLastTrackedClickAt = Date.now();
-      send('click', el.getAttribute('data-track-event'), { click_x: parseFloat(clickX), click_y: parseFloat(clickY), click_element: clickEl, page_height: pageH });
-    } else {
-      // Match buttons, links, and any element with onclick or cursor:pointer styling
-      var clickable = e.target.closest('a, button, [role="button"], input[type="submit"], [onclick], .btn, .order-btn, .checkout-btn');
-      if (!clickable) {
-        // Check if element or parent has pointer cursor (common for styled div buttons)
-        var checkEl = e.target;
-        for (var i = 0; i < 3 && checkEl; i++) {
-          try {
-            var cs = window.getComputedStyle(checkEl);
-            if (cs.cursor === 'pointer' && (checkEl.tagName !== 'HTML' && checkEl.tagName !== 'BODY')) { clickable = checkEl; break; }
-          } catch(ex) {}
-          checkEl = checkEl.parentElement;
+      var el = e.target.closest('[data-track-event]');
+      if (el) {
+        window._lpLastTrackedClickAt = Date.now();
+        send('click', el.getAttribute('data-track-event'), { click_x: parseFloat(clickX), click_y: parseFloat(clickY), click_element: clickEl, page_height: pageH });
+      } else {
+        var clickable = e.target.closest('a, button, [role="button"], input[type="submit"], [onclick], .btn, .order-btn, .checkout-btn');
+        if (!clickable) {
+          var checkEl = e.target;
+          for (var i = 0; i < 3 && checkEl; i++) {
+            try {
+              var cs = window.getComputedStyle(checkEl);
+              if (cs.cursor === 'pointer' && (checkEl.tagName !== 'HTML' && checkEl.tagName !== 'BODY')) { clickable = checkEl; break; }
+            } catch(ex) {}
+            checkEl = checkEl.parentElement;
+          }
+        }
+        if (clickable) {
+          window._lpLastTrackedClickAt = Date.now();
+          send('click', (clickable.textContent || '').trim().substring(0, 50), { click_x: parseFloat(clickX), click_y: parseFloat(clickY), click_element: clickEl, page_height: pageH });
         }
       }
-      if (clickable) {
-        window._lpLastTrackedClickAt = Date.now();
-        send('click', (clickable.textContent || '').trim().substring(0, 50), { click_x: parseFloat(clickX), click_y: parseFloat(clickY), click_element: clickEl, page_height: pageH });
-      }
-    }
-  });
+    });
 
-  // Track funnel steps
-  var _funnelFired = {};
-  function funnelOnce(step) { if (!_funnelFired[step]) { _funnelFired[step] = true; send('funnel', step); } }
+    var _funnelFired = {};
+    function funnelOnce(step) { if (!_funnelFired[step]) { _funnelFired[step] = true; send('funnel', step); } }
 
-  document.addEventListener('DOMContentLoaded', function() {
-    // form_view when checkout form is visible
     var form = document.querySelector('[data-checkout-form], form, #checkoutForm, #orderForm, .checkout-form, .order-form');
     if (form) {
       var obs = new IntersectionObserver(function(entries) {
@@ -625,13 +631,13 @@ ttq.page();
       }, { threshold: 0.3 });
       obs.observe(form);
     }
-    // form_start on first input
+
     document.addEventListener('input', function(e) {
       if (e.target && e.target.closest && e.target.closest('form, [data-checkout-form], #checkoutForm, #orderForm')) {
         funnelOnce('form_start');
       }
     }, true);
-    // phone_entered
+
     document.addEventListener('change', function(e) {
       if (!e.target) return;
       var isPhone = (e.target.name === 'customer_phone' || e.target.name === 'phone' || e.target.type === 'tel');
@@ -1539,10 +1545,19 @@ document.addEventListener('input', function(e) {
 }, true);
 </script>
 ` : '';
-    const bodyScripts = richTrackingHelper + capiPageViewScript + deferredPixelScripts + conversionScript + orderScript + phoneValidationScript + tierPricePatchScript + analyticsScript + partialTrackingScript + autocompleteScript + exitIntentScript + debugPanelScript + heartbeatScript;
+    const bodyScripts = landingDeferredScriptLoader + richTrackingHelper + capiPageViewScript + deferredPixelScripts + conversionScript + orderScript + phoneValidationScript + tierPricePatchScript + analyticsScript + partialTrackingScript + autocompleteScript + exitIntentScript + debugPanelScript + heartbeatScript;
 
-    let cleanHtml = normalizeLandingPhoneHtml(sanitizeHtmlScripts(page.html_content));
+    const duplicateMarketingPatterns = [
+      ...(page.fb_pixel_id ? [/connect\.facebook\.net/i] : []),
+      ...(page.tiktok_pixel_id ? [/analytics\.tiktok\.com/i] : []),
+      ...(page.gtm_id ? [/googletagmanager\.com/i, /google-analytics\.com/i, /gtag\/js/i] : []),
+    ];
+
+    let cleanHtml = sanitizeHtmlScripts(page.html_content);
+    cleanHtml = deferLandingMarkupScripts(cleanHtml, { disablePatterns: duplicateMarketingPatterns });
+    cleanHtml = normalizeLandingPhoneHtml(cleanHtml);
     cleanHtml = optimizeLandingImages(cleanHtml);
+    cleanHtml = optimizeLandingEmbeds(cleanHtml);
 
     // Inject head scripts into </head> and body scripts before </body>
     if (cleanHtml.includes("</head>") && cleanHtml.includes("</body>")) {

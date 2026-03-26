@@ -114,6 +114,44 @@ export const landingPhoneValidationScript = `
     for (var i = 0; i < inputs.length; i++) patchPhoneInput(inputs[i]);
   }
 
+  function looksLikeCheckoutRoot(root) {
+    if (!root || root.nodeType !== 1 || !root.querySelector) return false;
+    if (root.matches && root.matches('[data-checkout-form], form, #checkoutForm, #orderForm, .checkout-form, .order-form')) {
+      return !!root.querySelector(PHONE_INPUT_SELECTOR) || isPhoneElement(root);
+    }
+    return false;
+  }
+
+  var observedRoots = [];
+
+  function observeScopedRoot(root) {
+    if (!root || observedRoots.indexOf(root) !== -1) return;
+    observedRoots.push(root);
+    new MutationObserver(function(mutations) {
+      for (var i = 0; i < mutations.length; i++) {
+        var added = mutations[i].addedNodes;
+        for (var j = 0; j < added.length; j++) patchAll(added[j]);
+      }
+    }).observe(root, {
+      subtree: true,
+      childList: true
+    });
+  }
+
+  function observeCandidateRoots(root) {
+    if (!root || !root.querySelectorAll) return;
+    if (looksLikeCheckoutRoot(root)) observeScopedRoot(root);
+    var roots = root.querySelectorAll('[data-checkout-form], form, #checkoutForm, #orderForm, .checkout-form, .order-form');
+    for (var i = 0; i < roots.length; i++) {
+      if (looksLikeCheckoutRoot(roots[i])) observeScopedRoot(roots[i]);
+    }
+  }
+
+  function scheduleWork(callback, delay) {
+    var idle = window.requestIdleCallback || function(cb) { setTimeout(cb, delay || 100); };
+    idle(callback);
+  }
+
   // Sanitize on input (this is event-driven, not observer-driven)
   document.addEventListener('input', function(e) {
     if (!isPhoneElement(e.target)) return;
@@ -140,38 +178,48 @@ export const landingPhoneValidationScript = `
 
   // DEFERRED initial patch — wait for DOM to be ready, not during document.write()
   var runPatch = function() {
-    patchAll(document);
+    observeCandidateRoots(document);
+    var roots = document.querySelectorAll ? document.querySelectorAll('[data-checkout-form], form, #checkoutForm, #orderForm, .checkout-form, .order-form') : [];
+    if (roots.length) {
+      for (var i = 0; i < roots.length; i++) {
+        if (looksLikeCheckoutRoot(roots[i])) patchAll(roots[i]);
+      }
+      return;
+    }
+    patchAll(document.body || document);
   };
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', runPatch);
+    document.addEventListener('DOMContentLoaded', function() { scheduleWork(runPatch, 60); });
   } else {
-    // Schedule after current task to avoid blocking
-    var idle = window.requestIdleCallback || function(cb) { setTimeout(cb, 50); };
-    idle(runPatch);
+    scheduleWork(runPatch, 60);
   }
 
   // FIXED: MutationObserver only watches childList (new nodes added),
   // NOT attributes. This prevents the infinite loop where setAttribute()
   // triggers the observer which calls patchPhoneInput() which calls
   // setAttribute() again.
-  if (typeof MutationObserver !== 'undefined' && document.documentElement) {
+  if (typeof MutationObserver !== 'undefined' && document.body) {
     var startObserver = function() {
+      observeCandidateRoots(document.body);
       new MutationObserver(function(mutations) {
         for (var i = 0; i < mutations.length; i++) {
           var added = mutations[i].addedNodes;
-          for (var j = 0; j < added.length; j++) patchAll(added[j]);
+          for (var j = 0; j < added.length; j++) {
+            patchAll(added[j]);
+            observeCandidateRoots(added[j]);
+          }
         }
-      }).observe(document.documentElement, {
+      }).observe(document.body, {
         subtree: true,
         childList: true
         // NO attributes — that was causing the infinite loop
       });
     };
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', startObserver);
+      document.addEventListener('DOMContentLoaded', function() { scheduleWork(startObserver, 120); });
     } else {
-      startObserver();
+      scheduleWork(startObserver, 120);
     }
   }
 })();

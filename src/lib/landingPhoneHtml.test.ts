@@ -32,4 +32,14 @@ describe("normalizeLandingPhoneHtml", () => {
   it("uses a document.write-safe country code regex in the runtime validator", () => {
     expect(landingPhoneValidationScript).toContain("replace(/^[+]?880/, '0')");
   });
+
+  it("does not observe attributes in the runtime patcher", () => {
+    expect(landingPhoneValidationScript).toContain("childList: true");
+    expect(landingPhoneValidationScript).not.toContain("attributes:");
+  });
+
+  it("scopes runtime observation away from document.documentElement", () => {
+    expect(landingPhoneValidationScript).toContain("observe(document.body");
+    expect(landingPhoneValidationScript).not.toContain("observe(document.documentElement");
+  });
 });
