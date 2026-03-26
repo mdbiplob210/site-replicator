@@ -35,7 +35,7 @@ import {
 } from "lucide-react";
 import {
   useOrders, useOrderCounts, useCreateOrder, useUpdateOrderStatus,
-  useDeleteOrder, useRestoreOrder, useNextOrderNumber, useOrderItems, getStatusFromTab, getStatusLabel,
+  useDeleteOrder, useHardDeleteOrder, useRestoreOrder, useNextOrderNumber, useOrderItems, getStatusFromTab, getStatusLabel,
   getStatusColor, type Order, type OrderStatus, type OrderItemInput, type OrderDateFilter
 } from "@/hooks/useOrders";
 import {
@@ -251,7 +251,7 @@ const AdminOrders = () => {
   const { data: hasPrintMemoPermission = false } = useQuery({
     queryKey: ["has-print-memo", user?.id],
     queryFn: async () => {
-      if (userRole === "admin") return true;
+      if (userRole === "admin" || userRole === "super_admin") return true;
       const { data } = await supabase.from("employee_permissions").select("id").eq("user_id", user!.id).eq("permission", "print_memo" as any).limit(1);
       return (data && data.length > 0) || false;
     },
@@ -260,7 +260,7 @@ const AdminOrders = () => {
   const { data: hasTransferPermission = false } = useQuery({
     queryKey: ["has-transfer-orders", user?.id],
     queryFn: async () => {
-      if (userRole === "admin") return true;
+      if (userRole === "admin" || userRole === "super_admin") return true;
       const { data } = await supabase.from("employee_permissions").select("id").eq("user_id", user!.id).eq("permission", "transfer_orders" as any).limit(1);
       return (data && data.length > 0) || false;
     },
@@ -269,16 +269,17 @@ const AdminOrders = () => {
   const { data: hasDeletePermission = false } = useQuery({
     queryKey: ["has-delete-orders", user?.id],
     queryFn: async () => {
-      if (userRole === "admin") return true;
+      if (userRole === "admin" || userRole === "super_admin") return true;
       const { data } = await supabase.from("employee_permissions").select("id").eq("user_id", user!.id).eq("permission", "delete_orders" as any).limit(1);
       return (data && data.length > 0) || false;
     },
     enabled: !!user?.id && userRole !== undefined,
   });
-  const canPrintMemo = userRole === "admin" || hasPrintMemoPermission;
-  const canTransferOrders = userRole === "admin" || hasTransferPermission;
-  const canDeleteOrders = userRole === "admin" || hasDeletePermission;
-  const isEmployee = userRole !== "admin";
+  const canPrintMemo = userRole === "admin" || userRole === "super_admin" || hasPrintMemoPermission;
+  const canTransferOrders = userRole === "admin" || userRole === "super_admin" || hasTransferPermission;
+  const canDeleteOrders = userRole === "admin" || userRole === "super_admin" || hasDeletePermission;
+  const isSuperAdmin = userRole === "super_admin";
+  const isEmployee = userRole !== "admin" && userRole !== "super_admin";
   // Fetch user's display name from profile
   const { data: userDisplayName } = useQuery({
     queryKey: ["user-profile-name", user?.id],
@@ -293,6 +294,7 @@ const AdminOrders = () => {
   const createOrder = useCreateOrder();
   const updateStatus = useUpdateOrderStatus();
   const deleteOrder = useDeleteOrder();
+  const hardDeleteOrder = useHardDeleteOrder();
   const restoreOrder = useRestoreOrder();
   const { data: nextOrderNumber = "1" } = useNextOrderNumber();
   const { data: allProducts = [] } = usePublicProducts();
@@ -2931,11 +2933,22 @@ const AdminOrders = () => {
             </Button>
             )}
             {/* Bulk Delete / Restore */}
-            {canDeleteOrders && (
+            {canDeleteOrders && (<>
             <Button variant={isDeletedTab ? "outline" : "destructive"} size="sm" className="gap-1.5 h-8 rounded-xl text-xs" onClick={handleBulkDelete}>
               {isDeletedTab ? <><RotateCcw className="h-3.5 w-3.5" /> পুনরুদ্ধার</> : <><Trash2 className="h-3.5 w-3.5" /> ডিলিট</>}
             </Button>
+            {isSuperAdmin && isDeletedTab && (
+              <Button variant="destructive" size="sm" className="gap-1.5 h-8 rounded-xl text-xs" onClick={() => {
+                if (selectedOrderIds.size === 0) return;
+                if (!confirm(`⚠️ ${selectedOrderIds.size}টি অর্ডার স্থায়ীভাবে ডাটাবেস থেকে মুছে ফেলা হবে!\n\nএটি আর ফেরত আনা যাবে না। নিশ্চিত?`)) return;
+                selectedOrderIds.forEach(id => hardDeleteOrder.mutate(id));
+                toast.success(`${selectedOrderIds.size}টি অর্ডার স্থায়ীভাবে ডিলিট হয়েছে!`);
+                setSelectedOrderIds(new Set());
+              }}>
+                <Trash className="h-3.5 w-3.5" /> স্থায়ী ডিলিট
+              </Button>
             )}
+            </>)}
             <Button variant="ghost" size="sm" className="h-8 rounded-xl text-xs text-muted-foreground ml-auto" onClick={() => setSelectedOrderIds(new Set())}>
               <X className="h-3.5 w-3.5 mr-1" /> বাতিল
             </Button>
@@ -3721,12 +3734,19 @@ const AdminOrders = () => {
                         }}>
                           <FileText className="h-3 w-3" />
                         </button>
-                        {/* Delete / Restore */}
+                        {/* Delete / Restore / Permanent Delete */}
                         {canDeleteOrders && (
                         isDeletedTab ? (
-                          <button className="h-6 w-6 rounded-md flex items-center justify-center hover:bg-emerald-500/10 transition-colors text-muted-foreground hover:text-emerald-600" title="Restore" onClick={() => { if (confirm("অর্ডারটি পুনরুদ্ধার করবেন?")) restoreOrder.mutate(order.id); }}>
-                            <RotateCcw className="h-3 w-3" />
-                          </button>
+                          <div className="flex gap-0.5">
+                            <button className="h-6 w-6 rounded-md flex items-center justify-center hover:bg-emerald-500/10 transition-colors text-muted-foreground hover:text-emerald-600" title="Restore" onClick={() => { if (confirm("অর্ডারটি পুনরুদ্ধার করবেন?")) restoreOrder.mutate(order.id); }}>
+                              <RotateCcw className="h-3 w-3" />
+                            </button>
+                            {isSuperAdmin && (
+                              <button className="h-6 w-6 rounded-md flex items-center justify-center hover:bg-red-600/10 transition-colors text-muted-foreground hover:text-red-600" title="স্থায়ী ডিলিট (Database থেকে)" onClick={() => { if (confirm("⚠️ এই অর্ডারটি স্থায়ীভাবে ডাটাবেস থেকে মুছে ফেলা হবে। এটি আর ফেরত আনা যাবে না!\n\nনিশ্চিত?")) hardDeleteOrder.mutate(order.id); }}>
+                                <Trash className="h-3 w-3" />
+                              </button>
+                            )}
+                          </div>
                         ) : (
                           <button className="h-6 w-6 rounded-md flex items-center justify-center hover:bg-destructive/10 transition-colors text-muted-foreground hover:text-destructive" title="Delete" onClick={() => { if (confirm("অর্ডারটি ডিলিট করবেন?")) deleteOrder.mutate(order.id); }}>
                             <Trash2 className="h-3 w-3" />

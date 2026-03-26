@@ -2511,6 +2511,7 @@ export type Database = {
         | "accounting"
         | "ad_analytics"
         | "delivery_rider"
+        | "super_admin"
       employee_permission:
         | "view_orders"
         | "edit_orders"
@@ -2692,6 +2693,7 @@ export const Constants = {
         "accounting",
         "ad_analytics",
         "delivery_rider",
+        "super_admin",
       ],
       employee_permission: [
         "view_orders",

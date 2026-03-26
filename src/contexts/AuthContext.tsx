@@ -3,7 +3,7 @@ import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { trackLoginActivity } from "@/hooks/useUserTracking";
 
-export type AppRole = "admin" | "moderator" | "manager" | "user" | "accounting" | "ad_analytics" | "delivery_rider";
+export type AppRole = "admin" | "super_admin" | "moderator" | "manager" | "user" | "accounting" | "ad_analytics" | "delivery_rider";
 
 export type PermissionKey =
   | "view_orders" | "create_orders" | "edit_orders" | "delete_orders" | "change_order_status"
@@ -51,6 +51,7 @@ export const useAuth = () => useContext(AuthContext);
 // Display name map for roles
 export const ROLE_DISPLAY_NAMES: Record<AppRole, string> = {
   admin: "Admin",
+  super_admin: "Super Admin",
   moderator: "Moderator",
   manager: "Manager",
   user: "Employee",
@@ -124,7 +125,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (permissionsError) throw permissionsError;
 
         const roles = (rolesData || []).map((row) => row.role as AppRole);
-        const admin = roles.includes("admin");
+        const admin = roles.includes("admin") || roles.includes("super_admin");
 
         setUserRoles(roles);
         setIsAdmin(admin);

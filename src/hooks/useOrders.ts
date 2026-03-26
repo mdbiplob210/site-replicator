@@ -360,6 +360,33 @@ export function useDeleteOrder() {
   });
 }
 
+export function useHardDeleteOrder() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      // Delete related data first
+      await supabase.from("order_items").delete().eq("order_id", id);
+      await supabase.from("order_activity_logs").delete().eq("order_id", id);
+      await supabase.from("order_assignments").delete().eq("order_id", id);
+      await supabase.from("courier_orders").delete().eq("order_id", id);
+      await supabase.from("invoices").delete().eq("order_id", id);
+      await supabase.from("delivery_assignments").delete().eq("order_id", id);
+      // Hard delete the order
+      const { error } = await supabase.from("orders").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      queryClient.invalidateQueries({ queryKey: ["order-counts"] });
+      toast.success("অর্ডার স্থায়ীভাবে ডিলিট হয়েছে!");
+    },
+    onError: (error: Error) => {
+      toast.error("স্থায়ী ডিলিট ব্যর্থ: " + error.message);
+    },
+  });
+}
+
 export function useRestoreOrder() {
   const queryClient = useQueryClient();
 

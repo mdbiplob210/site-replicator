@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
     // Admin check helper
     const requireAdmin = async () => {
       if (isSelfEdit) return;
-      const { data: roleData } = await serviceClient.from("user_roles").select("role").eq("user_id", caller.id).eq("role", "admin");
+      const { data: roleData } = await serviceClient.from("user_roles").select("role").eq("user_id", caller.id).in("role", ["admin", "super_admin"]);
       if (!roleData || roleData.length === 0) {
         throw new Error("Admin access required");
       }
