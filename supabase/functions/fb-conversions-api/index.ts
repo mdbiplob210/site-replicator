@@ -36,6 +36,13 @@ function isInvalidAccessTokenError(result: any): boolean {
   return errorCode === 190 || /invalid oauth access token/i.test(message);
 }
 
+function isInvalidPixelError(result: any): boolean {
+  const errorCode = Number(result?.error?.code || 0);
+  const subCode = Number(result?.error?.error_subcode || 0);
+  const message = String(result?.error?.message || "");
+  return (errorCode === 100 && subCode === 33) || /unsupported post request/i.test(message);
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -78,13 +85,14 @@ Deno.serve(async (req) => {
       user_country,
     } = body;
 
-    if (!pixel_id || !event_name) {
+    if (!event_name) {
       return new Response(
-        JSON.stringify({ error: "pixel_id and event_name required" }),
+        JSON.stringify({ error: "event_name required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
+    let resolvedPixelId = pixel_id || "";
     let accessToken = "";
 
     // If landing_page_slug is provided, look up per-page access token
@@ -96,10 +104,15 @@ Deno.serve(async (req) => {
         .eq("is_active", true)
         .maybeSingle();
 
+      if (lpData?.fb_pixel_id && !resolvedPixelId) {
+        resolvedPixelId = lpData.fb_pixel_id;
+      }
+
       if (lpData?.fb_access_token) {
-        // Use per-page access token — validate pixel matches
-        if (lpData.fb_pixel_id && lpData.fb_pixel_id === pixel_id) {
+        // Use per-page access token — validate pixel matches when both exist
+        if (!lpData.fb_pixel_id || !resolvedPixelId || lpData.fb_pixel_id === resolvedPixelId) {
           accessToken = lpData.fb_access_token;
+          if (lpData.fb_pixel_id) resolvedPixelId = lpData.fb_pixel_id;
         }
       }
     }
@@ -107,13 +120,23 @@ Deno.serve(async (req) => {
     // Fallback to global access token if no per-page token found
     if (!accessToken) {
       const allowedPixelId = await getSettingValue(supabaseAdmin, "fb_pixel_id", Deno.env.get("FB_PIXEL_ID"));
-      if (allowedPixelId && pixel_id !== allowedPixelId) {
+      if (!resolvedPixelId) {
+        resolvedPixelId = allowedPixelId;
+      }
+      if (allowedPixelId && resolvedPixelId && resolvedPixelId !== allowedPixelId) {
         return new Response(
           JSON.stringify({ error: "Invalid pixel_id" }),
           { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
       accessToken = await getSettingValue(supabaseAdmin, "fb_access_token", Deno.env.get("FB_ACCESS_TOKEN"));
+    }
+
+    if (!resolvedPixelId) {
+      return new Response(
+        JSON.stringify({ skipped: true, reason: "pixel_id_missing" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     if (!accessToken) {
@@ -188,7 +211,7 @@ Deno.serve(async (req) => {
 
     // Send to Facebook Conversions API
     const fbResponse = await fetch(
-      `https://graph.facebook.com/v21.0/${pixel_id}/events`,
+      `https://graph.facebook.com/v21.0/${resolvedPixelId}/events`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -211,13 +234,20 @@ Deno.serve(async (req) => {
         );
       }
 
+      if (isInvalidPixelError(fbResult)) {
+        return new Response(
+          JSON.stringify({ skipped: true, reason: "invalid_pixel_id" }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       return new Response(
         JSON.stringify({ error: "Failed to send conversion event" }),
         { status: fbResponse.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    console.log("[CAPI] Success:", event_name, "eventID:", event_id, "pixel:", pixel_id, "slug:", landing_page_slug || "main", "response:", JSON.stringify(fbResult));
+    console.log("[CAPI] Success:", event_name, "eventID:", event_id, "pixel:", resolvedPixelId, "slug:", landing_page_slug || "main", "response:", JSON.stringify(fbResult));
 
     return new Response(
       JSON.stringify({ success: true, events_received: fbResult.events_received }),

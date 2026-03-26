@@ -458,10 +458,16 @@ ttq.track('InitiateCheckout');
 
   function buildSuccessUrl(result, payload, form, msg) {
     var params = new URLSearchParams();
+    var qty = parseInt(payload.quantity || '1', 10);
+    if (!isFinite(qty) || qty < 1) qty = 1;
+    var unitPrice = parseFloat(payload.unit_price || '0');
+    if (!isFinite(unitPrice) || unitPrice < 0) unitPrice = 0;
+    var totalValue = parseFloat(payload.total_value || String(unitPrice * qty));
+    if (!isFinite(totalValue) || totalValue < 0) totalValue = unitPrice * qty;
     params.set('order', String(result.order_number || ''));
     params.set('eid', String(payload.event_id || ''));
-    params.set('value', String((payload.unit_price || 0) * (payload.quantity || 1)));
-    params.set('qty', String(payload.quantity || 1));
+    params.set('value', String(totalValue));
+    params.set('qty', String(qty));
     if (payload.product_name) params.set('product', String(payload.product_name));
     if (payload.product_code) params.set('code', String(payload.product_code));
     if (result.order_id) params.set('oid', String(result.order_id));
@@ -504,6 +510,11 @@ ttq.track('InitiateCheckout');
               sessionStorage.setItem('_lp_purchase_success:' + String(payload.event_id || ''), JSON.stringify({
                 customer_name: payload.customer_name || '',
                 customer_phone: payload.customer_phone || '',
+                product_name: payload.product_name || '',
+                product_code: payload.product_code || '',
+                quantity: parseInt(payload.quantity || '1', 10) || 1,
+                unit_price: parseFloat(payload.unit_price || '0') || 0,
+                total_value: (parseFloat(payload.unit_price || '0') || 0) * (parseInt(payload.quantity || '1', 10) || 1),
                 order_id: data.order_id || '',
                 order_number: data.order_number || '',
                 duplicate: !!data.duplicate
@@ -573,6 +584,33 @@ ttq.track('InitiateCheckout');
         var baseParams = window._lpTrack ? window._lpTrack.getBaseParams() : {};
 
         if (!data.duplicate) {
+          var purchaseParams = {
+            value: totalValue,
+            currency: 'BDT',
+            content_name: payload.product_name || document.title || '',
+            content_ids: payload.product_code ? [payload.product_code] : [],
+            content_type: 'product',
+            num_items: payload.quantity || 1,
+            order_id: data.order_number,
+            subtotal: totalValue
+          };
+
+          if (typeof fbq === 'function') {
+            fbq('track', 'Purchase', purchaseParams, {eventID: eventId});
+            console.log('[LP-CHECKOUT] Browser Purchase fired before redirect', { eventId: eventId, order: data.order_number, value: totalValue });
+          } else {
+            console.warn('[LP-CHECKOUT] Browser Purchase skipped: fbq unavailable before redirect');
+          }
+
+          if (window._lpTrack) {
+            window._lpTrack.sendServerEvent('Purchase', Object.assign({ event_id: eventId }, purchaseParams), {
+              phone: payload.customer_phone,
+              name: payload.customer_name,
+              order_id: data.order_id || data.order_number
+            });
+            console.log('[LP-CHECKOUT] Server Purchase queued before redirect', { eventId: eventId, order: data.order_number });
+          }
+
           // TikTok CompletePayment
           if (typeof ttq !== 'undefined' && ttq.track) {
             ttq.track('CompletePayment', {
@@ -604,6 +642,11 @@ ttq.track('InitiateCheckout');
           sessionStorage.setItem('_lp_purchase_success:' + eventId, JSON.stringify({
             customer_name: payload.customer_name,
             customer_phone: payload.customer_phone,
+            product_name: payload.product_name || '',
+            product_code: payload.product_code || '',
+            quantity: payload.quantity || 1,
+            unit_price: payload.unit_price || 0,
+            total_value: totalValue,
             order_id: data.order_id || '',
             order_number: data.order_number || '',
             duplicate: !!data.duplicate
