@@ -1419,25 +1419,7 @@ ttq.page();
     return '';
   }
 
-  function buildSuccessUrl(result, payload, form, msg) {
-    var params = new URLSearchParams();
-    var qty = parseInt(payload.quantity || '1', 10);
-    if (!isFinite(qty) || qty < 1) qty = 1;
-    var unitPrice = parseFloat(payload.unit_price || '0');
-    if (!isFinite(unitPrice) || unitPrice < 0) unitPrice = 0;
-    var totalValue = parseFloat(payload.total_value || String(unitPrice * qty));
-    if (!isFinite(totalValue) || totalValue < 0) totalValue = unitPrice * qty;
-    params.set('order', String(result.order_number || ''));
-    params.set('eid', String(payload.event_id || ''));
-    params.set('value', String(totalValue));
-    params.set('qty', String(qty));
-    if (payload.product_name) params.set('product', String(payload.product_name));
-    if (payload.product_code) params.set('code', String(payload.product_code));
-    if (result.order_id) params.set('oid', String(result.order_id));
-    if (msg) params.set('msg', msg);
-    if (result.duplicate) params.set('duplicate', '1');
-    return window.location.origin + '/lp/' + encodeURIComponent(SLUG) + '/success?' + params.toString();
-  }
+  // buildSuccessUrl removed — Purchase fires in-page now
 
   if (!window.__lpOrderFetchPatched) {
     window.__lpOrderFetchPatched = true;
