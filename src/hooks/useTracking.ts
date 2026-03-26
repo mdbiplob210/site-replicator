@@ -502,15 +502,31 @@ export function useTracking() {
     const eventId = generateEventId("vc");
     const contentId = product.productCode || product.id;
 
-    if (fbPixelId && window.fbq) {
-      window.fbq("track", "ViewContent", {
-        content_name: product.name,
-        content_ids: [contentId],
-        content_type: "product",
-        content_category: product.category || "",
-        value: product.price,
-        currency: "BDT",
-      }, { eventID: eventId });
+    const vcData = {
+      content_name: product.name,
+      content_ids: [contentId],
+      contents: [{ id: contentId, quantity: 1, item_price: product.price }],
+      content_type: "product",
+      content_category: product.category || "",
+      value: product.price,
+      currency: "BDT",
+    };
+
+    const fireVC = () => {
+      if (window.fbq && typeof window.fbq === "function") {
+        window.fbq("track", "ViewContent", vcData, { eventID: eventId });
+        return true;
+      }
+      return false;
+    };
+
+    if (!fireVC()) {
+      if (fbPixelId) loadFBPixel(fbPixelId);
+      let attempts = 0;
+      const retryTimer = setInterval(() => {
+        attempts++;
+        if (fireVC() || attempts >= 20) clearInterval(retryTimer);
+      }, 300);
     }
 
     if (tiktokPixelId && window.ttq) {
