@@ -337,6 +337,8 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
 
       setOrderComplete(true);
       toast.success("Order placed successfully! 🎉");
+      onClose();
+      navigate(`/order-success?order=${orderNumber}`);
     } catch (err: any) {
       orderSubmitted.current = false;
       toast.error(err.message);
