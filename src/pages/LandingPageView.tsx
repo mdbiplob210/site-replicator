@@ -1144,6 +1144,7 @@ ttq.page();
       }
     })
     .catch(function(err) {
+      console.error('[LP-DEBUG] Fetch error:', err.message, err);
       alert('ত্রুটি: ' + err.message);
       _submitting = false;
       delete form.dataset.lpSubmitLocked;
