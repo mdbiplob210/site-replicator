@@ -51,6 +51,7 @@ export const useAuth = () => useContext(AuthContext);
 // Display name map for roles
 export const ROLE_DISPLAY_NAMES: Record<AppRole, string> = {
   admin: "Admin",
+  super_admin: "Super Admin",
   moderator: "Moderator",
   manager: "Manager",
   user: "Employee",
