@@ -756,19 +756,38 @@ export function useTracking() {
       orderId: params.orderId,
     });
 
-    if (fbPixelId && window.fbq) {
-      window.fbq("track", "Purchase", {
-        content_name: params.contentName,
-        content_ids: [params.contentId],
-        content_type: "product",
-        value: params.value,
-        currency: params.currency || "BDT",
-        num_items: params.qty,
-        order_id: params.orderId,
-      }, { eventID: eventId });
-      console.log("[Purchase] Browser fbq fired", { eventId, pixelId: fbPixelId });
-    } else {
-      console.warn("[Purchase] Browser fbq NOT available", { fbPixelId, fbqExists: !!window.fbq });
+    const purchaseData = {
+      content_name: params.contentName,
+      content_ids: [params.contentId],
+      contents: [{ id: params.contentId, quantity: params.qty, item_price: params.value / params.qty }],
+      content_type: "product",
+      content_category: "ecommerce",
+      value: params.value,
+      currency: params.currency || "BDT",
+      num_items: params.qty,
+      order_id: params.orderId,
+    };
+
+    const fireBrowserPurchase = () => {
+      if (window.fbq && typeof window.fbq === "function") {
+        window.fbq("track", "Purchase", purchaseData, { eventID: eventId });
+        console.log("[Purchase] Browser fbq fired", { eventId, pixelId: fbPixelId });
+        return true;
+      }
+      return false;
+    };
+
+    if (!fireBrowserPurchase()) {
+      // SDK not ready yet — load it and retry
+      if (fbPixelId) loadFBPixel(fbPixelId);
+      let attempts = 0;
+      const retryTimer = setInterval(() => {
+        attempts++;
+        if (fireBrowserPurchase() || attempts >= 30) {
+          clearInterval(retryTimer);
+          if (attempts >= 30) console.warn("[Purchase] Browser fbq never loaded");
+        }
+      }, 300);
     }
 
     if (tiktokPixelId && window.ttq) {
