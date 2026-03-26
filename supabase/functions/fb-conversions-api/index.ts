@@ -193,6 +193,7 @@ Deno.serve(async (req) => {
       if (custom_data.currency) cd.currency = custom_data.currency;
       if (custom_data.content_name) cd.content_name = custom_data.content_name;
       if (custom_data.content_ids && custom_data.content_ids.length > 0) cd.content_ids = custom_data.content_ids;
+      if (custom_data.contents && custom_data.contents.length > 0) cd.contents = custom_data.contents;
       if (custom_data.content_type) cd.content_type = custom_data.content_type;
       if (custom_data.content_category) cd.content_category = custom_data.content_category;
       if (custom_data.num_items) cd.num_items = custom_data.num_items;
@@ -200,7 +201,7 @@ Deno.serve(async (req) => {
 
       const customProps: Record<string, any> = {};
       for (const key of Object.keys(custom_data)) {
-        if (!["value","currency","content_name","content_ids","content_type","content_category","num_items","order_id","event_id"].includes(key)) {
+        if (!["value","currency","content_name","content_ids","contents","content_type","content_category","num_items","order_id","event_id"].includes(key)) {
           customProps[key] = custom_data[key];
         }
       }
