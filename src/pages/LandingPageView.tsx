@@ -1058,6 +1058,36 @@ ttq.page();
   var VID; try { VID = localStorage.getItem('_lp_vid'); } catch(e) {} VID = VID || '';
   var _submitting = false;
 
+  // Override alert/confirm EARLY to prevent template's success popups
+  // We keep a reference for our own validation messages
+  var _origAlert = window.alert;
+  var _origConfirm = window.confirm;
+  var _lpAlertOverridden = false;
+  function overrideAlerts() {
+    if (_lpAlertOverridden) return;
+    _lpAlertOverridden = true;
+    window.alert = function(msg) {
+      // Allow our own validation alerts through
+      if (msg && /সঠিক মোবাইল|ত্রুটি|সমস্যা/.test(String(msg))) {
+        return _origAlert.call(window, msg);
+      }
+      // After order submission, suppress all alerts (template success alerts)
+      if (_submitting || window.__lpOrderRedirecting) {
+        console.log('[LP] Suppressed template alert:', msg);
+        return;
+      }
+      return _origAlert.call(window, msg);
+    };
+    window.confirm = function(msg) {
+      if (_submitting || window.__lpOrderRedirecting) {
+        console.log('[LP] Suppressed template confirm:', msg);
+        return true;
+      }
+      return _origConfirm.call(window, msg);
+    };
+  }
+  overrideAlerts();
+
   // Purchase event fires exclusively on the success page (/lp/{slug}/success)
   // No pre-redirect Purchase firing needed — this avoids duplication
 
@@ -1237,6 +1267,8 @@ ttq.page();
 
   function isValidPhone(value) {
     var cleaned = String(value || '').replace(/^[+]?880/, '0').replace(/[^0-9]/g, '');
+    // Accept 10 digits (without leading 0) or 11-15 digits
+    if (/^[1-9]\d{9}$/.test(cleaned)) return true;
     return /^\d{11,15}$/.test(cleaned);
   }
 
@@ -1256,6 +1288,9 @@ ttq.page();
       if (/[0-9]/.test(ch)) result += ch;
       else if (ch === '+' && result.length === 0) result += ch;
     }
+    // Normalize: if 10 digits starting with 1, prepend 0
+    var digitsOnly = result.replace(/^\+/, '');
+    if (/^[1-9]\d{9}$/.test(digitsOnly)) result = '0' + digitsOnly;
     return result;
   }
 
@@ -1469,7 +1504,38 @@ ttq.page();
     };
   }
 
-  function submitOrder(form) {
+  // Also patch XMLHttpRequest for templates that use XHR instead of fetch
+  if (!window.__lpOrderXHRPatched) {
+    window.__lpOrderXHRPatched = true;
+    var _origXHROpen = XMLHttpRequest.prototype.open;
+    var _origXHRSend = XMLHttpRequest.prototype.send;
+    XMLHttpRequest.prototype.open = function(method, url) {
+      this.__lpUrl = String(url || '');
+      return _origXHROpen.apply(this, arguments);
+    };
+    XMLHttpRequest.prototype.send = function(body) {
+      var xhr = this;
+      if (xhr.__lpUrl && xhr.__lpUrl.indexOf('submit-landing-order') !== -1 && body) {
+        try {
+          var payload = JSON.parse(body);
+          if (!payload.landing_page_slug) payload.landing_page_slug = SLUG;
+          if (!payload.event_id) payload.event_id = window._lpTrack ? window._lpTrack.generateEventId() : ('eid_' + Math.random().toString(36).substr(2,9) + '_' + Date.now());
+          if (!payload.visitor_id) payload.visitor_id = VID;
+          arguments[0] = JSON.stringify(payload);
+        } catch(e) {}
+        xhr.addEventListener('load', function() {
+          try {
+            var data = JSON.parse(xhr.responseText);
+            if ((data.success || data.duplicate) && !window.__lpOrderRedirecting) {
+              handleSuccessfulOrder(data, JSON.parse(body), null, null, 'আপনার অর্ডার সফলভাবে জমা হয়েছে! অর্ডার নম্বর: ' + (data.order_number || ''));
+            }
+          } catch(e) {}
+        });
+      }
+      return _origXHRSend.apply(this, arguments);
+    };
+  }
+
     if (!form || form.dataset.lpSubmitLocked === '1' || _submitting) return;
 
     var phoneInput = pickField(form, 'phone');
@@ -1573,7 +1639,7 @@ ttq.page();
     var btn = e.target && e.target.closest ? e.target.closest('button, [role="button"], input[type="submit"]') : null;
     if (!btn) return;
     var btnText = (btn.textContent || btn.value || '').trim();
-    if (!/অর্ডার|order|submit|কনফার্ম|confirm/i.test(btnText)) return;
+    if (!/অর্ডার|order|submit|কনফার্ম|confirm|সাবমিট|পাঠান|send|buy|কিনুন|place/i.test(btnText)) return;
     var form = getCheckoutForm(btn);
     if (!form) return;
     e.preventDefault();
@@ -1617,7 +1683,7 @@ ttq.page();
         var origClick = btn.onclick;
         btn.onclick = function(e) {
           var btnText = (btn.textContent || btn.value || '').trim();
-          if (/অর্ডার|order|submit|কনফার্ম|confirm/i.test(btnText)) {
+          if (/অর্ডার|order|submit|কনফার্ম|confirm|সাবমিট|পাঠান|send|buy|কিনুন|place/i.test(btnText)) {
             e && e.preventDefault && e.preventDefault();
             e && e.stopImmediatePropagation && e.stopImmediatePropagation();
             var checkout = getCheckoutForm(btn) || getCheckoutForm(form);
