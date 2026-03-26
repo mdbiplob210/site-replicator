@@ -795,8 +795,9 @@ export function useTracking() {
       });
     }
 
-    // CAPI - most important for attribution
+    // CAPI - most important for attribution (always send even if browser fbq failed)
     if (fbPixelId) {
+      console.log("[Purchase] Sending CAPI event", { eventId, pixelId: fbPixelId });
       sendCAPIEvent({
         pixelId: fbPixelId,
         eventName: "Purchase",
