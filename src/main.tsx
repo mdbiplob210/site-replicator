@@ -21,11 +21,11 @@ if ('serviceWorker' in navigator) {
 const root = createRoot(document.getElementById("root")!);
 root.render(<App />);
 
-// Init link prefetching after first paint (deferred)
+// Init link prefetching faster (800ms instead of 1500ms)
 requestAnimationFrame(() => {
   setTimeout(() => {
     import("./lib/routePrefetch").then(({ initLinkPrefetching }) => {
       initLinkPrefetching();
     });
-  }, 1500);
+  }, 800);
 });
