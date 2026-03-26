@@ -641,14 +641,11 @@ export function OrderDetailPage({ orderId, order, onClose }: { orderId: string |
               </h3>
               <Select value={editCourierId || "none"} onValueChange={(v) => {
                 const nextCourierId = v === "none" ? null : v;
-                const nextCourier = nextCourierId ? editCourierProviders.find((cp: any) => cp.id === nextCourierId) : null;
                 setEditCourierId(nextCourierId);
                 setEditCourierCityId(null);
                 setEditCourierZoneId(null);
                 setEditCourierAreaId(null);
-                if (nextCourierId && nextCourier?.slug === "pathao" && session?.access_token) {
-                  void prefetchCourierLocations(queryClient, session.access_token, nextCourierId, "cities");
-                }
+                setPathaoLocation({ cityId: null, zoneId: null, areaId: null, cityName: "", zoneName: "", areaName: "" });
               }}>
                 <SelectTrigger className="rounded-xl h-9 text-sm">
                   <SelectValue placeholder="কুরিয়ার সিলেক্ট করুন" />
@@ -673,61 +670,17 @@ export function OrderDetailPage({ orderId, order, onClose }: { orderId: string |
                 </Badge>
               )}
 
-              {/* City/Zone/Area from Courier API for Edit */}
-              {editCourierId && (
-                <div className="p-3 rounded-xl bg-background border border-border/30 space-y-3">
-                  <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
-                    📍 {editCourierProviders.find((cp: any) => cp.id === editCourierId)?.name} এরিয়া সিলেক্ট
-                  </p>
-                  <div className="grid grid-cols-3 gap-2">
-                <div className="space-y-1">
-                  <Label className="text-[10px] font-semibold text-muted-foreground">City</Label>
-                  <Select value={editCourierCityId || ""} onValueChange={(v) => {
-                    setEditCourierCityId(v || null);
-                    setEditCourierZoneId(null);
-                    setEditCourierAreaId(null);
-                  }}>
-                    <SelectTrigger className="rounded-lg h-8 text-xs">
-                      <SelectValue placeholder={editCitiesLoading ? "লোড হচ্ছে..." : "City সিলেক্ট করুন"} />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-60">
-                      {editCourierCities.map((c: any) => (
-                        <SelectItem key={String(c.id)} value={String(c.id)}>{c.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+              {/* Pathao Location Selector with auto-detection */}
+              {editCourierId && isEditPathaoCourier && (
+                <div className="p-3 rounded-xl bg-background border border-border/30">
+                  <PathaoLocationSelector
+                    providerId={editCourierId}
+                    address={editAddress}
+                    value={pathaoLocation}
+                    onChange={setPathaoLocation}
+                    compact
+                  />
                 </div>
-                <div className="space-y-1">
-                  <Label className="text-[10px] font-semibold text-muted-foreground">Zone</Label>
-                  <Select value={editCourierZoneId || ""} onValueChange={(v) => {
-                    setEditCourierZoneId(v || null);
-                    setEditCourierAreaId(null);
-                  }} disabled={!editCourierCityId}>
-                    <SelectTrigger className="rounded-lg h-8 text-xs">
-                      <SelectValue placeholder={editZonesLoading ? "লোড হচ্ছে..." : "Zone সিলেক্ট করুন"} />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-60">
-                      {editCourierZones.map((z: any) => (
-                        <SelectItem key={String(z.id)} value={String(z.id)}>{z.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-[10px] font-semibold text-muted-foreground">Area/Thana</Label>
-                  <Select value={editCourierAreaId || ""} onValueChange={setEditCourierAreaId} disabled={!editCourierZoneId}>
-                    <SelectTrigger className="rounded-lg h-8 text-xs">
-                      <SelectValue placeholder={editAreasLoading ? "লোড হচ্ছে..." : "Area সিলেক্ট করুন"} />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-60">
-                      {editCourierAreas.map((a: any) => (
-                        <SelectItem key={String(a.id)} value={String(a.id)}>{a.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                </div>
-              </div>
               )}
             </div>
 
