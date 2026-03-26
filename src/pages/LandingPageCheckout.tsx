@@ -477,7 +477,7 @@ ttq.track('InitiateCheckout');
             content_type: 'product',
             num_items: payload.quantity,
             order_id: data.order_number
-          });
+          }, { phone: payload.customer_phone, name: payload.customer_name });
         }
 
         // TikTok CompletePayment
