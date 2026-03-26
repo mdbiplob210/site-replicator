@@ -216,7 +216,7 @@ Deno.serve(async (req) => {
 
     // Send to Facebook Conversions API
     const fbResponse = await fetch(
-      `https://graph.facebook.com/v21.0/${resolvedPixelId}/events`,
+      `https://graph.facebook.com/v22.0/${resolvedPixelId}/events`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

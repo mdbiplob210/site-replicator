@@ -457,8 +457,10 @@ ttq.page();
       user_role: 'guest', plugin: 'LovableLP'
     };
     fireOnce('auto_viewcontent', function() {
+      // Add contents array for better EMQ
+      vcParams.contents = vcParams.content_ids.length > 0 ? [{id: vcParams.content_ids[0], quantity: 1, item_price: vcParams.value}] : [];
       fbq('track', 'ViewContent', vcParams, {eventID: eventId});
-      if (window._lpTrack) window._lpTrack.sendServerEvent('ViewContent', {event_id: eventId, ...vcParams});
+      if (window._lpTrack) window._lpTrack.sendServerEvent('ViewContent', Object.assign({event_id: eventId}, vcParams));
       if (typeof ttq !== 'undefined' && ttq.track) ttq.track('ViewContent', {content_name: vcParams.content_name, value: vcParams.value, currency: vcParams.currency});
     });
 
