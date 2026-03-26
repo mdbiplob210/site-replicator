@@ -1052,7 +1052,6 @@ ttq.page();
 <script>
 (function(){
   var ORDER_URL = '${supabaseUrl}/functions/v1/submit-landing-order';
-  var CAPI_URL = '${supabaseUrl}/functions/v1/fb-conversions-api';
   var ANON = '${anonKey}';
   var SLUG = '${page.slug}';
   var FORM_SELECTOR = '[data-checkout-form], form, #checkoutForm, #orderForm, .checkout-form, .order-form';

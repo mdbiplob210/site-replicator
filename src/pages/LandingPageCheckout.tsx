@@ -450,8 +450,7 @@ ttq.track('InitiateCheckout');
     const orderScript = `
 <script>
 (function(){
-  var ORDER_URL = '${supabaseUrl}/functions/v1/submit-landing-order';
-  var CAPI_URL = '${supabaseUrl}/functions/v1/fb-conversions-api';
+   var ORDER_URL = '${supabaseUrl}/functions/v1/submit-landing-order';
   var ANON = '${anonKey}';
   var SLUG = '${page.slug}';
   var VID = localStorage.getItem('_lp_vid') || '';
