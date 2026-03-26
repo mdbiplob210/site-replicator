@@ -1,7 +1,7 @@
 // Service Worker v3 — aggressive caching for speed
-const STATIC_CACHE = 'static-v3';
-const API_CACHE = 'api-v3';
-const IMG_CACHE = 'img-v3';
+const STATIC_CACHE = 'static-v4';
+const API_CACHE = 'api-v4';
+const IMG_CACHE = 'img-v4';
 
 const API_PATTERNS = ['/rest/v1/site_settings', '/rest/v1/products_public', '/rest/v1/banners'];
 

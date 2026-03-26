@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useRef, ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { trackLoginActivity } from "@/hooks/useUserTracking";
@@ -25,7 +25,10 @@ interface AuthContextType {
   userRoles: AppRole[];
   userPermissions: PermissionKey[];
   loading: boolean;
+  rolesLoading: boolean;
+  rolesResolved: boolean;
   hasPermission: (perm: PermissionKey) => boolean;
+  ensureRolesLoaded: () => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -36,7 +39,10 @@ const AuthContext = createContext<AuthContextType>({
   userRoles: [],
   userPermissions: [],
   loading: true,
+  rolesLoading: false,
+  rolesResolved: false,
   hasPermission: () => false,
+  ensureRolesLoaded: async () => {},
   signOut: async () => {},
 });
 
@@ -59,40 +65,19 @@ function isPublicRoute(): boolean {
   return !path.startsWith("/admin") && !path.startsWith("/login");
 }
 
+function shouldEagerlyResolveRoles(): boolean {
+  return !isPublicRoute();
+}
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [userRoles, setUserRoles] = useState<AppRole[]>([]);
   const [userPermissions, setUserPermissions] = useState<PermissionKey[]>([]);
-  const [loading, setLoading] = useState(() => !isPublicRoute()); // Public pages don't need to wait
-
-  const checkRolesAndPermissions = async (userId: string) => {
-    // Fetch roles
-    const { data: rolesData } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId);
-    
-    const roles = (rolesData || []).map(r => r.role as AppRole);
-    setUserRoles(roles);
-    const admin = roles.includes("admin");
-    setIsAdmin(admin);
-
-    // Fetch explicit permissions
-    if (!admin) {
-      const { data: permsData } = await supabase
-        .from("employee_permissions")
-        .select("permission")
-        .eq("user_id", userId);
-      
-      const perms = (permsData || []).map(p => p.permission as PermissionKey);
-      setUserPermissions(perms);
-    } else {
-      // Admin has all permissions
-      setUserPermissions([]);
-    }
-  };
+  const [loading, setLoading] = useState(() => shouldEagerlyResolveRoles());
+  const [rolesLoading, setRolesLoading] = useState(false);
+  const [rolesResolved, setRolesResolved] = useState(() => !shouldEagerlyResolveRoles());
 
   const hasPermission = (perm: PermissionKey): boolean => {
     if (isAdmin) return true;
@@ -101,70 +86,149 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const loginTrackedRef = useRef<Set<string>>(new Set());
   const rolesCheckedRef = useRef<string | null>(null);
+  const roleLoadPromiseRef = useRef<Promise<void> | null>(null);
 
-  useEffect(() => {
-    // Skip auth entirely on public routes for faster load
-    if (isPublicRoute()) {
-      setLoading(false);
+  const clearRoleData = useCallback(() => {
+    setIsAdmin(false);
+    setUserRoles([]);
+    setUserPermissions([]);
+  }, []);
+
+  const resolveRolesAndPermissions = useCallback(async (userId: string) => {
+    if (rolesCheckedRef.current === userId && rolesResolved) {
+      return;
     }
 
-    let initialSessionResolved = false;
+    if (roleLoadPromiseRef.current) {
+      return roleLoadPromiseRef.current;
+    }
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          // Only check roles if not already checked for this user
-          if (rolesCheckedRef.current !== session.user.id) {
-            rolesCheckedRef.current = session.user.id;
-            setTimeout(() => checkRolesAndPermissions(session.user.id), 0);
-          }
+    setRolesLoading(true);
 
-          if (event === "SIGNED_IN" && !loginTrackedRef.current.has(session.user.id)) {
-            loginTrackedRef.current.add(session.user.id);
-            // Defer login tracking to not block rendering
-            const schedule = window.requestIdleCallback || ((cb: () => void) => setTimeout(cb, 2000));
-            schedule(() => {
-              trackLoginActivity(session.user.id, session.user.email || "", "success");
-            });
-          }
-        } else {
-          rolesCheckedRef.current = null;
-          setIsAdmin(false);
-          setUserRoles([]);
-          setUserPermissions([]);
-        }
-        if (initialSessionResolved) {
-          setLoading(false);
-        }
-      }
-    );
+    const loadPromise = (async () => {
+      try {
+        const queryPromise = Promise.all([
+          supabase.from("user_roles").select("role").eq("user_id", userId),
+          supabase.from("employee_permissions").select("permission").eq("user_id", userId),
+        ]);
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        rolesCheckedRef.current = session.user.id;
-        checkRolesAndPermissions(session.user.id).finally(() => {
-          initialSessionResolved = true;
-          setLoading(false);
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          window.setTimeout(() => reject(new Error("Role lookup timed out")), 5000);
         });
-      } else {
-        initialSessionResolved = true;
-        setLoading(false);
+
+        const [rolesResult, permissionsResult] = await Promise.race([queryPromise, timeoutPromise]);
+        const { data: rolesData, error: rolesError } = rolesResult;
+        const { data: permissionsData, error: permissionsError } = permissionsResult;
+
+        if (rolesError) throw rolesError;
+        if (permissionsError) throw permissionsError;
+
+        const roles = (rolesData || []).map((row) => row.role as AppRole);
+        const admin = roles.includes("admin");
+
+        setUserRoles(roles);
+        setIsAdmin(admin);
+        setUserPermissions(
+          admin ? [] : (permissionsData || []).map((row) => row.permission as PermissionKey),
+        );
+      } catch (error) {
+        console.error("Failed to resolve user roles/permissions:", error);
+        clearRoleData();
+      } finally {
+        rolesCheckedRef.current = userId;
+        setRolesResolved(true);
+        setRolesLoading(false);
+        roleLoadPromiseRef.current = null;
       }
+    })();
+
+    roleLoadPromiseRef.current = loadPromise;
+    return loadPromise;
+  }, [clearRoleData, rolesResolved]);
+
+  const ensureRolesLoaded = useCallback(async () => {
+    if (!user?.id) {
+      setRolesResolved(true);
+      return;
+    }
+
+    await resolveRolesAndPermissions(user.id);
+  }, [resolveRolesAndPermissions, user?.id]);
+
+  const applySession = useCallback(async (nextSession: Session | null, event?: string) => {
+    setSession(nextSession);
+    setUser(nextSession?.user ?? null);
+
+    if (!nextSession?.user) {
+      rolesCheckedRef.current = null;
+      roleLoadPromiseRef.current = null;
+      clearRoleData();
+      setRolesResolved(true);
+      setRolesLoading(false);
+      setLoading(false);
+      return;
+    }
+
+    if (event === "SIGNED_IN" && !loginTrackedRef.current.has(nextSession.user.id)) {
+      loginTrackedRef.current.add(nextSession.user.id);
+      const schedule = window.requestIdleCallback || ((cb: () => void) => setTimeout(cb, 2000));
+      schedule(() => {
+        trackLoginActivity(nextSession.user.id, nextSession.user.email || "", "success");
+      });
+    }
+
+    if (shouldEagerlyResolveRoles()) {
+      setLoading(true);
+      await resolveRolesAndPermissions(nextSession.user.id);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(false);
+
+    if (rolesCheckedRef.current !== nextSession.user.id) {
+      clearRoleData();
+      setRolesResolved(false);
+    }
+  }, [clearRoleData, resolveRolesAndPermissions]);
+
+  useEffect(() => {
+    let disposed = false;
+    let bootstrapComplete = false;
+
+    const bootstrap = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!disposed) {
+          await applySession(session, "INITIAL_SESSION");
+        }
+      } finally {
+        bootstrapComplete = true;
+        if (!disposed && isPublicRoute()) {
+          setLoading(false);
+        }
+      }
+    };
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      if (event === "INITIAL_SESSION" && bootstrapComplete) return;
+      void applySession(nextSession, event);
     });
 
-    return () => subscription.unsubscribe();
-  }, []);
+    void bootstrap();
+
+    return () => {
+      disposed = true;
+      subscription.unsubscribe();
+    };
+  }, [applySession]);
 
   const signOut = async () => {
     await supabase.auth.signOut();
   };
 
   return (
-    <AuthContext.Provider value={{ session, user, isAdmin, userRoles, userPermissions, loading, hasPermission, signOut }}>
+    <AuthContext.Provider value={{ session, user, isAdmin, userRoles, userPermissions, loading, rolesLoading, rolesResolved, hasPermission, ensureRolesLoaded, signOut }}>
       {children}
     </AuthContext.Provider>
   );

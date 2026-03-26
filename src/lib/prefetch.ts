@@ -23,7 +23,7 @@ function restUrl(table: string, query: string) {
 }
 
 function isStoreHomeRoute(path: string) {
-  return path === "/" || path === "/store";
+  return path === "/" || path === "/store" || path === "/index";
 }
 
 function isProductRoute(path: string) {
