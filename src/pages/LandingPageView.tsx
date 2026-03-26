@@ -1346,9 +1346,7 @@ ttq.page();
                 duplicate: !!data.duplicate
               }));
             } catch(e) {}
-            if (!data.duplicate && !data.purchase_tracked) {
-              sendPurchaseFallback(String(payload.event_id || ''), payload, data, (parseFloat(payload.unit_price || '0') || 0) * (parseInt(payload.quantity || '1', 10) || 1));
-            }
+            // Purchase event fires on success page — no pre-redirect fallback needed
             window.__lpOrderRedirecting = true;
             setTimeout(function() { window.location.href = redirectUrl; }, 120);
           }).catch(function(){});
