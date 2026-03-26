@@ -228,93 +228,13 @@ export function OrderDetailPage({ orderId, order, onClose }: { orderId: string |
     setPathaoLocation({ cityId: null, zoneId: null, areaId: null, cityName: "", zoneName: "", areaName: "" });
   }, [courierOrderRef, orderRef]);
 
+  // PathaoLocationSelector handles all auto-detection and prefetching
+  // Sync pathaoLocation → editCourierCityId/ZoneId/AreaId for courier submit
   useEffect(() => {
-    if (!isEditPathaoCourier || !editCourierId || !session?.access_token) {
-      return;
-    }
-
-    void prefetchCourierLocations(queryClient, session.access_token, editCourierId, "cities");
-  }, [editCourierId, isEditPathaoCourier, queryClient, session?.access_token]);
-
-  useEffect(() => {
-    if (!isEditPathaoCourier || !editCourierId || !editCourierCityId || !session?.access_token) {
-      return;
-    }
-
-    void prefetchCourierLocations(queryClient, session.access_token, editCourierId, "zones", editCourierCityId);
-  }, [editCourierCityId, editCourierId, isEditPathaoCourier, queryClient, session?.access_token]);
-
-  useEffect(() => {
-    if (!isEditPathaoCourier || !editCourierId || !editCourierZoneId || !session?.access_token) {
-      return;
-    }
-
-    void prefetchCourierLocations(queryClient, session.access_token, editCourierId, "areas", undefined, editCourierZoneId);
-  }, [editCourierId, editCourierZoneId, isEditPathaoCourier, queryClient, session?.access_token]);
-
-  useEffect(() => {
-    if (!isEditPathaoCourier || !editAddress.trim() || editCitiesLoading || editCourierCities.length === 0) {
-      return;
-    }
-
-    const canAutoUpdateCity = !editCourierCityId || editCourierCityId === lastEditAutoCityIdRef.current;
-    if (!canAutoUpdateCity) return;
-
-    const { cityHints } = extractPathaoLocationHints(editAddress);
-    const matchedCity = resolvePathaoLocationMatch(editAddress, editCourierCities as Array<{ id: string | number; name: string }>, cityHints);
-
-    if (matchedCity) {
-      const nextCityId = String(matchedCity.id);
-      if (editCourierCityId !== nextCityId) {
-        setEditCourierCityId(nextCityId);
-        setEditCourierZoneId(null);
-        setEditCourierAreaId(null);
-      }
-      if (session?.access_token && editCourierId) {
-        void prefetchCourierLocations(queryClient, session.access_token, editCourierId, "zones", nextCityId);
-      }
-      lastEditAutoCityIdRef.current = nextCityId;
-      return;
-    }
-
-    if (editCourierCityId && editCourierCityId === lastEditAutoCityIdRef.current) {
-      setEditCourierCityId(null);
-      setEditCourierZoneId(null);
-      setEditCourierAreaId(null);
-    }
-    lastEditAutoCityIdRef.current = null;
-  }, [editAddress, editCitiesLoading, editCourierCities, editCourierCityId, isEditPathaoCourier]);
-
-  useEffect(() => {
-    if (!isEditPathaoCourier || !editCourierCityId || !editAddress.trim() || editZonesLoading || editCourierZones.length === 0) {
-      return;
-    }
-
-    const canAutoUpdateZone = !editCourierZoneId || editCourierZoneId === lastEditAutoZoneIdRef.current;
-    if (!canAutoUpdateZone) return;
-
-    const { zoneHints } = extractPathaoLocationHints(editAddress);
-    const matchedZone = resolvePathaoLocationMatch(editAddress, editCourierZones as Array<{ id: string | number; name: string }>, zoneHints);
-
-    if (matchedZone) {
-      const nextZoneId = String(matchedZone.id);
-      if (editCourierZoneId !== nextZoneId) {
-        setEditCourierZoneId(nextZoneId);
-        setEditCourierAreaId(null);
-      }
-      if (session?.access_token && editCourierId) {
-        void prefetchCourierLocations(queryClient, session.access_token, editCourierId, "areas", undefined, nextZoneId);
-      }
-      lastEditAutoZoneIdRef.current = nextZoneId;
-      return;
-    }
-
-    if (editCourierZoneId && editCourierZoneId === lastEditAutoZoneIdRef.current) {
-      setEditCourierZoneId(null);
-      setEditCourierAreaId(null);
-    }
-    lastEditAutoZoneIdRef.current = null;
-  }, [editAddress, editCourierCityId, editCourierZoneId, editCourierZones, editZonesLoading, isEditPathaoCourier]);
+    setEditCourierCityId(pathaoLocation.cityId);
+    setEditCourierZoneId(pathaoLocation.zoneId);
+    setEditCourierAreaId(pathaoLocation.areaId);
+  }, [pathaoLocation]);
 
   // Product search for detail dialog
   const { data: allOrderItemsForSales = [] } = useQuery({
