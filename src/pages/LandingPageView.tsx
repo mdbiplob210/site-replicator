@@ -1198,23 +1198,6 @@ ttq.page();
       });
     }
   }
-          if (styles.display !== 'none' && styles.visibility !== 'hidden' && styles.opacity !== '0') {
-            navigateToSuccess(window.__lpPendingSuccessUrl);
-            return;
-          }
-        }
-      } catch(e) {}
-    });
-
-    try {
-      observer.observe(document.documentElement || document.body, {
-        subtree: true,
-        childList: true,
-        attributes: true,
-        attributeFilter: ['style', 'class', 'open', 'hidden', 'aria-hidden']
-      });
-    } catch(e) {}
-  }
 
   function resolveTotalValue(payload) {
     var qty = parseInt(payload.quantity || '1', 10);
@@ -1225,72 +1208,18 @@ ttq.page();
     return isFinite(explicitTotal) && explicitTotal >= 0 ? explicitTotal : (unitPrice * qty);
   }
 
-  function persistSuccessState(eventId, payload, result, totalValue) {
-    try {
-      sessionStorage.setItem('_lp_purchase_success:' + String(eventId || ''), JSON.stringify({
-        customer_name: payload.customer_name || '',
-        customer_phone: payload.customer_phone || '',
-        product_name: payload.product_name || '',
-        product_code: payload.product_code || '',
-        quantity: parseInt(payload.quantity || '1', 10) || 1,
-        unit_price: parseFloat(payload.unit_price || '0') || 0,
-        total_value: totalValue,
-        order_id: result.order_id || '',
-        order_number: result.order_number || '',
-        duplicate: !!result.duplicate
-      }));
-    } catch(e) {}
-  }
-
-  function navigateToSuccess(url) {
-    if (!url || window.__lpSuccessNavigationStarted) return;
-    window.__lpSuccessNavigationStarted = true;
-    window.__lpOrderRedirecting = true;
-    window.__lpPendingSuccessUrl = url;
-
-    try { window.alert = function(){}; } catch(e) {}
-    try { window.confirm = function(){ return true; }; } catch(e) {}
-
-    suppressLegacySuccessUi();
-
-    var targetWindow = getTopWindow();
-    var go = function() {
-      suppressLegacySuccessUi();
-      try {
-        targetWindow.location.replace(url);
-        return;
-      } catch(e) {}
-      try {
-        targetWindow.location.href = url;
-        return;
-      } catch(e2) {}
-      window.location.href = url;
-    };
-
-    if (typeof window.requestAnimationFrame === 'function') {
-      window.requestAnimationFrame(go);
-    } else {
-      setTimeout(go, 0);
-    }
-  }
-
   function handleSuccessfulOrder(result, payload, form, btn, successText) {
-    var eventId = payload.event_id || (window._lpTrack ? window._lpTrack.generateEventId() : ('eid_' + Math.random().toString(36).substr(2,9) + '_' + Date.now()));
-    var totalValue = resolveTotalValue(payload);
-    var nextPayload = Object.assign({}, payload, { event_id: eventId, total_value: totalValue });
-    var msg = (form && form.getAttribute && form.getAttribute('data-success-message')) || successText || ('আপনার অর্ডার সফলভাবে জমা হয়েছে! অর্ডার নম্বর: ' + (result.order_number || ''));
-    var successUrl = buildSuccessUrl(result, nextPayload, form, msg);
+    // Fire Purchase event immediately (browser + server)
+    firePurchaseEvent(payload, result);
 
-    persistSuccessState(eventId, nextPayload, result, totalValue);
+    // Show success popup
+    showSuccessPopup(result, payload);
 
     if (btn) {
       btn.disabled = true;
       btn.textContent = '✓ অর্ডার সফল!';
       btn.style.backgroundColor = '#10b981';
     }
-
-    window.__lpPendingSuccessUrl = successUrl;
-    navigateToSuccess(successUrl);
   }
 
   function resetSubmitState(form, btn, btnOrigText) {
