@@ -27,8 +27,7 @@ import { useOrderItems, getStatusLabel, getStatusColor } from "@/hooks/useOrders
 import { usePublicProducts } from "@/hooks/usePublicProducts";
 import { CourierHistoryBadge } from "@/components/admin/courier/CourierHistoryBadge";
 import { CourierSuccessRate } from "@/components/admin/courier/CourierSuccessRate";
-import { useCourierCities, useCourierZones, useCourierAreas, prefetchCourierLocations } from "@/hooks/useCourierLocations";
-import { extractPathaoLocationHints, resolvePathaoLocationMatch } from "@/lib/pathaoLocationMatching";
+import { PathaoLocationSelector, type PathaoLocationValues } from "@/components/admin/courier/PathaoLocationSelector";
 import { toast } from "sonner";
 import { MemoPrint } from "@/components/admin/courier/MemoPrint";
 
@@ -115,17 +114,15 @@ export function OrderDetailPage({ orderId, order, onClose }: { orderId: string |
     enabled: !!orderId,
   });
 
-  // Courier location hooks
-  const { data: editCourierCities = [], isLoading: editCitiesLoading } = useCourierCities(editCourierId);
-  const { data: editCourierZones = [], isLoading: editZonesLoading } = useCourierZones(editCourierId, editCourierCityId);
-  const { data: editCourierAreas = [], isLoading: editAreasLoading } = useCourierAreas(editCourierId, editCourierZoneId);
+  // Courier location state (managed by PathaoLocationSelector)
   const editSelectedCourier = useMemo(
     () => editCourierProviders.find((provider: any) => provider.id === editCourierId) || null,
     [editCourierProviders, editCourierId],
   );
-  const lastEditAutoCityIdRef = useRef<string | null>(null);
-  const lastEditAutoZoneIdRef = useRef<string | null>(null);
   const isEditPathaoCourier = editSelectedCourier?.slug === "pathao";
+  const [pathaoLocation, setPathaoLocation] = useState<PathaoLocationValues>({
+    cityId: null, zoneId: null, areaId: null, cityName: "", zoneName: "", areaName: "",
+  });
   const [editStatus, setEditStatus] = useState<string>("");
   const [detailCancelDialogOpen, setDetailCancelDialogOpen] = useState(false);
   const [detailCancelReason, setDetailCancelReason] = useState("");
@@ -228,95 +225,16 @@ export function OrderDetailPage({ orderId, order, onClose }: { orderId: string |
     setEditCourierCityId(null);
     setEditCourierZoneId(null);
     setEditCourierAreaId(null);
+    setPathaoLocation({ cityId: null, zoneId: null, areaId: null, cityName: "", zoneName: "", areaName: "" });
   }, [courierOrderRef, orderRef]);
 
+  // PathaoLocationSelector handles all auto-detection and prefetching
+  // Sync pathaoLocation → editCourierCityId/ZoneId/AreaId for courier submit
   useEffect(() => {
-    if (!isEditPathaoCourier || !editCourierId || !session?.access_token) {
-      return;
-    }
-
-    void prefetchCourierLocations(queryClient, session.access_token, editCourierId, "cities");
-  }, [editCourierId, isEditPathaoCourier, queryClient, session?.access_token]);
-
-  useEffect(() => {
-    if (!isEditPathaoCourier || !editCourierId || !editCourierCityId || !session?.access_token) {
-      return;
-    }
-
-    void prefetchCourierLocations(queryClient, session.access_token, editCourierId, "zones", editCourierCityId);
-  }, [editCourierCityId, editCourierId, isEditPathaoCourier, queryClient, session?.access_token]);
-
-  useEffect(() => {
-    if (!isEditPathaoCourier || !editCourierId || !editCourierZoneId || !session?.access_token) {
-      return;
-    }
-
-    void prefetchCourierLocations(queryClient, session.access_token, editCourierId, "areas", undefined, editCourierZoneId);
-  }, [editCourierId, editCourierZoneId, isEditPathaoCourier, queryClient, session?.access_token]);
-
-  useEffect(() => {
-    if (!isEditPathaoCourier || !editAddress.trim() || editCitiesLoading || editCourierCities.length === 0) {
-      return;
-    }
-
-    const canAutoUpdateCity = !editCourierCityId || editCourierCityId === lastEditAutoCityIdRef.current;
-    if (!canAutoUpdateCity) return;
-
-    const { cityHints } = extractPathaoLocationHints(editAddress);
-    const matchedCity = resolvePathaoLocationMatch(editAddress, editCourierCities as Array<{ id: string | number; name: string }>, cityHints);
-
-    if (matchedCity) {
-      const nextCityId = String(matchedCity.id);
-      if (editCourierCityId !== nextCityId) {
-        setEditCourierCityId(nextCityId);
-        setEditCourierZoneId(null);
-        setEditCourierAreaId(null);
-      }
-      if (session?.access_token && editCourierId) {
-        void prefetchCourierLocations(queryClient, session.access_token, editCourierId, "zones", nextCityId);
-      }
-      lastEditAutoCityIdRef.current = nextCityId;
-      return;
-    }
-
-    if (editCourierCityId && editCourierCityId === lastEditAutoCityIdRef.current) {
-      setEditCourierCityId(null);
-      setEditCourierZoneId(null);
-      setEditCourierAreaId(null);
-    }
-    lastEditAutoCityIdRef.current = null;
-  }, [editAddress, editCitiesLoading, editCourierCities, editCourierCityId, isEditPathaoCourier]);
-
-  useEffect(() => {
-    if (!isEditPathaoCourier || !editCourierCityId || !editAddress.trim() || editZonesLoading || editCourierZones.length === 0) {
-      return;
-    }
-
-    const canAutoUpdateZone = !editCourierZoneId || editCourierZoneId === lastEditAutoZoneIdRef.current;
-    if (!canAutoUpdateZone) return;
-
-    const { zoneHints } = extractPathaoLocationHints(editAddress);
-    const matchedZone = resolvePathaoLocationMatch(editAddress, editCourierZones as Array<{ id: string | number; name: string }>, zoneHints);
-
-    if (matchedZone) {
-      const nextZoneId = String(matchedZone.id);
-      if (editCourierZoneId !== nextZoneId) {
-        setEditCourierZoneId(nextZoneId);
-        setEditCourierAreaId(null);
-      }
-      if (session?.access_token && editCourierId) {
-        void prefetchCourierLocations(queryClient, session.access_token, editCourierId, "areas", undefined, nextZoneId);
-      }
-      lastEditAutoZoneIdRef.current = nextZoneId;
-      return;
-    }
-
-    if (editCourierZoneId && editCourierZoneId === lastEditAutoZoneIdRef.current) {
-      setEditCourierZoneId(null);
-      setEditCourierAreaId(null);
-    }
-    lastEditAutoZoneIdRef.current = null;
-  }, [editAddress, editCourierCityId, editCourierZoneId, editCourierZones, editZonesLoading, isEditPathaoCourier]);
+    setEditCourierCityId(pathaoLocation.cityId);
+    setEditCourierZoneId(pathaoLocation.zoneId);
+    setEditCourierAreaId(pathaoLocation.areaId);
+  }, [pathaoLocation]);
 
   // Product search for detail dialog
   const { data: allOrderItemsForSales = [] } = useQuery({
@@ -723,14 +641,11 @@ export function OrderDetailPage({ orderId, order, onClose }: { orderId: string |
               </h3>
               <Select value={editCourierId || "none"} onValueChange={(v) => {
                 const nextCourierId = v === "none" ? null : v;
-                const nextCourier = nextCourierId ? editCourierProviders.find((cp: any) => cp.id === nextCourierId) : null;
                 setEditCourierId(nextCourierId);
                 setEditCourierCityId(null);
                 setEditCourierZoneId(null);
                 setEditCourierAreaId(null);
-                if (nextCourierId && nextCourier?.slug === "pathao" && session?.access_token) {
-                  void prefetchCourierLocations(queryClient, session.access_token, nextCourierId, "cities");
-                }
+                setPathaoLocation({ cityId: null, zoneId: null, areaId: null, cityName: "", zoneName: "", areaName: "" });
               }}>
                 <SelectTrigger className="rounded-xl h-9 text-sm">
                   <SelectValue placeholder="কুরিয়ার সিলেক্ট করুন" />
@@ -755,61 +670,17 @@ export function OrderDetailPage({ orderId, order, onClose }: { orderId: string |
                 </Badge>
               )}
 
-              {/* City/Zone/Area from Courier API for Edit */}
-              {editCourierId && (
-                <div className="p-3 rounded-xl bg-background border border-border/30 space-y-3">
-                  <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
-                    📍 {editCourierProviders.find((cp: any) => cp.id === editCourierId)?.name} এরিয়া সিলেক্ট
-                  </p>
-                  <div className="grid grid-cols-3 gap-2">
-                <div className="space-y-1">
-                  <Label className="text-[10px] font-semibold text-muted-foreground">City</Label>
-                  <Select value={editCourierCityId || ""} onValueChange={(v) => {
-                    setEditCourierCityId(v || null);
-                    setEditCourierZoneId(null);
-                    setEditCourierAreaId(null);
-                  }}>
-                    <SelectTrigger className="rounded-lg h-8 text-xs">
-                      <SelectValue placeholder={editCitiesLoading ? "লোড হচ্ছে..." : "City সিলেক্ট করুন"} />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-60">
-                      {editCourierCities.map((c: any) => (
-                        <SelectItem key={String(c.id)} value={String(c.id)}>{c.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+              {/* Pathao Location Selector with auto-detection */}
+              {editCourierId && isEditPathaoCourier && (
+                <div className="p-3 rounded-xl bg-background border border-border/30">
+                  <PathaoLocationSelector
+                    providerId={editCourierId}
+                    address={editAddress}
+                    value={pathaoLocation}
+                    onChange={setPathaoLocation}
+                    compact
+                  />
                 </div>
-                <div className="space-y-1">
-                  <Label className="text-[10px] font-semibold text-muted-foreground">Zone</Label>
-                  <Select value={editCourierZoneId || ""} onValueChange={(v) => {
-                    setEditCourierZoneId(v || null);
-                    setEditCourierAreaId(null);
-                  }} disabled={!editCourierCityId}>
-                    <SelectTrigger className="rounded-lg h-8 text-xs">
-                      <SelectValue placeholder={editZonesLoading ? "লোড হচ্ছে..." : "Zone সিলেক্ট করুন"} />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-60">
-                      {editCourierZones.map((z: any) => (
-                        <SelectItem key={String(z.id)} value={String(z.id)}>{z.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-[10px] font-semibold text-muted-foreground">Area/Thana</Label>
-                  <Select value={editCourierAreaId || ""} onValueChange={setEditCourierAreaId} disabled={!editCourierZoneId}>
-                    <SelectTrigger className="rounded-lg h-8 text-xs">
-                      <SelectValue placeholder={editAreasLoading ? "লোড হচ্ছে..." : "Area সিলেক্ট করুন"} />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-60">
-                      {editCourierAreas.map((a: any) => (
-                        <SelectItem key={String(a.id)} value={String(a.id)}>{a.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                </div>
-              </div>
               )}
             </div>
 
