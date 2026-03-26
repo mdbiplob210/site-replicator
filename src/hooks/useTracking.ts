@@ -818,10 +818,13 @@ export function useTracking() {
           content_name: params.contentName,
           content_ids: [params.contentId],
           content_type: "product",
+          content_category: "ecommerce",
           value: params.value,
           currency: params.currency || "BDT",
           num_items: params.qty,
           order_id: params.orderId,
+          predicted_ltv: params.value,
+          status: "completed",
         },
       });
     }
