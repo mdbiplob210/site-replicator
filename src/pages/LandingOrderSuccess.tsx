@@ -130,6 +130,8 @@ export default function LandingOrderSuccess() {
       })
       .catch((err) => console.error("[Purchase] Landing fbq error:", err));
 
+    console.log("[Purchase] Landing CAPI sending", { eventId, pixelId: page.fb_pixel_id, value, slug });
+
     fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fb-conversions-api`, {
       method: "POST",
       headers: {
@@ -152,7 +154,10 @@ export default function LandingOrderSuccess() {
         custom_data: payload,
       }),
       keepalive: true,
-    }).catch(() => undefined);
+    })
+      .then(r => r.json())
+      .then(result => console.log("[Purchase] Landing CAPI response:", result))
+      .catch((err) => console.error("[Purchase] Landing CAPI error:", err));
 
     try {
       sessionStorage.setItem(fireKey, "1");
