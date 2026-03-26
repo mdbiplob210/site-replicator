@@ -10,6 +10,9 @@ import { TrackingInitializer } from "./components/TrackingInitializer";
 import { WebsiteEventTracker } from "./components/WebsiteEventTracker";
 import { useDynamicMeta } from "@/hooks/useDynamicMeta";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import LandingPageView from "./pages/LandingPageView";
+import LandingPageCheckout from "./pages/LandingPageCheckout";
+import LandingOrderSuccess from "./pages/LandingOrderSuccess";
 
 const DynamicMetaProvider = () => { useDynamicMeta(); return null; };
 
@@ -32,9 +35,6 @@ const TrackOrder = lazy(() => import("./pages/store/TrackOrder"));
 const Login = lazy(() => import("./pages/Login"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
-const LandingPageView = lazy(() => import("./pages/LandingPageView"));
-const LandingPageCheckout = lazy(() => import("./pages/LandingPageCheckout"));
-const LandingOrderSuccess = lazy(() => import("./pages/LandingOrderSuccess"));
 const Landing = lazy(() => import("./pages/Landing"));
 
 // Lazy-loaded admin pages

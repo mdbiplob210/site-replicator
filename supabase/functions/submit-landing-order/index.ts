@@ -263,7 +263,11 @@ Deno.serve(async (req) => {
 
     // Validate phone number (server-side) — allow 11-15 digits
     const normalizedCustomerPhone = normalizeAsciiDigits(customer_phone);
-    const cleanedPhone = normalizedCustomerPhone.replace(/^\+?880/, "0").replace(/[^0-9]/g, "");
+    let cleanedPhone = normalizedCustomerPhone.replace(/[^0-9+]/g, "");
+    cleanedPhone = cleanedPhone.replace(/^\+?880/, "0").replace(/[^0-9]/g, "");
+    if (/^[1-9]\d{9}$/.test(cleanedPhone)) {
+      cleanedPhone = `0${cleanedPhone}`;
+    }
     if (!/^\d{11,15}$/.test(cleanedPhone)) {
       return new Response(
         JSON.stringify({ error: "অনুগ্রহ করে সঠিক মোবাইল নম্বর দিন (কমপক্ষে ১১ সংখ্যা)" }),

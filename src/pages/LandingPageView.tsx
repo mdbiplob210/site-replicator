@@ -1055,6 +1055,27 @@ ttq.page();
   var ANON = '${anonKey}';
   var SLUG = '${page.slug}';
   var FORM_SELECTOR = '[data-checkout-form], form, #checkoutForm, #orderForm, .checkout-form, .order-form';
+  var CHECKOUT_ROOT_SELECTOR = '[data-checkout-form], form, #checkoutForm, #orderForm, .checkout-form, .order-form, .checkout, #checkout, [id*="checkout"], [class*="checkout"], [id*="order"], [class*="order"]';
+  var DIRECT_PHONE_SELECTOR = [
+    'input[name="customer_phone"]',
+    'input[name="phone"]',
+    'input[name="mobile"]',
+    'input[name="customer_mobile"]',
+    'input[name="contact_number"]',
+    'input[type="tel"]',
+    'input[inputmode="tel"]',
+    'input[autocomplete="tel"]',
+    'input[id*="phone" i]',
+    'input[id*="mobile" i]',
+    'input[placeholder*="phone" i]',
+    'input[placeholder*="mobile" i]',
+    'input[placeholder*="মোবাইল"]',
+    'input[placeholder*="ফোন"]',
+    'input[type="number"][name*="phone" i]',
+    'input[type="number"][name*="mobile" i]',
+    'input[type="number"][id*="phone" i]',
+    'input[type="number"][id*="mobile" i]'
+  ].join(',');
   var VID; try { VID = localStorage.getItem('_lp_vid'); } catch(e) {} VID = VID || '';
   var _submitting = false;
 
@@ -1072,14 +1093,14 @@ ttq.page();
         return _origAlert.call(window, msg);
       }
       // After order submission, suppress all alerts (template success alerts)
-      if (_submitting || window.__lpOrderRedirecting) {
+      if (_submitting || window.__lpOrderRedirecting || window.__lpSubmitStarted) {
         console.log('[LP] Suppressed template alert:', msg);
         return;
       }
       return _origAlert.call(window, msg);
     };
     window.confirm = function(msg) {
-      if (_submitting || window.__lpOrderRedirecting) {
+      if (_submitting || window.__lpOrderRedirecting || window.__lpSubmitStarted) {
         console.log('[LP] Suppressed template confirm:', msg);
         return true;
       }
@@ -1258,6 +1279,7 @@ ttq.page();
 
   function resetSubmitState(form, btn, btnOrigText) {
     _submitting = false;
+    window.__lpSubmitStarted = false;
     if (form) delete form.dataset.lpSubmitLocked;
     if (btn) {
       btn.disabled = false;
@@ -1266,9 +1288,8 @@ ttq.page();
   }
 
   function isValidPhone(value) {
-    var cleaned = String(value || '').replace(/^[+]?880/, '0').replace(/[^0-9]/g, '');
-    // Accept 10 digits (without leading 0) or 11-15 digits
-    if (/^[1-9]\d{9}$/.test(cleaned)) return true;
+    var cleaned = sanitizePhone(value).replace(/^[+]?880/, '0').replace(/[^0-9]/g, '');
+    if (/^[1-9]\d{9}$/.test(cleaned)) cleaned = '0' + cleaned;
     return /^\d{11,15}$/.test(cleaned);
   }
 
@@ -1288,10 +1309,11 @@ ttq.page();
       if (/[0-9]/.test(ch)) result += ch;
       else if (ch === '+' && result.length === 0) result += ch;
     }
-    // Normalize: if 10 digits starting with 1, prepend 0
-    var digitsOnly = result.replace(/^\+/, '');
-    if (/^[1-9]\d{9}$/.test(digitsOnly)) result = '0' + digitsOnly;
-    return result;
+    var digitsOnly = result.replace(/^\+/, '').replace(/[^0-9]/g, '');
+    if (/^8801\d{8,12}$/.test(digitsOnly)) digitsOnly = '0' + digitsOnly.slice(3);
+    if (/^[1-9]\d{9}$/.test(digitsOnly)) digitsOnly = '0' + digitsOnly;
+    if (digitsOnly.length > 15) digitsOnly = digitsOnly.slice(0, 15);
+    return digitsOnly;
   }
 
   function getFieldCandidates(form) {
@@ -1301,8 +1323,10 @@ ttq.page();
     for (var i = 0; i < nodes.length; i++) {
       var el = nodes[i];
       var type = (el.getAttribute('type') || '').toLowerCase();
+      var hint = getFieldHint(el);
       if (el.disabled) continue;
       if (type === 'hidden' || type === 'radio' || type === 'checkbox' || type === 'submit' || type === 'button') continue;
+      if (type === 'number' && !/customer_phone|phone|mobile|customer_mobile|contact_number|whatsapp|tel|মোবাইল|ফোন/.test(hint)) continue;
       fields.push(el);
     }
     return fields;
@@ -1329,6 +1353,11 @@ ttq.page();
   }
 
   function pickField(form, kind) {
+    if (kind === 'phone' && form && form.querySelector) {
+      var directPhone = form.querySelector(DIRECT_PHONE_SELECTOR);
+      if (directPhone) return directPhone;
+    }
+
     var fields = getFieldCandidates(form);
     if (!fields.length) return null;
 
@@ -1350,6 +1379,7 @@ ttq.page();
         if (type === 'tel') score += 18;
         if (inputmode === 'tel') score += 18;
         if (autocomplete === 'tel') score += 14;
+        if (type === 'number' && !/customer_phone|phone|mobile|customer_mobile|contact_number|whatsapp|মোবাইল|ফোন/.test(hint)) score -= 60;
         if (sanitizePhone(field.value || field.placeholder || '').length >= 10) score += 10;
         if (field.maxLength && Number(field.maxLength) >= 10 && Number(field.maxLength) <= 15) score += 6;
         if (tag === 'INPUT') score += 2;
@@ -1380,9 +1410,11 @@ ttq.page();
 
     if (kind === 'phone') {
       for (var j = 0; j < fields.length; j++) {
-        if (sanitizePhone(fields[j].placeholder || '').length >= 10) return fields[j];
+        var phoneHint = getFieldHint(fields[j]);
+        if (/customer_phone|phone|mobile|customer_mobile|contact_number|whatsapp|tel|মোবাইল|ফোন/.test(phoneHint)) return fields[j];
+        if (sanitizePhone(fields[j].value || fields[j].placeholder || '').length >= 10) return fields[j];
       }
-      return fields[1] || fields[0] || null;
+      return null;
     }
     if (kind === 'name') return fields[0] || null;
     if (kind === 'address') {
@@ -1396,7 +1428,7 @@ ttq.page();
   }
 
   function getCheckoutForm(target) {
-    var form = target && target.closest ? target.closest(FORM_SELECTOR) : null;
+    var form = target && target.closest ? (target.closest(FORM_SELECTOR) || target.closest(CHECKOUT_ROOT_SELECTOR)) : null;
     if (!form || !form.querySelector) return null;
     var hasPhone = !!pickField(form, 'phone');
     var hasName = !!pickField(form, 'name');
@@ -1461,8 +1493,6 @@ ttq.page();
     if (result.duplicate) params.set('duplicate', '1');
     return window.location.origin + '/lp/' + encodeURIComponent(SLUG) + '/success?' + params.toString();
   }
-
-  installLegacySuccessObserver();
 
   if (!window.__lpOrderFetchPatched) {
     window.__lpOrderFetchPatched = true;
@@ -1548,6 +1578,7 @@ ttq.page();
     if (phoneInput && phoneInput.value !== customerPhone) phoneInput.value = customerPhone;
 
     _submitting = true;
+    window.__lpSubmitStarted = true;
     form.dataset.lpSubmitLocked = '1';
 
     var btn = form.querySelector('[type="submit"], button:not([type]), button[type="button"]');
@@ -1696,21 +1727,37 @@ ttq.page();
   }
 
   // 3. MutationObserver — patch forms as they appear
-  function scanAndPatchForms() {
-    var forms = document.querySelectorAll(FORM_SELECTOR);
+  function scanAndPatchForms(root) {
+    root = root || document;
+    if (root.nodeType === 1 && root.matches && root.matches(FORM_SELECTOR)) patchForm(root);
+    if (!root.querySelectorAll) return;
+    var forms = root.querySelectorAll(FORM_SELECTOR);
     for (var i = 0; i < forms.length; i++) patchForm(forms[i]);
   }
 
-  scanAndPatchForms();
+  scanAndPatchForms(document);
 
   if (typeof MutationObserver !== 'undefined') {
-    var formObserver = new MutationObserver(function() { scanAndPatchForms(); });
-    formObserver.observe(document.documentElement || document.body, { subtree: true, childList: true });
+    var formObserverRoot = document.body || document.documentElement;
+    if (formObserverRoot) {
+      var formObserver = new MutationObserver(function(mutations) {
+        for (var i = 0; i < mutations.length; i++) {
+          var added = mutations[i].addedNodes;
+          for (var j = 0; j < added.length; j++) {
+            var node = added[j];
+            if (!node || node.nodeType !== 1) continue;
+            scanAndPatchForms(node);
+          }
+        }
+      });
+      formObserver.observe(formObserverRoot, { subtree: true, childList: true });
+    }
   }
 
-  // 4. Periodic scan fallback for dynamically created popups
-  var _scanInterval = setInterval(function() { scanAndPatchForms(); }, 1000);
-  setTimeout(function() { clearInterval(_scanInterval); }, 60000);
+  // 4. Lightweight delayed rescans for late-mounted popups/forms
+  [800, 2500, 5000].forEach(function(delay) {
+    setTimeout(function() { scanAndPatchForms(document); }, delay);
+  });
 })();
 </script>`;
 
