@@ -1,0 +1,37 @@
+
+-- Performance indexes for all major tables
+CREATE INDEX IF NOT EXISTS idx_orders_created_at ON public.orders (created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_orders_status ON public.orders (status);
+CREATE INDEX IF NOT EXISTS idx_orders_status_created ON public.orders (status, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_orders_deleted_at ON public.orders (deleted_at) WHERE deleted_at IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_orders_customer_phone ON public.orders (customer_phone);
+CREATE INDEX IF NOT EXISTS idx_orders_source ON public.orders (source);
+CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON public.order_items (order_id);
+CREATE INDEX IF NOT EXISTS idx_order_items_product_id ON public.order_items (product_id);
+CREATE INDEX IF NOT EXISTS idx_order_activity_logs_order_id ON public.order_activity_logs (order_id);
+CREATE INDEX IF NOT EXISTS idx_products_status ON public.products (status);
+CREATE INDEX IF NOT EXISTS idx_products_slug ON public.products (slug);
+CREATE INDEX IF NOT EXISTS idx_products_category_id ON public.products (category_id);
+CREATE INDEX IF NOT EXISTS idx_order_assignments_assigned_to ON public.order_assignments (assigned_to);
+CREATE INDEX IF NOT EXISTS idx_order_assignments_order_id ON public.order_assignments (order_id);
+CREATE INDEX IF NOT EXISTS idx_delivery_assignments_rider_id ON public.delivery_assignments (rider_id);
+CREATE INDEX IF NOT EXISTS idx_delivery_assignments_order_id ON public.delivery_assignments (order_id);
+CREATE INDEX IF NOT EXISTS idx_courier_orders_order_id ON public.courier_orders (order_id);
+CREATE INDEX IF NOT EXISTS idx_landing_pages_slug_active ON public.landing_pages (slug) WHERE is_active = true;
+CREATE INDEX IF NOT EXISTS idx_landing_page_events_page_id ON public.landing_page_events (landing_page_id);
+CREATE INDEX IF NOT EXISTS idx_landing_page_images_page_id ON public.landing_page_images (landing_page_id);
+CREATE INDEX IF NOT EXISTS idx_site_settings_key ON public.site_settings (key);
+CREATE INDEX IF NOT EXISTS idx_site_settings_public ON public.site_settings (is_public) WHERE is_public = true;
+CREATE INDEX IF NOT EXISTS idx_banners_active ON public.banners (sort_order) WHERE is_active = true;
+CREATE INDEX IF NOT EXISTS idx_invoices_order_id ON public.invoices (order_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON public.notifications (user_id, is_read);
+CREATE INDEX IF NOT EXISTS idx_finance_records_type ON public.finance_records (type);
+CREATE INDEX IF NOT EXISTS idx_ad_spends_date ON public.ad_spends (spend_date);
+CREATE INDEX IF NOT EXISTS idx_stock_movements_product_id ON public.stock_movements (product_id);
+CREATE INDEX IF NOT EXISTS idx_employee_permissions_user_id ON public.employee_permissions (user_id);
+CREATE INDEX IF NOT EXISTS idx_user_roles_user_id ON public.user_roles (user_id);
+CREATE INDEX IF NOT EXISTS idx_incomplete_orders_created ON public.incomplete_orders (created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_live_visitors_last_seen ON public.live_visitors (last_seen_at);
+CREATE INDEX IF NOT EXISTS idx_product_variants_product_id ON public.product_variants (product_id) WHERE is_active = true;
+CREATE INDEX IF NOT EXISTS idx_product_reviews_product_id ON public.product_reviews (product_id) WHERE is_approved = true;
+CREATE INDEX IF NOT EXISTS idx_coupons_code ON public.coupons (code) WHERE is_active = true;

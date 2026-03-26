@@ -1,8 +1,8 @@
-// Service Worker v6 — ultra-fast caching
-const STATIC_CACHE = 'static-v6';
-const API_CACHE = 'api-v6';
-const IMG_CACHE = 'img-v6';
-const NAV_CACHE = 'nav-v6';
+// Service Worker v7 — maximum speed caching
+const STATIC_CACHE = 'static-v7';
+const API_CACHE = 'api-v7';
+const IMG_CACHE = 'img-v7';
+const NAV_CACHE = 'nav-v7';
 
 const API_PATTERNS = ['/rest/v1/site_settings', '/rest/v1/products_public', '/rest/v1/banners', '/rest/v1/categories', '/rest/v1/landing_pages'];
 
@@ -20,7 +20,7 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
 
-  // Navigation requests → network-first with fast fallback
+  // Navigation requests → network-first with 1.5s fallback (faster than before)
   if (event.request.mode === 'navigate') {
     event.respondWith(
       Promise.race([
@@ -31,13 +31,12 @@ self.addEventListener('fetch', (event) => {
           }
           return res;
         }),
-        // If network takes >2s, serve cached version immediately
         new Promise((resolve) => {
           setTimeout(() => {
             caches.match(event.request).then((r) => {
               if (r) resolve(r);
             });
-          }, 2000);
+          }, 1500);
         })
       ]).catch(() => caches.match(event.request).then((r) => r || caches.match('/index.html')))
     );
@@ -120,6 +119,19 @@ self.addEventListener('fetch', (event) => {
           }).catch(() => cached);
           return cached || fresh;
         })
+      )
+    );
+    return;
+  }
+
+  // Google Fonts — cache forever
+  if (url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com') {
+    event.respondWith(
+      caches.open(STATIC_CACHE).then((c) =>
+        c.match(event.request).then((r) => r || fetch(event.request).then((res) => {
+          if (res.ok) c.put(event.request, res.clone());
+          return res;
+        }))
       )
     );
     return;
