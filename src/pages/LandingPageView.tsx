@@ -1069,10 +1069,11 @@ ttq.page();
   function getCheckoutForm(target) {
     var form = target && target.closest ? target.closest(FORM_SELECTOR) : null;
     if (!form || !form.querySelector) return null;
-    var hasPhone = form.querySelector('input[name="customer_phone"], input[name="phone"], input[type="tel"]');
-    var hasName = form.querySelector('input[name="customer_name"], input[name="name"], input[name="full_name"]');
+    var hasPhone = form.querySelector('input[name="customer_phone"], input[name="phone"], input[type="tel"], input[inputmode="tel"]');
+    var hasName = form.querySelector('input[name="customer_name"], input[name="name"], input[name="full_name"], input[autocomplete="name"]');
+    var hasAnyInputs = form.querySelectorAll('input:not([type="hidden"]), textarea').length >= 2;
     var hasProductHints = form.hasAttribute('data-product-name') || form.hasAttribute('data-product-code') || !!form.querySelector('input[name="product_name"], input[name="product_code"], input[name="unit_price"], input[name="quantity"]');
-    return hasPhone && (hasName || hasProductHints) ? form : null;
+    return (hasPhone && (hasName || hasProductHints)) || (hasPhone && hasAnyInputs) ? form : null;
   }
 
   function readField(form, names, types, fallbackIndex) {
