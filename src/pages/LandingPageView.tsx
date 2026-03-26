@@ -1099,15 +1099,18 @@ ttq.page();
       fbc: window._lpTrack ? window._lpTrack.getFbc() : ''
     };
 
+    console.log('[LP-DEBUG] Submitting order to:', ORDER_URL, 'payload:', JSON.stringify(payload));
     fetch(ORDER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
-    .then(function(r) { return r.json(); })
+    .then(function(r) { console.log('[LP-DEBUG] Response status:', r.status); return r.json(); })
     .then(function(data) {
+      console.log('[LP-DEBUG] Response data:', JSON.stringify(data));
       if (data.success || data.duplicate) {
         if (window._removePartial) window._removePartial();
         var totalValue = payload.unit_price * payload.quantity;
         var eventId = payload.event_id || purchaseEventId;
         var baseParams = window._lpTrack ? window._lpTrack.getBaseParams() : {};
 
+        console.log('[LP-DEBUG] duplicate:', data.duplicate, 'fbq exists:', typeof fbq === 'function', 'totalValue:', totalValue, 'eventId:', eventId);
         if (!data.duplicate) {
           if (typeof fbq === 'function') {
             var pp = { value: totalValue, currency: 'BDT', content_type: 'product', content_name: payload.product_name, content_ids: payload.product_code ? [payload.product_code] : [], num_items: payload.quantity, subtotal: totalValue, event_day: baseParams.event_day||'', event_hour: baseParams.event_hour||'', event_month: baseParams.event_month||'', event_url: baseParams.event_url||window.location.href, landing_page: baseParams.landing_page||window.location.href, page_title: document.title||'', traffic_source: baseParams.traffic_source||'direct', user_role:'guest', plugin:'LovableLP', order_id: data.order_number };
