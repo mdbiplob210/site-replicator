@@ -762,6 +762,9 @@ export function useTracking() {
         num_items: params.qty,
         order_id: params.orderId,
       }, { eventID: eventId });
+      console.log("[Purchase] Browser fbq fired", { eventId, pixelId: fbPixelId });
+    } else {
+      console.warn("[Purchase] Browser fbq NOT available", { fbPixelId, fbqExists: !!window.fbq });
     }
 
     if (tiktokPixelId && window.ttq) {
