@@ -1146,7 +1146,7 @@ ttq.page();
 
       if (kind === 'phone') {
         if (/customer_phone|phone|mobile|customer_mobile|contact_number|whatsapp|tel|মোবাইল|ফোন/.test(hint)) score += 40;
-        if (/01x|01\d|\+880|880/.test(hint)) score += 20;
+        if (/01x|01\\d|[+]880|880/.test(hint)) score += 20;
         if (type === 'tel') score += 18;
         if (inputmode === 'tel') score += 18;
         if (autocomplete === 'tel') score += 14;
