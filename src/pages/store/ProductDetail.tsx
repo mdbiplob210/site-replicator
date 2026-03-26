@@ -290,7 +290,7 @@ const ProductDetail = () => {
         </div>
       </header>
 
-      <div className="max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
+      <div className="w-full px-3 sm:px-4 lg:px-8 py-4 sm:py-6">
         {/* Desktop: two columns, Mobile: stacked */}
         <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
           
@@ -537,7 +537,7 @@ const ProductDetail = () => {
 
       {/* Sticky Bottom Bar - Always visible while scrolling */}
       <div className="fixed bottom-0 left-0 right-0 z-[90] bg-white border-t border-border shadow-[0_-4px_20px_rgba(0,0,0,0.1)] safe-bottom">
-        <div className="max-w-6xl mx-auto px-3 py-2.5 flex items-center gap-2">
+          <div className="w-full px-3 lg:px-8 py-2.5 flex items-center gap-2">
           {/* Order Now - takes most space */}
           <button
             onClick={handleOrder}
