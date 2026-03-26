@@ -11,6 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 
 declare global {
   interface Window {
+    __lovableTrackedPurchases?: Record<string, string>;
+    __lovableVisitorId?: string;
     fbq: any;
     _fbq: any;
     ttq: any;
@@ -300,12 +302,34 @@ function loadClarity(clarityId: string) {
 
 // Persistent visitor ID
 function getVisitorId(): string {
-  let vid = localStorage.getItem("_vid");
-  if (!vid) {
-    vid = `v_${Date.now()}_${Math.random().toString(36).slice(2, 12)}`;
-    localStorage.setItem("_vid", vid);
+  try {
+    let vid = localStorage.getItem("_vid");
+    if (!vid) {
+      vid = `v_${Date.now()}_${Math.random().toString(36).slice(2, 12)}`;
+      localStorage.setItem("_vid", vid);
+    }
+    return vid;
+  } catch {
+    if (!window.__lovableVisitorId) {
+      window.__lovableVisitorId = `v_${Date.now()}_${Math.random().toString(36).slice(2, 12)}`;
+    }
+    return window.__lovableVisitorId;
   }
-  return vid;
+}
+
+function markPurchaseTracked(orderId: string, eventId: string): boolean {
+  const purchaseKey = `_pur_${orderId}`;
+
+  try {
+    if (sessionStorage.getItem(purchaseKey)) return false;
+    sessionStorage.setItem(purchaseKey, eventId);
+    return true;
+  } catch {
+    window.__lovableTrackedPurchases = window.__lovableTrackedPurchases || {};
+    if (window.__lovableTrackedPurchases[orderId]) return false;
+    window.__lovableTrackedPurchases[orderId] = eventId;
+    return true;
+  }
 }
 
 // ============================================================
@@ -383,6 +407,18 @@ export function useTracking() {
   const gtmId = settings?.gtm_id || "";
   const clarityId = settings?.clarity_id || "";
 
+  const ensureCommerceTrackersReady = useCallback(() => {
+    if (fbPixelId && typeof window.fbq !== "function") {
+      loadFBPixel(fbPixelId);
+    }
+    if (tiktokPixelId && !window.ttq?.track) {
+      loadTikTokPixel(tiktokPixelId);
+    }
+    if (gtmId && !Array.isArray(window.dataLayer)) {
+      loadGTM(gtmId);
+    }
+  }, [fbPixelId, tiktokPixelId, gtmId]);
+
   // Initialize tracking scripts AFTER page is interactive (deferred)
   useEffect(() => {
     if (initialized.current || !settings) return;
@@ -458,6 +494,7 @@ export function useTracking() {
     id: string; name: string; price: number; category?: string;
     productCode?: string; image?: string;
   }) => {
+    ensureCommerceTrackersReady();
     const eventId = generateEventId("vc");
     const contentId = product.productCode || product.id;
 
@@ -516,12 +553,13 @@ export function useTracking() {
         },
       });
     }
-  }, [fbPixelId, tiktokPixelId, gtmId]);
+  }, [ensureCommerceTrackersReady, fbPixelId, tiktokPixelId, gtmId]);
 
   const trackAddToCart = useCallback((product: {
     id: string; name: string; price: number; qty: number;
     productCode?: string; category?: string;
   }) => {
+    ensureCommerceTrackersReady();
     const eventId = generateEventId("atc");
     const contentId = product.productCode || product.id;
 
@@ -578,13 +616,14 @@ export function useTracking() {
         },
       });
     }
-  }, [fbPixelId, tiktokPixelId, gtmId]);
+  }, [ensureCommerceTrackersReady, fbPixelId, tiktokPixelId, gtmId]);
 
   const trackInitiateCheckout = useCallback((params: {
     value: number; currency?: string; contentName: string;
     contentId: string; qty: number;
     customerPhone?: string; customerName?: string;
   }) => {
+    ensureCommerceTrackersReady();
     const eventId = generateEventId("ic");
 
     // Store user data if provided
@@ -647,12 +686,13 @@ export function useTracking() {
         },
       });
     }
-  }, [fbPixelId, tiktokPixelId, gtmId]);
+  }, [ensureCommerceTrackersReady, fbPixelId, tiktokPixelId, gtmId]);
 
   const trackAddPaymentInfo = useCallback((params: {
     value: number; currency?: string;
     customerPhone?: string; customerName?: string;
   }) => {
+    ensureCommerceTrackersReady();
     const eventId = generateEventId("api");
 
     if (params.customerPhone || params.customerName) {
@@ -686,19 +726,18 @@ export function useTracking() {
         },
       });
     }
-  }, [fbPixelId, tiktokPixelId]);
+  }, [ensureCommerceTrackersReady, fbPixelId, tiktokPixelId]);
 
   const trackPurchase = useCallback((params: {
     value: number; currency?: string; orderId: string;
     contentName: string; contentId: string; qty: number;
     customerPhone?: string; customerName?: string; customerCity?: string;
   }) => {
+    ensureCommerceTrackersReady();
     const eventId = generateEventId("pur");
 
-    // Store eventId to prevent duplicate on page reload
-    const purchaseKey = `_pur_${params.orderId}`;
-    if (sessionStorage.getItem(purchaseKey)) return;
-    sessionStorage.setItem(purchaseKey, eventId);
+    // Prevent duplicate purchase events even in restricted in-app browsers
+    if (!markPurchaseTracked(params.orderId, eventId)) return;
 
     // Update user data with all available info
     setFBUserData({
@@ -769,7 +808,7 @@ export function useTracking() {
         },
       });
     }
-  }, [fbPixelId, tiktokPixelId, gtmId]);
+  }, [ensureCommerceTrackersReady, fbPixelId, tiktokPixelId, gtmId]);
 
   const trackContact = useCallback((data?: { method?: string; page?: string }) => {
     const eventId = generateEventId("ct");
@@ -800,6 +839,7 @@ export function useTracking() {
     value?: number; currency?: string; contentName?: string;
     customerPhone?: string; customerName?: string;
   }) => {
+    ensureCommerceTrackersReady();
     const eventId = generateEventId("ld");
 
     // Store user data immediately for advanced matching
@@ -846,7 +886,7 @@ export function useTracking() {
         },
       });
     }
-  }, [fbPixelId, tiktokPixelId, gtmId]);
+  }, [ensureCommerceTrackersReady, fbPixelId, tiktokPixelId, gtmId]);
 
   const trackCompleteRegistration = useCallback((params?: {
     value?: number; currency?: string; contentName?: string; status?: string;

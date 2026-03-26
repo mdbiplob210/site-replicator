@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import { toast } from "sonner";
 import { startOfDay, endOfDay, subDays } from "date-fns";
+import { mapOrderStatusToMetaEvent } from "@/lib/metaTracking";
 
 export type OrderDateFilter = "all" | "today" | "yesterday" | "7days" | "30days" | "custom";
 
@@ -272,8 +273,8 @@ async function sendFbCapiEvent(order: Order, newStatus: OrderStatus) {
       if (lp?.fb_pixel_id) orderPixelId = lp.fb_pixel_id;
     }
 
-    // Map status to FB event
-    let eventName = "";
+    // Map status to Meta event without duplicating storefront Purchase tracking
+    const eventName = mapOrderStatusToMetaEvent(newStatus);
     const customData: Record<string, any> = {
       currency: "BDT",
       value: Number(order.total_amount),
@@ -282,12 +283,9 @@ async function sendFbCapiEvent(order: Order, newStatus: OrderStatus) {
     };
 
     if (newStatus === "delivered") {
-      eventName = "Purchase";
+      customData.delivery_status = "delivered";
     } else if (newStatus === "cancelled") {
-      eventName = "CancelOrder";
       customData.cancel_reason = order.cancel_reason || "N/A";
-    } else if (newStatus === "returned") {
-      eventName = "ReturnOrder";
     }
 
     if (!eventName) return;
