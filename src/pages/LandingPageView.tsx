@@ -1238,18 +1238,27 @@ ttq.page();
     submitOrder(form);
   }, true);
 
-  // Catch clicks on non-submit buttons inside checkout forms (e.g. type="button")
+  // Catch clicks on order buttons inside checkout forms (any type)
   document.addEventListener('click', function(e) {
     if (_submitting) return;
-    var btn = e.target && e.target.closest ? e.target.closest('button') : null;
-    if (!btn || btn.type === 'submit') return;
+    var btn = e.target && e.target.closest ? e.target.closest('button, [role="button"], input[type="submit"], .order-btn, .checkout-btn') : null;
+    if (!btn) return;
+    // Check if button text matches order-related keywords
+    var btnText = (btn.textContent || btn.value || '').trim();
+    if (!/অর্ডার|order|submit|কনফার্ম|confirm/i.test(btnText)) return;
     var form = btn.closest ? btn.closest(FORM_SELECTOR) : null;
-    if (!form) return;
-    if (/অর্ডার|order|submit|কনফার্ম|confirm/i.test(btn.textContent || '')) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      submitOrder(form);
+    if (!form) {
+      // Try finding any parent with inputs (for div-based forms)
+      var parent = btn.parentElement;
+      for (var i = 0; i < 5 && parent; i++) {
+        if (parent.querySelector && parent.querySelector('input[type="tel"], input[inputmode="tel"]')) { form = parent; break; }
+        parent = parent.parentElement;
+      }
     }
+    if (!form) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    submitOrder(form);
   }, true);
 })();
 </script>`;
