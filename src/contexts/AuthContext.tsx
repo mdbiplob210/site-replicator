@@ -198,6 +198,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [clearRoleData, resolveRolesAndPermissions]);
 
   useEffect(() => {
+    // Landing pages: skip auth entirely for maximum speed
+    if (isLandingRoute()) {
+      setLoading(false);
+      setRolesResolved(true);
+      return;
+    }
+
     let disposed = false;
     let bootstrapComplete = false;
 
