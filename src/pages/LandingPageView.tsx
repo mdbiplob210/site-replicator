@@ -1425,6 +1425,13 @@ ttq.page();
           }));
         } catch(e) {}
         if (btn) { btn.disabled = true; btn.textContent = '✓ অর্ডার সফল!'; btn.style.backgroundColor = '#10b981'; }
+        window.__lpOrderRedirecting = true;
+        // Suppress any template popups/alerts during redirect
+        window.alert = function(){};
+        setTimeout(function() {
+          var overlays = document.querySelectorAll('[class*="modal"],[class*="popup"],[class*="overlay"],[class*="success"],[class*="confirm"],[role="dialog"]');
+          overlays.forEach(function(el) { el.style.display = 'none'; });
+        }, 10);
         setTimeout(function() {
           window.location.href = successUrl;
         }, 300);
