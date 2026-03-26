@@ -621,13 +621,27 @@ ttq.track('InitiateCheckout');
   }
 
   function handleSuccessfulOrder(result, payload, form, btn, successText) {
-    firePurchaseEvent(payload, result);
-    showSuccessPopup(result, payload);
+    // Redirect to success page — Purchase fires there
+    window.__lpOrderRedirecting = true;
+    var totalValue = resolveTotalValue(payload);
+    var params = new URLSearchParams();
+    params.set('order_number', String(result.order_number || ''));
+    params.set('value', String(totalValue));
+    params.set('currency', 'BDT');
+    params.set('content_name', (payload.product_name || document.title || '').substring(0, 150));
+    if (payload.product_code) params.set('content_id', payload.product_code);
+    params.set('num_items', String(parseInt(payload.quantity || '1', 10) || 1));
+    params.set('event_id', payload.event_id || (window._lpTrack ? window._lpTrack.generateEventId() : ('eid_' + Math.random().toString(36).substr(2,9) + '_' + Date.now())));
+    if (payload.customer_phone) params.set('phone', payload.customer_phone);
+    if (payload.customer_name) params.set('name', payload.customer_name);
+    if (result.purchase_tracked) params.set('capi_sent', '1');
+    var successUrl = '/lp/' + SLUG + '/success?' + params.toString();
     if (btn) {
       btn.disabled = true;
-      btn.textContent = '✓ অর্ডার সফল!';
+      btn.textContent = 'অপেক্ষা করুন...';
       btn.style.backgroundColor = '#10b981';
     }
+    window.location.href = successUrl;
   }
 
 
