@@ -141,31 +141,32 @@ if (!_extId) { _extId = 'v_' + Date.now() + '_' + Math.random().toString(36).sub
  window._fbPixelId = '${page.fb_pixel_id}';
  window.__lpFbqRef = fbq;
  window.__lpTrackBrowserPurchase = function(params, options, attempt) {
-   var tries = attempt || 0;
-   var ref = window.__lpFbqRef || window.fbq || window._fbq;
-   if (typeof ref !== 'function') {
-     if (tries < 12) {
-       setTimeout(function() {
-         window.__lpTrackBrowserPurchase(params, options, tries + 1);
-       }, 250);
-     }
-     return false;
-   }
-   window.__lpFbqRef = ref;
-   try {
-     if (window._fbPixelId) ref('trackSingle', window._fbPixelId, 'Purchase', params || {}, options || {});
-     else ref('track', 'Purchase', params || {}, options || {});
-     return true;
-   } catch (err) {
-     console.warn('[FB Pixel Purchase] Retry scheduled', err && err.message ? err.message : err);
-     if (tries < 3) {
-       setTimeout(function() {
-         window.__lpTrackBrowserPurchase(params, options, tries + 1);
-       }, 250);
-     }
-     return false;
-   }
- };
+    var tries = attempt || 0;
+    var ref = window.__lpFbqRef || window.fbq || window._fbq;
+    if (typeof ref !== 'function') {
+      if (tries < 12) {
+        setTimeout(function() {
+          window.__lpTrackBrowserPurchase(params, options, tries + 1);
+        }, 250);
+      }
+      return false;
+    }
+    window.__lpFbqRef = ref;
+    try {
+      // IMPORTANT: Use fbq('track', ...) instead of trackSingle — Pixel Helper only detects 'track' calls
+      ref('track', 'Purchase', params || {}, options || {});
+      console.log('[FB Pixel] Purchase event fired via track()', params, options);
+      return true;
+    } catch (err) {
+      console.warn('[FB Pixel Purchase] Retry scheduled', err && err.message ? err.message : err);
+      if (tries < 6) {
+        setTimeout(function() {
+          window.__lpTrackBrowserPurchase(params, options, tries + 1);
+        }, 300);
+      }
+      return false;
+    }
+  };
 window._updateFBAdvancedMatching = function(data) {
   if (!data || !window._fbPixelId) return;
   var ud = window._lpTrack ? window._lpTrack.getUserData() : {};
