@@ -1118,11 +1118,14 @@ ttq.page();
         }
 
         var successUrl = form.getAttribute('data-success-url');
-        if (successUrl) { window.location.href = successUrl; }
-        else {
-          var msg = form.getAttribute('data-success-message') || 'আপনার অর্ডার সফলভাবে জমা হয়েছে! অর্ডার নম্বর: ' + data.order_number;
-          document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:sans-serif;"><div style="text-align:center;padding:40px;"><h1 style="color:#10b981;font-size:48px;">✓</h1><h2 style="margin:16px 0;">অর্ডার সফল!</h2><p>' + msg + '</p></div></div>';
-        }
+        var msg = form.getAttribute('data-success-message') || 'আপনার অর্ডার সফলভাবে জমা হয়েছে! অর্ডার নম্বর: ' + data.order_number;
+        if (btn) { btn.disabled = true; btn.textContent = '✓ অর্ডার সফল!'; btn.style.backgroundColor = '#10b981'; }
+        setTimeout(function() {
+          if (successUrl) { window.location.href = successUrl; }
+          else {
+            document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:sans-serif;"><div style="text-align:center;padding:40px;"><h1 style="color:#10b981;font-size:48px;">✓</h1><h2 style="margin:16px 0;">অর্ডার সফল!</h2><p>' + msg + '</p></div></div>';
+          }
+        }, 1500);
       } else {
         alert(data.error || 'অর্ডার সাবমিট করতে সমস্যা হয়েছে');
         _submitting = false;
