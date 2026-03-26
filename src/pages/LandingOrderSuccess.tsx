@@ -3,6 +3,7 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import { CheckCircle2, ArrowLeft, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLandingPageBySlug } from "@/hooks/useLandingPages";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 function getCookie(name: string) {
   const match = document.cookie.match(new RegExp(`(^|; )${name}=([^;]*)`));
@@ -15,6 +16,16 @@ function getFbc() {
 
   const fbclid = new URLSearchParams(window.location.search).get("fbclid");
   return fbclid ? `fb.1.${Date.now()}.${fbclid}` : "";
+}
+
+function getSafeNumber(value: string | number | null | undefined, fallback = 0) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function getSafePositiveInteger(value: string | number | null | undefined, fallback = 1) {
+  const parsed = Math.floor(getSafeNumber(value, fallback));
+  return parsed > 0 ? parsed : fallback;
 }
 
 function ensureFacebookPixel(pixelId: string) {
@@ -68,6 +79,7 @@ export default function LandingOrderSuccess() {
   const { slug } = useParams<{ slug: string }>();
   const [searchParams] = useSearchParams();
   const { data: page } = useLandingPageBySlug(slug || "");
+  const { data: settings } = useSiteSettings();
 
   const orderNumber = searchParams.get("order") || "";
   const orderId = searchParams.get("oid") || "";
@@ -91,12 +103,28 @@ export default function LandingOrderSuccess() {
     }
   }, [eventId]);
 
-  useEffect(() => {
-    document.title = orderNumber ? `অর্ডার সফল #${orderNumber}` : "অর্ডার সফল";
-  }, [orderNumber]);
+  const effectiveOrderNumber = orderNumber || persistedState?.order_number || "";
+  const effectiveOrderId = orderId || persistedState?.order_id || "";
+  const effectiveProductName = productName || persistedState?.product_name || page?.title || "";
+  const effectiveProductCode = productCode || persistedState?.product_code || "";
+  const effectiveQuantity = getSafePositiveInteger(searchParams.get("qty"), getSafePositiveInteger(persistedState?.quantity, 1));
+  const effectiveValue = getSafeNumber(
+    searchParams.get("value"),
+    getSafeNumber(persistedState?.total_value, getSafeNumber(persistedState?.unit_price, 0) * effectiveQuantity),
+  );
+  const effectivePixelId = page?.fb_pixel_id || settings?.fb_pixel_id || "";
 
   useEffect(() => {
-    if (!slug || !page?.fb_pixel_id || !eventId || duplicate) return;
+    document.title = effectiveOrderNumber ? `অর্ডার সফল #${effectiveOrderNumber}` : "অর্ডার সফল";
+  }, [effectiveOrderNumber]);
+
+  useEffect(() => {
+    if (!slug || !eventId || duplicate) return;
+
+    if (!effectivePixelId) {
+      console.error("[Purchase] Landing purchase skipped: no pixel configured", { slug, eventId });
+      return;
+    }
 
     const fireKey = `_lp_purchase_fired:${eventId}`;
     try {
@@ -106,65 +134,90 @@ export default function LandingOrderSuccess() {
     }
 
     const payload = {
-      value,
+      value: effectiveValue,
       currency: "BDT",
-      content_name: productName,
-      content_ids: productCode ? [productCode] : [],
+      content_name: effectiveProductName,
+      content_ids: effectiveProductCode ? [effectiveProductCode] : [],
       content_type: "product",
-      num_items: quantity,
-      order_id: orderNumber,
-      subtotal: value,
+      num_items: effectiveQuantity,
+      order_id: effectiveOrderNumber,
+      subtotal: effectiveValue,
     };
 
     const userData = persistedState || {};
+    let cancelled = false;
 
-    ensureFacebookPixel(page.fb_pixel_id)
-      .then(() => {
+    const sendPurchase = async () => {
+      let browserSent = false;
+      let serverSent = false;
+
+      try {
+        await ensureFacebookPixel(effectivePixelId);
         const fbq = (window as any).fbq;
         if (typeof fbq === "function") {
           fbq("track", "Purchase", payload, { eventID: eventId });
-          console.log("[Purchase] Landing browser fbq fired", { eventId, pixelId: page.fb_pixel_id, value });
+          browserSent = true;
+          console.log("[Purchase] Landing browser fbq fired", { eventId, pixelId: effectivePixelId, value: effectiveValue });
         } else {
-          console.warn("[Purchase] Landing fbq not available after ensureFacebookPixel");
+          console.error("[Purchase] Landing fbq unavailable after ensureFacebookPixel", { eventId, pixelId: effectivePixelId });
         }
-      })
-      .catch((err) => console.error("[Purchase] Landing fbq error:", err));
+      } catch (err) {
+        console.error("[Purchase] Landing fbq error:", err);
+      }
 
-    console.log("[Purchase] Landing CAPI sending", { eventId, pixelId: page.fb_pixel_id, value, slug });
+      try {
+        console.log("[Purchase] Landing CAPI sending", { eventId, pixelId: effectivePixelId, value: effectiveValue, slug });
 
-    fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fb-conversions-api`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-      },
-      body: JSON.stringify({
-        pixel_id: page.fb_pixel_id,
-        event_name: "Purchase",
-        event_id: eventId,
-        event_url: window.location.href,
-        user_agent: navigator.userAgent,
-        fbp: getCookie("_fbp"),
-        fbc: getFbc(),
-        landing_page_slug: slug,
-        user_external_id: orderId || orderNumber,
-        user_phone: userData.customer_phone || "",
-        user_fn: userData.customer_name ? String(userData.customer_name).split(/\s+/)[0] : "",
-        user_ln: userData.customer_name ? String(userData.customer_name).split(/\s+/).slice(1).join(" ") : "",
-        custom_data: payload,
-      }),
-      keepalive: true,
-    })
-      .then(r => r.json())
-      .then(result => console.log("[Purchase] Landing CAPI response:", result))
-      .catch((err) => console.error("[Purchase] Landing CAPI error:", err));
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fb-conversions-api`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify({
+            pixel_id: effectivePixelId,
+            event_name: "Purchase",
+            event_id: eventId,
+            event_url: window.location.href,
+            user_agent: navigator.userAgent,
+            fbp: getCookie("_fbp"),
+            fbc: getFbc(),
+            landing_page_slug: slug,
+            user_external_id: effectiveOrderId || effectiveOrderNumber,
+            user_phone: userData.customer_phone || "",
+            user_fn: userData.customer_name ? String(userData.customer_name).split(/\s+/)[0] : "",
+            user_ln: userData.customer_name ? String(userData.customer_name).split(/\s+/).slice(1).join(" ") : "",
+            custom_data: payload,
+          }),
+          keepalive: true,
+        });
 
-    try {
-      sessionStorage.setItem(fireKey, "1");
-    } catch {
-      // ignore storage access issues
-    }
-  }, [duplicate, eventId, orderId, orderNumber, page?.fb_pixel_id, persistedState, productCode, productName, quantity, slug, value]);
+        const result = await response.json().catch(() => null);
+        if (!response.ok && !result?.skipped) {
+          console.error("[Purchase] Landing CAPI failed", { status: response.status, result, eventId, slug });
+        } else {
+          serverSent = Boolean(result?.success || result?.skipped);
+          console.log("[Purchase] Landing CAPI response:", result);
+        }
+      } catch (err) {
+        console.error("[Purchase] Landing CAPI error:", err);
+      }
+
+      if (!cancelled && (browserSent || serverSent)) {
+        try {
+          sessionStorage.setItem(fireKey, "1");
+        } catch {
+          // ignore storage access issues
+        }
+      }
+    };
+
+    void sendPurchase();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [duplicate, effectiveOrderId, effectiveOrderNumber, effectivePixelId, effectiveProductCode, effectiveProductName, effectiveQuantity, effectiveValue, eventId, persistedState, slug]);
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -177,10 +230,10 @@ export default function LandingOrderSuccess() {
           <h1 className="text-3xl font-bold tracking-tight">অর্ডার সফল হয়েছে</h1>
           <p className="mt-3 text-muted-foreground">{message}</p>
 
-          {orderNumber && (
+          {effectiveOrderNumber && (
             <div className="mt-6 rounded-2xl border border-border bg-background p-5">
               <p className="text-sm text-muted-foreground">অর্ডার নম্বর</p>
-              <p className="mt-1 text-2xl font-black text-primary">#{orderNumber}</p>
+              <p className="mt-1 text-2xl font-black text-primary">#{effectiveOrderNumber}</p>
             </div>
           )}
 
