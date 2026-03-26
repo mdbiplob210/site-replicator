@@ -225,6 +225,7 @@ export function OrderDetailPage({ orderId, order, onClose }: { orderId: string |
     setEditCourierCityId(null);
     setEditCourierZoneId(null);
     setEditCourierAreaId(null);
+    setPathaoLocation({ cityId: null, zoneId: null, areaId: null, cityName: "", zoneName: "", areaName: "" });
   }, [courierOrderRef, orderRef]);
 
   useEffect(() => {
