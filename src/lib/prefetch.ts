@@ -71,53 +71,7 @@ export function prefetchCriticalData() {
 
   if (path.startsWith("/login")) return;
 
-  // Admin routes — prefetch core admin data
-  if (path.startsWith("/admin")) {
-    // Prefetch orders count for dashboard (lightweight)
-    fetchAndCache("site-settings", restUrl("site_settings", "select=key,value&is_public=eq.true"));
-    return;
-  }
-
-  // Always useful and lightweight for public pages
-  fetchAndCache("site-settings", restUrl("site_settings", "select=key,value&is_public=eq.true"));
-
-  // Home/store routes need full listing + banners
-  if (isStoreHomeRoute(path)) {
-    fetchAndCache(
-      "public-products",
-      restUrl("products_public", `select=${PRODUCT_LIST_FIELDS}&status=eq.active&order=created_at.desc`)
-    );
-
-    fetchAndCache(
-      "banners-active",
-      restUrl("banners", "select=id,image_url,link_url,sort_order,is_active&is_active=eq.true&order=sort_order.asc")
-    );
-
-    // Also prefetch categories
-    fetchAndCache(
-      "categories",
-      restUrl("categories", "select=id,name,slug,image_url&order=name.asc")
-    );
-
-    return;
-  }
-
-  // Product route: prefetch only current product
-  if (isProductRoute(path)) {
-    const slug = extractProductSlug(path);
-    if (!slug) return;
-
-    fetchAndCache(
-      `product-detail:${slug}`,
-      restUrl(
-        "products_public",
-        `select=${PRODUCT_DETAIL_FIELDS}&status=eq.active&slug=eq.${encodeURIComponent(slug)}&limit=1`
-      )
-    );
-    return;
-  }
-
-  // Landing page: prefetch the landing page data
+  // Landing pages — prefetch LP data immediately, nothing else
   if (path.startsWith("/lp/")) {
     const slug = path.replace("/lp/", "").split("/")[0];
     if (slug) {
@@ -126,12 +80,58 @@ export function prefetchCriticalData() {
         restUrl("landing_pages", `select=*&slug=eq.${encodeURIComponent(slug)}&is_active=eq.true&limit=1`)
       );
     }
+    return; // Don't load anything else for landing pages
+  }
+
+  // Admin routes — prefetch core admin data
+  if (path.startsWith("/admin")) {
+    fetchAndCache("site-settings", restUrl("site_settings", "select=key,value&is_public=eq.true"));
+    return;
+  }
+
+  // Always useful and lightweight for public pages
+  fetchAndCache("site-settings", restUrl("site_settings", "select=key,value&is_public=eq.true"));
+
+  // Home/store routes need full listing + banners — fire all in parallel
+  if (isStoreHomeRoute(path)) {
+    fetchAndCache(
+      "public-products",
+      restUrl("products_public", `select=${PRODUCT_LIST_FIELDS}&status=eq.active&order=created_at.desc`)
+    );
+    fetchAndCache(
+      "banners-active",
+      restUrl("banners", "select=id,image_url,link_url,sort_order,is_active&is_active=eq.true&order=sort_order.asc")
+    );
+    fetchAndCache(
+      "categories",
+      restUrl("categories", "select=id,name,slug,image_url&order=name.asc")
+    );
+    return;
+  }
+
+  // Product route: prefetch product + suggested products in parallel
+  if (isProductRoute(path)) {
+    const slug = extractProductSlug(path);
+    if (!slug) return;
+    fetchAndCache(
+      `product-detail:${slug}`,
+      restUrl(
+        "products_public",
+        `select=${PRODUCT_DETAIL_FIELDS}&status=eq.active&slug=eq.${encodeURIComponent(slug)}&limit=1`
+      )
+    );
+    // Also prefetch product list for suggestions
+    fetchAndCache(
+      "public-products",
+      restUrl("products_public", `select=${PRODUCT_LIST_FIELDS}&status=eq.active&order=created_at.desc&limit=12`)
+    );
+    return;
   }
 }
 
 export function getPrefetchedData<T>(key: string): T | undefined {
   const cached = prefetchCache[key];
-  if (cached && Date.now() - cached.ts < 60_000) {
+  if (cached && Date.now() - cached.ts < 120_000) { // 2 min validity
     return cached.data as T;
   }
   return undefined;

@@ -18,7 +18,7 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     setTimeout(() => {
       navigator.serviceWorker.register('/sw.js').catch(() => {});
-    }, 2000);
+    }, 1000); // Reduced from 2s to 1s
   }, { once: true });
 }
 
@@ -33,6 +33,6 @@ if (!path.startsWith("/lp/")) {
       import("./lib/routePrefetch").then(({ initLinkPrefetching }) => {
         initLinkPrefetching();
       });
-    }, 500);
+    }, 300); // Reduced from 500ms to 300ms
   });
 }
