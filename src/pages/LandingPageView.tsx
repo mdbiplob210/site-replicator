@@ -140,26 +140,51 @@ if (!_extId) { _extId = 'v_' + Date.now() + '_' + Math.random().toString(36).sub
  
  window._fbPixelId = '${page.fb_pixel_id}';
  window.__lpFbqRef = fbq;
- window.__lpTrackBrowserPurchase = function(params, options, attempt) {
+ window.__lpIsFbPixelReady = function() {
+    var ref = window.fbq || window._fbq || window.__lpFbqRef;
+    return !!(ref && typeof ref === 'function' && typeof ref.callMethod === 'function');
+  };
+  window.__lpTrackBrowserPurchase = function(params, options, attempt) {
     var tries = attempt || 0;
-    var ref = window.__lpFbqRef || window.fbq || window._fbq;
-    if (typeof ref !== 'function') {
-      if (tries < 12) {
+    var ref = window.fbq || window._fbq || window.__lpFbqRef;
+    var ready = !!(ref && typeof ref === 'function' && typeof ref.callMethod === 'function');
+    if (!ready) {
+      if (tries < 20) {
         setTimeout(function() {
           window.__lpTrackBrowserPurchase(params, options, tries + 1);
-        }, 250);
+        }, 300);
+        return false;
       }
-      return false;
+      try {
+        var qp = new URLSearchParams();
+        qp.set('id', window._fbPixelId || '${page.fb_pixel_id}');
+        qp.set('ev', 'Purchase');
+        qp.set('dl', window.location.href);
+        qp.set('rl', document.referrer || '');
+        qp.set('if', 'false');
+        qp.set('ts', String(Date.now()));
+        if (params && params.value != null) qp.set('cd[value]', String(params.value));
+        if (params && params.currency) qp.set('cd[currency]', String(params.currency));
+        if (params && params.content_name) qp.set('cd[content_name]', String(params.content_name));
+        if (params && params.content_type) qp.set('cd[content_type]', String(params.content_type));
+        if (params && params.order_id) qp.set('cd[order_id]', String(params.order_id));
+        if (options && options.eventID) qp.set('eid', String(options.eventID));
+        (new Image()).src = 'https://www.facebook.com/tr/?' + qp.toString();
+        console.warn('[FB Pixel] Purchase fallback beacon sent after SDK wait timeout');
+        return true;
+      } catch (beaconErr) {
+        console.warn('[FB Pixel] Purchase fallback beacon failed', beaconErr && beaconErr.message ? beaconErr.message : beaconErr);
+        return false;
+      }
     }
     window.__lpFbqRef = ref;
     try {
-      // IMPORTANT: Use fbq('track', ...) instead of trackSingle — Pixel Helper only detects 'track' calls
       ref('track', 'Purchase', params || {}, options || {});
-      console.log('[FB Pixel] Purchase event fired via track()', params, options);
+      console.log('[FB Pixel] Purchase event fired via ready SDK track()', params, options);
       return true;
     } catch (err) {
       console.warn('[FB Pixel Purchase] Retry scheduled', err && err.message ? err.message : err);
-      if (tries < 6) {
+      if (tries < 8) {
         setTimeout(function() {
           window.__lpTrackBrowserPurchase(params, options, tries + 1);
         }, 300);
@@ -1160,34 +1185,26 @@ ttq.page();
       subtotal: totalValue
     };
 
-    // Browser pixel Purchase — use fbq('track') which Pixel Helper detects
-    var browserPurchaseFired = false;
+    // Browser pixel Purchase — wait for real FB SDK, not just the queue stub
+    var browserPurchaseScheduled = false;
     if (typeof window.__lpTrackBrowserPurchase === 'function') {
-      browserPurchaseFired = window.__lpTrackBrowserPurchase(purchaseParams, { eventID: eventId });
+      browserPurchaseScheduled = window.__lpTrackBrowserPurchase(purchaseParams, { eventID: eventId });
+    } else {
+      var directRef = window.fbq || window._fbq;
+      if (directRef && typeof directRef === 'function' && typeof directRef.callMethod === 'function') {
+        try {
+          directRef('track', 'Purchase', purchaseParams, { eventID: eventId });
+          browserPurchaseScheduled = true;
+          console.log('[Purchase] Direct ready fbq track used');
+        } catch (e) {}
+      }
     }
-    // Direct fallback: if __lpTrackBrowserPurchase wasn't available or failed, call fbq directly
-    if (!browserPurchaseFired && typeof fbq === 'function') {
-      try {
-        fbq('track', 'Purchase', purchaseParams, { eventID: eventId });
-        browserPurchaseFired = true;
-        console.log('[Purchase] Direct fbq track fallback used');
-      } catch(e) {}
-    }
-    // Last resort: retry with setTimeout if pixel SDK still loading
-    if (!browserPurchaseFired) {
-      (function retryPurchase(attempt) {
-        if (attempt > 8) return;
-        setTimeout(function() {
-          var ref = window.fbq || window._fbq;
-          if (typeof ref === 'function') {
-            try { ref('track', 'Purchase', purchaseParams, { eventID: eventId }); console.log('[Purchase] Delayed retry succeeded at attempt ' + attempt); } catch(e) {}
-          } else {
-            retryPurchase(attempt + 1);
-          }
-        }, 500);
-      })(0);
-    }
-    console.log('[Purchase] Browser pixel dispatch attempted', { eventId: eventId, value: totalValue, browserPurchaseFired: browserPurchaseFired });
+    console.log('[Purchase] Browser pixel dispatch attempted', {
+      eventId: eventId,
+      value: totalValue,
+      browserPurchaseScheduled: browserPurchaseScheduled,
+      sdkReady: typeof window.__lpIsFbPixelReady === 'function' ? window.__lpIsFbPixelReady() : false
+    });
 
     // TikTok pixel Purchase
     if (typeof ttq !== 'undefined' && ttq.track) {

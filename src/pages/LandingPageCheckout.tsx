@@ -129,6 +129,51 @@ window._lpTrack = {
 <script>
 !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
 fbq('init','${page.fb_pixel_id}');
+window._fbPixelId = '${page.fb_pixel_id}';
+window.__lpIsFbPixelReady = function() {
+  var ref = window.fbq || window._fbq || window.__lpFbqRef;
+  return !!(ref && typeof ref === 'function' && typeof ref.callMethod === 'function');
+};
+window.__lpTrackBrowserPurchase = function(params, options, attempt) {
+  var tries = attempt || 0;
+  var ref = window.fbq || window._fbq || window.__lpFbqRef;
+  var ready = !!(ref && typeof ref === 'function' && typeof ref.callMethod === 'function');
+  if (!ready) {
+    if (tries < 20) {
+      setTimeout(function() { window.__lpTrackBrowserPurchase(params, options, tries + 1); }, 300);
+      return false;
+    }
+    try {
+      var qp = new URLSearchParams();
+      qp.set('id', window._fbPixelId || '${page.fb_pixel_id}');
+      qp.set('ev', 'Purchase');
+      qp.set('dl', window.location.href);
+      qp.set('rl', document.referrer || '');
+      qp.set('if', 'false');
+      qp.set('ts', String(Date.now()));
+      if (params && params.value != null) qp.set('cd[value]', String(params.value));
+      if (params && params.currency) qp.set('cd[currency]', String(params.currency));
+      if (params && params.content_name) qp.set('cd[content_name]', String(params.content_name));
+      if (params && params.content_type) qp.set('cd[content_type]', String(params.content_type));
+      if (params && params.order_id) qp.set('cd[order_id]', String(params.order_id));
+      if (options && options.eventID) qp.set('eid', String(options.eventID));
+      (new Image()).src = 'https://www.facebook.com/tr/?' + qp.toString();
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+  window.__lpFbqRef = ref;
+  try {
+    ref('track', 'Purchase', params || {}, options || {});
+    return true;
+  } catch (err) {
+    if (tries < 8) {
+      setTimeout(function() { window.__lpTrackBrowserPurchase(params, options, tries + 1); }, 300);
+    }
+    return false;
+  }
+};
 var _eid = window._lpTrack.generateEventId();
 var _bp = window._lpTrack.getBaseParams();
 fbq('track','PageView', {}, {eventID: _eid});
@@ -474,19 +519,11 @@ ttq.track('InitiateCheckout');
     var browserFired = false;
     if (typeof window.__lpTrackBrowserPurchase === 'function') {
       browserFired = window.__lpTrackBrowserPurchase(purchaseParams, { eventID: eventId });
-    }
-    if (!browserFired && typeof fbq === 'function') {
-      try { fbq('track', 'Purchase', purchaseParams, { eventID: eventId }); browserFired = true; } catch(e) {}
-    }
-    if (!browserFired) {
-      (function retryPx(att) {
-        if (att > 8) return;
-        setTimeout(function() {
-          var ref = window.fbq || window._fbq;
-          if (typeof ref === 'function') { try { ref('track', 'Purchase', purchaseParams, { eventID: eventId }); } catch(e) {} }
-          else retryPx(att + 1);
-        }, 500);
-      })(0);
+    } else {
+      var directRef = window.fbq || window._fbq;
+      if (directRef && typeof directRef === 'function' && typeof directRef.callMethod === 'function') {
+        try { directRef('track', 'Purchase', purchaseParams, { eventID: eventId }); browserFired = true; } catch(e) {}
+      }
     }
     if (typeof ttq !== 'undefined' && ttq.track) {
       ttq.track('CompletePayment', { value: totalValue, currency: 'BDT', content_name: purchaseParams.content_name, quantity: purchaseParams.num_items });
