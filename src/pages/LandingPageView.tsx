@@ -1202,36 +1202,19 @@ ttq.page();
     submitOrder(form);
   }, true);
 
-  // Fix buttons with type="button" inside checkout forms — convert to submit so form fires
-  function fixFormButtons() {
-    var forms = document.querySelectorAll(FORM_SELECTOR);
-    for (var i = 0; i < forms.length; i++) {
-      var btns = forms[i].querySelectorAll('button[type="button"], button:not([type])');
-      for (var j = 0; j < btns.length; j++) {
-        var b = btns[j];
-        if (b.textContent && /অর্ডার|order|submit|কনফার্ম|confirm/i.test(b.textContent)) {
-          b.setAttribute('type', 'submit');
-        }
-      }
+  // Catch clicks on non-submit buttons inside checkout forms (e.g. type="button")
+  document.addEventListener('click', function(e) {
+    if (_submitting) return;
+    var btn = e.target && e.target.closest ? e.target.closest('button') : null;
+    if (!btn || btn.type === 'submit') return;
+    var form = btn.closest ? btn.closest(FORM_SELECTOR) : null;
+    if (!form) return;
+    if (/অর্ডার|order|submit|কনফার্ম|confirm/i.test(btn.textContent || '')) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      submitOrder(form);
     }
-    // Also handle click on non-submit buttons as fallback
-    document.addEventListener('click', function(e) {
-      var btn = e.target && e.target.closest ? e.target.closest('button') : null;
-      if (!btn) return;
-      var form = btn.closest(FORM_SELECTOR);
-      if (!form || btn.type === 'submit') return;
-      if (/অর্ডার|order|submit|কনফার্ম|confirm/i.test(btn.textContent || '')) {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        submitOrder(form);
-      }
-    }, true);
-  }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', fixFormButtons);
-  } else {
-    setTimeout(fixFormButtons, 500);
-  }
+  }, true);
 })();
 </script>`;
 
