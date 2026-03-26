@@ -1160,13 +1160,32 @@ ttq.page();
       subtotal: totalValue
     };
 
-    // Browser pixel Purchase
+    // Browser pixel Purchase — use fbq('track') which Pixel Helper detects
     var browserPurchaseFired = false;
     if (typeof window.__lpTrackBrowserPurchase === 'function') {
       browserPurchaseFired = window.__lpTrackBrowserPurchase(purchaseParams, { eventID: eventId });
-    } else if (typeof fbq === 'function') {
-      fbq('track', 'Purchase', purchaseParams, { eventID: eventId });
-      browserPurchaseFired = true;
+    }
+    // Direct fallback: if __lpTrackBrowserPurchase wasn't available or failed, call fbq directly
+    if (!browserPurchaseFired && typeof fbq === 'function') {
+      try {
+        fbq('track', 'Purchase', purchaseParams, { eventID: eventId });
+        browserPurchaseFired = true;
+        console.log('[Purchase] Direct fbq track fallback used');
+      } catch(e) {}
+    }
+    // Last resort: retry with setTimeout if pixel SDK still loading
+    if (!browserPurchaseFired) {
+      (function retryPurchase(attempt) {
+        if (attempt > 8) return;
+        setTimeout(function() {
+          var ref = window.fbq || window._fbq;
+          if (typeof ref === 'function') {
+            try { ref('track', 'Purchase', purchaseParams, { eventID: eventId }); console.log('[Purchase] Delayed retry succeeded at attempt ' + attempt); } catch(e) {}
+          } else {
+            retryPurchase(attempt + 1);
+          }
+        }, 500);
+      })(0);
     }
     console.log('[Purchase] Browser pixel dispatch attempted', { eventId: eventId, value: totalValue, browserPurchaseFired: browserPurchaseFired });
 
