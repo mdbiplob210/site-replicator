@@ -7,12 +7,13 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 
-// Register service worker (deferred well past TTI)
+// Register service worker early for caching benefits
 if ('serviceWorker' in navigator) {
+  // Register sooner (3s instead of 10s) for faster subsequent loads
   window.addEventListener('load', () => {
     setTimeout(() => {
       navigator.serviceWorker.register('/sw.js').catch(() => {});
-    }, 10000);
+    }, 3000);
   }, { once: true });
 }
 
@@ -20,11 +21,11 @@ if ('serviceWorker' in navigator) {
 const root = createRoot(document.getElementById("root")!);
 root.render(<App />);
 
-// Init link prefetching after first paint (deferred)
+// Init link prefetching faster (800ms instead of 1500ms)
 requestAnimationFrame(() => {
   setTimeout(() => {
     import("./lib/routePrefetch").then(({ initLinkPrefetching }) => {
       initLinkPrefetching();
     });
-  }, 1500);
+  }, 800);
 });

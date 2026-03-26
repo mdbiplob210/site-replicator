@@ -69,7 +69,14 @@ function preloadProductImages(products: any[]) {
 export function prefetchCriticalData() {
   const path = window.location.pathname;
 
-  if (path.startsWith("/admin") || path.startsWith("/login")) return;
+  if (path.startsWith("/login")) return;
+
+  // Admin routes — prefetch core admin data
+  if (path.startsWith("/admin")) {
+    // Prefetch orders count for dashboard (lightweight)
+    fetchAndCache("site-settings", restUrl("site_settings", "select=key,value&is_public=eq.true"));
+    return;
+  }
 
   // Always useful and lightweight for public pages
   fetchAndCache("site-settings", restUrl("site_settings", "select=key,value&is_public=eq.true"));
@@ -84,6 +91,12 @@ export function prefetchCriticalData() {
     fetchAndCache(
       "banners-active",
       restUrl("banners", "select=id,image_url,link_url,sort_order,is_active&is_active=eq.true&order=sort_order.asc")
+    );
+
+    // Also prefetch categories
+    fetchAndCache(
+      "categories",
+      restUrl("categories", "select=id,name,slug,image_url&order=name.asc")
     );
 
     return;

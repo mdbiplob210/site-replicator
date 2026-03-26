@@ -88,13 +88,12 @@ const PageLoader = () => (
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000,
-      gcTime: 30 * 60 * 1000,
+      staleTime: 10 * 60 * 1000, // 10 min stale time for faster navigation
+      gcTime: 60 * 60 * 1000, // 1 hour cache
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
       retry: 1,
       networkMode: "offlineFirst",
-      // Reduce suspense waterfall: show stale data instantly while refetching
       placeholderData: (prev: any) => prev,
     },
   },
