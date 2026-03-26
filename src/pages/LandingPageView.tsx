@@ -1069,19 +1069,46 @@ ttq.page();
   function getCheckoutForm(target) {
     var form = target && target.closest ? target.closest(FORM_SELECTOR) : null;
     if (!form || !form.querySelector) return null;
-    var hasPhone = form.querySelector('input[name="customer_phone"], input[name="phone"], input[type="tel"]');
-    var hasName = form.querySelector('input[name="customer_name"], input[name="name"], input[name="full_name"]');
+    var hasPhone = form.querySelector('input[name="customer_phone"], input[name="phone"], input[type="tel"], input[inputmode="tel"]');
+    var hasName = form.querySelector('input[name="customer_name"], input[name="name"], input[name="full_name"], input[autocomplete="name"]');
+    var hasAnyInputs = form.querySelectorAll('input:not([type="hidden"]), textarea').length >= 2;
     var hasProductHints = form.hasAttribute('data-product-name') || form.hasAttribute('data-product-code') || !!form.querySelector('input[name="product_name"], input[name="product_code"], input[name="unit_price"], input[name="quantity"]');
-    return hasPhone && (hasName || hasProductHints) ? form : null;
+    return (hasPhone && (hasName || hasProductHints)) || (hasPhone && hasAnyInputs) ? form : null;
+  }
+
+  function readField(form, names, types, fallbackIndex) {
+    // Try by name first
+    for (var i = 0; i < names.length; i++) {
+      var el = form.querySelector('[name="' + names[i] + '"]');
+      if (el && (el.value || '').trim()) return el.value.trim();
+    }
+    // Try by type
+    if (types) {
+      for (var j = 0; j < types.length; j++) {
+        var el2 = form.querySelector(types[j]);
+        if (el2 && (el2.value || '').trim()) return el2.value.trim();
+      }
+    }
+    // Fallback: nth input of matching type
+    if (typeof fallbackIndex === 'number') {
+      var allInputs = form.querySelectorAll('input:not([type="hidden"]):not([type="radio"]):not([type="checkbox"]), textarea');
+      if (allInputs[fallbackIndex]) return (allInputs[fallbackIndex].value || '').trim();
+    }
+    // Try FormData last
+    var fd = new FormData(form);
+    for (var k = 0; k < names.length; k++) {
+      var v = fd.get(names[k]);
+      if (v) return String(v).trim();
+    }
+    return '';
   }
 
   function submitOrder(form) {
     if (!form || form.dataset.lpSubmitLocked === '1' || _submitting) return;
 
-    var formData = new FormData(form);
-    var customerPhone = formData.get('customer_phone') || formData.get('phone') || '';
+    var customerPhone = readField(form, ['customer_phone','phone','mobile','customer_mobile','contact_number'], ['input[type="tel"]','input[inputmode="tel"]'], null);
     if (!isValidPhone(customerPhone)) {
-      var phoneInput = form.querySelector('input[name="customer_phone"], input[name="phone"], input[type="tel"]');
+      var phoneInput = form.querySelector('input[name="customer_phone"], input[name="phone"], input[type="tel"], input[inputmode="tel"]');
       alert('অনুগ্রহ করে সঠিক মোবাইল নম্বর দিন (কমপক্ষে ১১ সংখ্যা)');
       if (phoneInput) phoneInput.focus();
       return;
@@ -1090,7 +1117,7 @@ ttq.page();
     _submitting = true;
     form.dataset.lpSubmitLocked = '1';
 
-    var btn = form.querySelector('[type="submit"], button:not([type])');
+    var btn = form.querySelector('[type="submit"], button:not([type]), button[type="button"]');
     var btnOrigText = btn ? btn.textContent : '';
     if (btn) { btn.disabled = true; btn.textContent = 'অপেক্ষা করুন...'; }
 
@@ -1104,11 +1131,20 @@ ttq.page();
       });
     }
 
+    var customerName = readField(form, ['customer_name','name','full_name'], ['input[autocomplete="name"]'], 0);
+    var customerAddress = readField(form, ['customer_address','address','full_address','shipping_address'], ['textarea', 'input[autocomplete="street-address"]'], null);
+    // For textarea without name, try any textarea in form
+    if (!customerAddress) {
+      var ta = form.querySelector('textarea');
+      if (ta) customerAddress = (ta.value || '').trim();
+    }
+
     var purchaseEventId = window._lpTrack ? window._lpTrack.generateEventId() : 'eid_' + Math.random().toString(36).substr(2,9) + '_' + Date.now();
+    var formData = new FormData(form);
     var payload = {
-      customer_name: formData.get('customer_name') || formData.get('name') || formData.get('full_name') || '',
+      customer_name: customerName,
       customer_phone: customerPhone,
-      customer_address: formData.get('customer_address') || formData.get('address') || '',
+      customer_address: customerAddress,
       product_name: formData.get('product_name') || form.getAttribute('data-product-name') || document.title || '',
       product_code: formData.get('product_code') || form.getAttribute('data-product-code') || '',
       quantity: parseInt(formData.get('quantity') || form.getAttribute('data-quantity') || '1'),
@@ -1202,18 +1238,29 @@ ttq.page();
     submitOrder(form);
   }, true);
 
-  // Catch clicks on non-submit buttons inside checkout forms (e.g. type="button")
+  // Catch clicks on order buttons inside checkout forms (any type including default submit)
   document.addEventListener('click', function(e) {
     if (_submitting) return;
-    var btn = e.target && e.target.closest ? e.target.closest('button') : null;
-    if (!btn || btn.type === 'submit') return;
-    var form = btn.closest ? btn.closest(FORM_SELECTOR) : null;
-    if (!form) return;
-    if (/অর্ডার|order|submit|কনফার্ম|confirm/i.test(btn.textContent || '')) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      submitOrder(form);
+    var btn = e.target && e.target.closest ? e.target.closest('button, [role="button"], input[type="submit"]') : null;
+    if (!btn) return;
+    var btnText = (btn.textContent || btn.value || '').trim();
+    if (!/অর্ডার|order|submit|কনফার্ম|confirm/i.test(btnText)) return;
+    // Find a form container that DIRECTLY contains BOTH the button AND a phone input
+    var form = null;
+    var candidate = btn.parentElement;
+    for (var i = 0; i < 8 && candidate; i++) {
+      if (candidate === document.body || candidate === document.documentElement) break;
+      var phoneInput = candidate.querySelector ? candidate.querySelector('input[type="tel"], input[inputmode="tel"], input[name="customer_phone"], input[name="phone"]') : null;
+      if (phoneInput && candidate.contains(btn) && candidate.contains(phoneInput)) {
+        form = candidate;
+        break;
+      }
+      candidate = candidate.parentElement;
     }
+    if (!form) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    submitOrder(form);
   }, true);
 })();
 </script>`;
