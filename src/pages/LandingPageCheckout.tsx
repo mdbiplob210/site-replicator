@@ -49,11 +49,75 @@ window._lpTrack = {
   getBaseParams: function() {
     return { event_url: window.location.href, landing_page: window.location.href, page_title: document.title || 'Checkout', traffic_source: this.getTrafficSource(), user_role: 'guest', event_day: this.getDayName(), event_hour: this.getHourRange(), event_month: this.getMonthName(), plugin: 'LovableLP' };
   },
-  sendServerEvent: function(eventName, customData) {
+  _userData: {},
+  setUserData: function(data) {
+    this._userData = Object.assign(this._userData || {}, data || {});
+    try { sessionStorage.setItem('_lp_fb_ud_checkout', JSON.stringify(this._userData)); } catch(e) {}
+  },
+  getUserData: function() {
+    if (this._userData && Object.keys(this._userData).length > 0) return this._userData;
+    try {
+      var stored = sessionStorage.getItem('_lp_fb_ud_checkout');
+      if (stored) {
+        this._userData = JSON.parse(stored);
+        return this._userData;
+      }
+    } catch(e) {}
+    return {};
+  },
+  normalizePhone: function(ph) {
+    if (!ph) return '';
+    var cleaned = String(ph).replace(/[^0-9]/g, '');
+    if (cleaned.indexOf('880') === 0) return cleaned;
+    if (cleaned.indexOf('0') === 0) return '880' + cleaned.substring(1);
+    if (cleaned.length === 10) return '880' + cleaned;
+    return cleaned;
+  },
+  sendServerEvent: function(eventName, customData, userData) {
     var CAPI_URL = '${supabaseUrl}/functions/v1/fb-conversions-api';
     var ANON = '${anonKey}';
-    var payload = { pixel_id: '${page.fb_pixel_id || ''}', event_name: eventName, event_id: customData.event_id || this.generateEventId(), event_url: window.location.href, user_agent: navigator.userAgent, fbp: this.getFbp(), fbc: this.getFbc(), custom_data: customData };
-    try { var blob = new Blob([JSON.stringify(payload)], {type: 'application/json'}); navigator.sendBeacon(CAPI_URL + '?apikey=' + ANON, blob); } catch(e) { fetch(CAPI_URL, {method:'POST', headers:{'Content-Type':'application/json','apikey':ANON}, body:JSON.stringify(payload)}).catch(function(){}); }
+    var extId = '';
+    try { extId = localStorage.getItem('_lp_vid') || localStorage.getItem('_vid') || ''; } catch(e) {}
+    if (!extId) {
+      extId = 'v_' + Date.now() + '_' + Math.random().toString(36).substr(2,12);
+      try { localStorage.setItem('_lp_vid', extId); } catch(e) {}
+    }
+    var ud = Object.assign({}, this.getUserData(), userData || {});
+    if (Object.keys(ud).length > 0) this.setUserData(ud);
+    var payload = {
+      pixel_id: '${page.fb_pixel_id || ''}',
+      event_name: eventName,
+      event_id: customData.event_id || this.generateEventId(),
+      event_url: window.location.href,
+      user_agent: navigator.userAgent,
+      fbp: this.getFbp(),
+      fbc: this.getFbc(),
+      custom_data: customData,
+      landing_page_slug: '${page.slug || ''}',
+      user_external_id: ud.order_id || extId,
+      user_country: 'bd'
+    };
+    if (ud.phone) payload.user_phone = this.normalizePhone(ud.phone);
+    if (ud.name) {
+      var parts = String(ud.name).trim().split(/\s+/);
+      payload.user_fn = parts[0] || '';
+      payload.user_ln = parts.slice(1).join(' ') || '';
+    }
+    if (ud.city) payload.user_ct = ud.city;
+    try {
+      fetch(CAPI_URL, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json','apikey':ANON},
+        body: JSON.stringify(payload),
+        keepalive: true,
+        credentials: 'omit'
+      }).catch(function(){});
+    } catch(e) {
+      try {
+        var blob = new Blob([JSON.stringify(payload)], {type: 'text/plain'});
+        navigator.sendBeacon(CAPI_URL + '?apikey=' + ANON, blob);
+      } catch(e2) {}
+    }
   }
 };
 </script>
@@ -409,6 +473,7 @@ ttq.track('InitiateCheckout');
     if (btn) { btn.disabled = true; btn.textContent = 'অপেক্ষা করুন...'; }
 
     var formData = new FormData(form);
+    var purchaseEventId = window._lpTrack ? window._lpTrack.generateEventId() : 'eid_' + Math.random().toString(36).substr(2,9) + '_' + Date.now();
     var payload = {
       customer_name: formData.get('customer_name') || '',
       customer_phone: formData.get('customer_phone') || '',
@@ -421,7 +486,11 @@ ttq.track('InitiateCheckout');
       discount: parseFloat(formData.get('discount') || form.getAttribute('data-discount') || '0'),
       notes: formData.get('notes') || '',
       landing_page_slug: SLUG,
-      visitor_id: VID
+      visitor_id: VID,
+      event_id: purchaseEventId,
+      event_url: window.location.href,
+      fbp: window._lpTrack ? window._lpTrack.getFbp() : '',
+      fbc: window._lpTrack ? window._lpTrack.getFbc() : ''
     };
 
     fetch(ORDER_URL, {
@@ -436,72 +505,74 @@ ttq.track('InitiateCheckout');
         if (window._removePartial) window._removePartial();
 
         var totalValue = payload.unit_price * payload.quantity;
-        var eventId = window._lpTrack ? window._lpTrack.generateEventId() : '';
+        var eventId = payload.event_id || purchaseEventId;
         var baseParams = window._lpTrack ? window._lpTrack.getBaseParams() : {};
 
-        // FB Purchase with ALL PixelYourSite-style params
-        if (typeof fbq === 'function') {
-          var purchaseParams = {
-            value: totalValue,
-            currency: 'BDT',
-            content_type: 'product',
-            content_name: payload.product_name,
-            content_ids: payload.product_code ? [payload.product_code] : [],
-            num_items: payload.quantity,
-            content_category: form.getAttribute('data-category') || '',
-            subtotal: totalValue,
-            event_day: baseParams.event_day || '',
-            event_hour: baseParams.event_hour || '',
-            event_month: baseParams.event_month || '',
-            event_url: baseParams.event_url || window.location.href,
-            landing_page: baseParams.landing_page || window.location.href,
-            page_title: 'Checkout',
-            traffic_source: baseParams.traffic_source || 'direct',
-            user_role: 'guest',
-            plugin: 'LovableLP',
-            tags: form.getAttribute('data-tags') || '',
-            order_id: data.order_number
-          };
-          fbq('track', 'Purchase', purchaseParams, {eventID: eventId});
-          console.log('[FB Pixel] Purchase', purchaseParams);
-        }
+        if (!data.duplicate) {
+          // FB Purchase with ALL PixelYourSite-style params
+          if (typeof fbq === 'function') {
+            var purchaseParams = {
+              value: totalValue,
+              currency: 'BDT',
+              content_type: 'product',
+              content_name: payload.product_name,
+              content_ids: payload.product_code ? [payload.product_code] : [],
+              num_items: payload.quantity,
+              content_category: form.getAttribute('data-category') || '',
+              subtotal: totalValue,
+              event_day: baseParams.event_day || '',
+              event_hour: baseParams.event_hour || '',
+              event_month: baseParams.event_month || '',
+              event_url: baseParams.event_url || window.location.href,
+              landing_page: baseParams.landing_page || window.location.href,
+              page_title: 'Checkout',
+              traffic_source: baseParams.traffic_source || 'direct',
+              user_role: 'guest',
+              plugin: 'LovableLP',
+              tags: form.getAttribute('data-tags') || '',
+              order_id: data.order_number
+            };
+            fbq('track', 'Purchase', purchaseParams, {eventID: eventId});
+            console.log('[FB Pixel] Purchase', purchaseParams);
+          }
 
-        // Server-side Purchase via Conversions API
-        if (window._lpTrack && '${page.fb_pixel_id}') {
-          window._lpTrack.sendServerEvent('Purchase', {
-            event_id: eventId,
-            value: totalValue,
-            currency: 'BDT',
-            content_name: payload.product_name,
-            content_ids: payload.product_code ? [payload.product_code] : [],
-            content_type: 'product',
-            num_items: payload.quantity,
-            order_id: data.order_number
-          }, { phone: payload.customer_phone, name: payload.customer_name });
-        }
+          // Server-side Purchase via Conversions API
+          if (window._lpTrack && '${page.fb_pixel_id}') {
+            window._lpTrack.sendServerEvent('Purchase', {
+              event_id: eventId,
+              value: totalValue,
+              currency: 'BDT',
+              content_name: payload.product_name,
+              content_ids: payload.product_code ? [payload.product_code] : [],
+              content_type: 'product',
+              num_items: payload.quantity,
+              order_id: data.order_number
+            }, { phone: payload.customer_phone, name: payload.customer_name, order_id: data.order_id || data.order_number });
+          }
 
-        // TikTok CompletePayment
-        if (typeof ttq !== 'undefined' && ttq.track) {
-          ttq.track('CompletePayment', {
-            value: totalValue,
-            currency: 'BDT',
-            content_name: payload.product_name,
-            content_id: payload.product_code || '',
-            content_type: 'product',
-            quantity: payload.quantity
-          });
-        }
+          // TikTok CompletePayment
+          if (typeof ttq !== 'undefined' && ttq.track) {
+            ttq.track('CompletePayment', {
+              value: totalValue,
+              currency: 'BDT',
+              content_name: payload.product_name,
+              content_id: payload.product_code || '',
+              content_type: 'product',
+              quantity: payload.quantity
+            });
+          }
 
-        // GTM
-        if (typeof dataLayer !== 'undefined') {
-          dataLayer.push({
-            event: 'conversion_Purchase',
-            value: totalValue,
-            currency: 'BDT',
-            content_name: payload.product_name,
-            order_id: data.order_number,
-            num_items: payload.quantity
-          });
+          // GTM
+          if (typeof dataLayer !== 'undefined') {
+            dataLayer.push({
+              event: 'conversion_Purchase',
+              value: totalValue,
+              currency: 'BDT',
+              content_name: payload.product_name,
+              order_id: data.order_number,
+              num_items: payload.quantity
+            });
+          }
         }
 
         // Wait 1.5s for pixel & CAPI requests to complete before navigating away

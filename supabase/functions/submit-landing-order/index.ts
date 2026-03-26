@@ -37,6 +37,34 @@ async function findExistingIncomplete(supabase: any, clientIp: string, slug: str
   return null;
 }
 
+async function hashSHA256(value: string): Promise<string> {
+  if (!value) return "";
+  const normalized = value.trim().toLowerCase();
+  if (!normalized) return "";
+  const encoder = new TextEncoder();
+  const data = encoder.encode(normalized);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+function normalizeMetaPhone(phone: string): string {
+  const digits = phone.replace(/[^0-9]/g, "");
+  if (!digits) return "";
+  if (digits.startsWith("880")) return digits;
+  if (digits.startsWith("0")) return `880${digits.slice(1)}`;
+  if (digits.length === 10) return `880${digits}`;
+  return digits;
+}
+
+function splitCustomerName(name: string): { firstName: string; lastName: string } {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  return {
+    firstName: parts[0] || "",
+    lastName: parts.slice(1).join(" ") || "",
+  };
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -57,6 +85,10 @@ Deno.serve(async (req) => {
       notes,
       landing_page_slug,
       device_fingerprint,
+      event_id,
+      event_url,
+      fbp,
+      fbc,
     } = body;
 
     if (!customer_name || !customer_phone) {
@@ -463,20 +495,26 @@ Deno.serve(async (req) => {
         if (lp.fb_pixel_id && lp.fb_access_token) {
           try {
             const eventTime = Math.floor(Date.now() / 1000);
+            const normalizedPhone = normalizeMetaPhone(customer_phone);
+            const { firstName, lastName } = splitCustomerName(customer_name);
             const capiEvent = {
               event_name: "Purchase",
               event_time: eventTime,
               action_source: "website",
-              event_id: body.event_id || `srv_${orderNumber}_${Date.now()}`,
-              event_source_url: body.event_url || `https://${req.headers.get("host") || "site"}/lp/${landing_page_slug}`,
+              event_id: event_id || `srv_${orderNumber}_${Date.now()}`,
+              event_source_url: event_url || `https://${req.headers.get("host") || "site"}/lp/${landing_page_slug}`,
               user_data: {
                 client_ip_address: clientIp !== "unknown" ? clientIp : undefined,
                 client_user_agent: userAgent || undefined,
-                fbp: body.fbp || undefined,
-                fbc: body.fbc || undefined,
+                fbp: fbp || undefined,
+                fbc: fbc || undefined,
+                external_id: order.id,
+                ph: normalizedPhone ? await hashSHA256(normalizedPhone) : undefined,
+                fn: firstName ? await hashSHA256(firstName) : undefined,
+                ln: lastName ? await hashSHA256(lastName) : undefined,
               },
               custom_data: {
-                value: totalAmount,
+                value: totalProductCost,
                 currency: "BDT",
                 content_name: product_name || "",
                 content_ids: product_code ? [product_code] : [],
@@ -486,7 +524,7 @@ Deno.serve(async (req) => {
               },
             };
 
-            await fetch(`https://graph.facebook.com/v21.0/${lp.fb_pixel_id}/events`, {
+            const capiResponse = await fetch(`https://graph.facebook.com/v21.0/${lp.fb_pixel_id}/events`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
@@ -494,7 +532,14 @@ Deno.serve(async (req) => {
                 access_token: lp.fb_access_token,
               }),
             });
-            console.log("[submit-landing-order] CAPI Purchase sent for pixel:", lp.fb_pixel_id, "order:", orderNumber);
+
+            const capiResult = await capiResponse.json();
+
+            if (!capiResponse.ok) {
+              throw new Error(JSON.stringify(capiResult));
+            }
+
+            console.log("[submit-landing-order] CAPI Purchase sent for pixel:", lp.fb_pixel_id, "order:", orderNumber, "response:", JSON.stringify(capiResult));
           } catch (capiErr) {
             console.error("[submit-landing-order] CAPI error:", capiErr.message);
           }

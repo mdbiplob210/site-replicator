@@ -1077,6 +1077,7 @@ ttq.page();
     }
 
     var formData = new FormData(form);
+    var purchaseEventId = window._lpTrack ? window._lpTrack.generateEventId() : 'eid_' + Math.random().toString(36).substr(2,9) + '_' + Date.now();
     var payload = {
       customer_name: formData.get('customer_name') || '',
       customer_phone: formData.get('customer_phone') || '',
@@ -1091,7 +1092,11 @@ ttq.page();
       landing_page_slug: SLUG,
       visitor_id: VID,
       session_id: (function(){ try { return sessionStorage.getItem('_lp_sid'); } catch(e) { return ''; } })() || '',
-      device_type: window.innerWidth < 768 ? 'mobile' : window.innerWidth < 1024 ? 'tablet' : 'desktop'
+      device_type: window.innerWidth < 768 ? 'mobile' : window.innerWidth < 1024 ? 'tablet' : 'desktop',
+      event_id: purchaseEventId,
+      event_url: window.location.href,
+      fbp: window._lpTrack ? window._lpTrack.getFbp() : '',
+      fbc: window._lpTrack ? window._lpTrack.getFbc() : ''
     };
 
     fetch(ORDER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
@@ -1100,21 +1105,23 @@ ttq.page();
       if (data.success || data.duplicate) {
         if (window._removePartial) window._removePartial();
         var totalValue = payload.unit_price * payload.quantity;
-        var eventId = window._lpTrack ? window._lpTrack.generateEventId() : '';
+        var eventId = payload.event_id || purchaseEventId;
         var baseParams = window._lpTrack ? window._lpTrack.getBaseParams() : {};
 
-        if (typeof fbq === 'function') {
-          var pp = { value: totalValue, currency: 'BDT', content_type: 'product', content_name: payload.product_name, content_ids: payload.product_code ? [payload.product_code] : [], num_items: payload.quantity, subtotal: totalValue, event_day: baseParams.event_day||'', event_hour: baseParams.event_hour||'', event_month: baseParams.event_month||'', event_url: baseParams.event_url||window.location.href, landing_page: baseParams.landing_page||window.location.href, page_title: document.title||'', traffic_source: baseParams.traffic_source||'direct', user_role:'guest', plugin:'LovableLP', order_id: data.order_number };
-          fbq('track', 'Purchase', pp, {eventID: eventId});
-        }
-        if (window._lpTrack && '${page.fb_pixel_id}') {
-          window._lpTrack.sendServerEvent('Purchase', { event_id: eventId, value: totalValue, currency: 'BDT', content_name: payload.product_name, content_ids: payload.product_code?[payload.product_code]:[], content_type:'product', num_items: payload.quantity, order_id: data.order_number }, { phone: payload.customer_phone, name: payload.customer_name });
-        }
-        if (typeof ttq !== 'undefined' && ttq.track) {
-          ttq.track('CompletePayment', { value: totalValue, currency: 'BDT', content_name: payload.product_name, content_id: payload.product_code||'', content_type:'product', quantity: payload.quantity });
-        }
-        if (typeof dataLayer !== 'undefined') {
-          dataLayer.push({ event:'conversion_Purchase', value: totalValue, currency:'BDT', content_name: payload.product_name, order_id: data.order_number, num_items: payload.quantity });
+        if (!data.duplicate) {
+          if (typeof fbq === 'function') {
+            var pp = { value: totalValue, currency: 'BDT', content_type: 'product', content_name: payload.product_name, content_ids: payload.product_code ? [payload.product_code] : [], num_items: payload.quantity, subtotal: totalValue, event_day: baseParams.event_day||'', event_hour: baseParams.event_hour||'', event_month: baseParams.event_month||'', event_url: baseParams.event_url||window.location.href, landing_page: baseParams.landing_page||window.location.href, page_title: document.title||'', traffic_source: baseParams.traffic_source||'direct', user_role:'guest', plugin:'LovableLP', order_id: data.order_number };
+            fbq('track', 'Purchase', pp, {eventID: eventId});
+          }
+          if (window._lpTrack && '${page.fb_pixel_id}') {
+            window._lpTrack.sendServerEvent('Purchase', { event_id: eventId, value: totalValue, currency: 'BDT', content_name: payload.product_name, content_ids: payload.product_code?[payload.product_code]:[], content_type:'product', num_items: payload.quantity, order_id: data.order_number }, { phone: payload.customer_phone, name: payload.customer_name, order_id: data.order_id || data.order_number });
+          }
+          if (typeof ttq !== 'undefined' && ttq.track) {
+            ttq.track('CompletePayment', { value: totalValue, currency: 'BDT', content_name: payload.product_name, content_id: payload.product_code||'', content_type:'product', quantity: payload.quantity });
+          }
+          if (typeof dataLayer !== 'undefined') {
+            dataLayer.push({ event:'conversion_Purchase', value: totalValue, currency:'BDT', content_name: payload.product_name, order_id: data.order_number, num_items: payload.quantity });
+          }
         }
 
         var successUrl = form.getAttribute('data-success-url');
