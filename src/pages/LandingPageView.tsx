@@ -1157,6 +1157,20 @@ ttq.page();
           if (typeof dataLayer !== 'undefined') {
             dataLayer.push({ event:'conversion_Purchase', value: totalValue, currency:'BDT', content_name: payload.product_name, order_id: data.order_number, num_items: payload.quantity });
           }
+
+          // Server-side Purchase via Conversions API (redundancy with backend)
+          if (window._lpTrack && window._lpTrack.sendServerEvent) {
+            window._lpTrack.sendServerEvent('Purchase', {
+              event_id: eventId,
+              value: totalValue,
+              currency: 'BDT',
+              content_name: payload.product_name,
+              content_ids: payload.product_code ? [payload.product_code] : [],
+              content_type: 'product',
+              num_items: payload.quantity,
+              order_id: data.order_number
+            }, { phone: payload.customer_phone, name: payload.customer_name, order_id: data.order_id || data.order_number });
+          }
         }
 
         var successUrl = form.getAttribute('data-success-url');
