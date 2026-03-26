@@ -451,9 +451,24 @@ ttq.track('InitiateCheckout');
 <script>
 (function(){
   var ORDER_URL = '${supabaseUrl}/functions/v1/submit-landing-order';
+  var ANON = '${anonKey}';
   var SLUG = '${page.slug}';
   var VID = localStorage.getItem('_lp_vid') || '';
   var _submitting = false;
+
+  function buildSuccessUrl(result, payload, form, msg) {
+    var params = new URLSearchParams();
+    params.set('order', String(result.order_number || ''));
+    params.set('eid', String(payload.event_id || ''));
+    params.set('value', String((payload.unit_price || 0) * (payload.quantity || 1)));
+    params.set('qty', String(payload.quantity || 1));
+    if (payload.product_name) params.set('product', String(payload.product_name));
+    if (payload.product_code) params.set('code', String(payload.product_code));
+    if (result.order_id) params.set('oid', String(result.order_id));
+    if (msg) params.set('msg', msg);
+    if (result.duplicate) params.set('duplicate', '1');
+    return window.location.origin + '/lp/' + encodeURIComponent(SLUG) + '/success?' + params.toString();
+  }
 
   document.addEventListener('submit', function(e) {
     if (e.defaultPrevented) return;
@@ -496,7 +511,7 @@ ttq.track('InitiateCheckout');
 
     fetch(ORDER_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'apikey': ANON },
       body: JSON.stringify(payload)
     })
     .then(function(r) { return r.json(); })
@@ -510,47 +525,6 @@ ttq.track('InitiateCheckout');
         var baseParams = window._lpTrack ? window._lpTrack.getBaseParams() : {};
 
         if (!data.duplicate) {
-          // FB Purchase with ALL PixelYourSite-style params
-          if (typeof fbq === 'function') {
-            var purchaseParams = {
-              value: totalValue,
-              currency: 'BDT',
-              content_type: 'product',
-              content_name: payload.product_name,
-              content_ids: payload.product_code ? [payload.product_code] : [],
-              num_items: payload.quantity,
-              content_category: form.getAttribute('data-category') || '',
-              subtotal: totalValue,
-              event_day: baseParams.event_day || '',
-              event_hour: baseParams.event_hour || '',
-              event_month: baseParams.event_month || '',
-              event_url: baseParams.event_url || window.location.href,
-              landing_page: baseParams.landing_page || window.location.href,
-              page_title: 'Checkout',
-              traffic_source: baseParams.traffic_source || 'direct',
-              user_role: 'guest',
-              plugin: 'LovableLP',
-              tags: form.getAttribute('data-tags') || '',
-              order_id: data.order_number
-            };
-            fbq('track', 'Purchase', purchaseParams, {eventID: eventId});
-            console.log('[FB Pixel] Purchase', purchaseParams);
-          }
-
-          // Server-side Purchase via Conversions API
-          if (window._lpTrack && '${page.fb_pixel_id}') {
-            window._lpTrack.sendServerEvent('Purchase', {
-              event_id: eventId,
-              value: totalValue,
-              currency: 'BDT',
-              content_name: payload.product_name,
-              content_ids: payload.product_code ? [payload.product_code] : [],
-              content_type: 'product',
-              num_items: payload.quantity,
-              order_id: data.order_number
-            }, { phone: payload.customer_phone, name: payload.customer_name, order_id: data.order_id || data.order_number });
-          }
-
           // TikTok CompletePayment
           if (typeof ttq !== 'undefined' && ttq.track) {
             ttq.track('CompletePayment', {
@@ -576,17 +550,21 @@ ttq.track('InitiateCheckout');
           }
         }
 
-        // Wait 1.5s for pixel & CAPI requests to complete before navigating away
-        var successUrl = form.getAttribute('data-success-url');
         var msg = form.getAttribute('data-success-message') || 'আপনার অর্ডার সফলভাবে জমা হয়েছে! অর্ডার নম্বর: ' + data.order_number;
+        var successUrl = buildSuccessUrl(data, payload, form, msg);
+        try {
+          sessionStorage.setItem('_lp_purchase_success:' + eventId, JSON.stringify({
+            customer_name: payload.customer_name,
+            customer_phone: payload.customer_phone,
+            order_id: data.order_id || '',
+            order_number: data.order_number || '',
+            duplicate: !!data.duplicate
+          }));
+        } catch(e) {}
         if (btn) { btn.disabled = true; btn.textContent = '✓ অর্ডার সফল!'; btn.style.backgroundColor = '#10b981'; }
         setTimeout(function() {
-          if (successUrl) {
-            window.location.href = successUrl;
-          } else {
-            document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:sans-serif;"><div style="text-align:center;padding:40px;"><h1 style="color:#10b981;font-size:48px;">✓</h1><h2 style="margin:16px 0;">অর্ডার সফল!</h2><p>' + msg + '</p></div></div>';
-          }
-        }, 1500);
+          window.location.href = successUrl;
+        }, 300);
       } else {
         alert(data.error || 'অর্ডার সাবমিট করতে সমস্যা হয়েছে');
         _submitting = false;

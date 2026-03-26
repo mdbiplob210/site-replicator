@@ -34,6 +34,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const LandingPageView = lazy(() => import("./pages/LandingPageView"));
 const LandingPageCheckout = lazy(() => import("./pages/LandingPageCheckout"));
+const LandingOrderSuccess = lazy(() => import("./pages/LandingOrderSuccess"));
 const Landing = lazy(() => import("./pages/Landing"));
 
 // Lazy-loaded admin pages
@@ -181,6 +182,7 @@ const App = () => {
             <Route path="/admin/plan" element={P("Plan", "Subscription management", ["manage_settings"])} />
             <Route path="/lp/:slug" element={<LandingPageView />} />
             <Route path="/lp/:slug/checkout" element={<LandingPageCheckout />} />
+            <Route path="/lp/:slug/success" element={<LandingOrderSuccess />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
