@@ -77,7 +77,11 @@ var _initParams = { country: 'bd' };
 var _extId = '';
 try { _extId = localStorage.getItem('_vid') || ''; } catch(e) {}
 if (_extId) _initParams.external_id = _extId;
-${customerPhone ? `_initParams.ph = '${customerPhone.replace(/[^0-9]/g, '')}';` : ''}
+${customerPhone ? `(function(){
+  var ph = '${customerPhone}'.replace(/[^0-9]/g, '');
+  if (ph.indexOf('0') === 0) ph = '880' + ph.substring(1);
+  _initParams.ph = ph;
+})();` : ''}
 ${customerName ? `(function(){
   var parts = '${customerName}'.trim().split(/\\s+/);
   _initParams.fn = (parts[0]||'').toLowerCase();
