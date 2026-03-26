@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,6 +36,7 @@ interface PopupCheckoutProps {
 }
 
 export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent }: PopupCheckoutProps) {
+  const navigate = useNavigate();
   const [form, setForm] = useState({ name: "", phone: "", address: "", notes: "" });
   const [submitting, setSubmitting] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
@@ -335,6 +337,8 @@ export function PopupCheckout({ item, open, onClose, discount = 0, onExitIntent 
 
       setOrderComplete(true);
       toast.success("Order placed successfully! 🎉");
+      onClose();
+      navigate(`/order-success?order=${orderNumber}`);
     } catch (err: any) {
       orderSubmitted.current = false;
       toast.error(err.message);
