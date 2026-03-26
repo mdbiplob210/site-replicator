@@ -121,9 +121,16 @@ export default function LandingOrderSuccess() {
     ensureFacebookPixel(page.fb_pixel_id)
       .then(() => {
         const fbq = (window as any).fbq;
-        if (typeof fbq === "function") fbq("track", "Purchase", payload, { eventID: eventId });
+        if (typeof fbq === "function") {
+          fbq("track", "Purchase", payload, { eventID: eventId });
+          console.log("[Purchase] Landing browser fbq fired", { eventId, pixelId: page.fb_pixel_id, value });
+        } else {
+          console.warn("[Purchase] Landing fbq not available after ensureFacebookPixel");
+        }
       })
-      .catch(() => undefined);
+      .catch((err) => console.error("[Purchase] Landing fbq error:", err));
+
+    console.log("[Purchase] Landing CAPI sending", { eventId, pixelId: page.fb_pixel_id, value, slug });
 
     fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fb-conversions-api`, {
       method: "POST",
@@ -147,7 +154,10 @@ export default function LandingOrderSuccess() {
         custom_data: payload,
       }),
       keepalive: true,
-    }).catch(() => undefined);
+    })
+      .then(r => r.json())
+      .then(result => console.log("[Purchase] Landing CAPI response:", result))
+      .catch((err) => console.error("[Purchase] Landing CAPI error:", err));
 
     try {
       sessionStorage.setItem(fireKey, "1");

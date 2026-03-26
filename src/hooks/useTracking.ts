@@ -737,7 +737,12 @@ export function useTracking() {
     const eventId = generateEventId("pur");
 
     // Prevent duplicate purchase events even in restricted in-app browsers
-    if (!markPurchaseTracked(params.orderId, eventId)) return;
+    if (!markPurchaseTracked(params.orderId, eventId)) {
+      console.log("[Purchase] Skipped duplicate for order:", params.orderId);
+      return;
+    }
+
+    console.log("[Purchase] Firing event", { orderId: params.orderId, value: params.value, eventId });
 
     // Update user data with all available info
     setFBUserData({
@@ -757,6 +762,9 @@ export function useTracking() {
         num_items: params.qty,
         order_id: params.orderId,
       }, { eventID: eventId });
+      console.log("[Purchase] Browser fbq fired", { eventId, pixelId: fbPixelId });
+    } else {
+      console.warn("[Purchase] Browser fbq NOT available", { fbPixelId, fbqExists: !!window.fbq });
     }
 
     if (tiktokPixelId && window.ttq) {
@@ -787,8 +795,9 @@ export function useTracking() {
       });
     }
 
-    // CAPI - most important for attribution
+    // CAPI - most important for attribution (always send even if browser fbq failed)
     if (fbPixelId) {
+      console.log("[Purchase] Sending CAPI event", { eventId, pixelId: fbPixelId });
       sendCAPIEvent({
         pixelId: fbPixelId,
         eventName: "Purchase",

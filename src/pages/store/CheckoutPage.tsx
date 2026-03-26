@@ -227,7 +227,7 @@ const CheckoutPage = () => {
           productCode: item.productCode || item.productId, customerPhone: form.phone, customerName: form.name,
         }));
         sessionStorage.removeItem("checkout_item");
-        navigate("/order-success");
+        navigate(`/order-success?order=${recentDup[0].order_number}`);
         return;
       }
 
@@ -324,7 +324,7 @@ const CheckoutPage = () => {
 
       sessionStorage.removeItem("checkout_item");
       toast.success("Order placed successfully! 🎉");
-      navigate("/order-success");
+      navigate(`/order-success?order=${orderNumber}`);
     } catch (err: any) {
       orderSubmitted.current = false;
       toast.error(err.message);
