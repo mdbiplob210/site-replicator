@@ -522,6 +522,9 @@ Deno.serve(async (req) => {
     }
 
     // ═══ Track landing page conversion & CAPI ═══
+    let purchaseTracked = false;
+    let purchaseTrackingError: string | null = null;
+
     if (landingSlug) {
       const { data: lp } = await supabase
         .from("landing_pages")
@@ -586,24 +589,34 @@ Deno.serve(async (req) => {
 
             if (!capiResponse.ok) {
               if (isInvalidAccessTokenError(capiResult)) {
+                purchaseTrackingError = "invalid_access_token";
                 console.warn("[submit-landing-order] CAPI skipped due to invalid access token");
               } else {
                 throw new Error(JSON.stringify(capiResult));
               }
             } else {
+              purchaseTracked = true;
               console.log("[submit-landing-order] CAPI Purchase sent for pixel:", pixelId, "order:", orderNumber, "response:", JSON.stringify(capiResult));
             }
           } catch (capiErr) {
+            purchaseTrackingError = capiErr.message;
             console.error("[submit-landing-order] CAPI error:", capiErr.message);
           }
         } else {
+           purchaseTrackingError = "pixel_or_token_missing";
            console.warn("[submit-landing-order] CAPI skipped: pixel or access token missing for", landingSlug);
         }
       }
     }
 
     return new Response(
-      JSON.stringify({ success: true, order_number: orderNumber, order_id: order.id }),
+      JSON.stringify({
+        success: true,
+        order_number: orderNumber,
+        order_id: order.id,
+        purchase_tracked: purchaseTracked,
+        purchase_tracking_error: purchaseTrackingError,
+      }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {

@@ -121,11 +121,6 @@ export default function LandingOrderSuccess() {
   useEffect(() => {
     if (!slug || !eventId || duplicate) return;
 
-    if (!effectivePixelId) {
-      console.error("[Purchase] Landing purchase skipped: no pixel configured", { slug, eventId });
-      return;
-    }
-
     const fireKey = `_lp_purchase_fired:${eventId}`;
     try {
       if (sessionStorage.getItem(fireKey) === "1") return;
@@ -151,18 +146,22 @@ export default function LandingOrderSuccess() {
       let browserSent = false;
       let serverSent = false;
 
-      try {
-        await ensureFacebookPixel(effectivePixelId);
-        const fbq = (window as any).fbq;
-        if (typeof fbq === "function") {
-          fbq("track", "Purchase", payload, { eventID: eventId });
-          browserSent = true;
-          console.log("[Purchase] Landing browser fbq fired", { eventId, pixelId: effectivePixelId, value: effectiveValue });
-        } else {
-          console.error("[Purchase] Landing fbq unavailable after ensureFacebookPixel", { eventId, pixelId: effectivePixelId });
+      if (effectivePixelId) {
+        try {
+          await ensureFacebookPixel(effectivePixelId);
+          const fbq = (window as any).fbq;
+          if (typeof fbq === "function") {
+            fbq("track", "Purchase", payload, { eventID: eventId });
+            browserSent = true;
+            console.log("[Purchase] Landing browser fbq fired", { eventId, pixelId: effectivePixelId, value: effectiveValue });
+          } else {
+            console.error("[Purchase] Landing fbq unavailable after ensureFacebookPixel", { eventId, pixelId: effectivePixelId });
+          }
+        } catch (err) {
+          console.error("[Purchase] Landing fbq error:", err);
         }
-      } catch (err) {
-        console.error("[Purchase] Landing fbq error:", err);
+      } else {
+        console.warn("[Purchase] Landing browser fbq skipped: no pixel configured, using server fallback", { slug, eventId });
       }
 
       try {

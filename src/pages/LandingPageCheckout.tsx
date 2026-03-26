@@ -451,10 +451,49 @@ ttq.track('InitiateCheckout');
 <script>
 (function(){
   var ORDER_URL = '${supabaseUrl}/functions/v1/submit-landing-order';
+  var CAPI_URL = '${supabaseUrl}/functions/v1/fb-conversions-api';
   var ANON = '${anonKey}';
   var SLUG = '${page.slug}';
   var VID = localStorage.getItem('_lp_vid') || '';
   var _submitting = false;
+
+  function sendPurchaseFallback(eventId, payload, data, totalValue) {
+    try {
+      fetch(CAPI_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': ANON },
+        keepalive: true,
+        body: JSON.stringify({
+          event_name: 'Purchase',
+          event_id: eventId,
+          event_url: window.location.href,
+          landing_page_slug: SLUG,
+          fbp: payload.fbp || (window._lpTrack ? window._lpTrack.getFbp() : ''),
+          fbc: payload.fbc || (window._lpTrack ? window._lpTrack.getFbc() : ''),
+          user_external_id: data.order_id || data.order_number || '',
+          user_phone: payload.customer_phone || '',
+          user_fn: payload.customer_name ? String(payload.customer_name).split(/\s+/)[0] : '',
+          user_ln: payload.customer_name ? String(payload.customer_name).split(/\s+/).slice(1).join(' ') : '',
+          custom_data: {
+            value: totalValue,
+            currency: 'BDT',
+            content_name: payload.product_name || document.title || '',
+            content_ids: payload.product_code ? [payload.product_code] : [],
+            content_type: 'product',
+            num_items: payload.quantity || 1,
+            order_id: data.order_number || '',
+            subtotal: totalValue
+          }
+        })
+      }).then(function(){
+        console.log('[LP-CHECKOUT] Purchase fallback CAPI sent', { eventId: eventId, order: data.order_number });
+      }).catch(function(err){
+        console.warn('[LP-CHECKOUT] Purchase fallback CAPI failed', err && err.message ? err.message : err);
+      });
+    } catch(err) {
+      console.warn('[LP-CHECKOUT] Purchase fallback CAPI exception', err && err.message ? err.message : err);
+    }
+  }
 
   function buildSuccessUrl(result, payload, form, msg) {
     var params = new URLSearchParams();
@@ -520,6 +559,9 @@ ttq.track('InitiateCheckout');
                 duplicate: !!data.duplicate
               }));
             } catch(e) {}
+            if (!data.duplicate && !data.purchase_tracked) {
+              sendPurchaseFallback(String(payload.event_id || ''), payload, data, (parseFloat(payload.unit_price || '0') || 0) * (parseInt(payload.quantity || '1', 10) || 1));
+            }
             window.__lpOrderRedirecting = true;
             setTimeout(function() { window.location.href = redirectUrl; }, 120);
           }).catch(function(){});
@@ -609,6 +651,10 @@ ttq.track('InitiateCheckout');
               order_id: data.order_id || data.order_number
             });
             console.log('[LP-CHECKOUT] Server Purchase queued before redirect', { eventId: eventId, order: data.order_number });
+          }
+
+          if (!data.purchase_tracked) {
+            sendPurchaseFallback(eventId, payload, data, totalValue);
           }
 
           // TikTok CompletePayment
