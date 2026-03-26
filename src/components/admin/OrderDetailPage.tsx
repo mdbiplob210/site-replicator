@@ -27,8 +27,7 @@ import { useOrderItems, getStatusLabel, getStatusColor } from "@/hooks/useOrders
 import { usePublicProducts } from "@/hooks/usePublicProducts";
 import { CourierHistoryBadge } from "@/components/admin/courier/CourierHistoryBadge";
 import { CourierSuccessRate } from "@/components/admin/courier/CourierSuccessRate";
-import { useCourierCities, useCourierZones, useCourierAreas, prefetchCourierLocations } from "@/hooks/useCourierLocations";
-import { extractPathaoLocationHints, resolvePathaoLocationMatch } from "@/lib/pathaoLocationMatching";
+import { PathaoLocationSelector, type PathaoLocationValues } from "@/components/admin/courier/PathaoLocationSelector";
 import { toast } from "sonner";
 import { MemoPrint } from "@/components/admin/courier/MemoPrint";
 
