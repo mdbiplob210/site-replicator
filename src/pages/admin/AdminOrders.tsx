@@ -2937,6 +2937,17 @@ const AdminOrders = () => {
             <Button variant={isDeletedTab ? "outline" : "destructive"} size="sm" className="gap-1.5 h-8 rounded-xl text-xs" onClick={handleBulkDelete}>
               {isDeletedTab ? <><RotateCcw className="h-3.5 w-3.5" /> পুনরুদ্ধার</> : <><Trash2 className="h-3.5 w-3.5" /> ডিলিট</>}
             </Button>
+            {isSuperAdmin && isDeletedTab && (
+              <Button variant="destructive" size="sm" className="gap-1.5 h-8 rounded-xl text-xs" onClick={() => {
+                if (selectedOrderIds.size === 0) return;
+                if (!confirm(`⚠️ ${selectedOrderIds.size}টি অর্ডার স্থায়ীভাবে ডাটাবেস থেকে মুছে ফেলা হবে!\n\nএটি আর ফেরত আনা যাবে না। নিশ্চিত?`)) return;
+                selectedOrderIds.forEach(id => hardDeleteOrder.mutate(id));
+                toast.success(`${selectedOrderIds.size}টি অর্ডার স্থায়ীভাবে ডিলিট হয়েছে!`);
+                setSelectedOrderIds(new Set());
+              }}>
+                <Trash className="h-3.5 w-3.5" /> স্থায়ী ডিলিট
+              </Button>
+            )}
             )}
             <Button variant="ghost" size="sm" className="h-8 rounded-xl text-xs text-muted-foreground ml-auto" onClick={() => setSelectedOrderIds(new Set())}>
               <X className="h-3.5 w-3.5 mr-1" /> বাতিল
