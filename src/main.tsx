@@ -3,17 +3,22 @@ import { prefetchCriticalData } from "./lib/prefetch";
 // Start fetching critical data BEFORE React even loads
 prefetchCriticalData();
 
+// For landing pages, prefetch the chunk immediately
+const path = window.location.pathname;
+if (path.startsWith("/lp/")) {
+  import("./pages/LandingPageView").catch(() => {});
+}
+
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 
 // Register service worker early for caching benefits
 if ('serviceWorker' in navigator) {
-  // Register sooner (3s instead of 10s) for faster subsequent loads
   window.addEventListener('load', () => {
     setTimeout(() => {
       navigator.serviceWorker.register('/sw.js').catch(() => {});
-    }, 3000);
+    }, 2000);
   }, { once: true });
 }
 
@@ -21,11 +26,13 @@ if ('serviceWorker' in navigator) {
 const root = createRoot(document.getElementById("root")!);
 root.render(<App />);
 
-// Init link prefetching faster (800ms instead of 1500ms)
-requestAnimationFrame(() => {
-  setTimeout(() => {
-    import("./lib/routePrefetch").then(({ initLinkPrefetching }) => {
-      initLinkPrefetching();
-    });
-  }, 800);
-});
+// Init link prefetching faster
+if (!path.startsWith("/lp/")) {
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      import("./lib/routePrefetch").then(({ initLinkPrefetching }) => {
+        initLinkPrefetching();
+      });
+    }, 500);
+  });
+}
