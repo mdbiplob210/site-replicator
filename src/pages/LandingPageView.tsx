@@ -1312,6 +1312,13 @@ ttq.page();
             } catch(e) {}
             // Purchase event fires on success page — no pre-redirect fallback needed
             window.__lpOrderRedirecting = true;
+            // Suppress template's own success popups/alerts
+            window.alert = function(){};
+            // Hide any popup/modal overlays the template might create
+            setTimeout(function() {
+              var overlays = document.querySelectorAll('[class*="modal"],[class*="popup"],[class*="overlay"],[class*="success"],[class*="confirm"],[role="dialog"]');
+              overlays.forEach(function(el) { el.style.display = 'none'; });
+            }, 10);
             setTimeout(function() { window.location.href = redirectUrl; }, 120);
           }).catch(function(){});
         }).catch(function(){});
