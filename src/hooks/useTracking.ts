@@ -422,7 +422,11 @@ export function useTracking() {
   // Initialize tracking scripts AFTER page is interactive (deferred)
   useEffect(() => {
     if (initialized.current || !settings) return;
-    if (window.location.pathname.startsWith("/lp/")) return;
+    if (
+      window.location.pathname.startsWith("/lp/") ||
+      window.location.pathname.startsWith("/admin") ||
+      window.location.pathname.startsWith("/login")
+    ) return;
     initialized.current = true;
 
     const loadScripts = () => {

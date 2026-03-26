@@ -128,6 +128,7 @@ const App = () => {
         <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/" element={<StorePage />} />
+            <Route path="/index" element={<StorePage />} />
             <Route path="/landing" element={<Landing />} />
             <Route path="/product/:slug" element={<ProductDetail />} />
             <Route path="/checkout" element={<CheckoutPage />} />

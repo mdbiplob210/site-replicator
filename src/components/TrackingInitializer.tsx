@@ -14,8 +14,12 @@ export function TrackingInitializer() {
 
   useEffect(() => {
     if (!isReady) return;
-    // Don't fire main website pixel on landing pages — they have their own pixel
-    if (location.pathname.startsWith("/lp/")) return;
+    // Don't fire global website tracking on admin/login/landing routes
+    if (
+      location.pathname.startsWith("/admin") ||
+      location.pathname.startsWith("/login") ||
+      location.pathname.startsWith("/lp/")
+    ) return;
     // Fire if path changed
     if (location.pathname !== lastTrackedPath.current) {
       lastTrackedPath.current = location.pathname;

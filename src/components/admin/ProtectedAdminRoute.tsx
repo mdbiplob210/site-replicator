@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth, type PermissionKey } from "@/contexts/AuthContext";
 import { getDefaultAdminRoute } from "@/lib/adminAccess";
@@ -10,9 +10,15 @@ interface ProtectedAdminRouteProps {
 
 export function ProtectedAdminRoute({ children, requiredPermissions }: ProtectedAdminRouteProps) {
   const location = useLocation();
-  const { user, userRoles, userPermissions, isAdmin, hasPermission, loading } = useAuth();
+  const { user, userRoles, userPermissions, isAdmin, hasPermission, loading, rolesLoading, rolesResolved, ensureRolesLoaded } = useAuth();
 
-  if (loading) {
+  useEffect(() => {
+    if (user && !rolesResolved && !rolesLoading) {
+      void ensureRolesLoaded();
+    }
+  }, [ensureRolesLoaded, rolesLoading, rolesResolved, user]);
+
+  if (loading || (user && (!rolesResolved || rolesLoading))) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
