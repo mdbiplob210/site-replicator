@@ -172,7 +172,9 @@ Deno.serve(async (req) => {
     if (user_ct) userData.ct = await hashSHA256(user_ct);
     if (user_st) userData.st = await hashSHA256(user_st);
     if (user_zp) userData.zp = await hashSHA256(user_zp);
-    if (user_country) userData.country = await hashSHA256(user_country);
+    // Always send country as 'bd' for Bangladesh — improves EMQ significantly
+    const resolvedCountry = user_country || "bd";
+    userData.country = await hashSHA256(resolvedCountry);
 
     const eventData: Record<string, any> = {
       event_name: event_name,
