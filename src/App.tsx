@@ -10,9 +10,10 @@ import { TrackingInitializer } from "./components/TrackingInitializer";
 import { WebsiteEventTracker } from "./components/WebsiteEventTracker";
 import { useDynamicMeta } from "@/hooks/useDynamicMeta";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import LandingPageView from "./pages/LandingPageView";
-import LandingPageCheckout from "./pages/LandingPageCheckout";
-import LandingOrderSuccess from "./pages/LandingOrderSuccess";
+// Landing pages lazy-loaded — they're huge (~3000 lines) and shouldn't block main bundle
+const LandingPageView = lazy(() => import("./pages/LandingPageView"));
+const LandingPageCheckout = lazy(() => import("./pages/LandingPageCheckout"));
+const LandingOrderSuccess = lazy(() => import("./pages/LandingOrderSuccess"));
 
 const DynamicMetaProvider = () => { useDynamicMeta(); return null; };
 
@@ -88,8 +89,8 @@ const PageLoader = () => (
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 10 * 60 * 1000, // 10 min stale time for faster navigation
-      gcTime: 60 * 60 * 1000, // 1 hour cache
+      staleTime: 10 * 60 * 1000,
+      gcTime: 60 * 60 * 1000,
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
       retry: 1,
@@ -98,6 +99,13 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+// Minimal landing page wrapper — no auth, no tracking overhead
+const LandingMinimal = ({ children }: { children: React.ReactNode }) => (
+  <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin" /></div>}>
+    {children}
+  </Suspense>
+);
 
 const P = (title: string, desc?: string, requiredPermissions?: PermissionKey[]) => (
   <ProtectedAdminRoute requiredPermissions={requiredPermissions}>
@@ -180,9 +188,9 @@ const App = () => {
             <Route path="/admin/support" element={P("Support", "Customer support", ["manage_settings"])} />
             <Route path="/admin/coming-soon" element={<Admin requiredPermissions={["manage_settings"]}><AdminComingSoon /></Admin>} />
             <Route path="/admin/plan" element={P("Plan", "Subscription management", ["manage_settings"])} />
-            <Route path="/lp/:slug" element={<LandingPageView />} />
-            <Route path="/lp/:slug/checkout" element={<LandingPageCheckout />} />
-            <Route path="/lp/:slug/success" element={<LandingOrderSuccess />} />
+            <Route path="/lp/:slug" element={<LandingMinimal><LandingPageView /></LandingMinimal>} />
+            <Route path="/lp/:slug/checkout" element={<LandingMinimal><LandingPageCheckout /></LandingMinimal>} />
+            <Route path="/lp/:slug/success" element={<LandingMinimal><LandingOrderSuccess /></LandingMinimal>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

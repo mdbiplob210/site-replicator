@@ -60,10 +60,14 @@ export const ROLE_DISPLAY_NAMES: Record<AppRole, string> = {
   delivery_rider: "Delivery Rider",
 };
 
-// Check if current route needs auth - public store pages don't
+// Check if current route needs auth - public store pages and landing pages don't
 function isPublicRoute(): boolean {
   const path = window.location.pathname;
   return !path.startsWith("/admin") && !path.startsWith("/login");
+}
+
+function isLandingRoute(): boolean {
+  return window.location.pathname.startsWith("/lp/");
 }
 
 function shouldEagerlyResolveRoles(): boolean {
@@ -194,6 +198,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [clearRoleData, resolveRolesAndPermissions]);
 
   useEffect(() => {
+    // Landing pages: skip auth entirely for maximum speed
+    if (isLandingRoute()) {
+      setLoading(false);
+      setRolesResolved(true);
+      return;
+    }
+
     let disposed = false;
     let bootstrapComplete = false;
 
