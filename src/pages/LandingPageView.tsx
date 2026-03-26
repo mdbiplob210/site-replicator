@@ -1245,19 +1245,18 @@ ttq.page();
     if (!btn) return;
     var btnText = (btn.textContent || btn.value || '').trim();
     if (!/অর্ডার|order|submit|কনফার্ম|confirm/i.test(btnText)) return;
-    // Only intercept if button is inside a container that has phone/name inputs (actual checkout form)
-    var form = btn.closest ? btn.closest(FORM_SELECTOR) : null;
-    if (!form) {
-      var parent = btn.parentElement;
-      for (var i = 0; i < 5 && parent; i++) {
-        if (parent.querySelector && parent.querySelector('input[type="tel"], input[inputmode="tel"]')) { form = parent; break; }
-        parent = parent.parentElement;
+    // Find a form container that DIRECTLY contains BOTH the button AND a phone input
+    var form = null;
+    var candidate = btn.parentElement;
+    for (var i = 0; i < 8 && candidate; i++) {
+      var phoneInput = candidate.querySelector ? candidate.querySelector('input[type="tel"], input[inputmode="tel"], input[name="customer_phone"], input[name="phone"]') : null;
+      if (phoneInput && candidate.contains(btn) && candidate.contains(phoneInput)) {
+        form = candidate;
+        break;
       }
+      candidate = candidate.parentElement;
     }
     if (!form) return;
-    // Verify this form actually has input fields (not just a CTA button)
-    var hasInputs = form.querySelector('input[type="tel"], input[inputmode="tel"], input[name="customer_phone"], input[name="phone"]');
-    if (!hasInputs) return;
     e.preventDefault();
     e.stopImmediatePropagation();
     submitOrder(form);
