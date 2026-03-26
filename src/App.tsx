@@ -12,7 +12,7 @@ import { useDynamicMeta } from "@/hooks/useDynamicMeta";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import LandingPageView from "./pages/LandingPageView";
 import LandingPageCheckout from "./pages/LandingPageCheckout";
-import LandingOrderSuccess from "./pages/LandingOrderSuccess";
+// LandingOrderSuccess removed — Purchase fires in-page popup now
 
 const DynamicMetaProvider = () => { useDynamicMeta(); return null; };
 
