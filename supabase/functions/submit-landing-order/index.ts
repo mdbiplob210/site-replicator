@@ -48,8 +48,48 @@ async function hashSHA256(value: string): Promise<string> {
   return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+function normalizeAsciiDigits(value: string): string {
+  const bengaliDigitMap: Record<string, string> = {
+    "০": "0",
+    "১": "1",
+    "২": "2",
+    "৩": "3",
+    "৪": "4",
+    "৫": "5",
+    "৬": "6",
+    "৭": "7",
+    "৮": "8",
+    "৯": "9",
+  };
+
+  return String(value || "")
+    .split("")
+    .map((char) => bengaliDigitMap[char] || char)
+    .join("");
+}
+
+async function getSettingValue(supabase: any, key: string, envFallback?: string): Promise<string> {
+  try {
+    const { data } = await supabase
+      .from("site_settings")
+      .select("value")
+      .eq("key", key)
+      .maybeSingle();
+
+    if (data?.value) return data.value;
+  } catch (_) {}
+
+  return envFallback || "";
+}
+
+function isInvalidAccessTokenError(result: any): boolean {
+  const errorCode = Number(result?.error?.code || 0);
+  const message = String(result?.error?.message || "");
+  return errorCode === 190 || /invalid oauth access token/i.test(message);
+}
+
 function normalizeMetaPhone(phone: string): string {
-  const digits = phone.replace(/[^0-9]/g, "");
+  const digits = normalizeAsciiDigits(phone).replace(/[^0-9]/g, "");
   if (!digits) return "";
   if (digits.startsWith("880")) return digits;
   if (digits.startsWith("0")) return `880${digits.slice(1)}`;
@@ -99,7 +139,8 @@ Deno.serve(async (req) => {
     }
 
     // Validate phone number (server-side) — allow 11-15 digits
-    const cleanedPhone = customer_phone.replace(/^\+?880/, "0").replace(/[^0-9]/g, "");
+    const normalizedCustomerPhone = normalizeAsciiDigits(customer_phone);
+    const cleanedPhone = normalizedCustomerPhone.replace(/^\+?880/, "0").replace(/[^0-9]/g, "");
     if (!/^\d{11,15}$/.test(cleanedPhone)) {
       return new Response(
         JSON.stringify({ error: "অনুগ্রহ করে সঠিক মোবাইল নম্বর দিন (কমপক্ষে ১১ সংখ্যা)" }),
@@ -110,6 +151,7 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceRoleKey);
+    const customerPhone = cleanedPhone;
 
     // Extract client info
     const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
@@ -187,23 +229,23 @@ Deno.serve(async (req) => {
     const { data: phoneBlocked } = await supabase
       .from("blocked_phones")
       .select("id")
-      .eq("phone_number", customer_phone)
+      .eq("phone_number", customerPhone)
       .limit(1);
 
     if (phoneBlocked && phoneBlocked.length > 0) {
       // Upsert: find existing incomplete order by IP+slug first, then phone
       const incompleteData = {
-        customer_name, customer_phone, customer_address: customer_address || null,
+        customer_name, customer_phone: customerPhone, customer_address: customer_address || null,
         product_name: product_name || null, product_code: product_code || null,
         quantity, unit_price, total_amount: totalAmount, delivery_charge, discount,
         notes: notes || null, landing_page_slug: landing_page_slug || null,
         client_ip: clientIp, user_agent: userAgent, device_info: deviceInfo,
-        block_reason: `স্থায়ীভাবে ব্লক করা নম্বর: ${customer_phone}`,
+        block_reason: `স্থায়ীভাবে ব্লক করা নম্বর: ${customerPhone}`,
         status: "processing",
         updated_at: new Date().toISOString(),
       };
 
-      const existingId = await findExistingIncomplete(supabase, clientIp, landing_page_slug, customer_phone);
+      const existingId = await findExistingIncomplete(supabase, clientIp, landing_page_slug, customerPhone);
       if (existingId) {
         await supabase.from("incomplete_orders").update(incompleteData).eq("id", existingId);
       } else {
@@ -225,7 +267,7 @@ Deno.serve(async (req) => {
 
       if (ipBlocked && ipBlocked.length > 0) {
         const incData = {
-          customer_name, customer_phone, customer_address: customer_address || null,
+          customer_name, customer_phone: customerPhone, customer_address: customer_address || null,
           product_name: product_name || null, product_code: product_code || null,
           quantity, unit_price, total_amount: totalAmount, delivery_charge, discount,
           notes: notes || null, landing_page_slug: landing_page_slug || null,
@@ -233,7 +275,7 @@ Deno.serve(async (req) => {
           block_reason: `স্থায়ীভাবে ব্লক করা IP: ${clientIp}`,
           status: "processing", updated_at: new Date().toISOString(),
         };
-        const existingId = await findExistingIncomplete(supabase, clientIp, landing_page_slug, customer_phone);
+        const existingId = await findExistingIncomplete(supabase, clientIp, landing_page_slug, customerPhone);
         if (existingId) {
           await supabase.from("incomplete_orders").update(incData).eq("id", existingId);
         } else {
@@ -255,7 +297,7 @@ Deno.serve(async (req) => {
       const { data: recentPhoneOrders } = await supabase
         .from("orders")
         .select("id, order_number, created_at")
-        .eq("customer_phone", customer_phone)
+        .eq("customer_phone", customerPhone)
         .gte("created_at", windowAgo)
         .limit(1);
 
@@ -284,19 +326,19 @@ Deno.serve(async (req) => {
 
       if (isPhoneBlocked || isIpBlocked || deviceBlocked) {
         let blockReason = "";
-        if (isPhoneBlocked) blockReason = `একই ফোন (${customer_phone}) থেকে ${hours}ঘণ্টার মধ্যে আগেই অর্ডার হয়েছে`;
+        if (isPhoneBlocked) blockReason = `একই ফোন (${customerPhone}) থেকে ${hours}ঘণ্টার মধ্যে আগেই অর্ডার হয়েছে`;
         else if (isIpBlocked) blockReason = `একই IP (${clientIp}) থেকে ${hours}ঘণ্টার মধ্যে আগেই অর্ডার হয়েছে`;
         else blockReason = `একই ডিভাইস থেকে ${hours}ঘণ্টার মধ্যে আগেই অর্ডার হয়েছে`;
 
         const incData2 = {
-          customer_name, customer_phone, customer_address: customer_address || null,
+          customer_name, customer_phone: customerPhone, customer_address: customer_address || null,
           product_name: product_name || null, product_code: product_code || null,
           quantity, unit_price, total_amount: totalAmount, delivery_charge, discount,
           notes: notes || null, landing_page_slug: landing_page_slug || null,
           client_ip: clientIp, user_agent: userAgent, device_info: deviceInfo,
           block_reason: blockReason, status: "processing", updated_at: new Date().toISOString(),
         };
-        const existingId2 = await findExistingIncomplete(supabase, clientIp, landing_page_slug, customer_phone);
+        const existingId2 = await findExistingIncomplete(supabase, clientIp, landing_page_slug, customerPhone);
         if (existingId2) {
           await supabase.from("incomplete_orders").update(incData2).eq("id", existingId2);
         } else {
@@ -315,14 +357,14 @@ Deno.serve(async (req) => {
       const { data: customerOrders } = await supabase
         .from("orders")
         .select("id, status")
-        .eq("customer_phone", customer_phone);
+        .eq("customer_phone", customerPhone);
 
       if (customerOrders && customerOrders.length >= 3) {
         const delivered = customerOrders.filter(o => o.status === "delivered").length;
         const ratio = Math.round((delivered / customerOrders.length) * 100);
         if (ratio < minDeliveryRatio) {
           const incData3 = {
-            customer_name, customer_phone, customer_address: customer_address || null,
+            customer_name, customer_phone: customerPhone, customer_address: customer_address || null,
             product_name: product_name || null, product_code: product_code || null,
             quantity, unit_price, total_amount: totalAmount, delivery_charge, discount,
             notes: notes || null, landing_page_slug: landing_page_slug || null,
@@ -330,7 +372,7 @@ Deno.serve(async (req) => {
             block_reason: `ডেলিভারি রেশিও কম (${ratio}% < ${minDeliveryRatio}%)`,
             status: "processing", updated_at: new Date().toISOString(),
           };
-          const existingId3 = await findExistingIncomplete(supabase, clientIp, landing_page_slug, customer_phone);
+          const existingId3 = await findExistingIncomplete(supabase, clientIp, landing_page_slug, customerPhone);
           if (existingId3) {
             await supabase.from("incomplete_orders").update(incData3).eq("id", existingId3);
           } else {
@@ -349,12 +391,12 @@ Deno.serve(async (req) => {
     const { data: recentDup } = await supabase
       .from("orders")
       .select("id, order_number")
-      .eq("customer_phone", customer_phone)
+      .eq("customer_phone", customerPhone)
       .gte("created_at", sixtySecsAgo)
       .limit(1);
 
     if (recentDup && recentDup.length > 0) {
-      console.log(`[submit-landing-order] Duplicate blocked: phone=${customer_phone}, existing order=${recentDup[0].order_number}`);
+      console.log(`[submit-landing-order] Duplicate blocked: phone=${customerPhone}, existing order=${recentDup[0].order_number}`);
       return new Response(
         JSON.stringify({ success: true, order_number: recentDup[0].order_number, duplicate: true }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -368,7 +410,7 @@ Deno.serve(async (req) => {
       .insert({
         order_number: "0",
         customer_name,
-        customer_phone,
+        customer_phone: customerPhone,
         customer_address: customer_address || null,
         product_cost: totalProductCost,
         delivery_charge,
@@ -391,7 +433,7 @@ Deno.serve(async (req) => {
     const { data: recentOrders, error: recentOrdersError } = await supabase
       .from("orders")
       .select("id, order_number, created_at")
-      .eq("customer_phone", customer_phone)
+      .eq("customer_phone", customerPhone)
       .gte("created_at", sixtySecsAgo)
       .order("created_at", { ascending: true })
       .order("id", { ascending: true })
@@ -409,7 +451,7 @@ Deno.serve(async (req) => {
         .eq("id", order.id);
 
       console.log(
-        `[submit-landing-order] Race duplicate cleaned: phone=${customer_phone}, kept=${canonicalOrder.order_number}, removed=${orderNumber}`,
+        `[submit-landing-order] Race duplicate cleaned: phone=${customerPhone}, kept=${canonicalOrder.order_number}, removed=${orderNumber}`,
       );
 
       return new Response(
@@ -457,11 +499,11 @@ Deno.serve(async (req) => {
         .ilike("notes", `%visitor:${body.visitor_id}%`);
     }
     // By phone
-    if (customer_phone) {
+    if (customerPhone) {
       await supabase
         .from("incomplete_orders")
         .delete()
-        .eq("customer_phone", customer_phone)
+        .eq("customer_phone", customerPhone)
         .eq("block_reason", "abandoned_form");
     }
     // By IP + slug
@@ -491,11 +533,13 @@ Deno.serve(async (req) => {
           device_type: body.device_type || null,
         });
 
-        // Fire server-side Purchase CAPI event if page has its own access token
-        if (lp.fb_pixel_id && lp.fb_access_token) {
+        const pixelId = lp.fb_pixel_id || await getSettingValue(supabase, "fb_pixel_id", Deno.env.get("FB_PIXEL_ID"));
+        const accessToken = lp.fb_access_token || await getSettingValue(supabase, "fb_access_token", Deno.env.get("FB_ACCESS_TOKEN"));
+
+        if (pixelId && accessToken) {
           try {
             const eventTime = Math.floor(Date.now() / 1000);
-            const normalizedPhone = normalizeMetaPhone(customer_phone);
+            const normalizedPhone = normalizeMetaPhone(customerPhone);
             const { firstName, lastName } = splitCustomerName(customer_name);
             const capiEvent = {
               event_name: "Purchase",
@@ -524,25 +568,31 @@ Deno.serve(async (req) => {
               },
             };
 
-            const capiResponse = await fetch(`https://graph.facebook.com/v21.0/${lp.fb_pixel_id}/events`, {
+            const capiResponse = await fetch(`https://graph.facebook.com/v21.0/${pixelId}/events`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 data: [capiEvent],
-                access_token: lp.fb_access_token,
+                access_token: accessToken,
               }),
             });
 
             const capiResult = await capiResponse.json();
 
             if (!capiResponse.ok) {
-              throw new Error(JSON.stringify(capiResult));
+              if (isInvalidAccessTokenError(capiResult)) {
+                console.warn("[submit-landing-order] CAPI skipped due to invalid access token");
+              } else {
+                throw new Error(JSON.stringify(capiResult));
+              }
+            } else {
+              console.log("[submit-landing-order] CAPI Purchase sent for pixel:", pixelId, "order:", orderNumber, "response:", JSON.stringify(capiResult));
             }
-
-            console.log("[submit-landing-order] CAPI Purchase sent for pixel:", lp.fb_pixel_id, "order:", orderNumber, "response:", JSON.stringify(capiResult));
           } catch (capiErr) {
             console.error("[submit-landing-order] CAPI error:", capiErr.message);
           }
+        } else {
+          console.warn("[submit-landing-order] CAPI skipped: pixel or access token missing for", landing_page_slug);
         }
       }
     }
