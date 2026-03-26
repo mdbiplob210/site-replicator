@@ -89,8 +89,8 @@ const PageLoader = () => (
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 10 * 60 * 1000, // 10 min stale time for faster navigation
-      gcTime: 60 * 60 * 1000, // 1 hour cache
+      staleTime: 10 * 60 * 1000,
+      gcTime: 60 * 60 * 1000,
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
       retry: 1,
@@ -99,6 +99,13 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+// Minimal landing page wrapper — no auth, no tracking overhead
+const LandingMinimal = ({ children }: { children: React.ReactNode }) => (
+  <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin" /></div>}>
+    {children}
+  </Suspense>
+);
 
 const P = (title: string, desc?: string, requiredPermissions?: PermissionKey[]) => (
   <ProtectedAdminRoute requiredPermissions={requiredPermissions}>
