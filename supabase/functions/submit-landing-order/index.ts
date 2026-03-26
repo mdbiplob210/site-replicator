@@ -82,6 +82,123 @@ async function getSettingValue(supabase: any, key: string, envFallback?: string)
   return envFallback || "";
 }
 
+function normalizeOptionalString(value: unknown): string {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function extractLandingSlugFromReferer(referer: string): string {
+  return referer.match(/\/lp\/([^/?#]+)/)?.[1] || "";
+}
+
+async function resolveLandingSlug(
+  supabase: any,
+  params: {
+    requestedSlug?: string | null;
+    referer?: string | null;
+    visitorId?: string | null;
+    sessionId?: string | null;
+    customerPhone?: string | null;
+    clientIp?: string | null;
+  },
+): Promise<{ slug: string | null; source: string }> {
+  const requestedSlug = normalizeOptionalString(params.requestedSlug);
+  if (requestedSlug) return { slug: requestedSlug, source: "payload" };
+
+  const refererSlug = extractLandingSlugFromReferer(normalizeOptionalString(params.referer));
+  if (refererSlug) return { slug: refererSlug, source: "referer" };
+
+  const visitorId = normalizeOptionalString(params.visitorId);
+  const sessionId = normalizeOptionalString(params.sessionId);
+  const customerPhone = normalizeOptionalString(params.customerPhone);
+  const clientIp = normalizeOptionalString(params.clientIp);
+
+  if (visitorId) {
+    const { data: incompleteByVisitor } = await supabase
+      .from("incomplete_orders")
+      .select("landing_page_slug")
+      .ilike("notes", `%visitor:${visitorId}%`)
+      .not("landing_page_slug", "is", null)
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    const visitorSlug = normalizeOptionalString(incompleteByVisitor?.landing_page_slug);
+    if (visitorSlug) return { slug: visitorSlug, source: "incomplete_orders_visitor" };
+  }
+
+  if (sessionId) {
+    const { data: eventBySession } = await supabase
+      .from("landing_page_events")
+      .select("landing_page_id")
+      .eq("session_id", sessionId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (eventBySession?.landing_page_id) {
+      const { data: pageBySession } = await supabase
+        .from("landing_pages")
+        .select("slug")
+        .eq("id", eventBySession.landing_page_id)
+        .maybeSingle();
+
+      const sessionSlug = normalizeOptionalString(pageBySession?.slug);
+      if (sessionSlug) return { slug: sessionSlug, source: "landing_page_events_session" };
+    }
+  }
+
+  if (visitorId) {
+    const { data: eventByVisitor } = await supabase
+      .from("landing_page_events")
+      .select("landing_page_id")
+      .eq("visitor_id", visitorId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (eventByVisitor?.landing_page_id) {
+      const { data: pageByVisitor } = await supabase
+        .from("landing_pages")
+        .select("slug")
+        .eq("id", eventByVisitor.landing_page_id)
+        .maybeSingle();
+
+      const visitorSlug = normalizeOptionalString(pageByVisitor?.slug);
+      if (visitorSlug) return { slug: visitorSlug, source: "landing_page_events_visitor" };
+    }
+  }
+
+  if (customerPhone) {
+    const { data: incompleteByPhone } = await supabase
+      .from("incomplete_orders")
+      .select("landing_page_slug")
+      .eq("customer_phone", customerPhone)
+      .not("landing_page_slug", "is", null)
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    const phoneSlug = normalizeOptionalString(incompleteByPhone?.landing_page_slug);
+    if (phoneSlug) return { slug: phoneSlug, source: "incomplete_orders_phone" };
+  }
+
+  if (clientIp && clientIp !== "unknown") {
+    const { data: incompleteByIp } = await supabase
+      .from("incomplete_orders")
+      .select("landing_page_slug")
+      .eq("client_ip", clientIp)
+      .not("landing_page_slug", "is", null)
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    const ipSlug = normalizeOptionalString(incompleteByIp?.landing_page_slug);
+    if (ipSlug) return { slug: ipSlug, source: "incomplete_orders_ip" };
+  }
+
+  return { slug: null, source: "unresolved" };
+}
+
 function isInvalidAccessTokenError(result: any): boolean {
   const errorCode = Number(result?.error?.code || 0);
   const message = String(result?.error?.message || "");
@@ -129,10 +246,11 @@ Deno.serve(async (req) => {
       event_url,
       fbp,
       fbc,
+      visitor_id,
+      session_id,
+      device_type,
     } = body;
     const referer = req.headers.get("referer") || "";
-    const inferredSlug = referer.match(/\/lp\/([^/?#]+)/)?.[1] || null;
-    const landingSlug = landing_page_slug || inferredSlug;
     const purchaseEventId = event_id || `srv_${Date.now()}`;
     const purchaseEventUrl = event_url || referer || "";
 
@@ -163,6 +281,17 @@ Deno.serve(async (req) => {
                      req.headers.get("cf-connecting-ip") ||
                      req.headers.get("x-real-ip") || "unknown";
     const userAgent = req.headers.get("user-agent") || "";
+
+    const { slug: landingSlug, source: landingSlugSource } = await resolveLandingSlug(supabase, {
+      requestedSlug: landing_page_slug,
+      referer,
+      visitorId: visitor_id,
+      sessionId: session_id,
+      customerPhone,
+      clientIp,
+    });
+
+    console.log("[submit-landing-order] Landing slug resolved:", landingSlug || "(missing)", "source:", landingSlugSource);
 
     let deviceInfo = "Unknown Device";
     if (userAgent) {
@@ -250,7 +379,7 @@ Deno.serve(async (req) => {
         updated_at: new Date().toISOString(),
       };
 
-      const existingId = await findExistingIncomplete(supabase, clientIp, landing_page_slug, customerPhone);
+      const existingId = await findExistingIncomplete(supabase, clientIp, landingSlug, customerPhone);
       if (existingId) {
         await supabase.from("incomplete_orders").update(incompleteData).eq("id", existingId);
       } else {
@@ -280,7 +409,7 @@ Deno.serve(async (req) => {
           block_reason: `স্থায়ীভাবে ব্লক করা IP: ${clientIp}`,
           status: "processing", updated_at: new Date().toISOString(),
         };
-        const existingId = await findExistingIncomplete(supabase, clientIp, landing_page_slug, customerPhone);
+        const existingId = await findExistingIncomplete(supabase, clientIp, landingSlug, customerPhone);
         if (existingId) {
           await supabase.from("incomplete_orders").update(incData).eq("id", existingId);
         } else {
@@ -343,7 +472,7 @@ Deno.serve(async (req) => {
           client_ip: clientIp, user_agent: userAgent, device_info: deviceInfo,
           block_reason: blockReason, status: "processing", updated_at: new Date().toISOString(),
         };
-        const existingId2 = await findExistingIncomplete(supabase, clientIp, landing_page_slug, customerPhone);
+        const existingId2 = await findExistingIncomplete(supabase, clientIp, landingSlug, customerPhone);
         if (existingId2) {
           await supabase.from("incomplete_orders").update(incData2).eq("id", existingId2);
         } else {
@@ -377,7 +506,7 @@ Deno.serve(async (req) => {
             block_reason: `ডেলিভারি রেশিও কম (${ratio}% < ${minDeliveryRatio}%)`,
             status: "processing", updated_at: new Date().toISOString(),
           };
-          const existingId3 = await findExistingIncomplete(supabase, clientIp, landing_page_slug, customerPhone);
+          const existingId3 = await findExistingIncomplete(supabase, clientIp, landingSlug, customerPhone);
           if (existingId3) {
             await supabase.from("incomplete_orders").update(incData3).eq("id", existingId3);
           } else {
@@ -496,12 +625,12 @@ Deno.serve(async (req) => {
 
     // ═══ Delete incomplete/partial orders for this customer ═══
     // By visitor_id
-    if (body.visitor_id) {
+    if (visitor_id) {
       await supabase
         .from("incomplete_orders")
         .delete()
         .eq("block_reason", "abandoned_form")
-        .ilike("notes", `%visitor:${body.visitor_id}%`);
+        .ilike("notes", `%visitor:${visitor_id}%`);
     }
     // By phone
     if (customerPhone) {
@@ -536,9 +665,9 @@ Deno.serve(async (req) => {
           landing_page_id: lp.id,
           event_type: "conversion",
           event_name: "Order",
-          visitor_id: body.visitor_id || null,
-          session_id: body.session_id || null,
-          device_type: body.device_type || null,
+          visitor_id: visitor_id || null,
+          session_id: session_id || null,
+          device_type: device_type || null,
         });
 
         const pixelId = lp.fb_pixel_id || await getSettingValue(supabase, "fb_pixel_id", Deno.env.get("FB_PIXEL_ID"));
@@ -607,6 +736,13 @@ Deno.serve(async (req) => {
            console.warn("[submit-landing-order] CAPI skipped: pixel or access token missing for", landingSlug);
         }
       }
+    } else {
+      purchaseTrackingError = "landing_slug_missing";
+      console.warn("[submit-landing-order] CAPI skipped: landing slug missing after resolution", {
+        visitor_id: visitor_id || null,
+        session_id: session_id || null,
+        clientIp,
+      });
     }
 
     return new Response(
