@@ -1231,7 +1231,9 @@ ttq.page();
       currency: 'BDT',
       content_name: (payload.product_name || document.title || '').substring(0, 150),
       content_ids: payload.product_code ? [payload.product_code] : [],
+      contents: payload.product_code ? [{id: payload.product_code, quantity: parseInt(payload.quantity || '1', 10) || 1, item_price: parseFloat(payload.unit_price || '0') || totalValue}] : [],
       content_type: 'product',
+      content_category: 'ecommerce',
       num_items: parseInt(payload.quantity || '1', 10) || 1,
       order_id: String(result.order_number || ''),
       subtotal: totalValue

@@ -135,7 +135,9 @@ ${gtmId ? `
     currency: '${currency}',
     content_name: '${contentName.replace(/'/g, "\\'")}',
     content_ids: ${contentId ? `['${contentId}']` : '[]'},
+    contents: ${contentId ? `[{id:'${contentId}',quantity:${parseInt(numItems) || 1},item_price:${(parseFloat(value) || 0) / (parseInt(numItems) || 1)}}]` : '[]'},
     content_type: 'product',
+    content_category: 'ecommerce',
     num_items: ${parseInt(numItems) || 1},
     order_id: '${orderNumber}'
   };
