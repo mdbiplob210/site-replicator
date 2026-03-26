@@ -114,17 +114,15 @@ export function OrderDetailPage({ orderId, order, onClose }: { orderId: string |
     enabled: !!orderId,
   });
 
-  // Courier location hooks
-  const { data: editCourierCities = [], isLoading: editCitiesLoading } = useCourierCities(editCourierId);
-  const { data: editCourierZones = [], isLoading: editZonesLoading } = useCourierZones(editCourierId, editCourierCityId);
-  const { data: editCourierAreas = [], isLoading: editAreasLoading } = useCourierAreas(editCourierId, editCourierZoneId);
+  // Courier location state (managed by PathaoLocationSelector)
   const editSelectedCourier = useMemo(
     () => editCourierProviders.find((provider: any) => provider.id === editCourierId) || null,
     [editCourierProviders, editCourierId],
   );
-  const lastEditAutoCityIdRef = useRef<string | null>(null);
-  const lastEditAutoZoneIdRef = useRef<string | null>(null);
   const isEditPathaoCourier = editSelectedCourier?.slug === "pathao";
+  const [pathaoLocation, setPathaoLocation] = useState<PathaoLocationValues>({
+    cityId: null, zoneId: null, areaId: null, cityName: "", zoneName: "", areaName: "",
+  });
   const [editStatus, setEditStatus] = useState<string>("");
   const [detailCancelDialogOpen, setDetailCancelDialogOpen] = useState(false);
   const [detailCancelReason, setDetailCancelReason] = useState("");
