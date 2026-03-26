@@ -450,50 +450,14 @@ ttq.track('InitiateCheckout');
     const orderScript = `
 <script>
 (function(){
-  var ORDER_URL = '${supabaseUrl}/functions/v1/submit-landing-order';
-  var CAPI_URL = '${supabaseUrl}/functions/v1/fb-conversions-api';
+   var ORDER_URL = '${supabaseUrl}/functions/v1/submit-landing-order';
   var ANON = '${anonKey}';
   var SLUG = '${page.slug}';
   var VID = localStorage.getItem('_lp_vid') || '';
   var _submitting = false;
 
-  function sendPurchaseFallback(eventId, payload, data, totalValue) {
-    try {
-      fetch(CAPI_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'apikey': ANON },
-        keepalive: true,
-        body: JSON.stringify({
-          event_name: 'Purchase',
-          event_id: eventId,
-          event_url: window.location.href,
-          landing_page_slug: SLUG,
-          fbp: payload.fbp || (window._lpTrack ? window._lpTrack.getFbp() : ''),
-          fbc: payload.fbc || (window._lpTrack ? window._lpTrack.getFbc() : ''),
-          user_external_id: data.order_id || data.order_number || '',
-          user_phone: payload.customer_phone || '',
-          user_fn: payload.customer_name ? String(payload.customer_name).split(/\s+/)[0] : '',
-          user_ln: payload.customer_name ? String(payload.customer_name).split(/\s+/).slice(1).join(' ') : '',
-          custom_data: {
-            value: totalValue,
-            currency: 'BDT',
-            content_name: payload.product_name || document.title || '',
-            content_ids: payload.product_code ? [payload.product_code] : [],
-            content_type: 'product',
-            num_items: payload.quantity || 1,
-            order_id: data.order_number || '',
-            subtotal: totalValue
-          }
-        })
-      }).then(function(){
-        console.log('[LP-CHECKOUT] Purchase fallback CAPI sent', { eventId: eventId, order: data.order_number });
-      }).catch(function(err){
-        console.warn('[LP-CHECKOUT] Purchase fallback CAPI failed', err && err.message ? err.message : err);
-      });
-    } catch(err) {
-      console.warn('[LP-CHECKOUT] Purchase fallback CAPI exception', err && err.message ? err.message : err);
-    }
-  }
+  // Purchase event fires exclusively on the success page (/lp/{slug}/success)
+  // No pre-redirect Purchase firing needed — this avoids duplication
 
   function buildSuccessUrl(result, payload, form, msg) {
     var params = new URLSearchParams();
@@ -619,9 +583,10 @@ ttq.track('InitiateCheckout');
         // Remove partial incomplete order on success
         if (window._removePartial) window._removePartial();
         var eventId = payload.event_id || purchaseEventId;
+        var totalValue = (payload.unit_price || 0) * (payload.quantity || 1);
 
         // Purchase event will fire on the success page — no pre-redirect firing
-        console.log('[LP-CHECKOUT] Order success, redirecting to success page', { eventId: eventId, order: data.order_number });
+        console.log('[LP-CHECKOUT] Order success, redirecting to success page', { eventId: eventId, order: data.order_number, totalValue: totalValue });
 
         var msg = form.getAttribute('data-success-message') || 'আপনার অর্ডার সফলভাবে জমা হয়েছে! অর্ডার নম্বর: ' + data.order_number;
         var successUrl = buildSuccessUrl(data, payload, form, msg);

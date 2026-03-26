@@ -84,7 +84,8 @@ export default function LandingOrderSuccess() {
   const orderNumber = searchParams.get("order") || "";
   const orderId = searchParams.get("oid") || "";
   const rawEventId = searchParams.get("eid") || "";
-  const eventId = rawEventId || `eid_auto_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  // Memoize auto-generated eventId to prevent re-generation on re-renders
+  const eventId = useMemo(() => rawEventId || `eid_auto_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`, [rawEventId]);
   const productName = searchParams.get("product") || page?.title || "";
   const productCode = searchParams.get("code") || "";
   const quantity = Math.max(1, Number(searchParams.get("qty") || 1));
