@@ -1058,6 +1058,36 @@ ttq.page();
   var VID; try { VID = localStorage.getItem('_lp_vid'); } catch(e) {} VID = VID || '';
   var _submitting = false;
 
+  // Override alert/confirm EARLY to prevent template's success popups
+  // We keep a reference for our own validation messages
+  var _origAlert = window.alert;
+  var _origConfirm = window.confirm;
+  var _lpAlertOverridden = false;
+  function overrideAlerts() {
+    if (_lpAlertOverridden) return;
+    _lpAlertOverridden = true;
+    window.alert = function(msg) {
+      // Allow our own validation alerts through
+      if (msg && /সঠিক মোবাইল|ত্রুটি|সমস্যা/.test(String(msg))) {
+        return _origAlert.call(window, msg);
+      }
+      // After order submission, suppress all alerts (template success alerts)
+      if (_submitting || window.__lpOrderRedirecting) {
+        console.log('[LP] Suppressed template alert:', msg);
+        return;
+      }
+      return _origAlert.call(window, msg);
+    };
+    window.confirm = function(msg) {
+      if (_submitting || window.__lpOrderRedirecting) {
+        console.log('[LP] Suppressed template confirm:', msg);
+        return true;
+      }
+      return _origConfirm.call(window, msg);
+    };
+  }
+  overrideAlerts();
+
   // Purchase event fires exclusively on the success page (/lp/{slug}/success)
   // No pre-redirect Purchase firing needed — this avoids duplication
 
