@@ -1237,6 +1237,8 @@ ttq.page();
 
   function isValidPhone(value) {
     var cleaned = String(value || '').replace(/^[+]?880/, '0').replace(/[^0-9]/g, '');
+    // Accept 10 digits (without leading 0) or 11-15 digits
+    if (/^[1-9]\d{9}$/.test(cleaned)) return true;
     return /^\d{11,15}$/.test(cleaned);
   }
 
