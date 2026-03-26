@@ -525,6 +525,11 @@ ttq.track('InitiateCheckout');
             } catch(e) {}
             // Purchase event fires on success page — no pre-redirect fallback needed
             window.__lpOrderRedirecting = true;
+            window.alert = function(){};
+            setTimeout(function() {
+              var overlays = document.querySelectorAll('[class*="modal"],[class*="popup"],[class*="overlay"],[class*="success"],[class*="confirm"],[role="dialog"]');
+              overlays.forEach(function(el) { el.style.display = 'none'; });
+            }, 10);
             setTimeout(function() { window.location.href = redirectUrl; }, 120);
           }).catch(function(){});
         }).catch(function(){});
