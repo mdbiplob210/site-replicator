@@ -91,11 +91,11 @@ export async function fetchCourierCheck(phone: string): Promise<any> {
 }
 
 export function getCourierCacheEntry(phone: string) {
-  const clean = phone.replace(/\D/g, "");
-  return cache[clean] || null;
+  const clean = normalizeBDPhone(phone);
+  return clean ? (cache[clean] || null) : null;
 }
 
 export function clearCourierCache(phone: string) {
-  const clean = phone.replace(/\D/g, "");
-  delete cache[clean];
+  const clean = normalizeBDPhone(phone);
+  if (clean) delete cache[clean];
 }
