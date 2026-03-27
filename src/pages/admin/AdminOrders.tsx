@@ -52,7 +52,7 @@ import { PathaoBulkSubmitPreview } from "@/components/admin/courier/PathaoBulkSu
 import { useBulkMemoPrint } from "@/components/admin/courier/BulkMemoPrint";
 import { useCourierCities, useCourierZones, useCourierAreas, prefetchCourierLocations } from "@/hooks/useCourierLocations";
 import { ApiKeysView } from "@/components/admin/api/ApiKeysView";
-import { fetchCourierCheck, preloadCourierCache } from "@/lib/courierCheckCache";
+import { fetchCourierCheck, preloadCourierCache, normalizeBDPhone } from "@/lib/courierCheckCache";
 import { Constants } from "@/integrations/supabase/types";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import * as XLSX from "@datalens-tech/xlsx";
@@ -218,6 +218,7 @@ const AdminOrders = () => {
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [searchedPhone, setSearchedPhone] = useState("");
+  const [liveCourierPhone, setLiveCourierPhone] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
   const [totalAmount, setTotalAmount] = useState(0);
   const [deliveryCharge, setDeliveryCharge] = useState(0);
@@ -1152,6 +1153,28 @@ const AdminOrders = () => {
     } catch (e) { console.error("Auto-fill error:", e); }
   }, [customerName, customerAddress]);
 
+  const triggerPhoneInsights = useCallback((rawPhone: string) => {
+    const normalized = normalizeBDPhone(rawPhone || "") || "";
+    setLiveCourierPhone(normalized);
+
+    if (normalized) {
+      void fetchCourierCheck(normalized);
+      void autoFillFromPhone(normalized);
+    }
+
+    return normalized;
+  }, [autoFillFromPhone]);
+
+  const handleCustomerPhoneChange = useCallback((value: string) => {
+    setCustomerPhone(value);
+    triggerPhoneInsights(value);
+  }, [triggerPhoneInsights]);
+
+  const handleCustomerPhoneEnter = useCallback(() => {
+    const normalized = normalizeBDPhone(customerPhone) || customerPhone.trim();
+    if (normalized) setSearchedPhone(normalized);
+  }, [customerPhone]);
+
   const logActivity = async (orderId: string, action: string, fieldName?: string, oldValue?: string, newValue?: string, details?: string) => {
     try {
       await supabase.from("order_activity_logs" as any).insert({
@@ -1592,7 +1615,8 @@ const AdminOrders = () => {
 
     setCustomerName(io.customer_name || "");
     setCustomerPhone(io.customer_phone || "");
-    setSearchedPhone(io.customer_phone || "");
+    setSearchedPhone(normalizeBDPhone(io.customer_phone || "") || io.customer_phone || "");
+    setLiveCourierPhone(normalizeBDPhone(io.customer_phone || "") || "");
     setCustomerAddress(io.customer_address || "");
     setDeliveryCharge(safeDeliveryCharge);
     setDiscount(safeDiscount);
@@ -1602,6 +1626,7 @@ const AdminOrders = () => {
     setNewOrderStatus("processing");
     setNewOrderCancelReason("");
     setNewOrderCancelCustom("");
+    lastAutoFillPhoneRef.current = null;
     setSelectedCourierId(null);
     setSelectedCityId(null);
     setSelectedZoneId(null);
@@ -1679,6 +1704,7 @@ const AdminOrders = () => {
     setCustomerName("");
     setCustomerPhone("");
     setSearchedPhone("");
+    setLiveCourierPhone("");
     setCustomerAddress("");
     setTotalAmount(0);
     setDeliveryCharge(0);
@@ -2009,7 +2035,7 @@ const AdminOrders = () => {
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-xs font-semibold text-muted-foreground">ফোন নম্বর</Label>
-                    <Input value={customerPhone} onChange={(e) => { setCustomerPhone(e.target.value); const clean = e.target.value.replace(/\D/g, ""); if (clean.length >= 11) { fetchCourierCheck(clean); setSearchedPhone(e.target.value); autoFillFromPhone(clean); } }} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); setSearchedPhone(customerPhone); } }} placeholder="01XXXXXXXXX — Enter চাপুন সার্চ করতে" className="rounded-xl" />
+                    <Input value={customerPhone} onChange={(e) => handleCustomerPhoneChange(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleCustomerPhoneEnter(); } }} placeholder="01XXXXXXXXX — Enter চাপুন সার্চ করতে" className="rounded-xl" />
                   </div>
                 </div>
                 <div className="space-y-1.5">
@@ -2326,14 +2352,14 @@ const AdminOrders = () => {
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs font-semibold text-muted-foreground">ফোন নম্বর</Label>
-                        <Input placeholder="01XXXXXXXXX — Enter চাপুন সার্চ করতে" className="rounded-xl h-10 text-sm" value={customerPhone} onChange={(e) => { setCustomerPhone(e.target.value); const clean = e.target.value.replace(/\D/g, ""); if (clean.length >= 11) { fetchCourierCheck(clean); setSearchedPhone(e.target.value); autoFillFromPhone(clean); } }} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); setSearchedPhone(customerPhone); } }} />
+                        <Input placeholder="01XXXXXXXXX — Enter চাপুন সার্চ করতে" className="rounded-xl h-10 text-sm" value={customerPhone} onChange={(e) => handleCustomerPhoneChange(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleCustomerPhoneEnter(); } }} />
                       </div>
                     </div>
                   </div>
 
                   {/* Courier Success Rate - auto loads on phone */}
-                   {searchedPhone && searchedPhone.length >= 11 && (
-                    <CourierSuccessRate phone={searchedPhone} compact />
+                   {liveCourierPhone && (
+                    <CourierSuccessRate phone={liveCourierPhone} compact />
                   )}
 
                   {/* Fraud Check & Old Orders by Phone */}

@@ -148,13 +148,26 @@ export async function fetchCourierCheck(phone: string): Promise<any> {
     return cache[clean];
   }
 
-  const dbCached = await hydrateCourierCacheFromDb(clean);
-  if (dbCached) {
-    if (dbCached?._stale) void requestCourierCheck(clean);
-    return dbCached;
+  const dbPromise = hydrateCourierCacheFromDb(clean);
+  const firstResult = await Promise.race([
+    dbPromise.then((value) => ({ source: "db" as const, value })),
+    new Promise<{ source: "timeout" }>((resolve) => {
+      window.setTimeout(() => resolve({ source: "timeout" }), 120);
+    }),
+  ]);
+
+  if (firstResult.source === "db") {
+    if (firstResult.value) {
+      if (firstResult.value?._stale) void requestCourierCheck(clean);
+      return firstResult.value;
+    }
+
+    return requestCourierCheck(clean);
   }
 
-  return requestCourierCheck(clean);
+  const networkPromise = requestCourierCheck(clean);
+  const dbCached = await dbPromise;
+  return dbCached || networkPromise;
 }
 
 export function getCourierCacheEntry(phone: string) {
