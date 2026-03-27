@@ -12,6 +12,7 @@ export default function LandingPageView() {
   const { slug } = useParams<{ slug: string }>();
   const { data: page, isLoading, error } = useLandingPageBySlug(slug || "");
   const renderedPageRef = useRef<string | null>(null);
+  const pixelBootstrapRef = useRef<string | null>(null);
 
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
   const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '';
