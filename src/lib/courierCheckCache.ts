@@ -47,9 +47,10 @@ export async function preloadCourierCache(phones: string[]): Promise<void> {
 }
 
 function normalizeBDPhone(raw: string): string | null {
-  let d = raw.replace(/\D/g, "");
-  if (d.startsWith("880")) d = "0" + d.slice(3);
+  let d = raw.replace(/[^0-9+]/g, "");
   if (d.startsWith("+880")) d = "0" + d.slice(4);
+  d = d.replace(/\D/g, "");
+  if (d.startsWith("880") && d.length >= 13) d = "0" + d.slice(3);
   if (d.length === 11 && d.startsWith("01")) return d;
   return null;
 }
