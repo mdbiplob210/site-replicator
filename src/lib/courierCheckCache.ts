@@ -16,8 +16,8 @@ let preloadedFromDb = false;
  */
 export async function preloadCourierCache(phones: string[]): Promise<void> {
   const cleaned = phones
-    .map((p) => p?.replace(/\D/g, "") || "")
-    .filter((p) => p.length >= 11 && !cache[p]); // Only phones not already in memory
+    .map((p) => normalizeBDPhone(p || ""))
+    .filter((p): p is string => p !== null && !cache[p]);
 
   if (cleaned.length === 0) return;
 
@@ -46,9 +46,18 @@ export async function preloadCourierCache(phones: string[]): Promise<void> {
   }
 }
 
+function normalizeBDPhone(raw: string): string | null {
+  let d = raw.replace(/[^0-9+]/g, "");
+  if (d.startsWith("+880")) d = "0" + d.slice(4);
+  d = d.replace(/\D/g, "");
+  if (d.startsWith("880") && d.length >= 13) d = "0" + d.slice(3);
+  if (d.length === 11 && d.startsWith("01")) return d;
+  return null;
+}
+
 export async function fetchCourierCheck(phone: string): Promise<any> {
-  const clean = phone.replace(/\D/g, "");
-  if (clean.length < 11) return null;
+  const clean = normalizeBDPhone(phone);
+  if (!clean) return null;
 
   // In-memory cache hit (permanent)
   if (cache[clean]) return cache[clean];
@@ -83,11 +92,11 @@ export async function fetchCourierCheck(phone: string): Promise<any> {
 }
 
 export function getCourierCacheEntry(phone: string) {
-  const clean = phone.replace(/\D/g, "");
-  return cache[clean] || null;
+  const clean = normalizeBDPhone(phone);
+  return clean ? (cache[clean] || null) : null;
 }
 
 export function clearCourierCache(phone: string) {
-  const clean = phone.replace(/\D/g, "");
-  delete cache[clean];
+  const clean = normalizeBDPhone(phone);
+  if (clean) delete cache[clean];
 }
