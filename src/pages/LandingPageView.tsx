@@ -2233,6 +2233,17 @@ document.addEventListener('input', function(e) {
   };
 
   useLayoutEffect(() => {
+    if (!page?.fb_pixel_id) {
+      pixelBootstrapRef.current = null;
+      return;
+    }
+
+    if (pixelBootstrapRef.current === page.fb_pixel_id) return;
+    ensureMetaPixelBootstrap(page.fb_pixel_id);
+    pixelBootstrapRef.current = page.fb_pixel_id;
+  }, [page?.fb_pixel_id]);
+
+  useLayoutEffect(() => {
     if (!page) return;
 
     const renderKey = `${page.id}:${page.updated_at}`;
