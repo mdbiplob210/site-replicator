@@ -6,26 +6,81 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const API_TIMEOUT_MS = 6000;
-const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 1 week
+const API_TIMEOUT_MS = 15000;
+const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const JSON_HEADERS = { ...corsHeaders, "Content-Type": "application/json" };
+const UPSTREAM_HEADERS = {
+  "Content-Type": "application/json",
+  Accept: "application/json",
+  "User-Agent": "LovableCloud-BDCourier/1.0",
+};
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const supabase = createClient(supabaseUrl, serviceRoleKey);
 const bdcourierKey = Deno.env.get("BDCOURIER_API_KEY");
 
-async function fetchFromApi(phone: string, signal?: AbortSignal): Promise<{ data: any; ok: boolean }> {
+const bengaliDigitMap: Record<string, string> = {
+  "০": "0",
+  "১": "1",
+  "২": "2",
+  "৩": "3",
+  "৪": "4",
+  "৫": "5",
+  "৬": "6",
+  "৭": "7",
+  "৮": "8",
+  "৯": "9",
+};
+
+function normalizeBDPhone(raw: string): string | null {
+  let sanitized = "";
+
+  for (const ch of String(raw || "")) {
+    if (bengaliDigitMap[ch]) sanitized += bengaliDigitMap[ch];
+    else if (/[0-9]/.test(ch)) sanitized += ch;
+    else if (ch === "+" && sanitized.length === 0) sanitized += ch;
+  }
+
+  if (sanitized.startsWith("+880")) sanitized = `0${sanitized.slice(4)}`;
+  sanitized = sanitized.replace(/\D/g, "");
+
+  if (sanitized.startsWith("880") && sanitized.length >= 13) {
+    sanitized = `0${sanitized.slice(3)}`;
+  }
+
+  if (sanitized.length === 10 && sanitized.startsWith("1")) {
+    sanitized = `0${sanitized}`;
+  }
+
+  if (sanitized.length === 11 && sanitized.startsWith("01")) {
+    return sanitized;
+  }
+
+  return null;
+}
+
+async function readJsonSafely(resp: Response) {
+  const text = await resp.text();
+  try {
+    return JSON.parse(text);
+  } catch {
+    return { error: "Invalid upstream response", raw: text.slice(0, 1000) };
+  }
+}
+
+async function fetchFromApi(phone: string, signal: AbortSignal): Promise<{ data: any; ok: boolean }> {
   const resp = await fetch("https://api.bdcourier.com/courier-check", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${bdcourierKey}`,
-      "Content-Type": "application/json",
+      ...UPSTREAM_HEADERS,
     },
     body: JSON.stringify({ phone }),
     signal,
   });
-  const data = await resp.json();
+
+  const data = await readJsonSafely(resp);
   return { data, ok: resp.ok };
 }
 
@@ -35,94 +90,114 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const body = await req.json();
+    const body = await req.json().catch(() => ({}));
     const { phone, action } = body;
 
     if (!bdcourierKey) {
       return new Response(JSON.stringify({ error: "BDCOURIER_API_KEY not configured" }), {
-        status: 500, headers: JSON_HEADERS,
+        status: 500,
+        headers: JSON_HEADERS,
       });
     }
 
     if (action === "check-connection") {
       const resp = await fetch("https://api.bdcourier.com/check-connection", {
-        headers: { Authorization: `Bearer ${bdcourierKey}` },
+        headers: { Authorization: `Bearer ${bdcourierKey}`, Accept: "application/json" },
       });
-      const data = await resp.json();
+      const data = await readJsonSafely(resp);
       return new Response(JSON.stringify(data), { status: resp.status, headers: JSON_HEADERS });
     }
 
     if (action === "my-plan") {
       const resp = await fetch("https://api.bdcourier.com/my-plan", {
-        headers: { Authorization: `Bearer ${bdcourierKey}` },
+        headers: { Authorization: `Bearer ${bdcourierKey}`, Accept: "application/json" },
       });
-      const data = await resp.json();
+      const data = await readJsonSafely(resp);
       return new Response(JSON.stringify(data), { status: resp.status, headers: JSON_HEADERS });
     }
 
-    if (!phone) {
-      return new Response(JSON.stringify({ error: "Phone number required" }), {
-        status: 400, headers: JSON_HEADERS,
+    const normalizedPhone = normalizeBDPhone(phone);
+    if (!normalizedPhone) {
+      return new Response(JSON.stringify({ error: "Valid phone number required" }), {
+        status: 400,
+        headers: JSON_HEADERS,
       });
     }
 
-    // Step 1: Check DB cache first — if fresh (< 7 days), return immediately, NO API call
     const { data: cached } = await supabase
       .from("courier_check_cache")
       .select("response_data, created_at")
-      .eq("phone", phone)
+      .eq("phone", normalizedPhone)
       .limit(1)
       .maybeSingle();
 
     if (cached) {
       const cacheAge = Date.now() - new Date(cached.created_at).getTime();
       if (cacheAge < CACHE_TTL_MS) {
-        // Cache is fresh — return directly, zero API calls
         return new Response(
           JSON.stringify({ ...(cached.response_data as Record<string, unknown>), _cached: true }),
-          { status: 200, headers: JSON_HEADERS }
+          { status: 200, headers: JSON_HEADERS },
         );
       }
     }
 
-    // Step 2: Cache miss or stale — call external API
     const abortCtrl = new AbortController();
-    const apiResult = await Promise.race([
-      fetchFromApi(phone, abortCtrl.signal).catch(() => null),
-      new Promise<null>((r) => setTimeout(() => r(null), API_TIMEOUT_MS)),
-    ]);
+    const timeoutId = setTimeout(() => abortCtrl.abort("timeout"), API_TIMEOUT_MS);
+
+    let apiResult: { data: any; ok: boolean } | null = null;
+    let timedOut = false;
+
+    try {
+      apiResult = await fetchFromApi(normalizedPhone, abortCtrl.signal);
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        timedOut = true;
+      } else {
+        console.error("bd-courier-check upstream error", error);
+      }
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     if (!apiResult) {
-      // API timed out — return stale cache if available
       if (cached) {
         return new Response(
-          JSON.stringify({ ...(cached.response_data as Record<string, unknown>), _cached: true }),
-          { status: 200, headers: JSON_HEADERS }
+          JSON.stringify({ ...(cached.response_data as Record<string, unknown>), _cached: true, _stale: true }),
+          { status: 200, headers: JSON_HEADERS },
         );
       }
-      return new Response(JSON.stringify({ error: "Request timeout" }), {
-        status: 504, headers: JSON_HEADERS,
+
+      return new Response(JSON.stringify({ error: timedOut ? "Request timeout" : "Courier check failed" }), {
+        status: timedOut ? 504 : 502,
+        headers: JSON_HEADERS,
       });
     }
 
-    // Step 3: Save fresh result to cache
     if (apiResult.ok) {
-      supabase
+      const payload = {
+        phone: normalizedPhone,
+        response_data: apiResult.data,
+        created_at: new Date().toISOString(),
+      };
+
+      const { error } = await supabase
         .from("courier_check_cache")
-        .upsert(
-          { phone, response_data: apiResult.data, created_at: new Date().toISOString() },
-          { onConflict: "phone" }
-        )
-        .then(() => {});
+        .upsert(payload, { onConflict: "phone" });
+
+      if (error) {
+        console.error("bd-courier-check cache upsert error", error);
+      }
     }
 
     return new Response(JSON.stringify(apiResult.data), {
-      status: apiResult.ok ? 200 : 400, headers: JSON_HEADERS,
+      status: apiResult.ok ? 200 : 400,
+      headers: JSON_HEADERS,
     });
   } catch (error) {
+    console.error("bd-courier-check fatal error", error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : "Internal server error" }),
-      { status: 500, headers: JSON_HEADERS }
+      { status: 500, headers: JSON_HEADERS },
     );
   }
 });

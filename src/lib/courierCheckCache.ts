@@ -1,14 +1,37 @@
-// Shared courier check fetcher — permanent in-memory cache + DB cache preloading
 import { supabase } from "@/integrations/supabase/client";
+import { sanitizePhoneInput } from "@/lib/phoneUtils";
 
 const cache: Record<string, any> = {};
 const inflight: Record<string, Promise<any>> = {};
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const REQUEST_TIMEOUT_MS = 17000;
 
-// Track which phones have been preloaded from DB (to avoid re-querying)
-let preloadedFromDb = false;
+/**
+ * Normalize Bangladesh phone numbers to 01XXXXXXXXX
+ * Supports Bengali digits, +880, 880, 10-digit local input, and extra spaces/symbols.
+ */
+export function normalizeBDPhone(raw: string): string | null {
+  let digits = sanitizePhoneInput(raw || "");
+
+  if (digits.startsWith("+880")) digits = `0${digits.slice(4)}`;
+  digits = digits.replace(/\D/g, "");
+
+  if (digits.startsWith("880") && digits.length >= 13) {
+    digits = `0${digits.slice(3)}`;
+  }
+
+  if (digits.length === 10 && digits.startsWith("1")) {
+    digits = `0${digits}`;
+  }
+
+  if (digits.length === 11 && digits.startsWith("01")) {
+    return digits;
+  }
+
+  return null;
+}
 
 /**
  * Bulk preload cached courier data from DB into in-memory cache.
@@ -21,7 +44,6 @@ export async function preloadCourierCache(phones: string[]): Promise<void> {
 
   if (cleaned.length === 0) return;
 
-  // Remove duplicates
   const unique = [...new Set(cleaned)];
 
   try {
@@ -31,58 +53,54 @@ export async function preloadCourierCache(phones: string[]): Promise<void> {
       .in("phone", unique);
 
     if (data) {
-      const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
+      const oneWeekMs = 7 * 24 * 60 * 60 * 1000;
       for (const row of data) {
         const age = Date.now() - new Date(row.created_at).getTime();
-        if (age < ONE_WEEK) {
-          // Fresh cache — store in memory, no edge function needed
-          cache[row.phone] = { ...(row.response_data as Record<string, unknown>), _cached: true };
+        if (age < oneWeekMs) {
+          cache[row.phone] = {
+            ...(row.response_data as Record<string, unknown>),
+            _cached: true,
+          };
         }
       }
     }
-    preloadedFromDb = true;
   } catch {
-    // Silently fail — individual calls will still work
+    // Silent fallback — individual calls still work.
   }
-}
-
-function normalizeBDPhone(raw: string): string | null {
-  let d = raw.replace(/[^0-9+]/g, "");
-  if (d.startsWith("+880")) d = "0" + d.slice(4);
-  d = d.replace(/\D/g, "");
-  if (d.startsWith("880") && d.length >= 13) d = "0" + d.slice(3);
-  if (d.length === 11 && d.startsWith("01")) return d;
-  return null;
 }
 
 export async function fetchCourierCheck(phone: string): Promise<any> {
   const clean = normalizeBDPhone(phone);
   if (!clean) return null;
 
-  // In-memory cache hit (permanent)
   if (cache[clean]) return cache[clean];
-
-  // Deduplicate concurrent requests for same phone
   if (inflight[clean]) return inflight[clean];
 
   const p = (async () => {
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
     try {
       const resp = await fetch(`${SUPABASE_URL}/functions/v1/bd-courier-check`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "apikey": SUPABASE_KEY,
-          "Authorization": `Bearer ${SUPABASE_KEY}`,
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`,
         },
         body: JSON.stringify({ phone: clean }),
+        signal: controller.signal,
       });
-      if (!resp.ok) throw new Error("API error");
+
+      if (!resp.ok) return null;
+
       const data = await resp.json();
       cache[clean] = data;
       return data;
     } catch {
       return null;
     } finally {
+      window.clearTimeout(timeoutId);
       delete inflight[clean];
     }
   })();
