@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, memo } from "react";
-import { fetchCourierCheck, getCourierCacheEntry } from "@/lib/courierCheckCache";
+import { fetchCourierCheck, getCourierCacheEntry, normalizeBDPhone } from "@/lib/courierCheckCache";
 import { Loader2 } from "lucide-react";
 
 const COURIER_LOGOS: Record<string, string> = {
@@ -19,11 +19,10 @@ interface Props {
 }
 
 export const CourierHistoryBadge = memo(function CourierHistoryBadge({ phone }: Props) {
-  const clean = phone?.replace(/\D/g, "") || "";
-  const ok = clean.length >= 11;
-  
-  // Try instant cache hit for initial render
-  const [data, setData] = useState<any>(() => ok ? getCourierCacheEntry(clean) : null);
+  const clean = normalizeBDPhone(phone || "") || "";
+  const ok = !!clean;
+
+  const [data, setData] = useState<any>(() => (ok ? getCourierCacheEntry(clean) : null));
   const [loading, setLoading] = useState(false);
   const lastRef = useRef("");
   const mountedRef = useRef(true);
@@ -34,14 +33,22 @@ export const CourierHistoryBadge = memo(function CourierHistoryBadge({ phone }: 
   }, []);
 
   useEffect(() => {
-    if (!ok) { setData(null); setLoading(false); lastRef.current = ""; return; }
+    if (!ok) {
+      setData(null);
+      setLoading(false);
+      lastRef.current = "";
+      return;
+    }
     if (lastRef.current === clean) return;
     lastRef.current = clean;
-    
-    // Instant cache check
+
     const cached = getCourierCacheEntry(clean);
-    if (cached) { setData(cached); setLoading(false); return; }
-    
+    if (cached) {
+      setData(cached);
+      setLoading(false);
+      return;
+    }
+
     setData(null);
     setLoading(true);
     fetchCourierCheck(clean).then((r) => {
