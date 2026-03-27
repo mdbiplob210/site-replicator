@@ -3,10 +3,12 @@ import { sanitizePhoneInput } from "@/lib/phoneUtils";
 
 const cache: Record<string, any> = {};
 const inflight: Record<string, Promise<any>> = {};
+const dbInflight: Record<string, Promise<any>> = {};
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 const REQUEST_TIMEOUT_MS = 17000;
+const DB_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 /**
  * Normalize Bangladesh phone numbers to 01XXXXXXXXX
@@ -33,6 +35,77 @@ export function normalizeBDPhone(raw: string): string | null {
   return null;
 }
 
+async function hydrateCourierCacheFromDb(phone: string) {
+  if (cache[phone]) return cache[phone];
+  if (dbInflight[phone]) return dbInflight[phone];
+
+  const request = (async () => {
+    try {
+      const { data } = await supabase
+        .from("courier_check_cache")
+        .select("response_data, created_at")
+        .eq("phone", phone)
+        .limit(1)
+        .maybeSingle();
+
+      if (!data?.response_data) return null;
+
+      const age = Date.now() - new Date(data.created_at).getTime();
+      const hydrated = {
+        ...(data.response_data as Record<string, unknown>),
+        _cached: true,
+        _stale: age >= DB_CACHE_TTL_MS,
+      };
+
+      cache[phone] = hydrated;
+      return hydrated;
+    } catch {
+      return null;
+    } finally {
+      delete dbInflight[phone];
+    }
+  })();
+
+  dbInflight[phone] = request;
+  return request;
+}
+
+async function requestCourierCheck(phone: string) {
+  if (inflight[phone]) return inflight[phone];
+
+  const request = (async () => {
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+    try {
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/bd-courier-check`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`,
+        },
+        body: JSON.stringify({ phone }),
+        signal: controller.signal,
+      });
+
+      if (!resp.ok) return null;
+
+      const data = await resp.json();
+      cache[phone] = data;
+      return data;
+    } catch {
+      return null;
+    } finally {
+      window.clearTimeout(timeoutId);
+      delete inflight[phone];
+    }
+  })();
+
+  inflight[phone] = request;
+  return request;
+}
+
 /**
  * Bulk preload cached courier data from DB into in-memory cache.
  * Call once when orders page loads — avoids individual edge function calls.
@@ -53,15 +126,12 @@ export async function preloadCourierCache(phones: string[]): Promise<void> {
       .in("phone", unique);
 
     if (data) {
-      const oneWeekMs = 7 * 24 * 60 * 60 * 1000;
       for (const row of data) {
-        const age = Date.now() - new Date(row.created_at).getTime();
-        if (age < oneWeekMs) {
-          cache[row.phone] = {
-            ...(row.response_data as Record<string, unknown>),
-            _cached: true,
-          };
-        }
+        cache[row.phone] = {
+          ...(row.response_data as Record<string, unknown>),
+          _cached: true,
+          _stale: Date.now() - new Date(row.created_at).getTime() >= DB_CACHE_TTL_MS,
+        };
       }
     }
   } catch {
@@ -73,40 +143,31 @@ export async function fetchCourierCheck(phone: string): Promise<any> {
   const clean = normalizeBDPhone(phone);
   if (!clean) return null;
 
-  if (cache[clean]) return cache[clean];
-  if (inflight[clean]) return inflight[clean];
+  if (cache[clean]) {
+    if (cache[clean]?._stale) void requestCourierCheck(clean);
+    return cache[clean];
+  }
 
-  const p = (async () => {
-    const controller = new AbortController();
-    const timeoutId = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  const dbPromise = hydrateCourierCacheFromDb(clean);
+  const firstResult = await Promise.race([
+    dbPromise.then((value) => ({ source: "db" as const, value })),
+    new Promise<{ source: "timeout" }>((resolve) => {
+      window.setTimeout(() => resolve({ source: "timeout" }), 120);
+    }),
+  ]);
 
-    try {
-      const resp = await fetch(`${SUPABASE_URL}/functions/v1/bd-courier-check`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`,
-        },
-        body: JSON.stringify({ phone: clean }),
-        signal: controller.signal,
-      });
-
-      if (!resp.ok) return null;
-
-      const data = await resp.json();
-      cache[clean] = data;
-      return data;
-    } catch {
-      return null;
-    } finally {
-      window.clearTimeout(timeoutId);
-      delete inflight[clean];
+  if (firstResult.source === "db") {
+    if (firstResult.value) {
+      if (firstResult.value?._stale) void requestCourierCheck(clean);
+      return firstResult.value;
     }
-  })();
 
-  inflight[clean] = p;
-  return p;
+    return requestCourierCheck(clean);
+  }
+
+  const networkPromise = requestCourierCheck(clean);
+  const dbCached = await dbPromise;
+  return dbCached || networkPromise;
 }
 
 export function getCourierCacheEntry(phone: string) {

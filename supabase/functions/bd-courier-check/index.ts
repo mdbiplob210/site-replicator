@@ -180,13 +180,12 @@ Deno.serve(async (req) => {
         created_at: new Date().toISOString(),
       };
 
-      const { error } = await supabase
+      supabase
         .from("courier_check_cache")
-        .upsert(payload, { onConflict: "phone" });
-
-      if (error) {
-        console.error("bd-courier-check cache upsert error", error);
-      }
+        .upsert(payload, { onConflict: "phone" })
+        .then(({ error }) => {
+          if (error) console.error("bd-courier-check cache upsert error", error);
+        });
     }
 
     return new Response(JSON.stringify(apiResult.data), {

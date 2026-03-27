@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, memo } from "react";
-import { fetchCourierCheck, getCourierCacheEntry, clearCourierCache } from "@/lib/courierCheckCache";
+import { fetchCourierCheck, getCourierCacheEntry, clearCourierCache, normalizeBDPhone } from "@/lib/courierCheckCache";
 import { RefreshCw, Loader2, Truck } from "lucide-react";
 
 const COURIER_LOGOS: Record<string, string> = {
@@ -12,10 +12,10 @@ const ALLOWED_COURIERS = new Set(["pathao", "steadfast"]);
 interface Props { phone: string | null | undefined; compact?: boolean; }
 
 export const CourierSuccessRate = memo(function CourierSuccessRate({ phone }: Props) {
-  const clean = phone?.replace(/\D/g, "") || "";
-  const ok = clean.length >= 11;
+  const clean = normalizeBDPhone(phone || "") || "";
+  const ok = !!clean;
 
-  const [data, setData] = useState<any>(() => ok ? getCourierCacheEntry(clean) : null);
+  const [data, setData] = useState<any>(() => (ok ? getCourierCacheEntry(clean) : null));
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
   const lastRef = useRef("");
@@ -29,33 +29,60 @@ export const CourierSuccessRate = memo(function CourierSuccessRate({ phone }: Pr
   const doFetch = (force = false) => {
     if (!ok) return;
     if (force) clearCourierCache(clean);
-    
+
     const cached = getCourierCacheEntry(clean);
-    if (!force && cached) { setData(cached); setErr(""); setLoading(false); return; }
-    
-    setLoading(true); setErr("");
+    if (!force && cached) {
+      setData(cached);
+      setErr("");
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    setErr("");
     fetchCourierCheck(clean).then((r) => {
       if (mountedRef.current && lastRef.current === clean) {
-        if (r) { setData(r); setErr(""); }
-        else setErr("Error");
+        if (r) {
+          setData(r);
+          setErr("");
+        } else {
+          setErr("Error");
+        }
         setLoading(false);
       }
     });
   };
 
   useEffect(() => {
-    if (!ok) { setData(null); setErr(""); setLoading(false); lastRef.current = ""; return; }
+    if (!ok) {
+      setData(null);
+      setErr("");
+      setLoading(false);
+      lastRef.current = "";
+      return;
+    }
     if (lastRef.current === clean) return;
     lastRef.current = clean;
-    
+
     const cached = getCourierCacheEntry(clean);
-    if (cached) { setData(cached); setLoading(false); return; }
-    
-    setData(null); setLoading(true); setErr("");
+    if (cached) {
+      setData(cached);
+      setErr("");
+      setLoading(false);
+      return;
+    }
+
+    setData(null);
+    setLoading(true);
+    setErr("");
     fetchCourierCheck(clean).then((r) => {
       if (mountedRef.current && lastRef.current === clean) {
-        if (r) { setData(r); setErr(""); }
-        else setErr("Error");
+        if (r) {
+          setData(r);
+          setErr("");
+        } else {
+          setErr("Error");
+        }
         setLoading(false);
       }
     });
