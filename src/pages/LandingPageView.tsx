@@ -8,15 +8,17 @@ function escapeHtml(str: string): string {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+type LandingPixelFn = ((...args: any[]) => void) & {
+  callMethod?: (...args: any[]) => void;
+  queue?: any[][];
+  loaded?: boolean;
+  version?: string;
+  push?: (...args: any[]) => number;
+};
+
 type LandingPixelWindow = Window & typeof globalThis & {
-  fbq?: ((...args: any[]) => void) & {
-    callMethod?: (...args: any[]) => void;
-    queue?: any[][];
-    loaded?: boolean;
-    version?: string;
-    push?: (...args: any[]) => number;
-  };
-  _fbq?: LandingPixelWindow["fbq"];
+  fbq?: LandingPixelFn;
+  _fbq?: LandingPixelFn;
   _lpPageViewEventId?: string;
   __lpPageViewTracked?: boolean;
   __lpMetaPixelBootstrapped?: Record<string, boolean>;
