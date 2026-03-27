@@ -16,8 +16,8 @@ let preloadedFromDb = false;
  */
 export async function preloadCourierCache(phones: string[]): Promise<void> {
   const cleaned = phones
-    .map((p) => p?.replace(/\D/g, "") || "")
-    .filter((p) => p.length >= 11 && !cache[p]); // Only phones not already in memory
+    .map((p) => normalizeBDPhone(p || ""))
+    .filter((p): p is string => p !== null && !cache[p]);
 
   if (cleaned.length === 0) return;
 
