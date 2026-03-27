@@ -46,9 +46,17 @@ export async function preloadCourierCache(phones: string[]): Promise<void> {
   }
 }
 
+function normalizeBDPhone(raw: string): string | null {
+  let d = raw.replace(/\D/g, "");
+  if (d.startsWith("880")) d = "0" + d.slice(3);
+  if (d.startsWith("+880")) d = "0" + d.slice(4);
+  if (d.length === 11 && d.startsWith("01")) return d;
+  return null;
+}
+
 export async function fetchCourierCheck(phone: string): Promise<any> {
-  const clean = phone.replace(/\D/g, "");
-  if (clean.length < 11) return null;
+  const clean = normalizeBDPhone(phone);
+  if (!clean) return null;
 
   // In-memory cache hit (permanent)
   if (cache[clean]) return cache[clean];
