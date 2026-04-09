@@ -1,13 +1,6 @@
-import { prefetchCriticalData } from "./lib/prefetch";
+import { prefetchCriticalData, prefetchLandingPageData } from "./lib/prefetch";
 
-// Start fetching critical data BEFORE React even loads
-prefetchCriticalData();
-
-// For landing pages, prefetch the chunk immediately
 const path = window.location.pathname;
-if (path.startsWith("/lp/")) {
-  import("./pages/LandingPageView").catch(() => {});
-}
 
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
@@ -22,9 +15,22 @@ if ('serviceWorker' in navigator) {
   }, { once: true });
 }
 
-// Render immediately
-const root = createRoot(document.getElementById("root")!);
-root.render(<App />);
+async function bootstrapApp() {
+  if (path.startsWith("/lp/")) {
+    const slug = path.replace("/lp/", "").split("/")[0];
+    await Promise.all([
+      prefetchLandingPageData(slug),
+      import("./pages/LandingPageView").catch(() => {}),
+    ]);
+  } else {
+    prefetchCriticalData();
+  }
+
+  const root = createRoot(document.getElementById("root")!);
+  root.render(<App />);
+}
+
+void bootstrapApp();
 
 // Init link prefetching faster
 if (!path.startsWith("/lp/")) {

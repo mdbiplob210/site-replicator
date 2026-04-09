@@ -17,6 +17,7 @@ const headers: Record<string, string> = {
 };
 
 export const prefetchCache: Record<string, { data: any; ts: number }> = {};
+const inflightPrefetches: Record<string, Promise<void> | undefined> = {};
 
 function restUrl(table: string, query: string) {
   return `${SUPABASE_URL}/rest/v1/${table}?${query}`;
@@ -37,19 +38,39 @@ function extractProductSlug(path: string) {
 }
 
 async function fetchAndCache(key: string, url: string) {
-  try {
-    const res = await fetch(url, { headers, priority: "high" as any });
-    if (!res.ok) return;
-    const data = await res.json();
-    prefetchCache[key] = { data, ts: Date.now() };
+  const cached = prefetchCache[key];
+  if (cached && Date.now() - cached.ts < 120_000) return;
 
-    // Preload first product images for LCP optimization
-    if (key === "public-products" && Array.isArray(data)) {
-      preloadProductImages(data.slice(0, 4));
-    }
-  } catch {
-    // Silent fail - React Query will fetch as fallback
+  if (!inflightPrefetches[key]) {
+    inflightPrefetches[key] = (async () => {
+      try {
+        const res = await fetch(url, { headers, priority: "high" as any });
+        if (!res.ok) return;
+        const data = await res.json();
+        prefetchCache[key] = { data, ts: Date.now() };
+
+        // Preload first product images for LCP optimization
+        if (key === "public-products" && Array.isArray(data)) {
+          preloadProductImages(data.slice(0, 4));
+        }
+      } catch {
+        // Silent fail - React Query will fetch as fallback
+      } finally {
+        delete inflightPrefetches[key];
+      }
+    })();
   }
+
+  await inflightPrefetches[key];
+}
+
+export function prefetchLandingPageData(slug: string) {
+  if (!slug) return Promise.resolve();
+
+  return fetchAndCache(
+    `landing-page:${slug}`,
+    restUrl("landing_pages", `select=*&slug=eq.${encodeURIComponent(slug)}&is_active=eq.true&limit=1`)
+  );
 }
 
 /** Inject <link rel="preload"> for first visible product images to reduce LCP delay */
@@ -75,10 +96,7 @@ export function prefetchCriticalData() {
   if (path.startsWith("/lp/")) {
     const slug = path.replace("/lp/", "").split("/")[0];
     if (slug) {
-      fetchAndCache(
-        `landing-page:${slug}`,
-        restUrl("landing_pages", `select=*&slug=eq.${encodeURIComponent(slug)}&is_active=eq.true&limit=1`)
-      );
+      void prefetchLandingPageData(slug);
     }
     return; // Don't load anything else for landing pages
   }
