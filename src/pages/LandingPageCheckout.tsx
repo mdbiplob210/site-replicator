@@ -3,6 +3,7 @@ import { useLandingPageBySlug } from "@/hooks/useLandingPages";
 import { useRef } from "react";
 import { deferLandingMarkupScripts, landingDeferredScriptLoader, optimizeLandingEmbeds, optimizeLandingImages, sanitizeHtmlScripts } from "@/lib/htmlSanitizer";
 import { landingPhoneValidationScript, normalizeLandingPhoneHtml } from "@/lib/landingPhoneHtml";
+import { buildMetaPixelHeadScript, buildMetaPixelNoscript } from "@/lib/landingPixelBootstrap";
 
 export default function LandingPageCheckout() {
   const { slug } = useParams<{ slug: string }>();
@@ -125,99 +126,11 @@ window._lpTrack = {
 `;
 
     if (page.fb_pixel_id) {
+      trackingScripts += buildMetaPixelHeadScript(page.fb_pixel_id);
       trackingScripts += `
 <script>
-!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;t.onload=function(){window.__lpFbSdkLoaded=!0;if(typeof window.__lpFlushPendingBrowserPurchases==='function'){setTimeout(window.__lpFlushPendingBrowserPurchases,0)}};t.onerror=function(){console.warn('[FB Pixel] SDK failed to load')};s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
-fbq('init','${page.fb_pixel_id}');
-window._fbPixelId = '${page.fb_pixel_id}';
-window.__lpPersistPendingBrowserPurchases = function(queue) {
-  try { sessionStorage.setItem('_lp_pending_fb_purchases', JSON.stringify(queue || [])); } catch (e) {}
-};
-window.__lpLoadPendingBrowserPurchases = function() {
-  try {
-    var raw = sessionStorage.getItem('_lp_pending_fb_purchases');
-    return raw ? JSON.parse(raw) : [];
-  } catch (e) {
-    return [];
-  }
-};
-window.__lpPendingBrowserPurchases = window.__lpPendingBrowserPurchases || window.__lpLoadPendingBrowserPurchases();
-window.__lpFiredBrowserPurchases = window.__lpFiredBrowserPurchases || {};
-window.__lpHasBrowserPurchaseFired = function(eventId) {
-  if (!eventId) return false;
-  if (window.__lpFiredBrowserPurchases[eventId]) return true;
-  try { return sessionStorage.getItem('_lp_fired_fb_purchase:' + eventId) === '1'; } catch (e) { return false; }
-};
-window.__lpMarkBrowserPurchaseFired = function(eventId) {
-  if (!eventId) return;
-  window.__lpFiredBrowserPurchases[eventId] = true;
-  try { sessionStorage.setItem('_lp_fired_fb_purchase:' + eventId, '1'); } catch (e) {}
-};
-window.__lpQueueBrowserPurchase = function(params, options) {
-  var queue = window.__lpPendingBrowserPurchases || [];
-  var eventId = options && options.eventID ? String(options.eventID) : '';
-  if (eventId && window.__lpHasBrowserPurchaseFired(eventId)) return true;
-  for (var i = 0; i < queue.length; i++) {
-    var queued = queue[i];
-    if (queued && queued.options && String(queued.options.eventID || '') === eventId) return true;
-  }
-  queue.push({ params: params || {}, options: options || {} });
-  window.__lpPendingBrowserPurchases = queue;
-  window.__lpPersistPendingBrowserPurchases(queue);
-  return true;
-};
-window.__lpFlushPendingBrowserPurchases = function() {
-  var ref = window.fbq || window._fbq || window.__lpFbqRef;
-  var ready = !!(ref && typeof ref === 'function' && typeof ref.callMethod === 'function');
-  if (!ready) return false;
-  window.__lpFbqRef = ref;
-  var queue = window.__lpPendingBrowserPurchases || [];
-  if (!queue.length) return true;
-  var remaining = [];
-  for (var i = 0; i < queue.length; i++) {
-    var item = queue[i];
-    if (!item) continue;
-    var eventId = item.options && item.options.eventID ? String(item.options.eventID) : '';
-    if (eventId && window.__lpHasBrowserPurchaseFired(eventId)) continue;
-    try {
-      ref('track', 'Purchase', item.params || {}, item.options || {});
-      if (eventId) window.__lpMarkBrowserPurchaseFired(eventId);
-      console.log('[FB Pixel] Purchase event fired via flushed queue', item.params || {}, item.options || {});
-    } catch (err) {
-      remaining.push(item);
-    }
-  }
-  window.__lpPendingBrowserPurchases = remaining;
-  window.__lpPersistPendingBrowserPurchases(remaining);
-  return remaining.length === 0;
-};
-window.__lpIsFbPixelReady = function() {
-  var ref = window.fbq || window._fbq || window.__lpFbqRef;
-  return !!(ref && typeof ref === 'function' && typeof ref.callMethod === 'function');
-};
-window.__lpTrackBrowserPurchase = function(params, options) {
-  var eventId = options && options.eventID ? String(options.eventID) : '';
-  if (eventId && window.__lpHasBrowserPurchaseFired(eventId)) return true;
-  window.__lpQueueBrowserPurchase(params, options);
-  if (window.__lpFlushPendingBrowserPurchases()) return true;
-  if (!window.__lpBrowserPurchaseRetryTimer) {
-    var attempts = 0;
-    window.__lpBrowserPurchaseRetryTimer = setInterval(function() {
-      attempts += 1;
-      var drained = window.__lpFlushPendingBrowserPurchases();
-      if (drained || attempts >= 40) {
-        clearInterval(window.__lpBrowserPurchaseRetryTimer);
-        window.__lpBrowserPurchaseRetryTimer = null;
-        if (!drained) console.warn('[FB Pixel] Purchase still queued because SDK is not ready yet');
-      }
-    }, 250);
-  }
-  return true;
-};
-var _eid = window._lpTrack.generateEventId();
 var _bp = window._lpTrack.getBaseParams();
-fbq('track','PageView', {}, {eventID: _eid});
-window._lpTrack.sendServerEvent('PageView', {event_id: _eid});
+window._lpTrack.sendServerEvent('PageView', {event_id: window._lpPageViewEventId || window._lpTrack.generateEventId()});
 
 // InitiateCheckout with rich params
 var _icEid = window._lpTrack.generateEventId();
@@ -249,7 +162,6 @@ setTimeout(function() {
   window._lpTrack.sendServerEvent('InitiateCheckout', {event_id: _icEid, ...icParams});
 }, 100);
 </script>
-<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${page.fb_pixel_id}&ev=PageView&noscript=1"/></noscript>
 `;
     }
 
@@ -800,7 +712,8 @@ ${page.gtm_id ? '<link rel="dns-prefetch" href="https://www.googletagmanager.com
 
     // Critical scripts in head, deferred in body
     const headScripts = resourceHints + richTrackingHelper + trackingScripts;
-    const bodyScripts = landingDeferredScriptLoader + deferredPixelScripts + phoneValidationScript + orderScript + tierPricePatchScript + partialTrackingScript + autocompleteScript;
+    const pixelNoscript = page.fb_pixel_id ? buildMetaPixelNoscript(page.fb_pixel_id) : "";
+    const bodyScripts = pixelNoscript + landingDeferredScriptLoader + deferredPixelScripts + phoneValidationScript + orderScript + tierPricePatchScript + partialTrackingScript + autocompleteScript;
 
     const duplicateMarketingPatterns = [
       ...(page.fb_pixel_id ? [/connect\.facebook\.net/i] : []),
