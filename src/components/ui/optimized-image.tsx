@@ -70,7 +70,7 @@ export function OptimizedImage({
         alt={alt}
         loading={eager ? "eager" : "lazy"}
         decoding={eager ? "sync" : "async"}
-        fetchPriority={eager ? "high" : undefined}
+        {...(eager ? { fetchpriority: "high" } : {})}
         onLoad={() => setLoaded(true)}
         onError={() => {
           if (!useOriginalSrc && src) {

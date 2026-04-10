@@ -124,6 +124,14 @@ Deno.serve(async (req) => {
         resolvedPixelId = allowedPixelId;
       }
       if (allowedPixelId && resolvedPixelId && resolvedPixelId !== allowedPixelId) {
+        // Landing page has its own pixel but no access token — skip CAPI gracefully
+        if (landing_page_slug) {
+          console.log("[CAPI] Skipping: LP", landing_page_slug, "has pixel", resolvedPixelId, "but no access token (global pixel:", allowedPixelId, ")");
+          return new Response(
+            JSON.stringify({ skipped: true, reason: "lp_pixel_no_access_token" }),
+            { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
         return new Response(
           JSON.stringify({ error: "Invalid pixel_id" }),
           { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
