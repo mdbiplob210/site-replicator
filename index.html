@@ -61,7 +61,13 @@
 
         function ensureSdkTag() {
           if (document.querySelector('script[data-lp-meta-pixel-sdk="true"],script[src*="connect.facebook.net/en_US/fbevents.js"]')) return;
-          !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;t.dataset.lpMetaPixelSdk='true';s=b.getElementsByTagName(e)[0];if(s&&s.parentNode){s.parentNode.insertBefore(t,s);}else{(b.head||b.documentElement).appendChild(t);}}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+          var t = document.createElement("script");
+          t.async = true;
+          t.src = "https://connect.facebook.net/en_US/fbevents.js";
+          t.dataset.lpMetaPixelSdk = "true";
+          var s = document.getElementsByTagName("script")[0];
+          if (s && s.parentNode) { s.parentNode.insertBefore(t, s); }
+          else { (document.head || document.documentElement).appendChild(t); }
         }
 
         function trackPageView(pixelId, force) {
