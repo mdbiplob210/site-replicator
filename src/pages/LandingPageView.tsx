@@ -3,7 +3,7 @@ import { useLandingPageBySlug } from "@/hooks/useLandingPages";
 import { useLayoutEffect, useRef } from "react";
 import { deferLandingMarkupScripts, landingDeferredScriptLoader, optimizeLandingEmbeds, optimizeLandingImages, sanitizeHtmlScripts } from "@/lib/htmlSanitizer";
 import { landingPhoneValidationScript, normalizeLandingPhoneHtml } from "@/lib/landingPhoneHtml";
-import { buildMetaPixelHeadScript, buildMetaPixelNoscript, ensureMetaPixelBootstrap } from "@/lib/landingPixelBootstrap";
+import { buildMetaPixelHeadScript, buildMetaPixelNoscript } from "@/lib/landingPixelBootstrap";
 
 function escapeHtml(str: string): string {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -2114,8 +2114,6 @@ document.addEventListener('input', function(e) {
       return;
     }
 
-    if (pixelBootstrapRef.current === page.fb_pixel_id) return;
-    ensureMetaPixelBootstrap(page.fb_pixel_id);
     pixelBootstrapRef.current = page.fb_pixel_id;
   }, [page?.fb_pixel_id]);
 
