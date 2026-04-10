@@ -1,4 +1,5 @@
-import { prefetchCriticalData, prefetchLandingPageData } from "./lib/prefetch";
+import { ensureMetaPixelBootstrap } from "./lib/landingPixelBootstrap";
+import { getPrefetchedData, prefetchCriticalData, prefetchLandingPageData } from "./lib/prefetch";
 
 const path = window.location.pathname;
 
@@ -22,6 +23,11 @@ async function bootstrapApp() {
       prefetchLandingPageData(slug),
       import("./pages/LandingPageView").catch(() => {}),
     ]);
+
+    const landingPage = getPrefetchedData<Array<{ fb_pixel_id?: string | null }>>(`landing-page:${slug}`)?.[0];
+    if (landingPage?.fb_pixel_id) {
+      ensureMetaPixelBootstrap(landingPage.fb_pixel_id);
+    }
   } else {
     prefetchCriticalData();
   }
