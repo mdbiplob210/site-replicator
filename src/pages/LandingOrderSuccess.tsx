@@ -1,6 +1,7 @@
 import { useParams, useSearchParams } from "react-router-dom";
 import { useLandingPageBySlug } from "@/hooks/useLandingPages";
 import { useLayoutEffect, useRef } from "react";
+import { buildMetaPixelHeadScript, buildMetaPixelNoscript } from "@/lib/landingPixelBootstrap";
 
 export default function LandingOrderSuccess() {
   const { slug } = useParams<{ slug: string }>();
@@ -30,7 +31,7 @@ export default function LandingOrderSuccess() {
     const gtmId = (page as any).gtm_id || "";
 
     // Build a full HTML page with pixel init + Purchase fire
-    const html = `<!DOCTYPE html>
+      const html = `<!DOCTYPE html>
 <html lang="bn">
 <head>
 <meta charset="utf-8">
@@ -61,38 +62,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .btn:active{transform:scale(.98)}
 .trust{display:flex;gap:12px;justify-content:center;margin-top:20px;flex-wrap:wrap}
 .trust span{font-size:12px;color:#9ca3af;display:flex;align-items:center;gap:4px}
-</style>
-${pixelId ? `
-<!-- Facebook Pixel -->
-<script>
-!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;t.onload=function(){
-  window.__fbSdkReady=true;
-  if(window.__pendingPurchase){
-    window.__pendingPurchase();
-    window.__pendingPurchase=null;
-  }
-};s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
-
-var _initParams = { country: 'bd' };
-var _extId = '';
-try { _extId = localStorage.getItem('_vid') || ''; } catch(e) {}
-if (_extId) _initParams.external_id = _extId;
-${customerPhone ? `(function(){
-  var ph = '${customerPhone}'.replace(/[^0-9]/g, '');
-  if (ph.indexOf('0') === 0) ph = '880' + ph.substring(1);
-  _initParams.ph = ph;
-})();` : ''}
-${customerName ? `(function(){
-  var parts = '${customerName}'.trim().split(/\\s+/);
-  _initParams.fn = (parts[0]||'').toLowerCase();
-  _initParams.ln = (parts.slice(1).join(' ')||'').toLowerCase();
-})();` : ''}
-
-fbq('init', '${pixelId}', _initParams);
-fbq('track', 'PageView');
-</script>
-<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1"/></noscript>
-` : ''}
+    </style>
+    ${pixelId ? buildMetaPixelHeadScript(pixelId) : ''}
+    ${pixelId ? `<script>window.__pendingPurchase = window.__pendingPurchase || null;</script>` : ''}
 ${tiktokPixelId ? `
 <script>
 !function(w,d,t){w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e};ttq.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js",o=n&&n.partner;ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=r,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};var i=document.createElement("script");i.type="text/javascript",i.async=!0,i.src=r+"?sdkid="+e+"&lib="+t;var a=document.getElementsByTagName("script")[0];a.parentNode.insertBefore(i,a)};
@@ -130,6 +102,8 @@ ${gtmId ? `
     </div>
   </div>
 </div>
+
+${pixelId ? buildMetaPixelNoscript(pixelId) : ''}
 
 <!-- Purchase Event Fire -->
 <script>
