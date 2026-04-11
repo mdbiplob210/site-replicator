@@ -1,74 +1,56 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ensureSitePixelBootstrap, getSiteTrackedPageViewEventId } from "./sitePixelBootstrap";
 
-declare global {
-  interface Window {
-    fbq?: any;
-    _fbq?: any;
-    __siteMetaPixelBootstrapped?: Record<string, boolean>;
-    __siteMetaPixelPendingUrls?: Record<string, string>;
-    __siteMetaPixelTrackedUrls?: Record<string, string>;
-    __siteCurrentPixelId?: string;
-    __siteMetaPixelLifecycleInstalled?: boolean;
-    __siteFbSdkLoaded?: boolean;
-    _sitePageViewEventId?: string;
-    __sitePageViewTracked?: boolean;
-  }
-}
-
 describe("sitePixelBootstrap", () => {
   beforeEach(() => {
     document.head.innerHTML = "";
     document.body.innerHTML = "<div id='root'></div>";
     localStorage.clear();
-    sessionStorage.clear();
 
-    delete window.fbq;
-    delete window._fbq;
-    delete window.__siteMetaPixelBootstrapped;
-    delete window.__siteMetaPixelPendingUrls;
-    delete window.__siteMetaPixelTrackedUrls;
-    delete window.__siteCurrentPixelId;
-    delete window.__siteMetaPixelLifecycleInstalled;
-    delete window.__siteFbSdkLoaded;
-    delete window._sitePageViewEventId;
-    delete window.__sitePageViewTracked;
+    delete (window as any).fbq;
+    delete (window as any)._fbq;
+    delete (window as any).__siteMetaPixelBootstrapped;
+    delete (window as any).__siteMetaPixelTrackedUrls;
+    delete (window as any).__siteCurrentPixelId;
+    delete (window as any).__siteMetaPixelLifecycleInstalled;
+    delete (window as any).__siteFbSdkLoaded;
+    delete (window as any)._sitePageViewEventId;
+    delete (window as any).__sitePageViewTracked;
 
     window.history.replaceState({}, "", "/");
   });
 
-  it("fires and stores a first-load PageView when fbq is ready", () => {
+  it("queues PageView to stub immediately before SDK loads", () => {
+    ensureSitePixelBootstrap("123");
+
+    const eventId = getSiteTrackedPageViewEventId("123", window.location.href);
+    expect(eventId).toMatch(/^eid_/);
+
+    const pageViewCall = (window as any).fbq.queue.find(
+      (args: any[]) => args[0] === "track" && args[1] === "PageView"
+    );
+    expect(pageViewCall).toBeTruthy();
+  });
+
+  it("fires via callMethod when fbq is ready", () => {
     const callMethod = vi.fn();
     const fbq = vi.fn((...args: any[]) => callMethod(...args)) as any;
     fbq.callMethod = callMethod;
-    window.fbq = fbq;
+    (window as any).fbq = fbq;
 
     ensureSitePixelBootstrap("123");
 
     const eventId = getSiteTrackedPageViewEventId("123", window.location.href);
-
     expect(callMethod).toHaveBeenCalledWith("track", "PageView", {}, { eventID: eventId });
-    expect(eventId).toMatch(/^eid_/);
   });
 
-  it("waits for sdk readiness before firing the first PageView", () => {
+  it("does not duplicate PageView for same URL", () => {
     ensureSitePixelBootstrap("123");
+    const eventId1 = getSiteTrackedPageViewEventId("123", window.location.href);
 
-    const reservedEventId = getSiteTrackedPageViewEventId("123", window.location.href);
-    expect(reservedEventId).toMatch(/^eid_/);
+    ensureSitePixelBootstrap("123");
+    const eventId2 = getSiteTrackedPageViewEventId("123", window.location.href);
 
-    const sdkScript = document.querySelector('script[data-site-meta-pixel-sdk="true"]') as HTMLScriptElement;
-    expect(sdkScript).toBeTruthy();
-
-    const callMethod = vi.fn();
-    window.fbq.callMethod = callMethod;
-    window.__siteFbSdkLoaded = true;
-    sdkScript.dispatchEvent(new Event("load"));
-
-    const eventId = getSiteTrackedPageViewEventId("123", window.location.href);
-
-    expect(eventId).toBe(reservedEventId);
-    expect(callMethod).toHaveBeenCalledWith("track", "PageView", {}, { eventID: eventId });
-    expect(eventId).toMatch(/^eid_/);
+    expect(eventId1).toBe(eventId2);
   });
 });
