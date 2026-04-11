@@ -922,10 +922,24 @@ export function useTracking() {
   }, [ensureCommerceTrackersReady, fbPixelId, tiktokPixelId, gtmId]);
 
   const trackContact = useCallback((data?: { method?: string; page?: string }) => {
+    ensureCommerceTrackersReady();
     const eventId = generateEventId("ct");
 
-    if (fbPixelId && window.fbq) {
-      window.fbq("track", "Contact", data || {}, { eventID: eventId });
+    const fireCt = () => {
+      if (window.fbq && typeof window.fbq === "function") {
+        window.fbq("track", "Contact", data || {}, { eventID: eventId });
+        return true;
+      }
+      return false;
+    };
+
+    if (!fireCt()) {
+      if (fbPixelId) loadFBPixel(fbPixelId);
+      let attempts = 0;
+      const retryTimer = setInterval(() => {
+        attempts++;
+        if (fireCt() || attempts >= 20) clearInterval(retryTimer);
+      }, 300);
     }
 
     if (tiktokPixelId && window.ttq) {
