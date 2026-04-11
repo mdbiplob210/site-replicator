@@ -206,7 +206,7 @@ export function buildMetaPixelHeadScript(pixelId: string) {
   const stubAndInit = `<script>
 !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];}(window,document,'script','${META_PIXEL_SDK_SRC}');
 (function(w,d,pixelId){
-w.__lpMetaPixelBootstrapped={};w.__lpMetaPixelTrackedUrls={};w.__lpMetaPixelLifecycleInstalled=false;w.__lpPageViewTracked=false;w.__lpFbSdkLoaded=false;w.__lpCurrentPixelId=pixelId;
+w.__lpMetaPixelBootstrapped=w.__lpMetaPixelBootstrapped||{};w.__lpMetaPixelTrackedUrls=w.__lpMetaPixelTrackedUrls||{};w.__lpMetaPixelLifecycleInstalled=!!w.__lpMetaPixelLifecycleInstalled;w.__lpPageViewTracked=!!w.__lpPageViewTracked;w.__lpFbSdkLoaded=!!w.__lpFbSdkLoaded;w.__lpCurrentPixelId=pixelId;
 function norm(u){try{var x=new URL(u,w.location.origin);x.hash='';return x.toString();}catch(e){return String(u||'').split('#')[0]||String(u||'');}}
 function ext(){var id='';try{id=localStorage.getItem('_vid')||'';}catch(e){}if(!id){id='v_'+Date.now()+'_'+Math.random().toString(36).substr(2,12);try{localStorage.setItem('_vid',id);}catch(e){}}return id;}
 var _extId=ext();w._fbPixelId=pixelId;
