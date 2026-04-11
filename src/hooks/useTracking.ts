@@ -767,11 +767,22 @@ export function useTracking() {
       setFBUserData({ phone: params.customerPhone, fullName: params.customerName });
     }
 
-    if (fbPixelId && window.fbq) {
-      window.fbq("track", "AddPaymentInfo", {
-        value: params.value,
-        currency: params.currency || "BDT",
-      }, { eventID: eventId });
+    const apiData = { value: params.value, currency: params.currency || "BDT" };
+    const fireAPI = () => {
+      if (window.fbq && typeof window.fbq === "function") {
+        window.fbq("track", "AddPaymentInfo", apiData, { eventID: eventId });
+        return true;
+      }
+      return false;
+    };
+
+    if (!fireAPI()) {
+      if (fbPixelId) loadFBPixel(fbPixelId);
+      let attempts = 0;
+      const retryTimer = setInterval(() => {
+        attempts++;
+        if (fireAPI() || attempts >= 20) clearInterval(retryTimer);
+      }, 300);
     }
 
     if (tiktokPixelId && window.ttq) {
@@ -947,12 +958,26 @@ export function useTracking() {
       setFBUserData({ phone: params?.customerPhone, fullName: params?.customerName });
     }
 
-    if (fbPixelId && window.fbq) {
-      window.fbq("track", "Lead", {
-        value: params?.value || 0,
-        currency: params?.currency || "BDT",
-        content_name: params?.contentName || "",
-      }, { eventID: eventId });
+    const leadData = {
+      value: params?.value || 0,
+      currency: params?.currency || "BDT",
+      content_name: params?.contentName || "",
+    };
+    const fireLead = () => {
+      if (window.fbq && typeof window.fbq === "function") {
+        window.fbq("track", "Lead", leadData, { eventID: eventId });
+        return true;
+      }
+      return false;
+    };
+
+    if (!fireLead()) {
+      if (fbPixelId) loadFBPixel(fbPixelId);
+      let attempts = 0;
+      const retryTimer = setInterval(() => {
+        attempts++;
+        if (fireLead() || attempts >= 20) clearInterval(retryTimer);
+      }, 300);
     }
 
     if (tiktokPixelId && window.ttq) {
