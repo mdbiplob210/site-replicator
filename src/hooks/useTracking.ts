@@ -423,7 +423,8 @@ export function useTracking() {
     }
   }, [fbPixelId, tiktokPixelId, gtmId]);
 
-  // Initialize tracking scripts AFTER page is interactive (deferred)
+  // Initialize tracking scripts — FB pixel loads IMMEDIATELY for reliable detection,
+  // other scripts are deferred to avoid blocking the main thread.
   useEffect(() => {
     if (initialized.current || !settings) return;
     if (
@@ -433,18 +434,16 @@ export function useTracking() {
     ) return;
     initialized.current = true;
 
-    const loadScripts = () => {
-      if (fbPixelId) loadFBPixel(fbPixelId);
+    // FB Pixel MUST load immediately — delayed loading causes missed PageView
+    // and Pixel Helper detection failures on first visit
+    if (fbPixelId) loadFBPixel(fbPixelId);
+
+    // Non-critical trackers load after first paint
+    setTimeout(() => {
       if (tiktokPixelId) loadTikTokPixel(tiktokPixelId);
       if (gtmId) loadGTM(gtmId);
       if (clarityId) loadClarity(clarityId);
-    };
-
-    // Load tracking scripts after first paint but not too late
-    // 2s delay balances performance with tracking reliability
-    setTimeout(() => {
-      loadScripts();
-    }, 2000);
+    }, 1500);
 
     // Save UTM params
     const utms = getUtmParams();
@@ -456,12 +455,30 @@ export function useTracking() {
   // ---- Event Functions ----
 
   const trackPageView = useCallback((pageTitle?: string) => {
+    ensureCommerceTrackersReady();
     const eventId = generateEventId("pv");
     const device = getDeviceInfo();
     const referrer = getReferrerInfo();
 
-    if (fbPixelId && window.fbq) {
-      window.fbq("track", "PageView", {}, { eventID: eventId });
+    const firePageView = () => {
+      if (window.fbq && typeof window.fbq === "function") {
+        window.fbq("track", "PageView", {}, { eventID: eventId });
+        return true;
+      }
+      return false;
+    };
+
+    if (!firePageView()) {
+      // SDK not ready — retry until loaded (max ~6s)
+      if (fbPixelId) loadFBPixel(fbPixelId);
+      let attempts = 0;
+      const retryTimer = setInterval(() => {
+        attempts++;
+        if (firePageView() || attempts >= 20) {
+          clearInterval(retryTimer);
+          if (attempts >= 20) console.warn("[Tracking] PageView: fbq never loaded");
+        }
+      }, 300);
     }
 
     if (tiktokPixelId && window.ttq) {
@@ -492,7 +509,7 @@ export function useTracking() {
         },
       });
     }
-  }, [fbPixelId, tiktokPixelId, gtmId]);
+  }, [ensureCommerceTrackersReady, fbPixelId, tiktokPixelId, gtmId]);
 
   const trackViewContent = useCallback((product: {
     id: string; name: string; price: number; category?: string;
@@ -584,15 +601,30 @@ export function useTracking() {
     const eventId = generateEventId("atc");
     const contentId = product.productCode || product.id;
 
-    if (fbPixelId && window.fbq) {
-      window.fbq("track", "AddToCart", {
-        content_name: product.name,
-        content_ids: [contentId],
-        content_type: "product",
-        value: product.price * product.qty,
-        currency: "BDT",
-        num_items: product.qty,
-      }, { eventID: eventId });
+    const atcData = {
+      content_name: product.name,
+      content_ids: [contentId],
+      content_type: "product",
+      value: product.price * product.qty,
+      currency: "BDT",
+      num_items: product.qty,
+    };
+
+    const fireATC = () => {
+      if (window.fbq && typeof window.fbq === "function") {
+        window.fbq("track", "AddToCart", atcData, { eventID: eventId });
+        return true;
+      }
+      return false;
+    };
+
+    if (!fireATC()) {
+      if (fbPixelId) loadFBPixel(fbPixelId);
+      let attempts = 0;
+      const retryTimer = setInterval(() => {
+        attempts++;
+        if (fireATC() || attempts >= 20) clearInterval(retryTimer);
+      }, 300);
     }
 
     if (tiktokPixelId && window.ttq) {
@@ -652,15 +684,30 @@ export function useTracking() {
       setFBUserData({ phone: params.customerPhone, fullName: params.customerName });
     }
 
-    if (fbPixelId && window.fbq) {
-      window.fbq("track", "InitiateCheckout", {
-        content_name: params.contentName,
-        content_ids: [params.contentId],
-        content_type: "product",
-        value: params.value,
-        currency: params.currency || "BDT",
-        num_items: params.qty,
-      }, { eventID: eventId });
+    const icData = {
+      content_name: params.contentName,
+      content_ids: [params.contentId],
+      content_type: "product",
+      value: params.value,
+      currency: params.currency || "BDT",
+      num_items: params.qty,
+    };
+
+    const fireIC = () => {
+      if (window.fbq && typeof window.fbq === "function") {
+        window.fbq("track", "InitiateCheckout", icData, { eventID: eventId });
+        return true;
+      }
+      return false;
+    };
+
+    if (!fireIC()) {
+      if (fbPixelId) loadFBPixel(fbPixelId);
+      let attempts = 0;
+      const retryTimer = setInterval(() => {
+        attempts++;
+        if (fireIC() || attempts >= 20) clearInterval(retryTimer);
+      }, 300);
     }
 
     if (tiktokPixelId && window.ttq) {
@@ -720,11 +767,22 @@ export function useTracking() {
       setFBUserData({ phone: params.customerPhone, fullName: params.customerName });
     }
 
-    if (fbPixelId && window.fbq) {
-      window.fbq("track", "AddPaymentInfo", {
-        value: params.value,
-        currency: params.currency || "BDT",
-      }, { eventID: eventId });
+    const apiData = { value: params.value, currency: params.currency || "BDT" };
+    const fireAPI = () => {
+      if (window.fbq && typeof window.fbq === "function") {
+        window.fbq("track", "AddPaymentInfo", apiData, { eventID: eventId });
+        return true;
+      }
+      return false;
+    };
+
+    if (!fireAPI()) {
+      if (fbPixelId) loadFBPixel(fbPixelId);
+      let attempts = 0;
+      const retryTimer = setInterval(() => {
+        attempts++;
+        if (fireAPI() || attempts >= 20) clearInterval(retryTimer);
+      }, 300);
     }
 
     if (tiktokPixelId && window.ttq) {
@@ -864,10 +922,24 @@ export function useTracking() {
   }, [ensureCommerceTrackersReady, fbPixelId, tiktokPixelId, gtmId]);
 
   const trackContact = useCallback((data?: { method?: string; page?: string }) => {
+    ensureCommerceTrackersReady();
     const eventId = generateEventId("ct");
 
-    if (fbPixelId && window.fbq) {
-      window.fbq("track", "Contact", data || {}, { eventID: eventId });
+    const fireCt = () => {
+      if (window.fbq && typeof window.fbq === "function") {
+        window.fbq("track", "Contact", data || {}, { eventID: eventId });
+        return true;
+      }
+      return false;
+    };
+
+    if (!fireCt()) {
+      if (fbPixelId) loadFBPixel(fbPixelId);
+      let attempts = 0;
+      const retryTimer = setInterval(() => {
+        attempts++;
+        if (fireCt() || attempts >= 20) clearInterval(retryTimer);
+      }, 300);
     }
 
     if (tiktokPixelId && window.ttq) {
@@ -900,12 +972,26 @@ export function useTracking() {
       setFBUserData({ phone: params?.customerPhone, fullName: params?.customerName });
     }
 
-    if (fbPixelId && window.fbq) {
-      window.fbq("track", "Lead", {
-        value: params?.value || 0,
-        currency: params?.currency || "BDT",
-        content_name: params?.contentName || "",
-      }, { eventID: eventId });
+    const leadData = {
+      value: params?.value || 0,
+      currency: params?.currency || "BDT",
+      content_name: params?.contentName || "",
+    };
+    const fireLead = () => {
+      if (window.fbq && typeof window.fbq === "function") {
+        window.fbq("track", "Lead", leadData, { eventID: eventId });
+        return true;
+      }
+      return false;
+    };
+
+    if (!fireLead()) {
+      if (fbPixelId) loadFBPixel(fbPixelId);
+      let attempts = 0;
+      const retryTimer = setInterval(() => {
+        attempts++;
+        if (fireLead() || attempts >= 20) clearInterval(retryTimer);
+      }, 300);
     }
 
     if (tiktokPixelId && window.ttq) {
