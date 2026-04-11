@@ -91,6 +91,9 @@ function ensureMetaPixelSdk(win: LandingPixelWindow) {
   script.onload = () => {
     win.__lpFbSdkLoaded = true;
     console.info("[LP Pixel] SDK loaded", { fbqType: typeof win.fbq, ready: typeof win.fbq?.callMethod === "function" });
+    if (win.__lpCurrentPixelId) {
+      trackLandingPageView(win.__lpCurrentPixelId);
+    }
     win.__lpFlushPendingBrowserPurchases?.();
   };
   script.onerror = () => {
@@ -193,7 +196,12 @@ export function ensureMetaPixelBootstrap(pixelId: string) {
   ensureMetaPixelSdk(win);
   installLandingPixelLifecycle(win);
   win.__lpCurrentPixelId = pixelId;
-  trackLandingPageView(pixelId);
+
+  if (typeof win.fbq?.callMethod === "function" || win.__lpFbSdkLoaded) {
+    trackLandingPageView(pixelId);
+  } else {
+    console.info("[LP Pixel] Waiting for SDK before initial PageView", { pixelId });
+  }
 
   win.__lpMetaPixelBootstrapped[pixelId] = true;
 }
@@ -236,7 +244,7 @@ w.__lpMetaPixelBootstrapped[pixelId]=true;w.__lpFireLandingPageView(false);
   // In document.write() context, a sync script blocks parsing until loaded (~50-80ms cached).
   const sdkTag = `<script src="${META_PIXEL_SDK_SRC}" data-lp-meta-pixel-sdk="true" onload="window.__lpFbSdkLoaded=true;console.info('[LP Pixel] SDK loaded + ready');if(typeof window.__lpFlushPendingBrowserPurchases==='function')window.__lpFlushPendingBrowserPurchases();" onerror="console.error('[LP Pixel] SDK failed to load',{src:'${META_PIXEL_SDK_SRC}'});"><\/script>`;
 
-  return stubAndInit + sdkTag;
+  return sdkTag + stubAndInit;
 }
 
 export function buildMetaPixelNoscript(pixelId: string) {

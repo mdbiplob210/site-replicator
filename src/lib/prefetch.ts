@@ -16,6 +16,8 @@ const headers: Record<string, string> = {
   Accept: "application/json",
 };
 
+const SITE_SETTINGS_QUERY = "select=key,value&is_public=eq.true";
+
 export const prefetchCache: Record<string, { data: any; ts: number }> = {};
 const inflightPrefetches: Record<string, Promise<void> | undefined> = {};
 
@@ -73,6 +75,10 @@ export function prefetchLandingPageData(slug: string) {
   );
 }
 
+export function prefetchSiteSettingsData() {
+  return fetchAndCache("site-settings", restUrl("site_settings", SITE_SETTINGS_QUERY));
+}
+
 /** Inject <link rel="preload"> for first visible product images to reduce LCP delay */
 function preloadProductImages(products: any[]) {
   for (const p of products) {
@@ -103,12 +109,12 @@ export function prefetchCriticalData() {
 
   // Admin routes — prefetch core admin data
   if (path.startsWith("/admin")) {
-    fetchAndCache("site-settings", restUrl("site_settings", "select=key,value&is_public=eq.true"));
+    void prefetchSiteSettingsData();
     return;
   }
 
   // Always useful and lightweight for public pages
-  fetchAndCache("site-settings", restUrl("site_settings", "select=key,value&is_public=eq.true"));
+  void prefetchSiteSettingsData();
 
   // Home/store routes need full listing + banners — fire all in parallel
   if (isStoreHomeRoute(path)) {

@@ -1,5 +1,6 @@
-import { prefetchCriticalData, prefetchLandingPageData, getPrefetchedData } from "./lib/prefetch";
+import { prefetchCriticalData, prefetchLandingPageData, getPrefetchedData, prefetchSiteSettingsData } from "./lib/prefetch";
 import { ensureMetaPixelBootstrap } from "./lib/landingPixelBootstrap";
+import { ensureSitePixelBootstrap } from "./lib/sitePixelBootstrap";
 
 const path = window.location.pathname;
 
@@ -9,6 +10,11 @@ import "./index.css";
 
 type PrefetchedLandingPage = {
   fb_pixel_id?: string | null;
+};
+
+type PrefetchedSiteSetting = {
+  key: string;
+  value: string;
 };
 
 function bootstrapLandingShellPixel(slug: string) {
@@ -22,6 +28,19 @@ function bootstrapLandingShellPixel(slug: string) {
 
   ensureMetaPixelBootstrap(pixelId);
   console.info("[LP Pixel] Shell bootstrap ready", { slug, pixelId });
+}
+
+function bootstrapMainSiteShellPixel() {
+  const prefetched = getPrefetchedData<PrefetchedSiteSetting[]>("site-settings");
+  const pixelId = prefetched?.find((entry) => entry.key === "fb_pixel_id")?.value?.trim();
+
+  if (!pixelId) {
+    console.warn("[Site Pixel] Shell bootstrap skipped: no pixel ID");
+    return;
+  }
+
+  ensureSitePixelBootstrap(pixelId);
+  console.info("[Site Pixel] Shell bootstrap ready", { pixelId });
 }
 
 if ('serviceWorker' in navigator) {
@@ -41,6 +60,8 @@ async function bootstrapApp() {
     bootstrapLandingShellPixel(slug);
     await landingModulePromise;
   } else {
+    await prefetchSiteSettingsData();
+    bootstrapMainSiteShellPixel();
     prefetchCriticalData();
   }
 
