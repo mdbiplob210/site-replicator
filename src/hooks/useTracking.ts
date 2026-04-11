@@ -423,7 +423,8 @@ export function useTracking() {
     }
   }, [fbPixelId, tiktokPixelId, gtmId]);
 
-  // Initialize tracking scripts AFTER page is interactive (deferred)
+  // Initialize tracking scripts — FB pixel loads IMMEDIATELY for reliable detection,
+  // other scripts are deferred to avoid blocking the main thread.
   useEffect(() => {
     if (initialized.current || !settings) return;
     if (
@@ -433,18 +434,16 @@ export function useTracking() {
     ) return;
     initialized.current = true;
 
-    const loadScripts = () => {
-      if (fbPixelId) loadFBPixel(fbPixelId);
+    // FB Pixel MUST load immediately — delayed loading causes missed PageView
+    // and Pixel Helper detection failures on first visit
+    if (fbPixelId) loadFBPixel(fbPixelId);
+
+    // Non-critical trackers load after first paint
+    setTimeout(() => {
       if (tiktokPixelId) loadTikTokPixel(tiktokPixelId);
       if (gtmId) loadGTM(gtmId);
       if (clarityId) loadClarity(clarityId);
-    };
-
-    // Load tracking scripts after first paint but not too late
-    // 2s delay balances performance with tracking reliability
-    setTimeout(() => {
-      loadScripts();
-    }, 2000);
+    }, 1500);
 
     // Save UTM params
     const utms = getUtmParams();
@@ -456,12 +455,30 @@ export function useTracking() {
   // ---- Event Functions ----
 
   const trackPageView = useCallback((pageTitle?: string) => {
+    ensureCommerceTrackersReady();
     const eventId = generateEventId("pv");
     const device = getDeviceInfo();
     const referrer = getReferrerInfo();
 
-    if (fbPixelId && window.fbq) {
-      window.fbq("track", "PageView", {}, { eventID: eventId });
+    const firePageView = () => {
+      if (window.fbq && typeof window.fbq === "function") {
+        window.fbq("track", "PageView", {}, { eventID: eventId });
+        return true;
+      }
+      return false;
+    };
+
+    if (!firePageView()) {
+      // SDK not ready — retry until loaded (max ~6s)
+      if (fbPixelId) loadFBPixel(fbPixelId);
+      let attempts = 0;
+      const retryTimer = setInterval(() => {
+        attempts++;
+        if (firePageView() || attempts >= 20) {
+          clearInterval(retryTimer);
+          if (attempts >= 20) console.warn("[Tracking] PageView: fbq never loaded");
+        }
+      }, 300);
     }
 
     if (tiktokPixelId && window.ttq) {
@@ -492,7 +509,7 @@ export function useTracking() {
         },
       });
     }
-  }, [fbPixelId, tiktokPixelId, gtmId]);
+  }, [ensureCommerceTrackersReady, fbPixelId, tiktokPixelId, gtmId]);
 
   const trackViewContent = useCallback((product: {
     id: string; name: string; price: number; category?: string;
