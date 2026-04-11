@@ -222,20 +222,8 @@ export function ensureSitePixelBootstrap(pixelId: string) {
   installSitePixelLifecycle(win);
   win.__siteCurrentPixelId = pixelId;
 
-  const externalId = getExternalId();
-  win.fbq?.("init", pixelId, { external_id: externalId, country: "bd" });
-
-  try {
-    win.fbq?.("set", "autoConfig", true, pixelId);
-  } catch (_) {}
-
-  const reservedEventId = trackSitePageView(pixelId);
-
-  if (!isFbqReady(win) && !win.__siteFbSdkLoaded && !win.__siteMetaPixelBootstrapped[pixelId]) {
-    console.info("[Site Pixel] Waiting for SDK before initial PageView", { pixelId });
-  } else if (reservedEventId) {
-    console.info("[Site Pixel] Initial PageView prepared", { pixelId, eventId: reservedEventId });
-  }
+  // Fire PageView immediately — stub will queue it for SDK to process on load
+  trackSitePageView(pixelId);
 
   win.__siteMetaPixelBootstrapped[pixelId] = true;
 }
@@ -247,9 +235,5 @@ export function getSiteTrackedPageViewEventId(pixelId: string, url: string) {
   const normalizedUrl = normalizeTrackedUrl(url);
   const trackingKey = `${pixelId}:${normalizedUrl}`;
 
-  return (
-    win.__siteMetaPixelTrackedUrls?.[trackingKey] ||
-    win.__siteMetaPixelPendingUrls?.[trackingKey] ||
-    ""
-  );
+  return win.__siteMetaPixelTrackedUrls?.[trackingKey] || "";
 }
