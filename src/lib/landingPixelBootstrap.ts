@@ -17,6 +17,7 @@ type LandingPixelWindow = Window & typeof globalThis & {
   __lpMetaPixelLifecycleInstalled?: boolean;
   __lpFbSdkLoaded?: boolean;
   __lpFlushPendingBrowserPurchases?: () => boolean;
+  __pendingPurchase?: () => boolean | void;
 };
 
 const META_PIXEL_SDK_SRC = "https://connect.facebook.net/en_US/fbevents.js";
@@ -95,6 +96,7 @@ function ensureMetaPixelSdk(win: LandingPixelWindow) {
       trackLandingPageView(win.__lpCurrentPixelId);
     }
     win.__lpFlushPendingBrowserPurchases?.();
+    win.__pendingPurchase?.();
   };
   script.onerror = () => {
     console.error("[LP Pixel] SDK failed to load", { src: META_PIXEL_SDK_SRC });
@@ -240,7 +242,7 @@ w.__lpMetaPixelBootstrapped[pixelId]=true;w.__lpFireLandingPageView(false);
 
   // Static SDK script tag — SYNCHRONOUS (no async/defer).
   // Must come AFTER the inline fbq stub so the SDK can attach callMethod on first load.
-  const sdkTag = `<script src="${META_PIXEL_SDK_SRC}" data-lp-meta-pixel-sdk="true" onload="window.__lpFbSdkLoaded=true;console.info('[LP Pixel] SDK loaded + ready');if(typeof window.__lpFlushPendingBrowserPurchases==='function')window.__lpFlushPendingBrowserPurchases();" onerror="console.error('[LP Pixel] SDK failed to load',{src:'${META_PIXEL_SDK_SRC}'});"><\/script>`;
+  const sdkTag = `<script src="${META_PIXEL_SDK_SRC}" data-lp-meta-pixel-sdk="true" onload="window.__lpFbSdkLoaded=true;console.info('[LP Pixel] SDK loaded + ready');if(typeof window.__lpFlushPendingBrowserPurchases==='function')window.__lpFlushPendingBrowserPurchases();if(typeof window.__pendingPurchase==='function')window.__pendingPurchase();" onerror="console.error('[LP Pixel] SDK failed to load',{src:'${META_PIXEL_SDK_SRC}'});"><\/script>`;
 
   return stubAndInit + sdkTag;
 }

@@ -1245,79 +1245,15 @@ ttq.page();
       btn.style.backgroundColor = '#10b981';
     }
 
-    // Fire Purchase event immediately (don't wait for page load)
+    // Fire Purchase event immediately, then move to the dedicated success route
     firePurchaseEvent(payload, result);
-
-    // Render success page INSTANTLY via document.write (no React re-bootstrap needed)
-    var totalValue = resolveTotalValue(payload);
-    var orderNumber = result.order_number || '';
-    var contentName = (payload.product_name || document.title || '').substring(0, 150);
-    var numItems = parseInt(payload.quantity || '1', 10) || 1;
-    var eventId = payload.event_id || '';
-    var customerPhone = payload.customer_phone || '';
-    var customerName = payload.customer_name || '';
-    var pixelId = '${page.fb_pixel_id || ''}';
-    var tiktokPixelId = '${page.tiktok_pixel_id || ''}';
-    var gtmId = '${page.gtm_id || ''}';
-
-    // Update URL without reload for clean browser history
-    try { history.pushState({}, '', '/lp/' + SLUG + '/success?order_number=' + orderNumber); } catch(e) {}
-
-    // Build and write success page HTML instantly
-    var successHtml = '<!DOCTYPE html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>অর্ডার সফল</title><style>'
-      + '*{margin:0;padding:0;box-sizing:border-box}'
-      + 'body{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;background:#f0fdf4;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}'
-      + '.card{width:100%;max-width:420px;background:#fff;border-radius:24px;overflow:hidden;box-shadow:0 25px 60px rgba(0,0,0,.12);animation:zi .35s ease}'
-      + '@keyframes zi{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}'
-      + '.hd{background:linear-gradient(135deg,#10b981,#059669);padding:36px 24px;text-align:center}'
-      + '.ck{width:80px;height:80px;margin:0 auto 16px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:40px;animation:pop .5s ease .15s both}'
-      + '@keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}'
-      + '.hd h1{color:#fff;font-size:24px;font-weight:800}.hd p{color:rgba(255,255,255,.8);font-size:14px;margin-top:4px}'
-      + '.bd{padding:28px 24px;text-align:center}'
-      + '.ol{color:#6b7280;font-size:13px;margin-bottom:4px}.on{font-size:36px;font-weight:900;color:#10b981;margin-bottom:20px}'
-      + '.ib{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:14px;padding:16px;margin-bottom:24px}.ib p{font-size:14px;color:#166534;line-height:1.5}'
-      + '.dt{text-align:left;background:#f9fafb;border-radius:12px;padding:16px;margin-bottom:24px}'
-      + '.rw{display:flex;justify-content:space-between;padding:6px 0;font-size:14px;border-bottom:1px solid #f3f4f6}.rw:last-child{border-bottom:none}'
-      + '.lb{color:#6b7280}.vl{font-weight:700;color:#111}'
-      + '.bt{display:block;width:100%;padding:16px;background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:none;border-radius:14px;font-size:17px;font-weight:700;cursor:pointer;text-decoration:none;text-align:center}'
-      + '.tr{display:flex;gap:12px;justify-content:center;margin-top:20px;flex-wrap:wrap}.tr span{font-size:12px;color:#9ca3af;display:flex;align-items:center;gap:4px}'
-      + '</style>';
-
-    // Add pixel scripts in head
-    if (pixelId) {
-      var productCode = payload.product_code || '';
-      var cleanPhone = customerPhone.replace(/[^0-9]/g, '');
-      if (cleanPhone.indexOf('0') === 0) cleanPhone = '880' + cleanPhone.substring(1);
-      var nameParts = customerName.trim().split(/\\s+/);
-      var fnVal = (nameParts[0] || '').toLowerCase();
-      var lnVal = (nameParts.slice(1).join(' ') || '').toLowerCase();
-      successHtml += '<script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";n.queue=[];t=b.createElement(e);t.async=!1;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,"script","https://connect.facebook.net/en_US/fbevents.js");var ip={country:"bd"};try{ip.external_id=localStorage.getItem("_vid")||""}catch(e){}';
-      if (cleanPhone) successHtml += 'ip.ph="' + cleanPhone + '";';
-      if (fnVal) successHtml += 'ip.fn="' + fnVal + '";';
-      if (lnVal) successHtml += 'ip.ln="' + lnVal + '";';
-      successHtml += 'fbq("init","' + pixelId + '",ip);fbq("track","PageView");';
-      successHtml += 'fbq("track","Purchase",{value:' + totalValue + ',currency:"BDT",content_name:"' + contentName.replace(/"/g, '\\\\"') + '",content_ids:' + (productCode ? '["' + productCode + '"]' : '[]') + ',contents:' + (productCode ? '[{id:"' + productCode + '",quantity:' + numItems + ',item_price:' + Math.round(totalValue/numItems) + '}]' : '[]') + ',content_type:"product",content_category:"ecommerce",num_items:' + numItems + ',order_id:"' + orderNumber + '"},{eventID:"' + eventId + '"});';
-      successHtml += '<\\/script>';
-    }
-    successHtml += '</head><body><div class="card"><div class="hd"><div class="ck">✓</div><h1>অর্ডার সফল হয়েছে!</h1><p>আপনার অর্ডারটি সফলভাবে গ্রহণ করা হয়েছে</p></div><div class="bd">';
-    if (orderNumber) successHtml += '<p class="ol">অর্ডার নম্বর</p><p class="on">#' + orderNumber + '</p>';
-    successHtml += '<div class="ib"><p>📞 আপনার অর্ডারটি কনফার্ম করতে শীঘ্রই কল করা হবে।</p></div>';
-    if (contentName) {
-      successHtml += '<div class="dt"><div class="rw"><span class="lb">প্রোডাক্ট</span><span class="vl">' + contentName.substring(0,60) + '</span></div>'
-        + '<div class="rw"><span class="lb">পরিমাণ</span><span class="vl">' + numItems + ' পিস</span></div>'
-        + '<div class="rw"><span class="lb">মূল্য</span><span class="vl">৳' + totalValue + '</span></div></div>';
-    }
-    successHtml += '<a href="/lp/' + SLUG + '" class="bt">🏠 হোমে ফিরে যান</a>';
-    successHtml += '<div class="tr"><span>🔒 নিরাপদ</span><span>🚚 দ্রুত ডেলিভারি</span><span>💯 গ্যারান্টি</span></div>';
-    successHtml += '</div></div></body></html>';
-
-    // Use requestAnimationFrame for smoother transition
+    var successUrl = buildSuccessUrl(result, payload);
     requestAnimationFrame(function() {
       try {
-        document.open();
-        document.write(successHtml);
-        document.close();
-      } catch(e) { console.error('[LP] Success render failed', e); }
+        window.location.href = successUrl;
+      } catch(e) {
+        console.error('[LP] Success redirect failed', e);
+      }
     });
   }
 

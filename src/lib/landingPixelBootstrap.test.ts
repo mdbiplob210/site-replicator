@@ -11,4 +11,11 @@ describe("landingPixelBootstrap", () => {
     expect(sdkIndex).toBeGreaterThan(-1);
     expect(stubIndex).toBeLessThan(sdkIndex);
   });
+
+  it("retries pending purchase immediately when the SDK becomes ready", () => {
+    const html = buildMetaPixelHeadScript("123");
+
+    expect(html).toContain("window.__pendingPurchase");
+    expect(html).toContain("window.__lpFlushPendingBrowserPurchases");
+  });
 });
