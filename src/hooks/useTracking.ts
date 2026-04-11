@@ -601,15 +601,30 @@ export function useTracking() {
     const eventId = generateEventId("atc");
     const contentId = product.productCode || product.id;
 
-    if (fbPixelId && window.fbq) {
-      window.fbq("track", "AddToCart", {
-        content_name: product.name,
-        content_ids: [contentId],
-        content_type: "product",
-        value: product.price * product.qty,
-        currency: "BDT",
-        num_items: product.qty,
-      }, { eventID: eventId });
+    const atcData = {
+      content_name: product.name,
+      content_ids: [contentId],
+      content_type: "product",
+      value: product.price * product.qty,
+      currency: "BDT",
+      num_items: product.qty,
+    };
+
+    const fireATC = () => {
+      if (window.fbq && typeof window.fbq === "function") {
+        window.fbq("track", "AddToCart", atcData, { eventID: eventId });
+        return true;
+      }
+      return false;
+    };
+
+    if (!fireATC()) {
+      if (fbPixelId) loadFBPixel(fbPixelId);
+      let attempts = 0;
+      const retryTimer = setInterval(() => {
+        attempts++;
+        if (fireATC() || attempts >= 20) clearInterval(retryTimer);
+      }, 300);
     }
 
     if (tiktokPixelId && window.ttq) {
