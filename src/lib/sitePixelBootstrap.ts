@@ -81,7 +81,6 @@ function trackSitePageView(pixelId: string, options?: { force?: boolean }) {
   if (typeof window === "undefined" || !pixelId) return "";
 
   const win = window as SitePixelWindow;
-  win.__siteMetaPixelPendingUrls = win.__siteMetaPixelPendingUrls || {};
   win.__siteMetaPixelTrackedUrls = win.__siteMetaPixelTrackedUrls || {};
 
   const currentUrl = normalizeTrackedUrl(window.location.href);
@@ -94,26 +93,20 @@ function trackSitePageView(pixelId: string, options?: { force?: boolean }) {
     return existingEventId;
   }
 
-  const eventId =
-    win.__siteMetaPixelPendingUrls[trackingKey] ||
-    `eid_${Math.random().toString(36).slice(2, 11)}_${Date.now()}`;
-  win.__siteMetaPixelPendingUrls[trackingKey] = eventId;
-
-  if (!isFbqReady(win)) {
-    return eventId;
-  }
+  const eventId = `eid_${Math.random().toString(36).slice(2, 11)}_${Date.now()}`;
 
   const externalId = getExternalId();
-
   win.fbq?.("init", pixelId, { external_id: externalId, country: "bd" });
 
   try {
     win.fbq?.("set", "autoConfig", true, pixelId);
   } catch (_) {}
 
+  // ALWAYS call fbq("track") — even if SDK isn't ready yet.
+  // The stub queues it and the SDK will process the queue on load.
+  // This is critical for Pixel Helper detection on first visit.
   win.fbq?.("track", "PageView", {}, { eventID: eventId });
   win._sitePageViewEventId = eventId;
-  delete win.__siteMetaPixelPendingUrls[trackingKey];
   win.__siteMetaPixelTrackedUrls[trackingKey] = eventId;
   win.__sitePageViewTracked = true;
 
@@ -121,6 +114,7 @@ function trackSitePageView(pixelId: string, options?: { force?: boolean }) {
     pixelId,
     eventId,
     url: currentUrl,
+    ready: isFbqReady(win),
   });
 
   return eventId;
