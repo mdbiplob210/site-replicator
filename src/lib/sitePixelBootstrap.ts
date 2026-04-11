@@ -12,7 +12,6 @@ type SitePixelWindow = Window & typeof globalThis & {
   _sitePageViewEventId?: string;
   __sitePageViewTracked?: boolean;
   __siteMetaPixelBootstrapped?: Record<string, boolean>;
-  __siteMetaPixelPendingUrls?: Record<string, string>;
   __siteMetaPixelTrackedUrls?: Record<string, string>;
   __siteCurrentPixelId?: string;
   __siteMetaPixelLifecycleInstalled?: boolean;
