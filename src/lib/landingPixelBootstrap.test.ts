@@ -4,7 +4,7 @@ import { buildMetaPixelHeadScript } from "./landingPixelBootstrap";
 describe("landingPixelBootstrap", () => {
   it("puts the fbq stub before the SDK script for first-load reliability", () => {
     const html = buildMetaPixelHeadScript("123");
-    const stubIndex = html.indexOf("window.__lpMetaPixelBootstrapped");
+    const stubIndex = html.indexOf("w.__lpMetaPixelBootstrapped");
     const sdkIndex = html.indexOf('src="https://connect.facebook.net/en_US/fbevents.js"');
 
     expect(stubIndex).toBeGreaterThan(-1);
