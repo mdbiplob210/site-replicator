@@ -15,6 +15,8 @@ declare global {
     __lovableTrackedPurchases?: Record<string, string>;
     __lovableVisitorId?: string;
     __siteFbSdkLoaded?: boolean;
+    __siteCurrentPixelId?: string;
+    __siteMetaPixelBootstrapped?: Record<string, boolean>;
     __siteMetaPixelTrackedUrls?: Record<string, string>;
     fbq?: any;
     _fbq?: any;
@@ -221,6 +223,16 @@ function loadFBPixel(pixelId: string) {
   const existingScript = document.querySelector(
     'script[data-site-meta-pixel-sdk="true"],script[src*="connect.facebook.net/en_US/fbevents.js"]'
   ) as HTMLScriptElement | null;
+  const isShellBootstrapped =
+    window.__siteCurrentPixelId === pixelId &&
+    !!window.__siteMetaPixelBootstrapped?.[pixelId];
+
+  if (isShellBootstrapped) {
+    if (existingScript || window.__siteFbSdkLoaded || isFbPixelReady()) {
+      fbPixelLoaded = true;
+    }
+    return;
+  }
 
   if (typeof window.fbq === "function") {
     const ud = getStoredUserData();
