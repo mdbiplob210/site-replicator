@@ -5,7 +5,7 @@ import { useTracking } from "@/hooks/useTracking";
 /**
  * TrackingInitializer - Placed inside BrowserRouter in App.tsx
  * Auto-initializes all tracking scripts and fires PageView on every route change.
- * Uses requestIdleCallback to avoid blocking the main thread.
+ * Keeps SPA pageviews in sync with shell-level pixel bootstrap.
  */
 export function TrackingInitializer() {
   const { trackPageView, isReady } = useTracking();
@@ -23,8 +23,12 @@ export function TrackingInitializer() {
     // Fire if path changed
     if (location.pathname !== lastTrackedPath.current) {
       lastTrackedPath.current = location.pathname;
-      // Small delay to let pixel SDK finish loading, but not too long
-      setTimeout(() => trackPageView(document.title), 500);
+
+      const rafId = window.requestAnimationFrame(() => {
+        trackPageView(document.title);
+      });
+
+      return () => window.cancelAnimationFrame(rafId);
     }
   }, [isReady, location.pathname, trackPageView]);
 

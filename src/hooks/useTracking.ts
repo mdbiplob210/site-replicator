@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback } from "react";
 import { useSiteSettings } from "./useSiteSettings";
 import { supabase } from "@/integrations/supabase/client";
+import { getSiteTrackedPageViewEventId } from "@/lib/sitePixelBootstrap";
 
 // ============================================================
 // Comprehensive Tracking Hook
@@ -13,6 +14,8 @@ declare global {
   interface Window {
     __lovableTrackedPurchases?: Record<string, string>;
     __lovableVisitorId?: string;
+    __siteFbSdkLoaded?: boolean;
+    __siteMetaPixelTrackedUrls?: Record<string, string>;
     fbq: any;
     _fbq: any;
     ttq: any;
@@ -140,6 +143,10 @@ function getTtp(): string {
   return match ? match[1] : "";
 }
 
+function isFbPixelReady(): boolean {
+  return typeof window.fbq === "function" && typeof window.fbq.callMethod === "function";
+}
+
 // Get comprehensive device/browser info
 function getDeviceInfo() {
   const ua = navigator.userAgent;
@@ -223,7 +230,7 @@ function loadFBPixel(pixelId: string) {
       window.fbq("set", "autoConfig", true, pixelId);
     } catch {}
 
-    if (existingScript) {
+    if (existingScript && (window.__siteFbSdkLoaded || isFbPixelReady())) {
       fbPixelLoaded = true;
       return;
     }
@@ -476,12 +483,18 @@ export function useTracking() {
 
   const trackPageView = useCallback((pageTitle?: string) => {
     ensureCommerceTrackersReady();
-    const eventId = generateEventId("pv");
+    const browserEventId = fbPixelId ? getSiteTrackedPageViewEventId(fbPixelId, window.location.href) : "";
+    const eventId = browserEventId || generateEventId("pv");
     const device = getDeviceInfo();
     const referrer = getReferrerInfo();
+    const shouldSkipBrowserPixel = !!browserEventId;
 
     const firePageView = () => {
-      if (window.fbq && typeof window.fbq === "function") {
+      if (shouldSkipBrowserPixel) {
+        return true;
+      }
+
+      if (isFbPixelReady()) {
         window.fbq("track", "PageView", {}, { eventID: eventId });
         return true;
       }
@@ -496,7 +509,9 @@ export function useTracking() {
         attempts++;
         if (firePageView() || attempts >= 20) {
           clearInterval(retryTimer);
-          if (attempts >= 20) console.warn("[Tracking] PageView: fbq never loaded");
+          if (attempts >= 20 && !shouldSkipBrowserPixel) {
+            console.warn("[Tracking] PageView: fbq never became ready");
+          }
         }
       }, 300);
     }

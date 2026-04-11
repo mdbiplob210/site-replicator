@@ -1,5 +1,4 @@
 import { prefetchCriticalData, prefetchLandingPageData, getPrefetchedData, prefetchSiteSettingsData } from "./lib/prefetch";
-import { ensureMetaPixelBootstrap } from "./lib/landingPixelBootstrap";
 import { ensureSitePixelBootstrap } from "./lib/sitePixelBootstrap";
 
 const path = window.location.pathname;
@@ -8,27 +7,10 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 
-type PrefetchedLandingPage = {
-  fb_pixel_id?: string | null;
-};
-
 type PrefetchedSiteSetting = {
   key: string;
   value: string;
 };
-
-function bootstrapLandingShellPixel(slug: string) {
-  const prefetched = getPrefetchedData<PrefetchedLandingPage[]>(`landing-page:${slug}`);
-  const pixelId = prefetched?.[0]?.fb_pixel_id?.trim();
-
-  if (!pixelId) {
-    console.warn("[LP Pixel] Shell bootstrap skipped: no pixel ID", { slug });
-    return;
-  }
-
-  ensureMetaPixelBootstrap(pixelId);
-  console.info("[LP Pixel] Shell bootstrap ready", { slug, pixelId });
-}
 
 function bootstrapMainSiteShellPixel() {
   const prefetched = getPrefetchedData<PrefetchedSiteSetting[]>("site-settings");
@@ -57,7 +39,6 @@ async function bootstrapApp() {
     const landingModulePromise = import("./pages/LandingPageView").catch(() => {});
 
     await prefetchLandingPageData(slug);
-    bootstrapLandingShellPixel(slug);
     await landingModulePromise;
   } else {
     await prefetchSiteSettingsData();
