@@ -229,9 +229,10 @@ w.__lpMetaPixelBootstrapped[pixelId]=true;w.__lpFireLandingPageView(false);
 <\/script>`;
 
   // Static SDK script tag — browser loads this as part of normal HTML parsing
+  // Placed AFTER inline stub so fbq stub is ready before SDK loads
   const sdkTag = `<script async src="${META_PIXEL_SDK_SRC}" crossorigin="anonymous" data-lp-meta-pixel-sdk="true" onload="window.__lpFbSdkLoaded=true;console.info('[LP Pixel] SDK loaded');if(typeof window.__lpFlushPendingBrowserPurchases==='function')window.__lpFlushPendingBrowserPurchases();"><\/script>`;
 
-  return sdkTag + stubAndInit;
+  return stubAndInit + sdkTag;
 }
 
 export function buildMetaPixelNoscript(pixelId: string) {
