@@ -16,8 +16,8 @@ declare global {
     __lovableVisitorId?: string;
     __siteFbSdkLoaded?: boolean;
     __siteMetaPixelTrackedUrls?: Record<string, string>;
-    fbq: any;
-    _fbq: any;
+    fbq?: any;
+    _fbq?: any;
     ttq: any;
     dataLayer: any[];
     clarity: any;

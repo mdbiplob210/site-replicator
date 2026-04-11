@@ -37,7 +37,7 @@ describe("sitePixelBootstrap", () => {
 
   it("fires and stores a first-load PageView when fbq is ready", () => {
     const callMethod = vi.fn();
-    const fbq = vi.fn((...args: any[]) => callMethod(...args));
+    const fbq = vi.fn((...args: any[]) => callMethod(...args)) as any;
     fbq.callMethod = callMethod;
     window.fbq = fbq;
 
