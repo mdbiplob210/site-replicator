@@ -6,6 +6,7 @@ declare global {
     fbq?: any;
     _fbq?: any;
     __siteMetaPixelBootstrapped?: Record<string, boolean>;
+    __siteMetaPixelPendingUrls?: Record<string, string>;
     __siteMetaPixelTrackedUrls?: Record<string, string>;
     __siteCurrentPixelId?: string;
     __siteMetaPixelLifecycleInstalled?: boolean;
