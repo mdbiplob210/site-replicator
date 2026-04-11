@@ -684,15 +684,30 @@ export function useTracking() {
       setFBUserData({ phone: params.customerPhone, fullName: params.customerName });
     }
 
-    if (fbPixelId && window.fbq) {
-      window.fbq("track", "InitiateCheckout", {
-        content_name: params.contentName,
-        content_ids: [params.contentId],
-        content_type: "product",
-        value: params.value,
-        currency: params.currency || "BDT",
-        num_items: params.qty,
-      }, { eventID: eventId });
+    const icData = {
+      content_name: params.contentName,
+      content_ids: [params.contentId],
+      content_type: "product",
+      value: params.value,
+      currency: params.currency || "BDT",
+      num_items: params.qty,
+    };
+
+    const fireIC = () => {
+      if (window.fbq && typeof window.fbq === "function") {
+        window.fbq("track", "InitiateCheckout", icData, { eventID: eventId });
+        return true;
+      }
+      return false;
+    };
+
+    if (!fireIC()) {
+      if (fbPixelId) loadFBPixel(fbPixelId);
+      let attempts = 0;
+      const retryTimer = setInterval(() => {
+        attempts++;
+        if (fireIC() || attempts >= 20) clearInterval(retryTimer);
+      }, 300);
     }
 
     if (tiktokPixelId && window.ttq) {
