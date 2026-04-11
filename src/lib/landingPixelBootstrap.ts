@@ -87,12 +87,14 @@ function ensureMetaPixelSdk(win: LandingPixelWindow) {
   script.src = META_PIXEL_SDK_SRC;
   script.async = false;
   script.defer = false;
-  script.crossOrigin = "anonymous";
   script.dataset.lpMetaPixelSdk = "true";
   script.onload = () => {
     win.__lpFbSdkLoaded = true;
     console.info("[LP Pixel] SDK loaded", { fbqType: typeof win.fbq, ready: typeof win.fbq?.callMethod === "function" });
     win.__lpFlushPendingBrowserPurchases?.();
+  };
+  script.onerror = () => {
+    console.error("[LP Pixel] SDK failed to load", { src: META_PIXEL_SDK_SRC });
   };
 
   const head = document.head || document.getElementsByTagName("head")[0] || document.documentElement;
@@ -232,7 +234,7 @@ w.__lpMetaPixelBootstrapped[pixelId]=true;w.__lpFireLandingPageView(false);
   // loaded and fbq.callMethod is ready BEFORE the page finishes parsing.
   // This guarantees Pixel Helper detects the pixel on FIRST load, not just refresh.
   // In document.write() context, a sync script blocks parsing until loaded (~50-80ms cached).
-  const sdkTag = `<script src="${META_PIXEL_SDK_SRC}" crossorigin="anonymous" data-lp-meta-pixel-sdk="true" onload="window.__lpFbSdkLoaded=true;console.info('[LP Pixel] SDK loaded + ready');if(typeof window.__lpFlushPendingBrowserPurchases==='function')window.__lpFlushPendingBrowserPurchases();"><\/script>`;
+  const sdkTag = `<script src="${META_PIXEL_SDK_SRC}" data-lp-meta-pixel-sdk="true" onload="window.__lpFbSdkLoaded=true;console.info('[LP Pixel] SDK loaded + ready');if(typeof window.__lpFlushPendingBrowserPurchases==='function')window.__lpFlushPendingBrowserPurchases();" onerror="console.error('[LP Pixel] SDK failed to load',{src:'${META_PIXEL_SDK_SRC}'});"><\/script>`;
 
   return stubAndInit + sdkTag;
 }
