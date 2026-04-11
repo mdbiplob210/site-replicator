@@ -25,6 +25,7 @@ describe("sitePixelBootstrap", () => {
     delete window.fbq;
     delete window._fbq;
     delete window.__siteMetaPixelBootstrapped;
+    delete window.__siteMetaPixelPendingUrls;
     delete window.__siteMetaPixelTrackedUrls;
     delete window.__siteCurrentPixelId;
     delete window.__siteMetaPixelLifecycleInstalled;
@@ -32,7 +33,7 @@ describe("sitePixelBootstrap", () => {
     delete window._sitePageViewEventId;
     delete window.__sitePageViewTracked;
 
-    window.history.replaceState({}, "", "https://example.com/");
+    window.history.replaceState({}, "", "/");
   });
 
   it("fires and stores a first-load PageView when fbq is ready", () => {
@@ -52,7 +53,8 @@ describe("sitePixelBootstrap", () => {
   it("waits for sdk readiness before firing the first PageView", () => {
     ensureSitePixelBootstrap("123");
 
-    expect(getSiteTrackedPageViewEventId("123", window.location.href)).toBe("");
+    const reservedEventId = getSiteTrackedPageViewEventId("123", window.location.href);
+    expect(reservedEventId).toMatch(/^eid_/);
 
     const sdkScript = document.querySelector('script[data-site-meta-pixel-sdk="true"]') as HTMLScriptElement;
     expect(sdkScript).toBeTruthy();
@@ -64,6 +66,7 @@ describe("sitePixelBootstrap", () => {
 
     const eventId = getSiteTrackedPageViewEventId("123", window.location.href);
 
+    expect(eventId).toBe(reservedEventId);
     expect(callMethod).toHaveBeenCalledWith("track", "PageView", {}, { eventID: eventId });
     expect(eventId).toMatch(/^eid_/);
   });

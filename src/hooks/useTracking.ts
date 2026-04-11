@@ -490,7 +490,9 @@ export function useTracking() {
     const shouldSkipBrowserPixel = !!browserEventId;
 
     const firePageView = () => {
-      if (shouldSkipBrowserPixel) {
+      const shellEventId = fbPixelId ? getSiteTrackedPageViewEventId(fbPixelId, window.location.href) : "";
+
+      if (shouldSkipBrowserPixel || shellEventId) {
         return true;
       }
 

@@ -238,13 +238,11 @@ w.__lpMetaPixelBootstrapped[pixelId]=true;w.__lpFireLandingPageView(false);
 })(window,document,${JSON.stringify(pixelId)});
 <\/script>`;
 
-  // Static SDK script tag — SYNCHRONOUS (no async/defer) so fbevents.js is fully
-  // loaded and fbq.callMethod is ready BEFORE the page finishes parsing.
-  // This guarantees Pixel Helper detects the pixel on FIRST load, not just refresh.
-  // In document.write() context, a sync script blocks parsing until loaded (~50-80ms cached).
+  // Static SDK script tag — SYNCHRONOUS (no async/defer).
+  // Must come AFTER the inline fbq stub so the SDK can attach callMethod on first load.
   const sdkTag = `<script src="${META_PIXEL_SDK_SRC}" data-lp-meta-pixel-sdk="true" onload="window.__lpFbSdkLoaded=true;console.info('[LP Pixel] SDK loaded + ready');if(typeof window.__lpFlushPendingBrowserPurchases==='function')window.__lpFlushPendingBrowserPurchases();" onerror="console.error('[LP Pixel] SDK failed to load',{src:'${META_PIXEL_SDK_SRC}'});"><\/script>`;
 
-  return sdkTag + stubAndInit;
+  return stubAndInit + sdkTag;
 }
 
 export function buildMetaPixelNoscript(pixelId: string) {
