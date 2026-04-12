@@ -12,6 +12,7 @@ type LandingPixelWindow = Window & typeof globalThis & {
   _lpPageViewEventId?: string;
   __lpPageViewTracked?: boolean;
   __lpMetaPixelBootstrapped?: Record<string, boolean>;
+  __lpMetaPixelPendingUrls?: Record<string, string>;
   __lpMetaPixelTrackedUrls?: Record<string, string>;
   __lpCurrentPixelId?: string;
   __lpMetaPixelLifecycleInstalled?: boolean;
@@ -93,7 +94,7 @@ function ensureMetaPixelSdk(win: LandingPixelWindow) {
     win.__lpFbSdkLoaded = true;
     console.info("[LP Pixel] SDK loaded", { fbqType: typeof win.fbq, ready: typeof win.fbq?.callMethod === "function" });
     if (win.__lpCurrentPixelId) {
-      trackLandingPageView(win.__lpCurrentPixelId);
+      trackLandingPageView(win.__lpCurrentPixelId, { force: true });
     }
     win.__lpFlushPendingBrowserPurchases?.();
     win.__pendingPurchase?.();
@@ -116,11 +117,13 @@ function trackLandingPageView(pixelId: string, options?: { force?: boolean }) {
   if (typeof window === "undefined" || !pixelId) return "";
 
   const win = window as LandingPixelWindow;
+  win.__lpMetaPixelPendingUrls = win.__lpMetaPixelPendingUrls || {};
   win.__lpMetaPixelTrackedUrls = win.__lpMetaPixelTrackedUrls || {};
 
   const currentUrl = normalizeTrackedUrl(window.location.href);
   const trackingKey = `${pixelId}:${currentUrl}`;
   const existingEventId = win.__lpMetaPixelTrackedUrls[trackingKey];
+  const pendingEventId = win.__lpMetaPixelPendingUrls[trackingKey];
 
   if (existingEventId && !options?.force) {
     win._lpPageViewEventId = existingEventId;
@@ -128,7 +131,7 @@ function trackLandingPageView(pixelId: string, options?: { force?: boolean }) {
     return existingEventId;
   }
 
-  const eventId = `eid_${Math.random().toString(36).slice(2, 11)}_${Date.now()}`;
+  const eventId = pendingEventId || existingEventId || `eid_${Math.random().toString(36).slice(2, 11)}_${Date.now()}`;
   win._lpPageViewEventId = eventId;
 
   const externalId = getExternalId(win);
@@ -139,14 +142,24 @@ function trackLandingPageView(pixelId: string, options?: { force?: boolean }) {
   } catch (_) {}
 
   win.fbq?.("track", "PageView", {}, { eventID: eventId });
-  win.__lpMetaPixelTrackedUrls[trackingKey] = eventId;
-  win.__lpPageViewTracked = true;
+  const ready = typeof win.fbq?.callMethod === "function";
+
+  if (ready) {
+    win.__lpMetaPixelTrackedUrls[trackingKey] = eventId;
+    delete win.__lpMetaPixelPendingUrls[trackingKey];
+    win.__lpPageViewTracked = true;
+  } else {
+    win.__lpMetaPixelPendingUrls[trackingKey] = eventId;
+    win.__lpPageViewTracked = false;
+  }
+
   console.info("[LP Pixel] PageView fired", {
     pixelId,
     eventId,
     url: currentUrl,
     fbqType: typeof win.fbq,
-    ready: typeof win.fbq?.callMethod === "function",
+    ready,
+    confirmed: ready,
   });
 
   return eventId;
@@ -199,11 +212,7 @@ export function ensureMetaPixelBootstrap(pixelId: string) {
   installLandingPixelLifecycle(win);
   win.__lpCurrentPixelId = pixelId;
 
-  if (typeof win.fbq?.callMethod === "function" || win.__lpFbSdkLoaded) {
-    trackLandingPageView(pixelId);
-  } else {
-    console.info("[LP Pixel] Waiting for SDK before initial PageView", { pixelId });
-  }
+  trackLandingPageView(pixelId);
 
   win.__lpMetaPixelBootstrapped[pixelId] = true;
 }
@@ -218,7 +227,7 @@ export function buildMetaPixelHeadScript(pixelId: string) {
   const stubAndInit = `<script>
 !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];}(window,document,'script','${META_PIXEL_SDK_SRC}');
 (function(w,d,pixelId){
-w.__lpMetaPixelBootstrapped=w.__lpMetaPixelBootstrapped||{};w.__lpMetaPixelTrackedUrls=w.__lpMetaPixelTrackedUrls||{};w.__lpMetaPixelLifecycleInstalled=!!w.__lpMetaPixelLifecycleInstalled;w.__lpPageViewTracked=!!w.__lpPageViewTracked;w.__lpFbSdkLoaded=!!w.__lpFbSdkLoaded;w.__lpCurrentPixelId=pixelId;
+w.__lpMetaPixelBootstrapped=w.__lpMetaPixelBootstrapped||{};w.__lpMetaPixelPendingUrls=w.__lpMetaPixelPendingUrls||{};w.__lpMetaPixelTrackedUrls=w.__lpMetaPixelTrackedUrls||{};w.__lpMetaPixelLifecycleInstalled=!!w.__lpMetaPixelLifecycleInstalled;w.__lpPageViewTracked=!!w.__lpPageViewTracked;w.__lpFbSdkLoaded=!!w.__lpFbSdkLoaded;w.__lpCurrentPixelId=pixelId;
 function norm(u){try{var x=new URL(u,w.location.origin);x.hash='';return x.toString();}catch(e){return String(u||'').split('#')[0]||String(u||'');}}
 function ext(){var id='';try{id=localStorage.getItem('_vid')||'';}catch(e){}if(!id){id='v_'+Date.now()+'_'+Math.random().toString(36).substr(2,12);try{localStorage.setItem('_vid',id);}catch(e){}}return id;}
 var _extId=ext();w._fbPixelId=pixelId;
@@ -234,7 +243,7 @@ w.__lpFlushPendingBrowserPurchases=function(){var ref=w.fbq||w._fbq||w.__lpFbqRe
 w.__lpIsFbPixelReady=function(){var ref=w.fbq||w._fbq||w.__lpFbqRef;return!!(ref&&typeof ref==='function'&&typeof ref.callMethod==='function');};
 w.__lpTrackBrowserPurchase=function(params,options){var eventId=options&&options.eventID?String(options.eventID):'';if(eventId&&w.__lpHasBrowserPurchaseFired(eventId))return true;w.__lpQueueBrowserPurchase(params,options);if(w.__lpFlushPendingBrowserPurchases())return true;if(!w.__lpBrowserPurchaseRetryTimer){var attempts=0;w.__lpBrowserPurchaseRetryTimer=setInterval(function(){attempts+=1;var drained=w.__lpFlushPendingBrowserPurchases();if(drained||attempts>=40){clearInterval(w.__lpBrowserPurchaseRetryTimer);w.__lpBrowserPurchaseRetryTimer=null;}},250);}return true;};
 w._updateFBAdvancedMatching=function(data){if(!data||!w._fbPixelId)return;var ud=w._lpTrack?w._lpTrack.getUserData():{};if(data.phone)ud.phone=data.phone;if(data.name)ud.name=data.name;if(data.city)ud.city=data.city;if(w._lpTrack)w._lpTrack.setUserData(ud);var initParams={external_id:_extId,country:'bd'};if(ud.phone){var ph=ud.phone.replace(/[^0-9]/g,'');if(ph.indexOf('0')===0)ph='880'+ph.substring(1);initParams.ph=ph;}if(ud.name){var parts=ud.name.trim().split(/\\s+/);initParams.fn=(parts[0]||'').toLowerCase();initParams.ln=(parts.slice(1).join(' ')||'').toLowerCase();}if(ud.city)initParams.ct=ud.city.toLowerCase();w.fbq('init',w._fbPixelId,initParams);console.info('[LP Pixel] Advanced match updated',{pixelId:w._fbPixelId,ready:typeof w.fbq.callMethod==='function'});};
-w.__lpFireLandingPageView=function(force){var key=pixelId+':'+norm(w.location.href);if(!force&&w.__lpMetaPixelTrackedUrls[key]){w._lpPageViewEventId=w.__lpMetaPixelTrackedUrls[key];w.__lpPageViewTracked=true;return w._lpPageViewEventId;}var eventId='eid_'+Math.random().toString(36).substr(2,9)+'_'+Date.now();w._lpPageViewEventId=eventId;w.fbq('init',pixelId,{external_id:_extId,country:'bd'});try{w.fbq('set','autoConfig',true,pixelId);}catch(e){}w.fbq('track','PageView',{},{eventID:eventId});w.__lpMetaPixelTrackedUrls[key]=eventId;w.__lpPageViewTracked=true;console.info('[LP Pixel] PageView fired',{pixelId:pixelId,eventId:eventId,url:norm(w.location.href),fbqType:typeof w.fbq,ready:typeof(w.fbq&&w.fbq.callMethod)==='function'});return eventId;};
+w.__lpFireLandingPageView=function(force){var key=pixelId+':'+norm(w.location.href);var confirmed=w.__lpMetaPixelTrackedUrls[key];var pending=w.__lpMetaPixelPendingUrls[key];if(!force&&confirmed){w._lpPageViewEventId=confirmed;w.__lpPageViewTracked=true;return w._lpPageViewEventId;}var eventId=pending||confirmed||('eid_'+Math.random().toString(36).substr(2,9)+'_'+Date.now());w._lpPageViewEventId=eventId;w.fbq('init',pixelId,{external_id:_extId,country:'bd'});try{w.fbq('set','autoConfig',true,pixelId);}catch(e){}w.fbq('track','PageView',{},{eventID:eventId});var ready=typeof(w.fbq&&w.fbq.callMethod)==='function';if(ready){w.__lpMetaPixelTrackedUrls[key]=eventId;delete w.__lpMetaPixelPendingUrls[key];w.__lpPageViewTracked=true;}else{w.__lpMetaPixelPendingUrls[key]=eventId;w.__lpPageViewTracked=false;}console.info('[LP Pixel] PageView fired',{pixelId:pixelId,eventId:eventId,url:norm(w.location.href),fbqType:typeof w.fbq,ready:ready,confirmed:ready});return eventId;};
 if(!w.__lpMetaPixelLifecycleInstalled){var fire=function(){if(w.__lpCurrentPixelId&&typeof w.__lpFireLandingPageView==='function')w.__lpFireLandingPageView(false);};if(d.readyState==='loading'){d.addEventListener('DOMContentLoaded',fire,{once:true});}else{setTimeout(fire,0);}w.addEventListener('load',fire,{once:true});w.addEventListener('pageshow',fire);w.addEventListener('popstate',fire);w.addEventListener('hashchange',fire);['pushState','replaceState'].forEach(function(method){var original=w.history[method];if(original&&original.__lpWrapped)return;var wrapped=function(){var result=original.apply(this,arguments);setTimeout(fire,0);return result;};wrapped.__lpWrapped=true;w.history[method]=wrapped;});w.__lpMetaPixelLifecycleInstalled=true;}
 w.__lpMetaPixelBootstrapped[pixelId]=true;w.__lpFireLandingPageView(false);
 })(window,document,${JSON.stringify(pixelId)});
@@ -242,7 +251,7 @@ w.__lpMetaPixelBootstrapped[pixelId]=true;w.__lpFireLandingPageView(false);
 
   // Static SDK script tag — SYNCHRONOUS (no async/defer).
   // Must come AFTER the inline fbq stub so the SDK can attach callMethod on first load.
-  const sdkTag = `<script src="${META_PIXEL_SDK_SRC}" data-lp-meta-pixel-sdk="true" onload="window.__lpFbSdkLoaded=true;console.info('[LP Pixel] SDK loaded + ready');if(typeof window.__lpFlushPendingBrowserPurchases==='function')window.__lpFlushPendingBrowserPurchases();if(typeof window.__pendingPurchase==='function')window.__pendingPurchase();" onerror="console.error('[LP Pixel] SDK failed to load',{src:'${META_PIXEL_SDK_SRC}'});"><\/script>`;
+  const sdkTag = `<script src="${META_PIXEL_SDK_SRC}" data-lp-meta-pixel-sdk="true" onload="window.__lpFbSdkLoaded=true;console.info('[LP Pixel] SDK loaded + ready');if(typeof window.__lpFireLandingPageView==='function')window.__lpFireLandingPageView(true);if(typeof window.__lpFlushPendingBrowserPurchases==='function')window.__lpFlushPendingBrowserPurchases();if(typeof window.__pendingPurchase==='function')window.__pendingPurchase();" onerror="console.error('[LP Pixel] SDK failed to load',{src:'${META_PIXEL_SDK_SRC}'});"><\/script>`;
 
   return stubAndInit + sdkTag;
 }

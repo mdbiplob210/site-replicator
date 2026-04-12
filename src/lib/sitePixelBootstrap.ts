@@ -12,6 +12,7 @@ type SitePixelWindow = Window & typeof globalThis & {
   _sitePageViewEventId?: string;
   __sitePageViewTracked?: boolean;
   __siteMetaPixelBootstrapped?: Record<string, boolean>;
+  __siteMetaPixelPendingUrls?: Record<string, string>;
   __siteMetaPixelTrackedUrls?: Record<string, string>;
   __siteCurrentPixelId?: string;
   __siteMetaPixelLifecycleInstalled?: boolean;
@@ -80,11 +81,13 @@ function trackSitePageView(pixelId: string, options?: { force?: boolean }) {
   if (typeof window === "undefined" || !pixelId) return "";
 
   const win = window as SitePixelWindow;
+  win.__siteMetaPixelPendingUrls = win.__siteMetaPixelPendingUrls || {};
   win.__siteMetaPixelTrackedUrls = win.__siteMetaPixelTrackedUrls || {};
 
   const currentUrl = normalizeTrackedUrl(window.location.href);
   const trackingKey = `${pixelId}:${currentUrl}`;
   const existingEventId = win.__siteMetaPixelTrackedUrls[trackingKey];
+  const pendingEventId = win.__siteMetaPixelPendingUrls[trackingKey];
 
   if (existingEventId && !options?.force) {
     win._sitePageViewEventId = existingEventId;
@@ -92,7 +95,7 @@ function trackSitePageView(pixelId: string, options?: { force?: boolean }) {
     return existingEventId;
   }
 
-  const eventId = `eid_${Math.random().toString(36).slice(2, 11)}_${Date.now()}`;
+  const eventId = pendingEventId || existingEventId || `eid_${Math.random().toString(36).slice(2, 11)}_${Date.now()}`;
 
   const externalId = getExternalId();
   win.fbq?.("init", pixelId, { external_id: externalId, country: "bd" });
@@ -105,15 +108,25 @@ function trackSitePageView(pixelId: string, options?: { force?: boolean }) {
   // The stub queues it and the SDK will process the queue on load.
   // This is critical for Pixel Helper detection on first visit.
   win.fbq?.("track", "PageView", {}, { eventID: eventId });
+
+  const ready = isFbqReady(win);
   win._sitePageViewEventId = eventId;
-  win.__siteMetaPixelTrackedUrls[trackingKey] = eventId;
-  win.__sitePageViewTracked = true;
+
+  if (ready) {
+    win.__siteMetaPixelTrackedUrls[trackingKey] = eventId;
+    delete win.__siteMetaPixelPendingUrls[trackingKey];
+    win.__sitePageViewTracked = true;
+  } else {
+    win.__siteMetaPixelPendingUrls[trackingKey] = eventId;
+    win.__sitePageViewTracked = false;
+  }
 
   console.info("[Site Pixel] PageView fired", {
     pixelId,
     eventId,
     url: currentUrl,
-    ready: isFbqReady(win),
+    ready,
+    confirmed: ready,
   });
 
   return eventId;
@@ -171,7 +184,7 @@ function ensureMetaPixelSdk(win: SitePixelWindow) {
         () => {
           win.__siteFbSdkLoaded = true;
           if (win.__siteCurrentPixelId) {
-            trackSitePageView(win.__siteCurrentPixelId);
+            trackSitePageView(win.__siteCurrentPixelId, { force: true });
           }
         },
         { once: true }
@@ -194,7 +207,7 @@ function ensureMetaPixelSdk(win: SitePixelWindow) {
       ready: typeof win.fbq?.callMethod === "function",
     });
     if (win.__siteCurrentPixelId) {
-      trackSitePageView(win.__siteCurrentPixelId);
+      trackSitePageView(win.__siteCurrentPixelId, { force: true });
     }
   };
   script.onerror = () => {

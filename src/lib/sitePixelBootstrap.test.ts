@@ -10,6 +10,7 @@ describe("sitePixelBootstrap", () => {
     delete (window as any).fbq;
     delete (window as any)._fbq;
     delete (window as any).__siteMetaPixelBootstrapped;
+    delete (window as any).__siteMetaPixelPendingUrls;
     delete (window as any).__siteMetaPixelTrackedUrls;
     delete (window as any).__siteCurrentPixelId;
     delete (window as any).__siteMetaPixelLifecycleInstalled;
@@ -24,12 +25,13 @@ describe("sitePixelBootstrap", () => {
     ensureSitePixelBootstrap("123");
 
     const eventId = getSiteTrackedPageViewEventId("123", window.location.href);
-    expect(eventId).toMatch(/^eid_/);
+    expect(eventId).toBe("");
 
     const pageViewCall = (window as any).fbq.queue.find(
       (args: any[]) => args[0] === "track" && args[1] === "PageView"
     );
     expect(pageViewCall).toBeTruthy();
+    expect((window as any).__siteMetaPixelPendingUrls?.["123:https://localhost/"]).toMatch(/^eid_/);
   });
 
   it("fires via callMethod when fbq is ready", () => {
