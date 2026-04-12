@@ -17,5 +17,7 @@ describe("landingPixelBootstrap", () => {
 
     expect(html).toContain("window.__pendingPurchase");
     expect(html).toContain("window.__lpFlushPendingBrowserPurchases");
+    expect(html).toContain("window.__lpFireLandingPageView(true)");
+    expect(html).toContain("__lpMetaPixelPendingUrls");
   });
 });
