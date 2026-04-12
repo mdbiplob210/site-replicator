@@ -57,20 +57,17 @@ function getExternalId() {
 function ensureFbqStub(win: SitePixelWindow) {
   if (typeof win.fbq === "function") return;
 
-  const fbq = ((...args: any[]) => {
+  const fbq = (function (this: unknown) {
     if (fbq.callMethod) {
-      fbq.callMethod(...args);
+      fbq.callMethod.apply(fbq, arguments as unknown as any[]);
       return;
     }
 
-    fbq.queue?.push(args);
-  }) as NonNullable<SitePixelWindow["fbq"]>;
+    fbq.queue?.push(Array.from(arguments));
+  } as unknown) as NonNullable<SitePixelWindow["fbq"]>;
 
   if (!win._fbq) win._fbq = fbq;
-  fbq.push = (...args: any[]) => {
-    fbq.queue?.push(args);
-    return fbq.queue?.length ?? 0;
-  };
+  fbq.push = fbq;
   fbq.loaded = true;
   fbq.version = "2.0";
   fbq.queue = [];
