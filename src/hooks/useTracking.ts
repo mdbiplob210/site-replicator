@@ -17,6 +17,7 @@ declare global {
     __siteFbSdkLoaded?: boolean;
     __siteCurrentPixelId?: string;
     __siteMetaPixelBootstrapped?: Record<string, boolean>;
+    __siteMetaPixelPendingUrls?: Record<string, string>;
     __siteMetaPixelTrackedUrls?: Record<string, string>;
     fbq?: any;
     _fbq?: any;
@@ -147,6 +148,16 @@ function getTtp(): string {
 
 function isFbPixelReady(): boolean {
   return typeof window.fbq === "function" && typeof window.fbq.callMethod === "function";
+}
+
+function normalizeTrackingUrl(url: string): string {
+  try {
+    const parsed = new URL(url, window.location.origin);
+    parsed.hash = "";
+    return parsed.toString();
+  } catch {
+    return String(url || "").split("#")[0] || String(url || "");
+  }
 }
 
 // Get comprehensive device/browser info
@@ -495,11 +506,16 @@ export function useTracking() {
 
   const trackPageView = useCallback((pageTitle?: string) => {
     ensureCommerceTrackersReady();
+    const trackingUrl = normalizeTrackingUrl(window.location.href);
+    const pendingShellEventId =
+      fbPixelId && window.__siteMetaPixelPendingUrls
+        ? window.__siteMetaPixelPendingUrls[`${fbPixelId}:${trackingUrl}`]
+        : "";
     const browserEventId = fbPixelId ? getSiteTrackedPageViewEventId(fbPixelId, window.location.href) : "";
-    const eventId = browserEventId || generateEventId("pv");
+    const eventId = browserEventId || pendingShellEventId || generateEventId("pv");
     const device = getDeviceInfo();
     const referrer = getReferrerInfo();
-    const shouldSkipBrowserPixel = !!browserEventId;
+    const shouldSkipBrowserPixel = !!browserEventId || !!pendingShellEventId;
 
     const firePageView = () => {
       const shellEventId = fbPixelId ? getSiteTrackedPageViewEventId(fbPixelId, window.location.href) : "";

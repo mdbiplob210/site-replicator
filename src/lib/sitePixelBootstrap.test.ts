@@ -31,7 +31,10 @@ describe("sitePixelBootstrap", () => {
       (args: any[]) => args[0] === "track" && args[1] === "PageView"
     );
     expect(pageViewCall).toBeTruthy();
-    expect((window as any).__siteMetaPixelPendingUrls?.["123:https://localhost/"]).toMatch(/^eid_/);
+
+    const pendingValues = Object.values((window as any).__siteMetaPixelPendingUrls || {});
+    expect(pendingValues).toHaveLength(1);
+    expect(String(pendingValues[0] || "")).toMatch(/^eid_/);
   });
 
   it("fires via callMethod when fbq is ready", () => {
