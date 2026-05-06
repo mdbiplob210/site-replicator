@@ -95,7 +95,42 @@ export default function AdminReports() {
     },
   });
 
-  useEffect(() => {
+  // Cross-connect: Order items for product-wise report
+  const { data: orderItems = [] } = useQuery({
+    queryKey: ["reports-order-items", period],
+    queryFn: async () => {
+      const orderIds = orders.map((o: any) => o.id);
+      if (orderIds.length === 0) return [] as any[];
+      const { data, error } = await supabase
+        .from("order_items")
+        .select("*")
+        .in("order_id", orderIds);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: orders.length > 0,
+  });
+
+  // Cross-connect: Product purchase items (expense per product)
+  const { data: purchaseItems = [] } = useQuery({
+    queryKey: ["reports-purchase-items", period],
+    queryFn: async () => {
+      const { data: financeIds } = await supabase
+        .from("finance_records")
+        .select("id")
+        .eq("type", "product_purchase")
+        .gte("created_at", from)
+        .lte("created_at", to);
+      const ids = (financeIds || []).map((f: any) => f.id);
+      if (ids.length === 0) return [] as any[];
+      const { data, error } = await supabase
+        .from("product_purchase_items")
+        .select("*")
+        .in("finance_record_id", ids);
+      if (error) throw error;
+      return data || [];
+    },
+  });
     supabase
       .from("products")
       .select("id, name, selling_price, purchase_price, additional_cost")
