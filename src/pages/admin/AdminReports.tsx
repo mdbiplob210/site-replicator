@@ -203,9 +203,78 @@ export default function AdminReports() {
 
   const tabs: { id: Tab; label: string; icon: any }[] = [
     { id: "auto", label: "Auto Reports", icon: BarChart3 },
+    { id: "product", label: "Product Wise", icon: Package },
     { id: "manual", label: "Manual Report", icon: PlusCircle },
     { id: "history", label: "History", icon: FileCheck },
   ];
+
+  // Product-wise aggregation
+  const productReport = useMemo(() => {
+    const map = new Map<string, {
+      product_id: string | null;
+      product_name: string;
+      product_code: string;
+      orders: Set<string>;
+      qty: number;
+      revenue: number;
+      purchaseQty: number;
+      purchaseCost: number;
+    }>();
+    const keyOf = (id: string | null, name: string) => id || `name:${name}`;
+
+    for (const it of orderItems as any[]) {
+      const order = (orders as any[]).find(o => o.id === it.order_id);
+      if (!order) continue;
+      if (["cancelled", "returned"].includes(order.status)) continue;
+      const k = keyOf(it.product_id, it.product_name);
+      const existing = map.get(k) || {
+        product_id: it.product_id, product_name: it.product_name, product_code: it.product_code || "",
+        orders: new Set<string>(), qty: 0, revenue: 0, purchaseQty: 0, purchaseCost: 0,
+      };
+      existing.orders.add(it.order_id);
+      existing.qty += Number(it.quantity);
+      existing.revenue += Number(it.total_price);
+      map.set(k, existing);
+    }
+
+    for (const pi of purchaseItems as any[]) {
+      const k = keyOf(pi.product_id, pi.product_name);
+      const existing = map.get(k) || {
+        product_id: pi.product_id, product_name: pi.product_name, product_code: pi.product_code || "",
+        orders: new Set<string>(), qty: 0, revenue: 0, purchaseQty: 0, purchaseCost: 0,
+      };
+      existing.purchaseQty += Number(pi.quantity);
+      existing.purchaseCost += Number(pi.total_amount);
+      map.set(k, existing);
+    }
+
+    const rows = Array.from(map.values()).map(r => {
+      const product = products.find(p => p.id === r.product_id);
+      const unitCost = product ? (product.purchase_price + product.additional_cost) : (r.purchaseQty > 0 ? r.purchaseCost / r.purchaseQty : 0);
+      const soldCogs = unitCost * r.qty;
+      const profit = r.revenue - soldCogs;
+      return {
+        ...r,
+        orderCount: r.orders.size,
+        unitCost,
+        soldCogs,
+        profit,
+      };
+    }).sort((a, b) => b.revenue - a.revenue);
+
+    const totals = rows.reduce((acc, r) => {
+      acc.orders += r.orderCount;
+      acc.qty += r.qty;
+      acc.revenue += r.revenue;
+      acc.cogs += r.soldCogs;
+      acc.purchase += r.purchaseCost;
+      acc.profit += r.profit;
+      return acc;
+    }, { orders: 0, qty: 0, revenue: 0, cogs: 0, purchase: 0, profit: 0 });
+
+    return { rows, totals };
+  }, [orderItems, orders, purchaseItems, products]);
+
 
   const fmt = (n: number) => `৳${n.toLocaleString()}`;
 
