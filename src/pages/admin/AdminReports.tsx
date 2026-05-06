@@ -410,6 +410,147 @@ export default function AdminReports() {
           </div>
         )}
 
+        {/* Product Wise Report Tab */}
+        {tab === "product" && (
+          <div className="space-y-5">
+            {ordersLoading ? (
+              <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {[
+                    { icon: ShoppingCart, value: productReport.totals.orders, label: "Orders (sum)", color: "text-primary" },
+                    { icon: Package, value: productReport.totals.qty, label: "Units Sold", color: "text-blue-600" },
+                    { icon: DollarSign, value: fmt(productReport.totals.revenue), label: "Revenue (Add)", color: "text-emerald-600" },
+                    { icon: Wallet, value: fmt(productReport.totals.cogs + productReport.totals.purchase), label: "Expense (COGS+Purchase)", color: "text-orange-500" },
+                  ].map((s, i) => (
+                    <div key={i} className="bg-card rounded-2xl border border-border p-4 flex items-center gap-3">
+                      <div className={`h-10 w-10 rounded-xl bg-secondary flex items-center justify-center ${s.color}`}>
+                        <s.icon className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="text-xl font-bold text-foreground">{s.value}</p>
+                        <p className="text-xs text-muted-foreground">{s.label}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 rounded-2xl border border-emerald-500/20 p-5">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase">Profit (Revenue − COGS)</p>
+                    <p className={`text-3xl font-bold mt-2 ${productReport.totals.profit >= 0 ? "text-emerald-600" : "text-destructive"}`}>
+                      {fmt(productReport.totals.profit)}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">Sales-only profit (excludes ad spend)</p>
+                  </div>
+                  <div className="bg-gradient-to-br from-violet-500/10 to-violet-500/5 rounded-2xl border border-violet-500/20 p-5">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase">Profit (with Ads)</p>
+                    <p className={`text-3xl font-bold mt-2 ${(productReport.totals.profit - autoReport.adsCostBdt) >= 0 ? "text-emerald-600" : "text-destructive"}`}>
+                      {fmt(productReport.totals.profit - autoReport.adsCostBdt)}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">After ad spend {fmt(autoReport.adsCostBdt)}</p>
+                  </div>
+                </div>
+
+                <div className="bg-card rounded-2xl border border-border overflow-hidden">
+                  <div className="p-4 border-b border-border flex items-center gap-2">
+                    <Package className="h-4 w-4 text-muted-foreground" />
+                    <h3 className="font-bold text-foreground">Per Product Breakdown</h3>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead className="bg-secondary/50">
+                        <tr className="text-left">
+                          <th className="px-4 py-3 font-semibold">Product</th>
+                          <th className="px-4 py-3 font-semibold text-right">Orders</th>
+                          <th className="px-4 py-3 font-semibold text-right">Units</th>
+                          <th className="px-4 py-3 font-semibold text-right">Revenue (Add)</th>
+                          <th className="px-4 py-3 font-semibold text-right">Unit Cost</th>
+                          <th className="px-4 py-3 font-semibold text-right">COGS</th>
+                          <th className="px-4 py-3 font-semibold text-right">Purchase Exp.</th>
+                          <th className="px-4 py-3 font-semibold text-right">Profit</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {productReport.rows.length === 0 ? (
+                          <tr><td colSpan={8} className="text-center text-muted-foreground py-8">কোনো ডেটা নেই এই সময়ের জন্য।</td></tr>
+                        ) : productReport.rows.map((r, i) => (
+                          <tr key={i} className="border-t border-border hover:bg-secondary/30">
+                            <td className="px-4 py-3">
+                              <p className="font-medium text-foreground">{r.product_name}</p>
+                              {r.product_code && <p className="text-xs text-muted-foreground">{r.product_code}</p>}
+                            </td>
+                            <td className="px-4 py-3 text-right">{r.orderCount}</td>
+                            <td className="px-4 py-3 text-right">{r.qty}</td>
+                            <td className="px-4 py-3 text-right text-emerald-600 font-semibold">{fmt(r.revenue)}</td>
+                            <td className="px-4 py-3 text-right">{fmt(r.unitCost)}</td>
+                            <td className="px-4 py-3 text-right text-orange-600">{fmt(r.soldCogs)}</td>
+                            <td className="px-4 py-3 text-right text-violet-600">{fmt(r.purchaseCost)}</td>
+                            <td className={`px-4 py-3 text-right font-bold ${r.profit >= 0 ? "text-emerald-600" : "text-destructive"}`}>{fmt(r.profit)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                      {productReport.rows.length > 0 && (
+                        <tfoot className="bg-secondary/50 font-bold">
+                          <tr>
+                            <td className="px-4 py-3">Total</td>
+                            <td className="px-4 py-3 text-right">{productReport.totals.orders}</td>
+                            <td className="px-4 py-3 text-right">{productReport.totals.qty}</td>
+                            <td className="px-4 py-3 text-right text-emerald-600">{fmt(productReport.totals.revenue)}</td>
+                            <td className="px-4 py-3 text-right">—</td>
+                            <td className="px-4 py-3 text-right text-orange-600">{fmt(productReport.totals.cogs)}</td>
+                            <td className="px-4 py-3 text-right text-violet-600">{fmt(productReport.totals.purchase)}</td>
+                            <td className={`px-4 py-3 text-right ${productReport.totals.profit >= 0 ? "text-emerald-600" : "text-destructive"}`}>{fmt(productReport.totals.profit)}</td>
+                          </tr>
+                        </tfoot>
+                      )}
+                    </table>
+                  </div>
+                </div>
+
+                {/* Accounting System Breakdown */}
+                <div className="bg-card rounded-2xl border border-border p-5">
+                  <h3 className="font-bold text-foreground mb-3 flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-muted-foreground" /> Accounting System কীভাবে কাজ করে
+                  </h3>
+                  <div className="space-y-3 text-sm text-foreground">
+                    <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3">
+                      <p className="font-semibold text-emerald-700 dark:text-emerald-400">💰 Revenue (Add / Money In)</p>
+                      <p className="text-muted-foreground mt-1">প্রতিটি product-এর জন্য confirmed/in-courier/delivered orders থেকে <code className="text-xs bg-secondary px-1 rounded">order_items.total_price</code> যোগ করা হয়। Cancelled ও Returned orders বাদ দেওয়া হয়।</p>
+                    </div>
+                    <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-3">
+                      <p className="font-semibold text-orange-700 dark:text-orange-400">📦 COGS (Cost of Goods Sold)</p>
+                      <p className="text-muted-foreground mt-1">Unit Cost = <code className="text-xs bg-secondary px-1 rounded">products.purchase_price + additional_cost</code>। COGS = Unit Cost × বিক্রিত quantity। এটা প্রতিটি ইউনিট বিক্রির জন্য কত খরচ তা দেখায়।</p>
+                    </div>
+                    <div className="bg-violet-500/10 border border-violet-500/20 rounded-xl p-3">
+                      <p className="font-semibold text-violet-700 dark:text-violet-400">🛒 Purchase Expense</p>
+                      <p className="text-muted-foreground mt-1">Finance module-এ "Product Purchase" type record-গুলো থেকে <code className="text-xs bg-secondary px-1 rounded">product_purchase_items</code> read করে এই period-এ কোন product কত টাকার stock কেনা হয়েছে তা হিসাব হয়।</p>
+                    </div>
+                    <div className="bg-primary/10 border border-primary/20 rounded-xl p-3">
+                      <p className="font-semibold text-primary">📊 Profit Calculation (Two Way)</p>
+                      <p className="text-muted-foreground mt-1">
+                        <strong>1) Sales Profit:</strong> Revenue − COGS (শুধু পণ্য বিক্রির লাভ)<br />
+                        <strong>2) Net Profit:</strong> Sales Profit − Ad Spend (BDT)<br />
+                        উপরে দুটি কার্ডে আজকের দুই type-ই দেখানো হয়েছে।
+                      </p>
+                    </div>
+                    <div className="bg-secondary/50 border border-border rounded-xl p-3">
+                      <p className="font-semibold text-foreground">🔗 Data Sources</p>
+                      <ul className="text-muted-foreground mt-1 list-disc pl-5 space-y-1">
+                        <li><code className="text-xs">orders</code> + <code className="text-xs">order_items</code> → Revenue, Units, Order Count</li>
+                        <li><code className="text-xs">products</code> → Unit Cost (purchase + additional)</li>
+                        <li><code className="text-xs">finance_records</code> + <code className="text-xs">product_purchase_items</code> → Stock Purchase Expense</li>
+                        <li><code className="text-xs">ad_spends</code> → Ad cost (BDT/USD) for Net Profit</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
         {/* Manual Report Tab */}
         {tab === "manual" && (
           <div className="space-y-5">
