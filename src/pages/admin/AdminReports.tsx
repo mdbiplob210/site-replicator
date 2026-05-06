@@ -131,6 +131,8 @@ export default function AdminReports() {
       return data || [];
     },
   });
+
+  useEffect(() => {
     supabase
       .from("products")
       .select("id, name, selling_price, purchase_price, additional_cost")
