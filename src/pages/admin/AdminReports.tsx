@@ -41,6 +41,7 @@ function getDateRange(period: Period) {
 export default function AdminReports() {
   const [tab, setTab] = useState<Tab>("auto");
   const [period, setPeriod] = useState<Period>("today");
+  const [useDemo, setUseDemo] = useState(false);
 
   // Manual report state
   const [adsSpendUsd, setAdsSpendUsd] = useState("0");
