@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { startOfDay, endOfDay, subDays, startOfWeek, startOfMonth, endOfMonth, subMonths, format } from "date-fns";
 
-type Tab = "auto" | "manual" | "history";
+type Tab = "auto" | "manual" | "product" | "history";
 type Period = "today" | "yesterday" | "weekly" | "monthly" | "custom";
 
 interface Product {
