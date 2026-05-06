@@ -209,6 +209,25 @@ export default function AdminReports() {
     { id: "history", label: "History", icon: FileCheck },
   ];
 
+  // Demo dataset for preview/learning
+  const demoReport = useMemo(() => {
+    const rows = [
+      { product_name: "Premium T-Shirt",   product_code: "TSH-001", orderCount: 18, qty: 22, unitCost: 280, revenue: 13200, purchaseQty: 30, purchaseCost: 8400 },
+      { product_name: "Smart Watch X1",    product_code: "WCH-101", orderCount: 9,  qty: 11, unitCost: 1450, revenue: 24750, purchaseQty: 15, purchaseCost: 21750 },
+      { product_name: "Wireless Earbuds",  product_code: "EAR-220", orderCount: 14, qty: 16, unitCost: 620, revenue: 19200, purchaseQty: 20, purchaseCost: 12400 },
+      { product_name: "Leather Wallet",    product_code: "WAL-050", orderCount: 7,  qty: 9,  unitCost: 340, revenue: 6750,  purchaseQty: 12, purchaseCost: 4080 },
+      { product_name: "Sports Cap",        product_code: "CAP-007", orderCount: 5,  qty: 6,  unitCost: 150, revenue: 2400,  purchaseQty: 10, purchaseCost: 1500 },
+    ].map(r => {
+      const soldCogs = r.unitCost * r.qty;
+      return { ...r, product_id: null, orders: new Set<string>(), soldCogs, profit: r.revenue - soldCogs };
+    });
+    const totals = rows.reduce((a, r) => ({
+      orders: a.orders + r.orderCount, qty: a.qty + r.qty, revenue: a.revenue + r.revenue,
+      cogs: a.cogs + r.soldCogs, purchase: a.purchase + r.purchaseCost, profit: a.profit + r.profit,
+    }), { orders: 0, qty: 0, revenue: 0, cogs: 0, purchase: 0, profit: 0 });
+    return { rows, totals, adsCostBdt: 4800, adsCostUsd: 40, deliveryCost: 3120, otherExpense: 800 };
+  }, []);
+
   // Product-wise aggregation
   const productReport = useMemo(() => {
     const map = new Map<string, {
@@ -275,6 +294,17 @@ export default function AdminReports() {
 
     return { rows, totals };
   }, [orderItems, orders, purchaseItems, products]);
+
+  // Active dataset (real or demo)
+  const activeReport = useDemo
+    ? { rows: demoReport.rows, totals: demoReport.totals, adsCostBdt: demoReport.adsCostBdt, adsCostUsd: demoReport.adsCostUsd, deliveryCost: demoReport.deliveryCost, otherExpense: demoReport.otherExpense }
+    : { rows: productReport.rows, totals: productReport.totals, adsCostBdt: autoReport.adsCostBdt, adsCostUsd: autoReport.adsCostUsd, deliveryCost: autoReport.totalDelivery, otherExpense: autoReport.moneyOut };
+
+  const totalExpense = activeReport.totals.cogs + activeReport.adsCostBdt + activeReport.deliveryCost + activeReport.otherExpense;
+  const netProfit = activeReport.totals.revenue - totalExpense;
+  const profitMargin = activeReport.totals.revenue > 0 ? (netProfit / activeReport.totals.revenue) * 100 : 0;
+  const aov = activeReport.totals.orders > 0 ? activeReport.totals.revenue / activeReport.totals.orders : 0;
+
 
 
   const fmt = (n: number) => `৳${n.toLocaleString()}`;
