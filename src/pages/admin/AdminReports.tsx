@@ -648,36 +648,46 @@ export default function AdminReports() {
                     <table className="w-full text-sm">
                       <thead className="bg-secondary/50">
                         <tr className="text-left">
-                          <th className="px-4 py-3 font-semibold">Product</th>
-                          <th className="px-4 py-3 font-semibold text-right">Orders</th>
-                          <th className="px-4 py-3 font-semibold text-right">Units</th>
-                          <th className="px-4 py-3 font-semibold text-right">Revenue</th>
-                          <th className="px-4 py-3 font-semibold text-right">Unit Cost</th>
-                          <th className="px-4 py-3 font-semibold text-right">COGS (খরচ)</th>
-                          <th className="px-4 py-3 font-semibold text-right">Purchase</th>
-                          <th className="px-4 py-3 font-semibold text-right">Profit (লাভ)</th>
-                          <th className="px-4 py-3 font-semibold text-right">Margin</th>
+                          <th className="px-3 py-3 font-semibold">Product</th>
+                          <th className="px-3 py-3 font-semibold text-right">Total</th>
+                          <th className="px-3 py-3 font-semibold text-right text-emerald-600">Confirmed</th>
+                          <th className="px-3 py-3 font-semibold text-right text-primary">Delivered</th>
+                          <th className="px-3 py-3 font-semibold text-right text-destructive">Cancelled</th>
+                          <th className="px-3 py-3 font-semibold text-right text-orange-600">Returned</th>
+                          <th className="px-3 py-3 font-semibold text-right">Confirm %</th>
+                          <th className="px-3 py-3 font-semibold text-right">Delivery %</th>
+                          <th className="px-3 py-3 font-semibold text-right">Cancel %</th>
+                          <th className="px-3 py-3 font-semibold text-right">Return %</th>
+                          <th className="px-3 py-3 font-semibold text-right">Revenue</th>
+                          <th className="px-3 py-3 font-semibold text-right">COGS</th>
+                          <th className="px-3 py-3 font-semibold text-right">Profit</th>
+                          <th className="px-3 py-3 font-semibold text-right">Margin</th>
                         </tr>
                       </thead>
                       <tbody>
                         {activeReport.rows.length === 0 ? (
-                          <tr><td colSpan={9} className="text-center text-muted-foreground py-8">কোনো ডেটা নেই। উপরে "Demo Data দেখুন" বাটন চাপুন।</td></tr>
-                        ) : activeReport.rows.map((r, i) => {
+                          <tr><td colSpan={14} className="text-center text-muted-foreground py-8">কোনো ডেটা নেই। উপরে "Demo Data দেখুন" বাটন চাপুন।</td></tr>
+                        ) : activeReport.rows.map((r: any, i) => {
                           const margin = r.revenue > 0 ? (r.profit / r.revenue) * 100 : 0;
                           return (
                             <tr key={i} className="border-t border-border hover:bg-secondary/30">
-                              <td className="px-4 py-3">
+                              <td className="px-3 py-3">
                                 <p className="font-medium text-foreground">{r.product_name}</p>
                                 {r.product_code && <p className="text-xs text-muted-foreground">{r.product_code}</p>}
                               </td>
-                              <td className="px-4 py-3 text-right">{r.orderCount}</td>
-                              <td className="px-4 py-3 text-right">{r.qty}</td>
-                              <td className="px-4 py-3 text-right text-emerald-600 font-semibold">{fmt(r.revenue)}</td>
-                              <td className="px-4 py-3 text-right">{fmt(r.unitCost)}</td>
-                              <td className="px-4 py-3 text-right text-orange-600">{fmt(r.soldCogs)}</td>
-                              <td className="px-4 py-3 text-right text-violet-600">{fmt(r.purchaseCost)}</td>
-                              <td className={`px-4 py-3 text-right font-bold ${r.profit >= 0 ? "text-emerald-600" : "text-destructive"}`}>{fmt(r.profit)}</td>
-                              <td className={`px-4 py-3 text-right ${margin >= 0 ? "text-emerald-600" : "text-destructive"}`}>{margin.toFixed(1)}%</td>
+                              <td className="px-3 py-3 text-right">{r.totalOrders ?? 0}</td>
+                              <td className="px-3 py-3 text-right text-emerald-600">{r.confirmedOrders ?? 0}</td>
+                              <td className="px-3 py-3 text-right text-primary font-semibold">{r.deliveredOrders ?? 0}</td>
+                              <td className="px-3 py-3 text-right text-destructive">{r.cancelledOrders ?? 0}</td>
+                              <td className="px-3 py-3 text-right text-orange-600">{r.returnedOrders ?? 0}</td>
+                              <td className="px-3 py-3 text-right">{(r.confirmRate ?? 0).toFixed(1)}%</td>
+                              <td className="px-3 py-3 text-right">{(r.deliveryRate ?? 0).toFixed(1)}%</td>
+                              <td className="px-3 py-3 text-right">{(r.cancelRate ?? 0).toFixed(1)}%</td>
+                              <td className="px-3 py-3 text-right">{(r.returnRate ?? 0).toFixed(1)}%</td>
+                              <td className="px-3 py-3 text-right text-emerald-600 font-semibold">{fmt(r.revenue)}</td>
+                              <td className="px-3 py-3 text-right text-orange-600">{fmt(r.soldCogs)}</td>
+                              <td className={`px-3 py-3 text-right font-bold ${r.profit >= 0 ? "text-emerald-600" : "text-destructive"}`}>{fmt(r.profit)}</td>
+                              <td className={`px-3 py-3 text-right ${margin >= 0 ? "text-emerald-600" : "text-destructive"}`}>{margin.toFixed(1)}%</td>
                             </tr>
                           );
                         })}
@@ -685,15 +695,20 @@ export default function AdminReports() {
                       {activeReport.rows.length > 0 && (
                         <tfoot className="bg-secondary/50 font-bold">
                           <tr>
-                            <td className="px-4 py-3">Total</td>
-                            <td className="px-4 py-3 text-right">{activeReport.totals.orders}</td>
-                            <td className="px-4 py-3 text-right">{activeReport.totals.qty}</td>
-                            <td className="px-4 py-3 text-right text-emerald-600">{fmt(activeReport.totals.revenue)}</td>
-                            <td className="px-4 py-3 text-right">—</td>
-                            <td className="px-4 py-3 text-right text-orange-600">{fmt(activeReport.totals.cogs)}</td>
-                            <td className="px-4 py-3 text-right text-violet-600">{fmt(activeReport.totals.purchase)}</td>
-                            <td className={`px-4 py-3 text-right ${activeReport.totals.profit >= 0 ? "text-emerald-600" : "text-destructive"}`}>{fmt(activeReport.totals.profit)}</td>
-                            <td className="px-4 py-3 text-right">—</td>
+                            <td className="px-3 py-3">Total</td>
+                            <td className="px-3 py-3 text-right">{(activeReport.totals as any).totalOrders ?? 0}</td>
+                            <td className="px-3 py-3 text-right text-emerald-600">{(activeReport.totals as any).confirmed ?? 0}</td>
+                            <td className="px-3 py-3 text-right text-primary">{(activeReport.totals as any).delivered ?? 0}</td>
+                            <td className="px-3 py-3 text-right text-destructive">{(activeReport.totals as any).cancelled ?? 0}</td>
+                            <td className="px-3 py-3 text-right text-orange-600">{(activeReport.totals as any).returned ?? 0}</td>
+                            <td className="px-3 py-3 text-right">—</td>
+                            <td className="px-3 py-3 text-right">—</td>
+                            <td className="px-3 py-3 text-right">—</td>
+                            <td className="px-3 py-3 text-right">—</td>
+                            <td className="px-3 py-3 text-right text-emerald-600">{fmt(activeReport.totals.revenue)}</td>
+                            <td className="px-3 py-3 text-right text-orange-600">{fmt(activeReport.totals.cogs)}</td>
+                            <td className={`px-3 py-3 text-right ${activeReport.totals.profit >= 0 ? "text-emerald-600" : "text-destructive"}`}>{fmt(activeReport.totals.profit)}</td>
+                            <td className="px-3 py-3 text-right">—</td>
                           </tr>
                         </tfoot>
                       )}
