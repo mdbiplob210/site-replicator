@@ -209,59 +209,100 @@ export default function AdminReports() {
     { id: "history", label: "History", icon: FileCheck },
   ];
 
-  // Demo dataset for preview/learning
+  // Demo dataset for preview/learning — based on DELIVERED parcels only for accounting
   const demoReport = useMemo(() => {
-    const rows = [
-      { product_name: "Premium T-Shirt",   product_code: "TSH-001", orderCount: 18, qty: 22, unitCost: 280, revenue: 13200, purchaseQty: 30, purchaseCost: 8400 },
-      { product_name: "Smart Watch X1",    product_code: "WCH-101", orderCount: 9,  qty: 11, unitCost: 1450, revenue: 24750, purchaseQty: 15, purchaseCost: 21750 },
-      { product_name: "Wireless Earbuds",  product_code: "EAR-220", orderCount: 14, qty: 16, unitCost: 620, revenue: 19200, purchaseQty: 20, purchaseCost: 12400 },
-      { product_name: "Leather Wallet",    product_code: "WAL-050", orderCount: 7,  qty: 9,  unitCost: 340, revenue: 6750,  purchaseQty: 12, purchaseCost: 4080 },
-      { product_name: "Sports Cap",        product_code: "CAP-007", orderCount: 5,  qty: 6,  unitCost: 150, revenue: 2400,  purchaseQty: 10, purchaseCost: 1500 },
-    ].map(r => {
-      const soldCogs = r.unitCost * r.qty;
-      return { ...r, product_id: null, orders: new Set<string>(), soldCogs, profit: r.revenue - soldCogs };
+    const seed = [
+      { product_name: "Premium T-Shirt",  product_code: "TSH-001", total: 25, confirmed: 22, delivered: 18, cancelled: 3, returned: 4, sellPrice: 600, unitCost: 280, purchaseQty: 30, purchaseCost: 8400 },
+      { product_name: "Smart Watch X1",   product_code: "WCH-101", total: 14, confirmed: 12, delivered: 9,  cancelled: 2, returned: 3, sellPrice: 2250, unitCost: 1450, purchaseQty: 15, purchaseCost: 21750 },
+      { product_name: "Wireless Earbuds", product_code: "EAR-220", total: 20, confirmed: 17, delivered: 14, cancelled: 3, returned: 3, sellPrice: 1200, unitCost: 620, purchaseQty: 20, purchaseCost: 12400 },
+      { product_name: "Leather Wallet",   product_code: "WAL-050", total: 10, confirmed: 8,  delivered: 6,  cancelled: 2, returned: 2, sellPrice: 750, unitCost: 340, purchaseQty: 12, purchaseCost: 4080 },
+      { product_name: "Sports Cap",       product_code: "CAP-007", total: 8,  confirmed: 7,  delivered: 5,  cancelled: 1, returned: 2, sellPrice: 400, unitCost: 150, purchaseQty: 10, purchaseCost: 1500 },
+    ];
+    const rows = seed.map(r => {
+      const qty = r.delivered;
+      const revenue = qty * r.sellPrice;
+      const soldCogs = qty * r.unitCost;
+      const profit = revenue - soldCogs;
+      const confirmRate = r.total > 0 ? (r.confirmed / r.total) * 100 : 0;
+      const cancelRate = r.total > 0 ? (r.cancelled / r.total) * 100 : 0;
+      const deliveryRate = r.confirmed > 0 ? (r.delivered / r.confirmed) * 100 : 0;
+      const returnRate = r.confirmed > 0 ? (r.returned / r.confirmed) * 100 : 0;
+      return {
+        product_id: null,
+        product_name: r.product_name, product_code: r.product_code,
+        totalOrders: r.total, confirmedOrders: r.confirmed, deliveredOrders: r.delivered,
+        cancelledOrders: r.cancelled, returnedOrders: r.returned,
+        qty, revenue, unitCost: r.unitCost, soldCogs, profit,
+        purchaseQty: r.purchaseQty, purchaseCost: r.purchaseCost,
+        orderCount: r.delivered,
+        confirmRate, cancelRate, deliveryRate, returnRate,
+      };
     });
     const totals = rows.reduce((a, r) => ({
-      orders: a.orders + r.orderCount, qty: a.qty + r.qty, revenue: a.revenue + r.revenue,
+      orders: a.orders + r.deliveredOrders, totalOrders: a.totalOrders + r.totalOrders,
+      confirmed: a.confirmed + r.confirmedOrders, delivered: a.delivered + r.deliveredOrders,
+      cancelled: a.cancelled + r.cancelledOrders, returned: a.returned + r.returnedOrders,
+      qty: a.qty + r.qty, revenue: a.revenue + r.revenue,
       cogs: a.cogs + r.soldCogs, purchase: a.purchase + r.purchaseCost, profit: a.profit + r.profit,
-    }), { orders: 0, qty: 0, revenue: 0, cogs: 0, purchase: 0, profit: 0 });
+    }), { orders: 0, totalOrders: 0, confirmed: 0, delivered: 0, cancelled: 0, returned: 0, qty: 0, revenue: 0, cogs: 0, purchase: 0, profit: 0 });
     return { rows, totals, adsCostBdt: 4800, adsCostUsd: 40, deliveryCost: 3120, otherExpense: 800 };
   }, []);
 
-  // Product-wise aggregation
+  // Product-wise aggregation — Accounting based ONLY on DELIVERED orders.
+  // Ratios are computed across all orders for the product in the period.
   const productReport = useMemo(() => {
-    const map = new Map<string, {
+    type Agg = {
       product_id: string | null;
       product_name: string;
       product_code: string;
-      orders: Set<string>;
+      // status order sets (per product)
+      totalOrderIds: Set<string>;
+      confirmedOrderIds: Set<string>; // not cancelled
+      deliveredOrderIds: Set<string>;
+      cancelledOrderIds: Set<string>;
+      returnedOrderIds: Set<string>;
+      // delivered-only metrics
       qty: number;
       revenue: number;
+      // purchase
       purchaseQty: number;
       purchaseCost: number;
-    }>();
+    };
+    const map = new Map<string, Agg>();
     const keyOf = (id: string | null, name: string) => id || `name:${name}`;
 
+    const ordersById = new Map<string, any>();
+    for (const o of orders as any[]) ordersById.set(o.id, o);
+
     for (const it of orderItems as any[]) {
-      const order = (orders as any[]).find(o => o.id === it.order_id);
+      const order = ordersById.get(it.order_id);
       if (!order) continue;
-      if (["cancelled", "returned"].includes(order.status)) continue;
       const k = keyOf(it.product_id, it.product_name);
-      const existing = map.get(k) || {
+      const existing: Agg = map.get(k) || {
         product_id: it.product_id, product_name: it.product_name, product_code: it.product_code || "",
-        orders: new Set<string>(), qty: 0, revenue: 0, purchaseQty: 0, purchaseCost: 0,
+        totalOrderIds: new Set(), confirmedOrderIds: new Set(), deliveredOrderIds: new Set(),
+        cancelledOrderIds: new Set(), returnedOrderIds: new Set(),
+        qty: 0, revenue: 0, purchaseQty: 0, purchaseCost: 0,
       };
-      existing.orders.add(it.order_id);
-      existing.qty += Number(it.quantity);
-      existing.revenue += Number(it.total_price);
+      existing.totalOrderIds.add(order.id);
+      if (order.status === "cancelled") existing.cancelledOrderIds.add(order.id);
+      else existing.confirmedOrderIds.add(order.id);
+      if (order.status === "delivered") {
+        existing.deliveredOrderIds.add(order.id);
+        existing.qty += Number(it.quantity);
+        existing.revenue += Number(it.total_price);
+      }
+      if (order.status === "returned") existing.returnedOrderIds.add(order.id);
       map.set(k, existing);
     }
 
     for (const pi of purchaseItems as any[]) {
       const k = keyOf(pi.product_id, pi.product_name);
-      const existing = map.get(k) || {
+      const existing: Agg = map.get(k) || {
         product_id: pi.product_id, product_name: pi.product_name, product_code: pi.product_code || "",
-        orders: new Set<string>(), qty: 0, revenue: 0, purchaseQty: 0, purchaseCost: 0,
+        totalOrderIds: new Set(), confirmedOrderIds: new Set(), deliveredOrderIds: new Set(),
+        cancelledOrderIds: new Set(), returnedOrderIds: new Set(),
+        qty: 0, revenue: 0, purchaseQty: 0, purchaseCost: 0,
       };
       existing.purchaseQty += Number(pi.quantity);
       existing.purchaseCost += Number(pi.total_amount);
@@ -273,32 +314,52 @@ export default function AdminReports() {
       const unitCost = product ? (product.purchase_price + product.additional_cost) : (r.purchaseQty > 0 ? r.purchaseCost / r.purchaseQty : 0);
       const soldCogs = unitCost * r.qty;
       const profit = r.revenue - soldCogs;
+      const totalOrders = r.totalOrderIds.size;
+      const confirmedOrders = r.confirmedOrderIds.size;
+      const deliveredOrders = r.deliveredOrderIds.size;
+      const cancelledOrders = r.cancelledOrderIds.size;
+      const returnedOrders = r.returnedOrderIds.size;
+      const confirmRate = totalOrders > 0 ? (confirmedOrders / totalOrders) * 100 : 0;
+      const cancelRate = totalOrders > 0 ? (cancelledOrders / totalOrders) * 100 : 0;
+      const deliveryRate = confirmedOrders > 0 ? (deliveredOrders / confirmedOrders) * 100 : 0;
+      const returnRate = confirmedOrders > 0 ? (returnedOrders / confirmedOrders) * 100 : 0;
       return {
-        ...r,
-        orderCount: r.orders.size,
-        unitCost,
-        soldCogs,
-        profit,
+        product_id: r.product_id, product_name: r.product_name, product_code: r.product_code,
+        totalOrders, confirmedOrders, deliveredOrders, cancelledOrders, returnedOrders,
+        orderCount: deliveredOrders,
+        qty: r.qty, revenue: r.revenue, unitCost, soldCogs, profit,
+        purchaseQty: r.purchaseQty, purchaseCost: r.purchaseCost,
+        confirmRate, cancelRate, deliveryRate, returnRate,
       };
     }).sort((a, b) => b.revenue - a.revenue);
 
     const totals = rows.reduce((acc, r) => {
-      acc.orders += r.orderCount;
+      acc.orders += r.deliveredOrders;
+      acc.totalOrders += r.totalOrders;
+      acc.confirmed += r.confirmedOrders;
+      acc.delivered += r.deliveredOrders;
+      acc.cancelled += r.cancelledOrders;
+      acc.returned += r.returnedOrders;
       acc.qty += r.qty;
       acc.revenue += r.revenue;
       acc.cogs += r.soldCogs;
       acc.purchase += r.purchaseCost;
       acc.profit += r.profit;
       return acc;
-    }, { orders: 0, qty: 0, revenue: 0, cogs: 0, purchase: 0, profit: 0 });
+    }, { orders: 0, totalOrders: 0, confirmed: 0, delivered: 0, cancelled: 0, returned: 0, qty: 0, revenue: 0, cogs: 0, purchase: 0, profit: 0 });
 
     return { rows, totals };
   }, [orderItems, orders, purchaseItems, products]);
 
   // Active dataset (real or demo)
+  const deliveredDeliveryCost = useMemo(
+    () => (orders as any[]).filter(o => o.status === "delivered").reduce((s, o) => s + Number(o.delivery_charge || 0), 0),
+    [orders]
+  );
+
   const activeReport = useDemo
     ? { rows: demoReport.rows, totals: demoReport.totals, adsCostBdt: demoReport.adsCostBdt, adsCostUsd: demoReport.adsCostUsd, deliveryCost: demoReport.deliveryCost, otherExpense: demoReport.otherExpense }
-    : { rows: productReport.rows, totals: productReport.totals, adsCostBdt: autoReport.adsCostBdt, adsCostUsd: autoReport.adsCostUsd, deliveryCost: autoReport.totalDelivery, otherExpense: autoReport.moneyOut };
+    : { rows: productReport.rows, totals: productReport.totals, adsCostBdt: autoReport.adsCostBdt, adsCostUsd: autoReport.adsCostUsd, deliveryCost: deliveredDeliveryCost, otherExpense: autoReport.moneyOut };
 
   const totalExpense = activeReport.totals.cogs + activeReport.adsCostBdt + activeReport.deliveryCost + activeReport.otherExpense;
   const netProfit = activeReport.totals.revenue - totalExpense;
@@ -459,12 +520,12 @@ export default function AdminReports() {
                   </Button>
                 </div>
 
-                {/* Top KPI Cards */}
+                {/* Top KPI Cards — Accounting based on DELIVERED parcels only */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {[
-                    { icon: ShoppingCart, value: activeReport.totals.orders, label: "Total Orders", color: "text-primary" },
-                    { icon: Package, value: activeReport.totals.qty, label: "Units Sold", color: "text-blue-600" },
-                    { icon: DollarSign, value: fmt(activeReport.totals.revenue), label: "Total Add (Revenue)", color: "text-emerald-600" },
+                    { icon: Package, value: (activeReport.totals as any).delivered ?? activeReport.totals.orders, label: "Delivered Parcels", color: "text-emerald-600" },
+                    { icon: ShoppingCart, value: activeReport.totals.qty, label: "Units Sold (Delivered)", color: "text-blue-600" },
+                    { icon: DollarSign, value: fmt(activeReport.totals.revenue), label: "Revenue (Delivered only)", color: "text-emerald-600" },
                     { icon: Wallet, value: fmt(totalExpense), label: "Total Expense", color: "text-orange-500" },
                   ].map((s, i) => (
                     <div key={i} className="bg-card rounded-2xl border border-border p-4 flex items-center gap-3">
@@ -478,6 +539,40 @@ export default function AdminReports() {
                     </div>
                   ))}
                 </div>
+
+                {/* Parcel Status & Ratios — overall */}
+                {(() => {
+                  const t: any = activeReport.totals;
+                  const total = t.totalOrders ?? 0;
+                  const confirmed = t.confirmed ?? 0;
+                  const delivered = t.delivered ?? 0;
+                  const cancelled = t.cancelled ?? 0;
+                  const returned = t.returned ?? 0;
+                  const confirmRate = total > 0 ? (confirmed / total) * 100 : 0;
+                  const cancelRate = total > 0 ? (cancelled / total) * 100 : 0;
+                  const deliveryRate = confirmed > 0 ? (delivered / confirmed) * 100 : 0;
+                  const returnRate = confirmed > 0 ? (returned / confirmed) * 100 : 0;
+                  return (
+                    <div className="bg-card rounded-2xl border border-border p-5">
+                      <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
+                        <Target className="h-4 w-4 text-primary" /> Parcel Status & Ratios (Overall)
+                      </h3>
+                      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+                        <div className="rounded-xl bg-secondary/50 p-3"><p className="text-[10px] uppercase text-muted-foreground">Total Parcel</p><p className="text-lg font-bold">{total}</p></div>
+                        <div className="rounded-xl bg-emerald-500/10 p-3"><p className="text-[10px] uppercase text-muted-foreground">Confirmed</p><p className="text-lg font-bold text-emerald-600">{confirmed}</p></div>
+                        <div className="rounded-xl bg-primary/10 p-3"><p className="text-[10px] uppercase text-muted-foreground">Delivered</p><p className="text-lg font-bold text-primary">{delivered}</p></div>
+                        <div className="rounded-xl bg-destructive/10 p-3"><p className="text-[10px] uppercase text-muted-foreground">Cancelled</p><p className="text-lg font-bold text-destructive">{cancelled}</p></div>
+                        <div className="rounded-xl bg-orange-500/10 p-3"><p className="text-[10px] uppercase text-muted-foreground">Returned</p><p className="text-lg font-bold text-orange-600">{returned}</p></div>
+                      </div>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div className="rounded-xl border border-emerald-500/20 p-3"><p className="text-[10px] uppercase text-muted-foreground">Confirm Ratio</p><p className="text-xl font-bold text-emerald-600">{confirmRate.toFixed(1)}%</p><p className="text-[10px] text-muted-foreground">Confirmed ÷ Total</p></div>
+                        <div className="rounded-xl border border-primary/20 p-3"><p className="text-[10px] uppercase text-muted-foreground">Delivery Ratio</p><p className="text-xl font-bold text-primary">{deliveryRate.toFixed(1)}%</p><p className="text-[10px] text-muted-foreground">Delivered ÷ Confirmed</p></div>
+                        <div className="rounded-xl border border-destructive/20 p-3"><p className="text-[10px] uppercase text-muted-foreground">Cancel Ratio</p><p className="text-xl font-bold text-destructive">{cancelRate.toFixed(1)}%</p><p className="text-[10px] text-muted-foreground">Cancelled ÷ Total</p></div>
+                        <div className="rounded-xl border border-orange-500/20 p-3"><p className="text-[10px] uppercase text-muted-foreground">Return Ratio</p><p className="text-xl font-bold text-orange-600">{returnRate.toFixed(1)}%</p><p className="text-[10px] text-muted-foreground">Returned ÷ Confirmed</p></div>
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 {/* Profit Hero */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -558,36 +653,46 @@ export default function AdminReports() {
                     <table className="w-full text-sm">
                       <thead className="bg-secondary/50">
                         <tr className="text-left">
-                          <th className="px-4 py-3 font-semibold">Product</th>
-                          <th className="px-4 py-3 font-semibold text-right">Orders</th>
-                          <th className="px-4 py-3 font-semibold text-right">Units</th>
-                          <th className="px-4 py-3 font-semibold text-right">Revenue</th>
-                          <th className="px-4 py-3 font-semibold text-right">Unit Cost</th>
-                          <th className="px-4 py-3 font-semibold text-right">COGS (খরচ)</th>
-                          <th className="px-4 py-3 font-semibold text-right">Purchase</th>
-                          <th className="px-4 py-3 font-semibold text-right">Profit (লাভ)</th>
-                          <th className="px-4 py-3 font-semibold text-right">Margin</th>
+                          <th className="px-3 py-3 font-semibold">Product</th>
+                          <th className="px-3 py-3 font-semibold text-right">Total</th>
+                          <th className="px-3 py-3 font-semibold text-right text-emerald-600">Confirmed</th>
+                          <th className="px-3 py-3 font-semibold text-right text-primary">Delivered</th>
+                          <th className="px-3 py-3 font-semibold text-right text-destructive">Cancelled</th>
+                          <th className="px-3 py-3 font-semibold text-right text-orange-600">Returned</th>
+                          <th className="px-3 py-3 font-semibold text-right">Confirm %</th>
+                          <th className="px-3 py-3 font-semibold text-right">Delivery %</th>
+                          <th className="px-3 py-3 font-semibold text-right">Cancel %</th>
+                          <th className="px-3 py-3 font-semibold text-right">Return %</th>
+                          <th className="px-3 py-3 font-semibold text-right">Revenue</th>
+                          <th className="px-3 py-3 font-semibold text-right">COGS</th>
+                          <th className="px-3 py-3 font-semibold text-right">Profit</th>
+                          <th className="px-3 py-3 font-semibold text-right">Margin</th>
                         </tr>
                       </thead>
                       <tbody>
                         {activeReport.rows.length === 0 ? (
-                          <tr><td colSpan={9} className="text-center text-muted-foreground py-8">কোনো ডেটা নেই। উপরে "Demo Data দেখুন" বাটন চাপুন।</td></tr>
-                        ) : activeReport.rows.map((r, i) => {
+                          <tr><td colSpan={14} className="text-center text-muted-foreground py-8">কোনো ডেটা নেই। উপরে "Demo Data দেখুন" বাটন চাপুন।</td></tr>
+                        ) : activeReport.rows.map((r: any, i) => {
                           const margin = r.revenue > 0 ? (r.profit / r.revenue) * 100 : 0;
                           return (
                             <tr key={i} className="border-t border-border hover:bg-secondary/30">
-                              <td className="px-4 py-3">
+                              <td className="px-3 py-3">
                                 <p className="font-medium text-foreground">{r.product_name}</p>
                                 {r.product_code && <p className="text-xs text-muted-foreground">{r.product_code}</p>}
                               </td>
-                              <td className="px-4 py-3 text-right">{r.orderCount}</td>
-                              <td className="px-4 py-3 text-right">{r.qty}</td>
-                              <td className="px-4 py-3 text-right text-emerald-600 font-semibold">{fmt(r.revenue)}</td>
-                              <td className="px-4 py-3 text-right">{fmt(r.unitCost)}</td>
-                              <td className="px-4 py-3 text-right text-orange-600">{fmt(r.soldCogs)}</td>
-                              <td className="px-4 py-3 text-right text-violet-600">{fmt(r.purchaseCost)}</td>
-                              <td className={`px-4 py-3 text-right font-bold ${r.profit >= 0 ? "text-emerald-600" : "text-destructive"}`}>{fmt(r.profit)}</td>
-                              <td className={`px-4 py-3 text-right ${margin >= 0 ? "text-emerald-600" : "text-destructive"}`}>{margin.toFixed(1)}%</td>
+                              <td className="px-3 py-3 text-right">{r.totalOrders ?? 0}</td>
+                              <td className="px-3 py-3 text-right text-emerald-600">{r.confirmedOrders ?? 0}</td>
+                              <td className="px-3 py-3 text-right text-primary font-semibold">{r.deliveredOrders ?? 0}</td>
+                              <td className="px-3 py-3 text-right text-destructive">{r.cancelledOrders ?? 0}</td>
+                              <td className="px-3 py-3 text-right text-orange-600">{r.returnedOrders ?? 0}</td>
+                              <td className="px-3 py-3 text-right">{(r.confirmRate ?? 0).toFixed(1)}%</td>
+                              <td className="px-3 py-3 text-right">{(r.deliveryRate ?? 0).toFixed(1)}%</td>
+                              <td className="px-3 py-3 text-right">{(r.cancelRate ?? 0).toFixed(1)}%</td>
+                              <td className="px-3 py-3 text-right">{(r.returnRate ?? 0).toFixed(1)}%</td>
+                              <td className="px-3 py-3 text-right text-emerald-600 font-semibold">{fmt(r.revenue)}</td>
+                              <td className="px-3 py-3 text-right text-orange-600">{fmt(r.soldCogs)}</td>
+                              <td className={`px-3 py-3 text-right font-bold ${r.profit >= 0 ? "text-emerald-600" : "text-destructive"}`}>{fmt(r.profit)}</td>
+                              <td className={`px-3 py-3 text-right ${margin >= 0 ? "text-emerald-600" : "text-destructive"}`}>{margin.toFixed(1)}%</td>
                             </tr>
                           );
                         })}
@@ -595,15 +700,20 @@ export default function AdminReports() {
                       {activeReport.rows.length > 0 && (
                         <tfoot className="bg-secondary/50 font-bold">
                           <tr>
-                            <td className="px-4 py-3">Total</td>
-                            <td className="px-4 py-3 text-right">{activeReport.totals.orders}</td>
-                            <td className="px-4 py-3 text-right">{activeReport.totals.qty}</td>
-                            <td className="px-4 py-3 text-right text-emerald-600">{fmt(activeReport.totals.revenue)}</td>
-                            <td className="px-4 py-3 text-right">—</td>
-                            <td className="px-4 py-3 text-right text-orange-600">{fmt(activeReport.totals.cogs)}</td>
-                            <td className="px-4 py-3 text-right text-violet-600">{fmt(activeReport.totals.purchase)}</td>
-                            <td className={`px-4 py-3 text-right ${activeReport.totals.profit >= 0 ? "text-emerald-600" : "text-destructive"}`}>{fmt(activeReport.totals.profit)}</td>
-                            <td className="px-4 py-3 text-right">—</td>
+                            <td className="px-3 py-3">Total</td>
+                            <td className="px-3 py-3 text-right">{(activeReport.totals as any).totalOrders ?? 0}</td>
+                            <td className="px-3 py-3 text-right text-emerald-600">{(activeReport.totals as any).confirmed ?? 0}</td>
+                            <td className="px-3 py-3 text-right text-primary">{(activeReport.totals as any).delivered ?? 0}</td>
+                            <td className="px-3 py-3 text-right text-destructive">{(activeReport.totals as any).cancelled ?? 0}</td>
+                            <td className="px-3 py-3 text-right text-orange-600">{(activeReport.totals as any).returned ?? 0}</td>
+                            <td className="px-3 py-3 text-right">—</td>
+                            <td className="px-3 py-3 text-right">—</td>
+                            <td className="px-3 py-3 text-right">—</td>
+                            <td className="px-3 py-3 text-right">—</td>
+                            <td className="px-3 py-3 text-right text-emerald-600">{fmt(activeReport.totals.revenue)}</td>
+                            <td className="px-3 py-3 text-right text-orange-600">{fmt(activeReport.totals.cogs)}</td>
+                            <td className={`px-3 py-3 text-right ${activeReport.totals.profit >= 0 ? "text-emerald-600" : "text-destructive"}`}>{fmt(activeReport.totals.profit)}</td>
+                            <td className="px-3 py-3 text-right">—</td>
                           </tr>
                         </tfoot>
                       )}
@@ -645,7 +755,7 @@ export default function AdminReports() {
                   <div className="space-y-3 text-sm text-foreground">
                     <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3">
                       <p className="font-semibold text-emerald-700 dark:text-emerald-400">💰 Revenue (Add / Money In)</p>
-                      <p className="text-muted-foreground mt-1">প্রতিটি product-এর জন্য confirmed/in-courier/delivered orders থেকে <code className="text-xs bg-secondary px-1 rounded">order_items.total_price</code> যোগ করা হয়। Cancelled ও Returned orders বাদ দেওয়া হয়।</p>
+                      <p className="text-muted-foreground mt-1">শুধুমাত্র <strong>Delivered</strong> parcels-এর <code className="text-xs bg-secondary px-1 rounded">order_items.total_price</code> যোগ করে Revenue হিসাব হয়। Processing / Confirmed / In-Courier / Cancelled / Returned orders accounting-এ ধরা হয় না — delivery না হলে টাকা হাতে আসে না। তবে Confirm/Delivery/Cancel/Return ratio দেখানোর জন্য সব status গণনা করা হয়।</p>
                     </div>
                     <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-3">
                       <p className="font-semibold text-orange-700 dark:text-orange-400">📦 COGS (Cost of Goods Sold)</p>
