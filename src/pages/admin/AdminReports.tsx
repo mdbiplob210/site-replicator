@@ -352,9 +352,14 @@ export default function AdminReports() {
   }, [orderItems, orders, purchaseItems, products]);
 
   // Active dataset (real or demo)
+  const deliveredDeliveryCost = useMemo(
+    () => (orders as any[]).filter(o => o.status === "delivered").reduce((s, o) => s + Number(o.delivery_charge || 0), 0),
+    [orders]
+  );
+
   const activeReport = useDemo
     ? { rows: demoReport.rows, totals: demoReport.totals, adsCostBdt: demoReport.adsCostBdt, adsCostUsd: demoReport.adsCostUsd, deliveryCost: demoReport.deliveryCost, otherExpense: demoReport.otherExpense }
-    : { rows: productReport.rows, totals: productReport.totals, adsCostBdt: autoReport.adsCostBdt, adsCostUsd: autoReport.adsCostUsd, deliveryCost: autoReport.totalDelivery, otherExpense: autoReport.moneyOut };
+    : { rows: productReport.rows, totals: productReport.totals, adsCostBdt: autoReport.adsCostBdt, adsCostUsd: autoReport.adsCostUsd, deliveryCost: deliveredDeliveryCost, otherExpense: autoReport.moneyOut };
 
   const totalExpense = activeReport.totals.cogs + activeReport.adsCostBdt + activeReport.deliveryCost + activeReport.otherExpense;
   const netProfit = activeReport.totals.revenue - totalExpense;
