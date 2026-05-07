@@ -750,7 +750,7 @@ export default function AdminReports() {
                   <div className="space-y-3 text-sm text-foreground">
                     <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3">
                       <p className="font-semibold text-emerald-700 dark:text-emerald-400">💰 Revenue (Add / Money In)</p>
-                      <p className="text-muted-foreground mt-1">প্রতিটি product-এর জন্য confirmed/in-courier/delivered orders থেকে <code className="text-xs bg-secondary px-1 rounded">order_items.total_price</code> যোগ করা হয়। Cancelled ও Returned orders বাদ দেওয়া হয়।</p>
+                      <p className="text-muted-foreground mt-1">শুধুমাত্র <strong>Delivered</strong> parcels-এর <code className="text-xs bg-secondary px-1 rounded">order_items.total_price</code> যোগ করে Revenue হিসাব হয়। Processing / Confirmed / In-Courier / Cancelled / Returned orders accounting-এ ধরা হয় না — delivery না হলে টাকা হাতে আসে না। তবে Confirm/Delivery/Cancel/Return ratio দেখানোর জন্য সব status গণনা করা হয়।</p>
                     </div>
                     <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-3">
                       <p className="font-semibold text-orange-700 dark:text-orange-400">📦 COGS (Cost of Goods Sold)</p>
