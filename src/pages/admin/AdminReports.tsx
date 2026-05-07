@@ -515,12 +515,12 @@ export default function AdminReports() {
                   </Button>
                 </div>
 
-                {/* Top KPI Cards */}
+                {/* Top KPI Cards — Accounting based on DELIVERED parcels only */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {[
-                    { icon: ShoppingCart, value: activeReport.totals.orders, label: "Total Orders", color: "text-primary" },
-                    { icon: Package, value: activeReport.totals.qty, label: "Units Sold", color: "text-blue-600" },
-                    { icon: DollarSign, value: fmt(activeReport.totals.revenue), label: "Total Add (Revenue)", color: "text-emerald-600" },
+                    { icon: Package, value: (activeReport.totals as any).delivered ?? activeReport.totals.orders, label: "Delivered Parcels", color: "text-emerald-600" },
+                    { icon: ShoppingCart, value: activeReport.totals.qty, label: "Units Sold (Delivered)", color: "text-blue-600" },
+                    { icon: DollarSign, value: fmt(activeReport.totals.revenue), label: "Revenue (Delivered only)", color: "text-emerald-600" },
                     { icon: Wallet, value: fmt(totalExpense), label: "Total Expense", color: "text-orange-500" },
                   ].map((s, i) => (
                     <div key={i} className="bg-card rounded-2xl border border-border p-4 flex items-center gap-3">
@@ -534,6 +534,40 @@ export default function AdminReports() {
                     </div>
                   ))}
                 </div>
+
+                {/* Parcel Status & Ratios — overall */}
+                {(() => {
+                  const t: any = activeReport.totals;
+                  const total = t.totalOrders ?? 0;
+                  const confirmed = t.confirmed ?? 0;
+                  const delivered = t.delivered ?? 0;
+                  const cancelled = t.cancelled ?? 0;
+                  const returned = t.returned ?? 0;
+                  const confirmRate = total > 0 ? (confirmed / total) * 100 : 0;
+                  const cancelRate = total > 0 ? (cancelled / total) * 100 : 0;
+                  const deliveryRate = confirmed > 0 ? (delivered / confirmed) * 100 : 0;
+                  const returnRate = confirmed > 0 ? (returned / confirmed) * 100 : 0;
+                  return (
+                    <div className="bg-card rounded-2xl border border-border p-5">
+                      <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
+                        <Target className="h-4 w-4 text-primary" /> Parcel Status & Ratios (Overall)
+                      </h3>
+                      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+                        <div className="rounded-xl bg-secondary/50 p-3"><p className="text-[10px] uppercase text-muted-foreground">Total Parcel</p><p className="text-lg font-bold">{total}</p></div>
+                        <div className="rounded-xl bg-emerald-500/10 p-3"><p className="text-[10px] uppercase text-muted-foreground">Confirmed</p><p className="text-lg font-bold text-emerald-600">{confirmed}</p></div>
+                        <div className="rounded-xl bg-primary/10 p-3"><p className="text-[10px] uppercase text-muted-foreground">Delivered</p><p className="text-lg font-bold text-primary">{delivered}</p></div>
+                        <div className="rounded-xl bg-destructive/10 p-3"><p className="text-[10px] uppercase text-muted-foreground">Cancelled</p><p className="text-lg font-bold text-destructive">{cancelled}</p></div>
+                        <div className="rounded-xl bg-orange-500/10 p-3"><p className="text-[10px] uppercase text-muted-foreground">Returned</p><p className="text-lg font-bold text-orange-600">{returned}</p></div>
+                      </div>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div className="rounded-xl border border-emerald-500/20 p-3"><p className="text-[10px] uppercase text-muted-foreground">Confirm Ratio</p><p className="text-xl font-bold text-emerald-600">{confirmRate.toFixed(1)}%</p><p className="text-[10px] text-muted-foreground">Confirmed ÷ Total</p></div>
+                        <div className="rounded-xl border border-primary/20 p-3"><p className="text-[10px] uppercase text-muted-foreground">Delivery Ratio</p><p className="text-xl font-bold text-primary">{deliveryRate.toFixed(1)}%</p><p className="text-[10px] text-muted-foreground">Delivered ÷ Confirmed</p></div>
+                        <div className="rounded-xl border border-destructive/20 p-3"><p className="text-[10px] uppercase text-muted-foreground">Cancel Ratio</p><p className="text-xl font-bold text-destructive">{cancelRate.toFixed(1)}%</p><p className="text-[10px] text-muted-foreground">Cancelled ÷ Total</p></div>
+                        <div className="rounded-xl border border-orange-500/20 p-3"><p className="text-[10px] uppercase text-muted-foreground">Return Ratio</p><p className="text-xl font-bold text-orange-600">{returnRate.toFixed(1)}%</p><p className="text-[10px] text-muted-foreground">Returned ÷ Confirmed</p></div>
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 {/* Profit Hero */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
